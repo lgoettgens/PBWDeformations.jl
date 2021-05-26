@@ -40,7 +40,6 @@ doctest:
         Pkg.instantiate()
         using Documenter: doctest
         using PBWDeformations
-        doctest(PBWDeformations)
         include("docs/make.jl")'
   artifacts:
     paths:
