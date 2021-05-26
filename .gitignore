@@ -1,0 +1,9 @@
+# doc artifacts
+docs/build
+
+# julia project Manifests
+Manifest.toml
+*/Manifest.toml
+
+# code coverage reports
+*.cov
