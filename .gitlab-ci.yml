@@ -1,3 +1,7 @@
+stages:
+  - test
+  - deploy
+
 .script:
   script:
     - |
@@ -5,6 +9,7 @@
         using Pkg
         Pkg.build()
         Pkg.test(coverage=true)'
+
 .coverage:
   coverage: /Test coverage (\d+\.\d+%)/
   after_script:
@@ -16,14 +21,17 @@
         c, t = get_summary(process_folder())
         using Printf
         @printf "Test coverage %.2f%%\n" 100c / t'
-Julia 1.6:
+
+unittest-Julia 1.6:
   image: julia:1.6
+  stage: test
   extends:
     - .script
     - .coverage
-pages:
+
+doctest:
   image: julia:1.6
-  stage: deploy
+  stage: test
   script:
     - |
       julia --project=docs -e '
@@ -34,8 +42,17 @@ pages:
         using PBWDeformations
         doctest(PBWDeformations)
         include("docs/make.jl")'
+  artifacts:
+    paths:
+      - docs/build
+
+pages:
+  stage: deploy
+  dependencies:
+    - doctest
+  script:
     - mkdir -p public
-    - mv docs/build public/dev
+    - mv docs/build public
   artifacts:
     paths:
       - public
