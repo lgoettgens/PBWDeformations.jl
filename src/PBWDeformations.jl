@@ -1,5 +1,9 @@
 module PBWDeformations
 
+abstract type SmashProduct end
+
+include("SmashProductsLie.jl")
+
 """
     add(x:Integer, y:Integer) :: Integer
 
