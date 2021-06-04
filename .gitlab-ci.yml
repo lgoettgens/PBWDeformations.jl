@@ -23,14 +23,14 @@ stages:
         @printf "Test coverage %.2f%%\n" 100c / t'
 
 unittest-Julia 1.6:
-  image: julia:1.6
+  image: johannesflake/oscar
   stage: test
   extends:
     - .script
     - .coverage
 
 doctest:
-  image: julia:1.6
+  image: johannesflake/oscar
   stage: test
   script:
     - |
