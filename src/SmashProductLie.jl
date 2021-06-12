@@ -6,6 +6,13 @@ struct SmashProductLie
     nV :: Int64
 end
 
+function Base.show(io::IO, sp::SmashProductLie)
+    println(io, "Smash product of lie algebra with highest weight module")
+    println(io, "Lie algebra: type ", sp.dynkin, sp.n, ", dimension ", sp.nL)
+    println(io, "Module: highest weight ", sp.lambda, ", dimension ", sp.nV)
+end
+
+
 function smashProductLie(dynkin::Char, n::Int64, lambda::Vector{Int64}) :: AlgebraWithCommutators{SmashProductLie}
     @assert n == length(lambda)
     sanitizeLieInput(dynkin, n)

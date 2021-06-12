@@ -2,6 +2,12 @@ struct SmashProductSymmDeformLie
     sp :: SmashProductLie
 end
 
+function Base.show(io::IO, spd::SmashProductSymmDeformLie)
+    println(io, "Symmetric deformation of:")
+    show(spd.sp)
+end
+
+
 function smashProductSymmDeformLie(dynkin::Char, n::Int64, lambda::Vector{Int64}) :: AlgebraWithCommutators{SmashProductSymmDeformLie}
     @assert n == length(lambda)
     sanitizeLieInput(dynkin, n)

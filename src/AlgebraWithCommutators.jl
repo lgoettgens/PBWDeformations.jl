@@ -10,6 +10,14 @@ struct AlgebraWithCommutators{T}
     extraData :: T
 end
 
+function Base.show(io::IO, alg::AlgebraWithCommutators)
+    println(io, "Algebra with commutators")
+    println(io, "Commutator table has ", length(alg.commTable), " elements")
+    println(io, "Extra data:")
+    show(alg.extraData)
+end
+
+
 x = sympy.Function("x")
 
 function _normalForm(alg::AlgebraWithCommutators, coeff::Coefficient, ind::Vector{Int64}) :: Vector{Tuple{Coefficient,Vector{Int64}}}
