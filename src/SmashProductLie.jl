@@ -36,6 +36,6 @@ function smashProductLie(dynkin::Char, n::Int64, lambda::Vector{Int64}) :: Algeb
     end
 
     extraData = SmashProductLie(dynkin, n, lambda, nL, nV)
-    basis = [[lie(i) for i in 1:nL]..., [mod(i) for i in 1:nV]...] :: Vector{BasisElement}
+    basis = [[mod(i) for i in 1:nV]..., [lie(i) for i in 1:nL]...] :: Vector{BasisElement}
     return AlgebraWithCommutators{SmashProductLie}(basis, commTable, extraData)
 end

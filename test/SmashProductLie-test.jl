@@ -230,7 +230,7 @@ mod = PD.mod
                 (lie(9),  mod(5)) => [(-1, mod(5))],
                 (lie(10), mod(5)) => [],
             )
-        end     
+        end
     end
 
     @testset "smashProducSymmDeformLie constructor" begin
