@@ -2,14 +2,25 @@ module PBWDeformations
 
 using Oscar
 
-abstract type AlgebraWithCommutators end
-
 GAP = Oscar.GAP.Globals
 toGAP = Oscar.GAP.julia_to_gap
 fromGAP = Oscar.GAP.gap_to_julia
 
 BasisElement = Tuple{Symbol, Int64}
 Coefficient = Integer
+LinearCombination = Vector{Tuple{Coefficient, BasisElement}}
+
+struct AlgebraWithCommutators{T}
+    basis :: Vector{BasisElement}
+
+    """
+    Contains the simplified commutator of two elements as a linear combination.
+    An empty list thus is the empty sum and means that the two elements commutate.
+    An absent entry means that there is only a formal commutator.
+    """
+    commTable :: Dict{Tuple{BasisElement, BasisElement}, LinearCombination}
+    extraData :: T
+end
 
 lie(i::Int64) = (:lie, i) :: BasisElement
 mod(i::Int64) = (:mod, i) :: BasisElement
@@ -26,6 +37,6 @@ function sanitizeLieInput(dynkin::Char, n::Int64) :: Nothing
 end
 
 include("SmashProductLie.jl")
-include("SmashProductDeformationLie.jl")
+include("SmashProductDeformLie.jl")
 
 end
