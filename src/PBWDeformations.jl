@@ -1,18 +1,31 @@
 module PBWDeformations
 
-abstract type SmashProduct end
+using Oscar
 
-include("SmashProductsLie.jl")
+abstract type AlgebraWithCommutators end
 
-"""
-    add(x:Integer, y:Integer) :: Integer
+GAP = Oscar.GAP.Globals
+toGAP = Oscar.GAP.julia_to_gap
+fromGAP = Oscar.GAP.gap_to_julia
 
-adds two integer numbers
-```jldoctest
-julia> PBWDeformations.add(12,30)
-42
-```
-"""
-add(x::Integer, y::Integer) = x+y
+BasisElement = Tuple{Symbol, Int64}
+Coefficient = Integer
+
+lie(i::Int64) = (:lie, i) :: BasisElement
+mod(i::Int64) = (:mod, i) :: BasisElement
+
+function sanitizeLieInput(dynkin::Char, n::Int64) :: Nothing
+    @assert dynkin in ['A', 'B', 'C', 'D']
+    if dynkin == 'A'
+        @assert n >= 1
+    elseif dynkin == 'B' || dynkin == 'C'
+        @assert n >= 2
+    elseif dynkin == 'D'
+        @assert n >= 4
+    end
+end
+
+include("SmashProductLie.jl")
+include("SmashProductDeformationLie.jl")
 
 end
