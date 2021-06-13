@@ -8,6 +8,9 @@ struct AlgebraWithCommutators{T}
     """
     commTable :: Dict{Tuple{BasisElement, BasisElement}, LinearCombination}
     extraData :: T
+    x :: SymFunction
+
+    AlgebraWithCommutators{T}(basis, commTable, extraData) where T = new{T}(basis, commTable, extraData, SymFunction("x"))
 end
 
 function Base.show(io::IO, alg::AlgebraWithCommutators)
@@ -17,8 +20,6 @@ function Base.show(io::IO, alg::AlgebraWithCommutators)
     show(alg.extraData)
 end
 
-
-x = sympy.Function("x")
 
 function _normalForm(alg::AlgebraWithCommutators, coeff::Coefficient, ind::Vector{Int64}) :: Vector{Tuple{Coefficient,Vector{Int64}}}
     for i in 1:length(ind)-1
@@ -30,7 +31,7 @@ function _normalForm(alg::AlgebraWithCommutators, coeff::Coefficient, ind::Vecto
                 vcat(
                     (_normalForm(alg, c * coeff, [ind[1:i-1]..., findfirst(isequal(b), alg.basis), ind[i+2:end]...]) for (c, b) in comm)...
                 )...
-            ]            
+            ]
         end
     end
     return [(coeff, ind)]
@@ -41,9 +42,9 @@ function normalForm(alg, expr)
     xsum(coll) = isempty(coll) ? 0 : sum(coll)
 
     expr.replace(
-        f -> f.func == x, 
+        f -> f.func == alg.x,
         f -> xsum(
-            coeff * x(newInd...)
+            coeff * alg.x(newInd...)
             for (coeff, newInd) in _normalForm(alg, 1, map(fromSymPy, [f.args...]))
         )
     )

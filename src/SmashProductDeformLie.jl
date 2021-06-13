@@ -21,5 +21,5 @@ function smashProductSymmDeformLie(dynkin::Char, n::Int64, lambda::Vector{Int64}
         commTable[(mod(i), mod(j))] = []
     end
 
-    AlgebraWithCommutators(basis, commTable, extraData)
+    AlgebraWithCommutators{SmashProductSymmDeformLie}(basis, commTable, extraData)
 end
