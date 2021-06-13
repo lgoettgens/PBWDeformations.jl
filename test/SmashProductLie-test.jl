@@ -1,28 +1,9 @@
 lie = PD.lie
 mod = PD.mod
 
-@testset ExtendedTestSet "All PBWDeformations.SmashProductsLie tests" begin
-    @testset "sanitizeLieInput" begin
-        @test_throws AssertionError PD.sanitizeLieInput('A', 0)
-        @test_throws AssertionError PD.sanitizeLieInput('B', 0)
-        @test_throws AssertionError PD.sanitizeLieInput('C', 0)
-        @test_throws AssertionError PD.sanitizeLieInput('D', 0)
-
-        @test_throws AssertionError PD.sanitizeLieInput('B', 1)
-        @test_throws AssertionError PD.sanitizeLieInput('C', 1)
-        @test_throws AssertionError PD.sanitizeLieInput('D', 1)
-
-        @test_throws AssertionError PD.sanitizeLieInput('D', 2)
-        @test_throws AssertionError PD.sanitizeLieInput('D', 3)
-
-        @test_nowarn PD.sanitizeLieInput('A',1)
-        @test_nowarn PD.sanitizeLieInput('B',2)
-        @test_nowarn PD.sanitizeLieInput('C',2)
-        @test_nowarn PD.sanitizeLieInput('D',4)
-    end
-    
+@testset ExtendedTestSet "All PBWDeformations.SmashProductLie tests" begin
     @testset "smashProductLie constructor" begin
-        begin
+        @testset "A_2 with hw [1,1]" begin
             sp = PD.smashProductLie('A', 2, [1,1])
             @test sp.extraData.dynkin == 'A'
             @test sp.extraData.n == 2
@@ -125,7 +106,8 @@ mod = PD.mod
                 (lie(8), mod(8)) => [(-1, mod(8))],
             )
         end
-        begin
+
+        @testset "B_2 with hw [1,0]" begin
             sp = PD.smashProductLie('B', 2, [1,0])
             @test sp.extraData.dynkin == 'B'
             @test sp.extraData.n == 2
@@ -233,26 +215,4 @@ mod = PD.mod
         end
     end
 
-    @testset "smashProducSymmDeformLie constructor" begin
-        begin
-            sp = PD.smashProductLie('A', 2, [1,1])
-            deform = PD.smashProductSymmDeformLie('A', 2, [1,1])
-            @test_broken deform.extraData.sp == sp.extraData
-            @test deform.basis == sp.basis
-
-            # Test that the module basis commutes and the other commutators come from the smash product
-            @test deform.commTable == Dict(union(sp.commTable, [(mod(i),mod(j)) => [] for i in 1:sp.extraData.nV for j in 1:i-1]))
-        end
-
-        begin
-            sp = PD.smashProductLie('B', 2, [1,0])
-            deform = PD.smashProductSymmDeformLie('B', 2, [1,0])
-            @test_broken deform.extraData.sp == sp.extraData
-            @test deform.basis == sp.basis
-
-            # Test that the module basis commutes and the other commutators come from the smash product
-            @test deform.commTable == Dict(union(sp.commTable, [(mod(i),mod(j)) => [] for i in 1:sp.extraData.nV for j in 1:i-1]))
-        end
-    end
-    
 end
