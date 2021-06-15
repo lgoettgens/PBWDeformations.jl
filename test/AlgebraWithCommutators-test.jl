@@ -11,7 +11,7 @@ dimRandomTests = [3, 10, 25, 100]
             for _ in 1:numRandomTests
                 ind = shuffle(rand(1:n, rand(1:2n)))
                 if length(ind) > 0
-                    @test PD.normalForm(alg, alg.x(ind...)) == sp.x(ind...)
+                    @test PD.normalForm(alg, alg.x(ind...)) == alg.x(ind...)
                 end
             end
         end
@@ -24,7 +24,7 @@ dimRandomTests = [3, 10, 25, 100]
             for _ in 1:numRandomTests
                 ind = shuffle(rand(1:n, rand(1:2n)))
                 if length(ind) > 0
-                    @test PD.normalForm(alg, alg.x(ind...)) == sp.x(sort(ind)...)
+                    @test PD.normalForm(alg, alg.x(ind...)) == alg.x(sort(ind)...)
                 end
             end
         end

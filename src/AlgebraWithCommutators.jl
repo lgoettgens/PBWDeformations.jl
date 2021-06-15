@@ -38,7 +38,7 @@ function _normalForm(alg::AlgebraWithCommutators, coeff::Coefficient, ind::Vecto
 end
 
 
-function normalForm(alg, expr)
+function normalForm(alg::AlgebraWithCommutators, expr::SymPy.Sym)
     xsum(coll) = isempty(coll) ? 0 : sum(coll)
 
     expr.replace(
