@@ -10,11 +10,11 @@ struct AlgebraWithCommutators{T}
     extraData :: T
     x :: SymFunction
 
-    AlgebraWithCommutators{T}(basis, commTable, extraData) where T = new{T}(basis, commTable, extraData, SymFunction("x"))
+    AlgebraWithCommutators{T}(basis, commTable, extraData = nothing) where T = new{T}(basis, commTable, extraData, SymFunction("x"))
 end
 
 function Base.show(io::IO, alg::AlgebraWithCommutators)
-    println(io, "Algebra with commutators")
+    println(io, "Algebra with commutators of dimension ", length(alg.basis))
     println(io, "Commutator table has ", length(alg.commTable), " elements")
     println(io, "Extra data:")
     show(alg.extraData)

@@ -1,4 +1,36 @@
+numRandomTests = 10
+dimRandomTests = [3, 10, 25, 100]
+
 @testset ExtendedTestSet "All PBWDeformations.AlgebraWithCommutators tests" begin
+    @testset "normalForm for abstract cases" begin
+        @testset "tensor algebra over V with dim V = $n" for n in dimRandomTests
+            basis = [(:basis, i) for i in 1:n]
+            commTable = Dict()
+            alg = PD.AlgebraWithCommutators{Nothing}(basis, commTable, nothing)
+
+            for _ in 1:numRandomTests
+                ind = shuffle(rand(1:n, rand(1:2n)))
+                if length(ind) > 0
+                    @test PD.normalForm(alg, alg.x(ind...)) == sp.x(ind...)
+                end
+            end
+        end
+
+        @testset "symmetric algebra over V with dim V = $n" for n in dimRandomTests
+            basis = [(:symm, i) for i in 1:n]
+            commTable = Dict([((basis[i], basis[j]), []) for i in 1:n for j in 1:i-1])
+            alg = PD.AlgebraWithCommutators{Nothing}(basis, commTable, nothing)
+
+            for _ in 1:numRandomTests
+                ind = shuffle(rand(1:n, rand(1:2n)))
+                if length(ind) > 0
+                    @test PD.normalForm(alg, alg.x(ind...)) == sp.x(sort(ind)...)
+                end
+            end
+        end
+
+    end
+
     @testset "normalForm for smashProductLie" begin
         @testset "A_2 with hw [1,1]" begin
             sp = PD.smashProductLie('A', 2, [1,1])
@@ -32,9 +64,6 @@
             @test PD.normalForm(sp, sp.x(8+7, 8+1, 8+2, 8+3)) == 2*sp.x(8+1, 8+2, 8+3) + sp.x(8+1, 8+2, 8+3, 8+7)
         end
 
-        @testset "B_2 with hw [1,0]" begin
-            # TODO
-        end
     end
 
     @testset "normalForm for smashProductSymmDeformLie" begin
@@ -71,9 +100,6 @@
             @test PD.normalForm(sp, sp.x(8+7, 8+1, 8+2, 8+3)) == 2*sp.x(8+1, 8+2, 8+3) + sp.x(8+1, 8+2, 8+3, 8+7)
         end
 
-        @testset "B_2 with hw [1,0]" begin
-            # TODO
-        end
     end
        
 end
