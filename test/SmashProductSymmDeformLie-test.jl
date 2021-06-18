@@ -6,7 +6,8 @@ mod = PD.mod
         @testset "A_2 with hw [1,1]" begin
             sp = PD.smashProductLie('A', 2, [1,1])
             deform = PD.smashProductSymmDeformLie('A', 2, [1,1])
-            @test_broken deform.extraData.sp == sp.extraData
+            @test typeof(deform.extraData.sp) == typeof(sp.extraData)
+            @test string(deform.extraData.sp) == string(sp.extraData)
             @test deform.basis == sp.basis
 
             # Test that the module basis commutes and the other commutators come from the smash product
@@ -16,7 +17,8 @@ mod = PD.mod
         @testset "B_2 with hw [1,0]" begin
             sp = PD.smashProductLie('B', 2, [1,0])
             deform = PD.smashProductSymmDeformLie('B', 2, [1,0])
-            @test_broken deform.extraData.sp == sp.extraData
+            @test typeof(deform.extraData.sp) == typeof(sp.extraData)
+            @test string(deform.extraData.sp) == string(sp.extraData)
             @test deform.basis == sp.basis
 
             # Test that the module basis commutes and the other commutators come from the smash product
