@@ -14,12 +14,12 @@ function smashProductSymmDeformLie(dynkin::Char, n::Int64, lambda::Vector{Int64}
 
     sp = smashProductLie(dynkin, n, lambda)
     basis = sp.basis
-    commTable = sp.commTable
+    relTable = sp.relTable
     extraData = SmashProductSymmDeformLie(sp.extraData)
 
     for i in 1:sp.extraData.nV, j in 1:i-1
-        commTable[(mod(i), mod(j))] = []
+        relTable[(mod(i), mod(j))] = [(1, [mod(j), mod(i)])]
     end
 
-    QuadraticAlgebra{SmashProductSymmDeformLie}(basis, commTable, extraData)
+    QuadraticAlgebra{SmashProductSymmDeformLie}(basis, relTable, extraData)
 end

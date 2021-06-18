@@ -10,7 +10,7 @@ mod = PD.mod
             @test deform.basis == sp.basis
 
             # Test that the module basis commutes and the other commutators come from the smash product
-            @test deform.commTable == Dict(union(sp.commTable, [(mod(i),mod(j)) => [] for i in 1:sp.extraData.nV for j in 1:i-1]))
+            @test deform.relTable == Dict(union(sp.relTable, [(mod(i), mod(j)) => [(1, [mod(j), mod(i)])] for i in 1:sp.extraData.nV for j in 1:i-1]))
         end
 
         @testset "B_2 with hw [1,0]" begin
@@ -20,7 +20,7 @@ mod = PD.mod
             @test deform.basis == sp.basis
 
             # Test that the module basis commutes and the other commutators come from the smash product
-            @test deform.commTable == Dict(union(sp.commTable, [(mod(i),mod(j)) => [] for i in 1:sp.extraData.nV for j in 1:i-1]))
+            @test deform.relTable == Dict(union(sp.relTable, [(mod(i), mod(j)) => [(1, [mod(j), mod(i)])] for i in 1:sp.extraData.nV for j in 1:i-1]))
         end
     end
     

@@ -5,8 +5,8 @@ dimRandomTests = [3, 10, 25, 100]
     @testset "normalForm for abstract cases" begin
         @testset "tensor algebra over V with dim V = $n" for n in dimRandomTests
             basis = [(:basis, i) for i in 1:n]
-            commTable = Dict()
-            alg = PD.QuadraticAlgebra{Nothing}(basis, commTable, nothing)
+            relTable = Dict()
+            alg = PD.QuadraticAlgebra{Nothing}(basis, relTable, nothing)
 
             for _ in 1:numRandomTests
                 ind = shuffle(rand(1:n, rand(1:2n)))
@@ -18,8 +18,8 @@ dimRandomTests = [3, 10, 25, 100]
 
         @testset "symmetric algebra over V with dim V = $n" for n in dimRandomTests
             basis = [(:symm, i) for i in 1:n]
-            commTable = Dict([((basis[i], basis[j]), []) for i in 1:n for j in 1:i-1])
-            alg = PD.QuadraticAlgebra{Nothing}(basis, commTable, nothing)
+            relTable = Dict([((basis[i], basis[j]), [(1, [basis[j], basis[i]])]) for i in 1:n for j in 1:i-1])
+            alg = PD.QuadraticAlgebra{Nothing}(basis, relTable, nothing)
 
             for _ in 1:numRandomTests
                 ind = shuffle(rand(1:n, rand(1:2n)))

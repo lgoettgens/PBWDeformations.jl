@@ -11,10 +11,12 @@ toSymPy = sympify
 fromSymPy = N
 
 BasisElement = Tuple{Symbol, Int64}
-Coefficient = Integer
+Coefficient = Int64
 Product{T} = Vector{T}
 LinearCombination{T} = Vector{Tuple{Coefficient, T}}
 AlgebraElement = LinearCombination{Product{BasisElement}}
+BasisIndex = Int64
+
 
 include("QuadraticAlgebra.jl")
 
