@@ -12,7 +12,8 @@ fromSymPy = N
 
 BasisElement = Tuple{Symbol, Int64}
 Coefficient = Integer
-LinearCombination = Vector{Tuple{Coefficient, BasisElement}}
+Product{T} = Vector{T}
+LinearCombination{T} = Vector{Tuple{Coefficient, T}}
 
 include("AlgebraWithCommutators.jl")
 

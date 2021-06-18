@@ -6,7 +6,7 @@ struct AlgebraWithCommutators{T}
     An empty list thus is the empty sum and means that the two elements commutate.
     An absent entry means that there is only a formal commutator.
     """
-    commTable :: Dict{Tuple{BasisElement, BasisElement}, LinearCombination}
+    commTable :: Dict{Tuple{BasisElement, BasisElement}, LinearCombination{Product{BasisElement}}}
     extraData :: T
     x :: SymFunction
 
@@ -21,7 +21,11 @@ function Base.show(io::IO, alg::AlgebraWithCommutators)
 end
 
 
-function _normalForm(alg::AlgebraWithCommutators, coeff::Coefficient, ind::Vector{Int64}) :: Vector{Tuple{Coefficient,Vector{Int64}}}
+BasisIndex = Int64
+
+function _normalForm(alg::AlgebraWithCommutators, coeff::Coefficient, ind::Vector{BasisIndex}) :: LinearCombination{Vector{BasisIndex}}
+    toIndex(prod :: Product{BasisElement}) = map(b -> findfirst(isequal(b), alg.basis), prod) :: Vector{BasisIndex}
+
     for i in 1:length(ind)-1
         if haskey(alg.commTable, (alg.basis[ind[i]], alg.basis[ind[i+1]]))
             comm = alg.commTable[(alg.basis[ind[i]], alg.basis[ind[i+1]])]
@@ -29,14 +33,13 @@ function _normalForm(alg::AlgebraWithCommutators, coeff::Coefficient, ind::Vecto
             return [
                 _normalForm(alg, coeff, [ind[1:i-1]..., ind[i+1], ind[i], ind[i+2:end]...])...,
                 vcat(
-                    (_normalForm(alg, c * coeff, [ind[1:i-1]..., findfirst(isequal(b), alg.basis), ind[i+2:end]...]) for (c, b) in comm)...
+                    (_normalForm(alg, c * coeff, [ind[1:i-1]..., toIndex(prod)..., ind[i+2:end]...]) for (c, prod) in comm)...
                 )...
             ]
         end
     end
     return [(coeff, ind)]
 end
-
 
 function normalForm(alg::AlgebraWithCommutators, expr::SymPy.Sym)
     xsum(coll) = isempty(coll) ? 0 : sum(coll)
