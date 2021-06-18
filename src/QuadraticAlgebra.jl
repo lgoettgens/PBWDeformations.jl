@@ -1,4 +1,4 @@
-struct AlgebraWithCommutators{T}
+struct QuadraticAlgebra{T}
     basis :: Vector{BasisElement}
 
     """
@@ -6,14 +6,14 @@ struct AlgebraWithCommutators{T}
     An empty list thus is the empty sum and means that the two elements commutate.
     An absent entry means that there is only a formal commutator.
     """
-    commTable :: Dict{Tuple{BasisElement, BasisElement}, LinearCombination{Product{BasisElement}}}
+    commTable :: Dict{Tuple{BasisElement, BasisElement}, AlgebraElement}
     extraData :: T
     x :: SymFunction
 
-    AlgebraWithCommutators{T}(basis, commTable, extraData = nothing) where T = new{T}(basis, commTable, extraData, SymFunction("x"))
+    QuadraticAlgebra{T}(basis, commTable, extraData = nothing) where T = new{T}(basis, commTable, extraData, SymFunction("x"))
 end
 
-function Base.show(io::IO, alg::AlgebraWithCommutators)
+function Base.show(io::IO, alg::QuadraticAlgebra)
     println(io, "Algebra with commutators of dimension ", length(alg.basis))
     println(io, "Commutator table has ", length(alg.commTable), " elements")
     println(io, "Extra data:")
@@ -23,7 +23,7 @@ end
 
 BasisIndex = Int64
 
-function _normalForm(alg::AlgebraWithCommutators, coeff::Coefficient, ind::Vector{BasisIndex}) :: LinearCombination{Vector{BasisIndex}}
+function _normalForm(alg::QuadraticAlgebra, coeff::Coefficient, ind::Vector{BasisIndex}) :: LinearCombination{Vector{BasisIndex}}
     toIndex(prod :: Product{BasisElement}) = map(b -> findfirst(isequal(b), alg.basis), prod) :: Vector{BasisIndex}
 
     for i in 1:length(ind)-1
@@ -41,7 +41,7 @@ function _normalForm(alg::AlgebraWithCommutators, coeff::Coefficient, ind::Vecto
     return [(coeff, ind)]
 end
 
-function normalForm(alg::AlgebraWithCommutators, expr::SymPy.Sym)
+function normalForm(alg::QuadraticAlgebra, expr::SymPy.Sym) :: SymPy.Sym
     xsum(coll) = isempty(coll) ? 0 : sum(coll)
 
     expr.replace(

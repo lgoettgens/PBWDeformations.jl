@@ -14,8 +14,9 @@ BasisElement = Tuple{Symbol, Int64}
 Coefficient = Integer
 Product{T} = Vector{T}
 LinearCombination{T} = Vector{Tuple{Coefficient, T}}
+AlgebraElement = LinearCombination{Product{BasisElement}}
 
-include("AlgebraWithCommutators.jl")
+include("QuadraticAlgebra.jl")
 
 lie(i::Int64) = (:lie, i) :: BasisElement
 mod(i::Int64) = (:mod, i) :: BasisElement

@@ -13,11 +13,11 @@ function Base.show(io::IO, sp::SmashProductLie)
 end
 
 
-function smashProductLie(dynkin::Char, n::Int64, lambda::Vector{Int64}) :: AlgebraWithCommutators{SmashProductLie}
+function smashProductLie(dynkin::Char, n::Int64, lambda::Vector{Int64}) :: QuadraticAlgebra{SmashProductLie}
     @assert n == length(lambda)
     sanitizeLieInput(dynkin, n)
 
-    commTable = Dict{Tuple{BasisElement, BasisElement}, LinearCombination{Product{BasisElement}}}()
+    commTable = Dict{Tuple{BasisElement, BasisElement}, AlgebraElement}()
         # (lie(i), lie(j)) => [(c, [lie(k)])]
         # (lie(i), mod(j)) => [(c, [mod(k)])]
 
@@ -44,5 +44,5 @@ function smashProductLie(dynkin::Char, n::Int64, lambda::Vector{Int64}) :: Algeb
 
     extraData = SmashProductLie(dynkin, n, lambda, nL, nV)
     basis = [[mod(i) for i in 1:nV]..., [lie(i) for i in 1:nL]...] :: Vector{BasisElement}
-    return AlgebraWithCommutators{SmashProductLie}(basis, commTable, extraData)
+    return QuadraticAlgebra{SmashProductLie}(basis, commTable, extraData)
 end

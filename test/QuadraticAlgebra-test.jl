@@ -1,12 +1,12 @@
 numRandomTests = 10
 dimRandomTests = [3, 10, 25, 100]
 
-@testset ExtendedTestSet "All PBWDeformations.AlgebraWithCommutators tests" begin
+@testset ExtendedTestSet "All PBWDeformations.QuadraticAlgebra tests" begin
     @testset "normalForm for abstract cases" begin
         @testset "tensor algebra over V with dim V = $n" for n in dimRandomTests
             basis = [(:basis, i) for i in 1:n]
             commTable = Dict()
-            alg = PD.AlgebraWithCommutators{Nothing}(basis, commTable, nothing)
+            alg = PD.QuadraticAlgebra{Nothing}(basis, commTable, nothing)
 
             for _ in 1:numRandomTests
                 ind = shuffle(rand(1:n, rand(1:2n)))
@@ -19,7 +19,7 @@ dimRandomTests = [3, 10, 25, 100]
         @testset "symmetric algebra over V with dim V = $n" for n in dimRandomTests
             basis = [(:symm, i) for i in 1:n]
             commTable = Dict([((basis[i], basis[j]), []) for i in 1:n for j in 1:i-1])
-            alg = PD.AlgebraWithCommutators{Nothing}(basis, commTable, nothing)
+            alg = PD.QuadraticAlgebra{Nothing}(basis, commTable, nothing)
 
             for _ in 1:numRandomTests
                 ind = shuffle(rand(1:n, rand(1:2n)))

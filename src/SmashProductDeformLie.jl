@@ -8,7 +8,7 @@ function Base.show(io::IO, spd::SmashProductSymmDeformLie)
 end
 
 
-function smashProductSymmDeformLie(dynkin::Char, n::Int64, lambda::Vector{Int64}) :: AlgebraWithCommutators{SmashProductSymmDeformLie}
+function smashProductSymmDeformLie(dynkin::Char, n::Int64, lambda::Vector{Int64}) :: QuadraticAlgebra{SmashProductSymmDeformLie}
     @assert n == length(lambda)
     sanitizeLieInput(dynkin, n)
 
@@ -21,5 +21,5 @@ function smashProductSymmDeformLie(dynkin::Char, n::Int64, lambda::Vector{Int64}
         commTable[(mod(i), mod(j))] = []
     end
 
-    AlgebraWithCommutators{SmashProductSymmDeformLie}(basis, commTable, extraData)
+    QuadraticAlgebra{SmashProductSymmDeformLie}(basis, commTable, extraData)
 end
