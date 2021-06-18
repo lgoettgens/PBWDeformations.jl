@@ -6,6 +6,11 @@ struct SmashProductLie
     nV :: Int64
 end
 
+function Base.:(==)(sp1::SmashProductLie, sp2::SmashProductLie)
+    (sp1.dynkin, sp1.n, sp1.lambda, sp1.nL, sp1.nV) ==
+    (sp2.dynkin, sp2.n, sp2.lambda, sp2.nL, sp2.nV)
+end
+
 function Base.show(io::IO, sp::SmashProductLie)
     println(io, "Smash product of lie algebra with highest weight module")
     println(io, "Lie algebra: type ", sp.dynkin, sp.n, ", dimension ", sp.nL)

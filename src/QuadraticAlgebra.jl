@@ -13,6 +13,12 @@ struct QuadraticAlgebra{T}
     QuadraticAlgebra{T}(basis, relTable, extraData = nothing) where T = new{T}(basis, relTable, extraData, SymFunction("x"))
 end
 
+function Base.:(==)(alg1::QuadraticAlgebra, alg2::QuadraticAlgebra)
+    # also check for x?
+    (alg1.basis, alg1.relTable, alg1.extraData) ==
+    (alg2.basis, alg2.relTable, alg2.extraData)
+end
+
 function Base.show(io::IO, alg::QuadraticAlgebra)
     println(io, "Algebra with quadratic relations of dimension ", length(alg.basis))
     println(io, "Relation table has ", length(alg.relTable), " entries")

@@ -3,6 +3,10 @@ struct SmashProductDeformLie
     symmetric :: Bool
 end
 
+function Base.:(==)(spd1::SmashProductDeformLie, spd2::SmashProductDeformLie)
+    (spd1.sp, spd1.symmetric) == (spd2.sp, spd2.symmetric)
+end
+
 function Base.show(io::IO, spd::SmashProductDeformLie)
     if spd.symmetric
         println(io, "Symmetric deformation of:")
@@ -22,11 +26,13 @@ function smashProductDeformLie(sp::QuadraticAlgebra{SmashProductLie}, kappa::Mat
     symmetric = true
 
     for i in 1:nV, j in 1:i-1
-        if symmetric && kappa[i,j] != [(1, [mod(j), mod(i)])]
+        if symmetric && kappa[i,j] != []
             symmetric = false
         end
 
-        relTable[(mod(i), mod(j))] = kappa[i,j]
+        # We have the commutator relation [mod(i), mod(j)] == kappa[i,j]
+        # which is equivalent to mod(i)*mod(j) == mod(j)*mod(i) + kappa[i,j]
+        relTable[(mod(i), mod(j))] = [(1, [mod(j), mod(i)]) , kappa[i,j]...]
     end
 
     extraData = SmashProductDeformLie(sp.extraData, symmetric)
