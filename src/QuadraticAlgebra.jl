@@ -10,7 +10,7 @@ struct QuadraticAlgebra{T}
     extraData :: T
     x :: SymFunction
 
-    QuadraticAlgebra{T}(basis, relTable, extraData = nothing) where T = new{T}(basis, relTable, extraData, SymFunction("x"))
+    QuadraticAlgebra{T}(basis, relTable, extraData = nothing) where T = new{T}(basis, relTable, extraData, SymFunction("x", commutative=false))
 end
 
 function Base.:(==)(alg1::QuadraticAlgebra, alg2::QuadraticAlgebra)
@@ -28,7 +28,7 @@ end
 
 
 function _normalForm(alg::QuadraticAlgebra, ind::Vector{BasisIndex}) :: LinearCombination{Vector{BasisIndex}}
-    toIndex(prod :: Product{BasisElement}) = map(b -> findfirst(isequal(b), alg.basis), prod) :: Vector{BasisIndex}
+    toIndex(prod::Product{BasisElement}) = map(b -> findfirst(isequal(b), alg.basis), prod) :: Vector{BasisIndex}
 
     todo = [(1, ind)] :: LinearCombination{Vector{BasisIndex}}
     result = LinearCombination{Vector{BasisIndex}}([])
@@ -58,14 +58,49 @@ function _normalForm(alg::QuadraticAlgebra, ind::Vector{BasisIndex}) :: LinearCo
     return result
 end
 
+function collect(alg::QuadraticAlgebra, factors::Vector{SymPy.Sym}) :: SymPy.Sym
+    factors = [factors...]
+
+    done = false
+
+    while !done
+        done = true
+
+        for i in 1:length(factors)-1
+            if factors[i].func == alg.x && factors[i+1].func == alg.x
+                done = false
+
+                factors[i+1] = alg.x(factors[i].args..., factors[i+1].args...)
+                deleteat!(factors, i)
+
+                break
+            end
+        end
+    end
+
+    prod(factors)
+end
+
+
 function normalForm(alg::QuadraticAlgebra, expr::SymPy.Sym) :: SymPy.Sym
     xsum(coll) = isempty(coll) ? 0 : sum(coll)
 
-    expr.replace(
-        f -> f.func == alg.x,
-        f -> xsum(
-            coeff * alg.x(newInd...)
-            for (coeff, newInd) in _normalForm(alg, map(fromSymPy, [f.args...]))
-        )
-    )
+    expr.
+        expand().
+        replace(
+            sympy.Pow,
+            (base, exp) -> collect(alg, fill(base, fromSymPy(exp)))
+        ).
+        replace(
+            sympy.Mul,
+            (m...) -> collect(alg, [m...])
+        ).
+        replace(
+            f -> f.func == alg.x,
+            f -> xsum(
+                coeff * alg.x(newInd...)
+                for (coeff, newInd) in _normalForm(alg, map(fromSymPy, [f.args...]))
+            )
+        ).
+        simplify()
 end
