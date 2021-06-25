@@ -83,7 +83,7 @@ end
 
 
 function normalForm(alg::QuadraticAlgebra, expr::SymPy.Sym) :: SymPy.Sym
-    xsum(coll) = isempty(coll) ? 0 : sum(coll)
+    xsum(coll) = isempty(coll) ? toSymPy(0) : sum(coll)
 
     expr.
         expand().
