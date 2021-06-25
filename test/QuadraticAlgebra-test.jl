@@ -29,6 +29,26 @@ dimRandomTests = [3, 10, 25, 100]
             end
         end
 
+        @testset "exterior algebra over V with dim V = $n" for n in dimRandomTests
+            basis = [(:alt, i) for i in 1:n]
+            relTable = Dict([
+                [((basis[i], basis[j]), [(-1, [basis[j], basis[i]])]) for i in 1:n for j in 1:i-1]...,
+                [((basis[i], basis[i]), []) for i in 1:n]...,
+            ])
+            alg = PD.QuadraticAlgebra{Nothing}(basis, relTable, nothing)
+
+            for _ in 1:numRandomTests
+                ind = shuffle(rand(1:n, rand(1:2n)))
+                if length(ind) > 0
+                    uniqInd = unique(ind)
+                    if length(unique(ind)) < length(ind)
+                        @test PD.normalForm(alg, alg.x(ind...)) == sympify(0)
+                    end
+                    @test PD.normalForm(alg, alg.x(uniqInd...)) == levicivita(sortperm(uniqInd)) * alg.x(sort(uniqInd)...)
+                end
+            end
+        end
+
     end
 
     @testset "normalForm for smashProductLie" begin
