@@ -22,6 +22,7 @@ include("QuadraticAlgebra.jl")
 
 lie(i::Int64) = (:lie, i) :: BasisElement
 mod(i::Int64) = (:mod, i) :: BasisElement
+grp(i::Int64) = (:grp, i) :: BasisElement
 
 function sanitizeLieInput(dynkin::Char, n::Int64) :: Nothing
     @assert dynkin in ['A', 'B', 'C', 'D']
@@ -36,5 +37,6 @@ end
 
 include("SmashProductLie.jl")
 include("SmashProductDeformLie.jl")
+include("GroupAlgebra.jl")
 
 end
