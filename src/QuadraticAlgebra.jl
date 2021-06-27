@@ -23,7 +23,7 @@ function Base.show(io::IO, alg::QuadraticAlgebra)
     println(io, "Algebra with quadratic relations of dimension ", length(alg.basis))
     println(io, "Relation table has ", length(alg.relTable), " entries")
     println(io, "Extra data:")
-    show(alg.extraData)
+    print(io, alg.extraData)
 end
 
 

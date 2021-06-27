@@ -4,6 +4,5 @@ include("setup.jl")
     include("PBWDeformations-test.jl")
     include("QuadraticAlgebra-test.jl")
     include("SmashProductLie-test.jl")
-    include("SmashProductSymmDeformLie-test.jl")
     include("SmashProductDeformLie-test.jl")
 end

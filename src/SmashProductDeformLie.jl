@@ -13,7 +13,7 @@ function Base.show(io::IO, spd::SmashProductDeformLie)
     else
         println(io, "Deformation of:")
     end
-    show(spd.sp)
+    print(io, spd.sp)
 end
 
 

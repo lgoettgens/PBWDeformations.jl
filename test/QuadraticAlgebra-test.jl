@@ -24,6 +24,8 @@ dimRandomTests = [3, 10, 25, 100]
             alg = PD.QuadraticAlgebra{Nothing}(basis, relTable, nothing)
             x = alg.x
 
+            showOutput = @test_nowarn sprint(show, alg)
+
             for _ in 1:numRandomTests
                 ind = shuffle(rand(1:n, rand(1:2n)))
                 @test PD.normalForm(alg, prod(map(x, ind))) == PD.normalForm(alg, x(ind...)) == x(ind...)
@@ -41,6 +43,8 @@ dimRandomTests = [3, 10, 25, 100]
             relTable = Dict([((basis[i], basis[j]), [(1, [basis[j], basis[i]])]) for i in 1:n for j in 1:i-1])
             alg = PD.QuadraticAlgebra{Nothing}(basis, relTable, nothing)
             x = alg.x
+
+            showOutput = @test_nowarn sprint(show, alg)
 
             for _ in 1:numRandomTests
                 ind = shuffle(rand(1:n, rand(1:2n)))
@@ -62,6 +66,8 @@ dimRandomTests = [3, 10, 25, 100]
             ])
             alg = PD.QuadraticAlgebra{Nothing}(basis, relTable, nothing)
             x = alg.x
+
+            showOutput = @test_nowarn sprint(show, alg)
 
             for _ in 1:numRandomTests
                 ind = shuffle(rand(1:n, rand(1:2n)))
@@ -86,6 +92,12 @@ dimRandomTests = [3, 10, 25, 100]
         @testset "A_2 with hw [1,1]" begin
             sp = PD.smashProductLie('A', 2, [1,1])
             x = sp.x
+
+            showOutput = @test_nowarn sprint(show, sp)
+            @test occursin("smash product", lowercase(showOutput))
+            @test occursin("lie algebra", lowercase(showOutput))
+            @test occursin("A", showOutput)
+            @test occursin("[1,1]", showOutput) || occursin("[1, 1]", showOutput)
 
             # Lie elements commute as usual
             @test PD.normalForm(sp, x(8+7, 8+1) - x(8+1, 8+7)) == 2*x(8+1)     # [h_1,x_1] = 2x_1
@@ -129,6 +141,13 @@ dimRandomTests = [3, 10, 25, 100]
         @testset "A_2 with hw [1,1]" begin
             sp = PD.smashProductSymmDeformLie('A', 2, [1,1])
             x = sp.x
+
+            showOutput = @test_nowarn sprint(show, sp)
+            @test occursin("smash product", lowercase(showOutput))
+            @test occursin("lie algebra", lowercase(showOutput))
+            @test occursin("A", showOutput)
+            @test occursin("[1,1]", showOutput) || occursin("[1, 1]", showOutput)
+            @test occursin("symmetric deformation", lowercase(showOutput))
 
             # Lie elements commute as usual
             @test PD.normalForm(sp, x(8+7, 8+1) - x(8+1, 8+7)) == 2*x(8+1)     # [h_1,x_1] = 2x_1

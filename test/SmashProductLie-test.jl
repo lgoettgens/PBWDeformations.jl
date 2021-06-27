@@ -11,6 +11,13 @@ mod = PD.mod
             @test sp.extraData.nL == 8
             @test sp.extraData.nV == 8
             @test length(sp.basis) == sp.extraData.nL + sp.extraData.nV
+
+            showOutput = @test_nowarn sprint(show, sp)
+            @test occursin("smash product", lowercase(showOutput))
+            @test occursin("lie algebra", lowercase(showOutput))
+            @test occursin("A", showOutput)
+            @test occursin("[1,1]", showOutput) || occursin("[1, 1]", showOutput)
+
             @test sp.relTable == Dict(
                 (lie(2), lie(1)) => [(1, [lie(1), lie(2)]), (1,    [lie(3)])],
                 (lie(3), lie(1)) => [(1, [lie(1), lie(3)])],
@@ -115,6 +122,13 @@ mod = PD.mod
             @test sp.extraData.nL == 10
             @test sp.extraData.nV == 5
             @test length(sp.basis) == sp.extraData.nL + sp.extraData.nV
+
+            showOutput = @test_nowarn sprint(show, sp)
+            @test occursin("smash product", lowercase(showOutput))
+            @test occursin("lie algebra", lowercase(showOutput))
+            @test occursin("B", showOutput)
+            @test occursin("[1,0]", showOutput) || occursin("[1, 0]", showOutput)
+
             @test sp.relTable == Dict(
                 (lie(2),  lie(1)) => [(1, [lie(1), lie(2)]),  (-1,  [lie(3)])],
                 (lie(3),  lie(1)) => [(1, [lie(1), lie(3)])],
