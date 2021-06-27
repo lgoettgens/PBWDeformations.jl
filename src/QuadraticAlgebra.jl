@@ -58,7 +58,7 @@ function _normalForm(alg::QuadraticAlgebra, ind::Vector{BasisIndex}) :: LinearCo
     return result
 end
 
-function collect(alg::QuadraticAlgebra, factors::Vector{SymPy.Sym}) :: SymPy.Sym
+function _collect(alg::QuadraticAlgebra, factors::Vector{SymPy.Sym}) :: SymPy.Sym
     factors = [factors...]
 
     done = false
@@ -89,11 +89,11 @@ function normalForm(alg::QuadraticAlgebra, expr::SymPy.Sym) :: SymPy.Sym
         expand().
         replace(
             sympy.Pow,
-            (base, exp) -> collect(alg, fill(base, fromSymPy(exp)))
+            (base, exp) -> _collect(alg, fill(base, fromSymPy(exp)))
         ).
         replace(
             sympy.Mul,
-            (m...) -> collect(alg, [m...])
+            (m...) -> _collect(alg, [m...])
         ).
         replace(
             f -> f.func == alg.x,
@@ -103,4 +103,9 @@ function normalForm(alg::QuadraticAlgebra, expr::SymPy.Sym) :: SymPy.Sym
             )
         ).
         simplify()
+end
+
+
+function comm(alg::QuadraticAlgebra, expr1::SymPy.Sym, expr2::SymPy.Sym) :: SymPy.Sym
+    return normalForm(alg, expr1 * expr2 - expr2 * expr1)
 end
