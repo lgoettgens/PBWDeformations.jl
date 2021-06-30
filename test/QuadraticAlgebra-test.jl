@@ -1,6 +1,3 @@
-numRandomTests = 10
-dimRandomTests = [3, 10, 25, 100]
-
 @testset ExtendedTestSet "All PBWDeformations.QuadraticAlgebra tests" begin
     @testset "products and exponentiation" begin
         basis = [(:basis, i) for i in 1:10]
@@ -186,6 +183,44 @@ dimRandomTests = [3, 10, 25, 100]
             end
         end
 
+    end
+
+    @testset "normalForm for groupAlgebra" begin
+        @testset "symmetric group S3" begin
+            ga = PD.groupAlgebraSymmetricGroup(3)
+
+            x = ga.x
+            fromPerm(p) = findfirst(isequal(p), ga.extraData.permRep)
+            @test PD.normalForm(ga, x(fromPerm("(1,2)"))*x(fromPerm("(1,2)"))) == PD.normalForm(ga, x(fromPerm("()")))
+            @test PD.normalForm(ga, x(fromPerm("(1,3)"))*x(fromPerm("(1,3)"))) == PD.normalForm(ga, x(fromPerm("()")))
+            @test PD.normalForm(ga, x(fromPerm("(2,3)"))*x(fromPerm("(2,3)"))) == PD.normalForm(ga, x(fromPerm("()")))
+            @test PD.normalForm(ga, x(fromPerm("(1,2,3)"))*x(fromPerm("(1,2,3)"))*x(fromPerm("(1,2,3)"))) == PD.normalForm(ga, x(fromPerm("()")))
+            @test PD.normalForm(ga, x(fromPerm("(1,3,2)"))*x(fromPerm("(1,3,2)"))*x(fromPerm("(1,3,2)"))) == PD.normalForm(ga, x(fromPerm("()")))
+            for _ in 1:numRandomTests
+                ind = rand(1:factorial(3), rand(1:6))
+                @test PD.normalForm(ga, x(fromPerm("()"))*x(ind...)) == PD.normalForm(ga, x(ind...) * x(fromPerm("()"))) == PD.normalForm(ga, x(ind...))
+            end
+
+            @test PD.normalForm(ga, x(fromPerm("(1,2)"))*x(fromPerm("(2,3)"))) == PD.normalForm(ga, x(fromPerm("(1,3,2)")))
+            @test PD.normalForm(ga, x(fromPerm("(2,3)"))*x(fromPerm("(1,2)"))) == PD.normalForm(ga, x(fromPerm("(1,2,3)")))
+        end
+
+        @testset "dicyclic group Q8" begin
+            ga = PD.groupAlgebraDicyclicGroup(8)
+
+            x = ga.x
+            fromPerm(p) = findfirst(isequal(p), ga.extraData.permRep)
+
+            e = fromPerm("()")
+            temp = filter(g -> g != e && PD.normalForm(ga, x(g)*x(g)) == x(e), 1:8)
+            @test length(temp) == 1
+            minus_e = first(temp)
+            for g in 1:8
+                if g != e && g != minus_e
+                    @test PD.normalForm(ga, x(g)*x(g)) == x(minus_e)
+                end
+            end
+        end
     end
 
 end

@@ -1,6 +1,3 @@
-lie = PD.lie
-mod = PD.mod
-
 @testset ExtendedTestSet "All PBWDeformations.SmashProductLie tests" begin
     @testset "smashProductLie constructor" begin
         @testset "A_2 with hw [1,1]" begin

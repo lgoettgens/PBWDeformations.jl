@@ -1,6 +1,3 @@
-lie = PD.lie
-mod = PD.mod
-
 @testset ExtendedTestSet "All PBWDeformations.SmashProductDeformLie tests" begin
     @testset "smashProducDeformLie coincides with smashProductSymmDeformLie on symmetric kappa" begin
         @testset "B_2 with hw [1,0]" begin
