@@ -3,11 +3,11 @@ struct SmashProductDeformLie
     symmetric :: Bool
 end
 
-function Base.:(==)(spd1::SmashProductDeformLie, spd2::SmashProductDeformLie)
+function Base.:(==)(spd1::SmashProductDeformLie, spd2::SmashProductDeformLie) :: Bool
     (spd1.sp, spd1.symmetric) == (spd2.sp, spd2.symmetric)
 end
 
-function Base.show(io::IO, spd::SmashProductDeformLie)
+function Base.show(io::IO, spd::SmashProductDeformLie) :: Nothing
     if spd.symmetric
         println(io, "Symmetric deformation of:")
     else
@@ -36,7 +36,7 @@ function smashProductDeformLie(sp::QuadraticAlgebra{SmashProductLie}, kappa::Mat
     end
 
     extraData = SmashProductDeformLie(sp.extraData, symmetric)
-    QuadraticAlgebra{SmashProductDeformLie}(sp.basis, relTable, extraData)
+    return QuadraticAlgebra{SmashProductDeformLie}(sp.basis, relTable, extraData)
 end
 
 
@@ -48,12 +48,12 @@ function smashProductSymmDeformLie(sp::QuadraticAlgebra{SmashProductLie}) :: Qua
     end
 
     extraData = SmashProductDeformLie(sp.extraData, true)
-    QuadraticAlgebra{SmashProductDeformLie}(sp.basis, relTable, extraData)
+    return QuadraticAlgebra{SmashProductDeformLie}(sp.basis, relTable, extraData)
 end
 
 function smashProductSymmDeformLie(dynkin::Char, n::Int64, lambda::Vector{Int64}) :: QuadraticAlgebra{SmashProductDeformLie}
     @assert n == length(lambda)
     sanitizeLieInput(dynkin, n)
 
-    smashProductSymmDeformLie(smashProductLie(dynkin, n, lambda))
+    return smashProductSymmDeformLie(smashProductLie(dynkin, n, lambda))
 end

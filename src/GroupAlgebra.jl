@@ -6,12 +6,12 @@ end
 
 GroupAlgebra = Group
 
-function Base.:(==)(ga1::GroupAlgebra, ga2::GroupAlgebra)
+function Base.:(==)(ga1::GroupAlgebra, ga2::GroupAlgebra) :: Bool
     (ga1.groupName, ga1.order, ga1.permRep) ==
     (ga2.groupName, ga2.order, ga2.permRep)
 end
 
-function Base.show(io::IO, ga::GroupAlgebra)
+function Base.show(io::IO, ga::GroupAlgebra) :: Nothing
     println(io, "Group algebra of the finite group ", ga.groupName, " with ", ga.order, " elements")
 end
 
@@ -20,7 +20,7 @@ function _groupAlgebra(group, groupName::String) :: QuadraticAlgebra{GroupAlgebr
     order = GAP.Order(group)
 
     relTable = Dict{Tuple{BasisElement, BasisElement}, AlgebraElement}()
-        # (grp(i), grp(j)) => [(c, [grp(k)])]
+        # (grp(i), grp(j)) => [(coeff, [grp(k)])]
 
     multTable = fromGAP(GAP.MultiplicationTable(group))
 
@@ -31,6 +31,7 @@ function _groupAlgebra(group, groupName::String) :: QuadraticAlgebra{GroupAlgebr
     permRep = fromGAP(GAP.List(GAP.Elements(group), GAP.String))
     extraData = Group(groupName, order, permRep)
     basis = [grp(i) for i in 1:order] :: Vector{BasisElement}
+
     return QuadraticAlgebra{GroupAlgebra}(basis, relTable, extraData)
 end
 
@@ -53,5 +54,5 @@ function groupAlgebraAlternatingGroup(n::Int64) :: QuadraticAlgebra{GroupAlgebra
 end
 
 function groupAlgebraSymmetricGroup(n::Int64) :: QuadraticAlgebra{GroupAlgebra}
-return _groupAlgebra(GAP.SymmetricGroup(GAP.IsPermGroup, n), "S"*string(n))
+    return _groupAlgebra(GAP.SymmetricGroup(GAP.IsPermGroup, n), "S"*string(n))
 end

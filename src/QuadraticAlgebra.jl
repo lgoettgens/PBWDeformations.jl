@@ -2,24 +2,24 @@ struct QuadraticAlgebra{T}
     basis :: Vector{BasisElement}
 
     """
-    #FIXME
-    An empty list thus is the empty sum and means that the two elements commute.
-    An absent entry means that there is only a formal commutator.
+    Stores relations of the form ab = c for basis elements a,b.
+    An empty list represents the empty sum, in which case ab = 0.
+    An absent entry means that there is no relation, so we cannot simplify ab.
     """
     relTable :: Dict{Tuple{BasisElement, BasisElement}, AlgebraElement}
     extraData :: T
     x :: SymFunction
 
-    QuadraticAlgebra{T}(basis, relTable, extraData = nothing) where T = new{T}(basis, relTable, extraData, SymFunction("x", commutative=false))
+    QuadraticAlgebra{T}(basis, relTable, extraData = nothing) where T =
+        new{T}(basis, relTable, extraData, SymFunction("x", commutative=false))
 end
 
-function Base.:(==)(alg1::QuadraticAlgebra, alg2::QuadraticAlgebra)
-    # also check for x?
+function Base.:(==)(alg1::QuadraticAlgebra, alg2::QuadraticAlgebra) :: Bool
     (alg1.basis, alg1.relTable, alg1.extraData) ==
     (alg2.basis, alg2.relTable, alg2.extraData)
 end
 
-function Base.show(io::IO, alg::QuadraticAlgebra)
+function Base.show(io::IO, alg::QuadraticAlgebra) :: Nothing
     println(io, "Algebra with quadratic relations of dimension ", length(alg.basis))
     println(io, "Relation table has ", length(alg.relTable), " entries")
     println(io, "Extra data:")
@@ -60,7 +60,6 @@ end
 
 function _collect(alg::QuadraticAlgebra, factors::Vector{SymPy.Sym}) :: SymPy.Sym
     factors = [factors...]
-
     done = false
 
     while !done
@@ -72,20 +71,19 @@ function _collect(alg::QuadraticAlgebra, factors::Vector{SymPy.Sym}) :: SymPy.Sy
 
                 factors[i+1] = alg.x(factors[i].args..., factors[i+1].args...)
                 deleteat!(factors, i)
-
                 break
             end
         end
     end
 
-    prod(factors)
+    return prod(factors)
 end
 
 
 function normalForm(alg::QuadraticAlgebra, expr::SymPy.Sym) :: SymPy.Sym
     xsum(coll) = isempty(coll) ? toSymPy(0) : sum(coll)
 
-    expr.
+    return expr.
         expand().
         replace(
             sympy.Pow,
