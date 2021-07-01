@@ -44,6 +44,8 @@ doctest:
   artifacts:
     paths:
       - docs/build
+  only:
+    - master
 
 pages:
   stage: deploy
