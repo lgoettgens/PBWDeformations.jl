@@ -107,3 +107,25 @@ end
 function comm(alg::QuadraticAlgebra, expr1::SymPy.Sym, expr2::SymPy.Sym) :: SymPy.Sym
     return normalForm(alg, expr1 * expr2 - expr2 * expr1)
 end
+
+function Base.in(b::BasisElement, alg::QuadraticAlgebra) :: Bool
+    return b in alg.basis
+end
+
+function Base.in(p::Product{BasisElement}, alg::QuadraticAlgebra) :: Bool
+    return all(b -> b in alg, p)
+end
+
+function Base.in(a::AlgebraElement, alg::QuadraticAlgebra) :: Bool
+    return all(comb -> comb[2] in alg, a)
+end
+
+function Base.in(expr::SymPy.Sym, alg::QuadraticAlgebra) :: Bool
+    for ex in sympy.preorder_traversal(expr)
+        if ex.is_Function && ex.func == alg.x && any(i -> !(i in 1:length(alg.basis)), map(fromSymPy, ex.args))
+            return false
+        end
+    end
+
+    return true
+end

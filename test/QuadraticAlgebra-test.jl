@@ -14,6 +14,31 @@
         @test PD.normalForm(alg, x(1)^5) == x(1,1,1,1,1)
     end
 
+    @testset "containment" begin
+        basis = [(:basis, i) for i in 1:10]
+        relTable = Dict()
+        alg = PD.QuadraticAlgebra{Nothing}(basis, relTable, nothing) :: PD.QuadraticAlgebra{Nothing}
+        x = alg.x
+
+        @test basis[1] in alg
+        @test basis in alg # product over all basis elements
+
+        a = collect(zip(rand(-20:20, 10), [map(i -> basis[i], rand(1:10, rand(1:20))) for _ in 1:10])) :: PD.AlgebraElement
+        @test a in alg
+
+        @test x(1,2)*x(3,4) in alg
+        @test (x(1) + x(1,2))*x(3,4) in alg
+        @test x(1)*(x(2) + x(3,4))*x(5,6) in alg
+        @test x(1)^2*x(2)*x(3)^2 in alg
+        @test !(x(0) in alg)
+        @test !(x(11) in alg)
+        @test !(x(-1) in alg)
+        @test !(x(3/2) in alg)
+        @test !(x(x(1)) in alg)
+        @test !(x(1)*(x(2) + x(34))*x(5,6) in alg)
+    end
+
+
     @testset "normalForm for abstract cases" begin
         @testset "tensor algebra over V with dim V = $n" for n in dimRandomTests
             basis = [(:basis, i) for i in 1:n]

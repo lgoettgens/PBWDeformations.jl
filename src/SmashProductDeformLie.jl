@@ -20,7 +20,8 @@ end
 function smashProductDeformLie(sp::QuadraticAlgebra{SmashProductLie}, kappa::Matrix{AlgebraElement}) :: QuadraticAlgebra{SmashProductDeformLie}
     nV = sp.extraData.nV
     @assert size(kappa) == (nV, nV)
-    # @assert all(map(e -> e in sp, kappa))
+    @assert all(map(e -> e in sp, kappa))
+    # check that kappa is skew-symmetric
 
     relTable = sp.relTable
     symmetric = true
