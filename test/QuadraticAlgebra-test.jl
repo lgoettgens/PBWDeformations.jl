@@ -23,9 +23,6 @@
         @test basis[1] in alg
         @test basis in alg # product over all basis elements
 
-        a = collect(zip(rand(-20:20, 10), [map(i -> basis[i], rand(1:10, rand(1:20))) for _ in 1:10])) :: PD.AlgebraElement
-        @test a in alg
-
         @test x(1,2)*x(3,4) in alg
         @test (x(1) + x(1,2))*x(3,4) in alg
         @test x(1)*(x(2) + x(3,4))*x(5,6) in alg
@@ -34,8 +31,13 @@
         @test !(x(11) in alg)
         @test !(x(-1) in alg)
         @test !(x(3/2) in alg)
-        @test !(x(x(1)) in alg)
+        @test !(x(x(1)) in alg) # known console log: Info: FAILED to find type for x(1).
         @test !(x(1)*(x(2) + x(34))*x(5,6) in alg)
+
+        for _ in 1:numRandomTests
+            a = collect(zip(rand(-20:20, 10), [map(i -> basis[i], rand(1:10, rand(1:20))) for _ in 1:10])) :: PD.AlgebraElement
+            @test a in alg
+        end
     end
 
 
