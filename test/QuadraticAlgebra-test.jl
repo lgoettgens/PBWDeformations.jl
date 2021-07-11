@@ -85,8 +85,8 @@
         @testset "exterior algebra over V with dim V = $n" for n in dimRandomTests
             basis = [(:alt, i) for i in 1:n]
             relTable = Dict([
-                [((basis[i], basis[j]), [(-1, [basis[j], basis[i]])]) for i in 1:n for j in 1:i-1]...,
-                [((basis[i], basis[i]), []) for i in 1:n]...,
+                [((basis[i], basis[j]), [(-1, [basis[j], basis[i]])]) for i in 1:n for j in 1:i-1];
+                [((basis[i], basis[i]), []) for i in 1:n];
             ])
             alg = PD.QuadraticAlgebra{Nothing}(basis, relTable, nothing)
             x = alg.x

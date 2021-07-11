@@ -37,7 +37,7 @@ function smashProductDeformLie(sp::QuadraticAlgebra{SmashProductLie}, kappa::Mat
 
         # We have the commutator relation [mod(i), mod(j)] = kappa[i,j]
         # which is equivalent to mod(i)*mod(j) = mod(j)*mod(i) + kappa[i,j]
-        relTable[(mod(i), mod(j))] = [(1, [mod(j), mod(i)]), kappa[i,j]...]
+        relTable[(mod(i), mod(j))] = [(1, [mod(j), mod(i)]); kappa[i,j]]
     end
 
     extraData = SmashProductDeformLie(sp.extraData, symmetric)

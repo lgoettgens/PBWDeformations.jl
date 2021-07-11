@@ -43,7 +43,7 @@ function _normalForm(alg::QuadraticAlgebra, ind::Vector{BasisIndex}) :: LinearCo
 
                 append!(
                     todo,
-                    vcat((c * coeff, [currInd[1:i-1]..., toIndex(prod)..., currInd[i+2:end]...]) for (c, prod) in linComb)...,
+                    vcat((c * coeff, [currInd[1:i-1]; toIndex(prod); currInd[i+2:end]]) for (c, prod) in linComb)...,
                 )
                 changed = true
                 break
@@ -59,7 +59,6 @@ function _normalForm(alg::QuadraticAlgebra, ind::Vector{BasisIndex}) :: LinearCo
 end
 
 function _collect(alg::QuadraticAlgebra, factors::Vector{SymPy.Sym}) :: SymPy.Sym
-    factors = [factors...]
     done = false
 
     while !done
@@ -91,13 +90,13 @@ function normalForm(alg::QuadraticAlgebra, expr::SymPy.Sym) :: SymPy.Sym
         ).
         replace(
             sympy.Mul,
-            (m...) -> _collect(alg, [m...])
+            (m...) -> _collect(alg, collect(m))
         ).
         replace(
             f -> f.func == alg.x,
             f -> xsum(
                 coeff * alg.x(newInd...)
-                for (coeff, newInd) in _normalForm(alg, map(fromSymPy, [f.args...]))
+                for (coeff, newInd) in _normalForm(alg, map(fromSymPy, collect(f.args)))
             )
         ).
         simplify()

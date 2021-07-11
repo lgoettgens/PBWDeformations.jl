@@ -32,8 +32,8 @@ function smashProductLie(dynkin::Char, n::Int64, lambda::Vector{Int64}) :: Quadr
 
     for i in 1:nL, j in 1:i-1
         relTable[(lie(i), lie(j))] = [
-            (1, [lie(j), lie(i)]),
-            ((c, [lie(k)]) for (k, c) in zip(commTableL[i][j]...))...,
+            (1, [lie(j), lie(i)]);
+            collect((c, [lie(k)]) for (k, c) in zip(commTableL[i][j]...));
         ]
     end
 
@@ -44,16 +44,12 @@ function smashProductLie(dynkin::Char, n::Int64, lambda::Vector{Int64}) :: Quadr
 
     for i in 1:nL, j in 1:nV
         relTable[(lie(i), mod(j))] = [
-            (1, [mod(j), lie(i)]),
-            (
-                (c, [mod(k)])
-                for (k, c) in enumerate(fromGAP(GAP.Coefficients(GAP.Basis(V), bL[i]^bV[j])))
-                if c != 0
-            )...,
+            (1, [mod(j), lie(i)]);
+            collect((c, [mod(k)]) for (k, c) in enumerate(fromGAP(GAP.Coefficients(GAP.Basis(V), bL[i]^bV[j]))) if c != 0);
         ]
     end
 
     extraData = SmashProductLie(dynkin, n, lambda, nL, nV)
-    basis = [[mod(i) for i in 1:nV]..., [lie(i) for i in 1:nL]...] :: Vector{BasisElement}
+    basis = [[mod(i) for i in 1:nV]; [lie(i) for i in 1:nL]] :: Vector{BasisElement}
     return QuadraticAlgebra{SmashProductLie}(basis, relTable, extraData)
 end
