@@ -10,21 +10,7 @@ fromGAP = Oscar.GAP.gap_to_julia
 toSymPy = sympify
 fromSymPy = N
 
-BasisElement = Tuple{Symbol, Int64}
-Coefficient = Int64
-Product{T} = Vector{T}
-LinearCombination{T} = Vector{Tuple{Coefficient, T}}
-AlgebraElement = LinearCombination{Product{BasisElement}}
-BasisIndex = Int64
-
-function monomials(a::AlgebraElement) :: Vector{Product{BasisElement}}
-    return unique([prod for (coeff, prod) in a])
-end
-
-function basisElements(a::AlgebraElement) :: Vector{BasisElement}
-    return unique(vcat(monomials(a)...))
-end
-
+include("HelperFunctions.jl")
 include("QuadraticAlgebra.jl")
 
 lie(i::Int64) = (:lie, i) :: BasisElement
