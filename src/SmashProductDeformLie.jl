@@ -19,21 +19,25 @@ end
 
 function smashProductDeformLie(sp::QuadraticAlgebra{SmashProductLie}, kappa::Matrix{AlgebraElement}) :: QuadraticAlgebra{SmashProductDeformLie}
     nV = sp.extraData.nV
-    @assert size(kappa) == (nV, nV)
-    @assert all(map(e -> e in sp, kappa))
-    # check that kappa is skew-symmetric
+    @assert size(kappa) == (nV, nV) "size of kappa does not match module dimension"
+
+    # basis of smash product consists of basis of module and basis of Hopf algebra
+    hopfBasis = filter(!isMod, sp.basis)
+    @assert all(e -> issubset(basisElements(e), hopfBasis), kappa) "kappa does not only take values in Hopf algebra"
 
     relTable = sp.relTable
     symmetric = true
 
     for i in 1:nV, j in 1:i-1
+        #@assert kappa[i,j] == -kappa[j,i] "kappa is not skew-symmetric"
+
         if symmetric && kappa[i,j] != []
             symmetric = false
         end
 
-        # We have the commutator relation [mod(i), mod(j)] == kappa[i,j]
-        # which is equivalent to mod(i)*mod(j) == mod(j)*mod(i) + kappa[i,j]
-        relTable[(mod(i), mod(j))] = [(1, [mod(j), mod(i)]) , kappa[i,j]...]
+        # We have the commutator relation [mod(i), mod(j)] = kappa[i,j]
+        # which is equivalent to mod(i)*mod(j) = mod(j)*mod(i) + kappa[i,j]
+        relTable[(mod(i), mod(j))] = [(1, [mod(j), mod(i)]), kappa[i,j]...]
     end
 
     extraData = SmashProductDeformLie(sp.extraData, symmetric)

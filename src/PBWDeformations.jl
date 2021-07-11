@@ -17,12 +17,22 @@ LinearCombination{T} = Vector{Tuple{Coefficient, T}}
 AlgebraElement = LinearCombination{Product{BasisElement}}
 BasisIndex = Int64
 
+function monomials(a::AlgebraElement) :: Vector{Product{BasisElement}}
+    return unique([prod for (coeff, prod) in a])
+end
+
+function basisElements(a::AlgebraElement) :: Vector{BasisElement}
+    return unique(vcat(monomials(a)...))
+end
 
 include("QuadraticAlgebra.jl")
 
 lie(i::Int64) = (:lie, i) :: BasisElement
 mod(i::Int64) = (:mod, i) :: BasisElement
 grp(i::Int64) = (:grp, i) :: BasisElement
+isLie(b :: BasisElement) = b[1] == :lie
+isMod(b :: BasisElement) = b[1] == :mod
+isGrp(b :: BasisElement) = b[1] == :grp
 
 function sanitizeLieInput(dynkin::Char, n::Int64) :: Nothing
     @assert dynkin in ['A', 'B', 'C', 'D']
