@@ -10,7 +10,7 @@ fromGAP = Oscar.GAP.gap_to_julia
 toSymPy = sympify
 fromSymPy = N
 
-include("HelperFunctions.jl")
+include("AlgebraElement.jl")
 include("QuadraticAlgebra.jl")
 
 lie(i::Int64) = (:lie, i) :: BasisElement
