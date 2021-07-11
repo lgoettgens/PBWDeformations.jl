@@ -35,7 +35,7 @@
         @test !(x(1)*(x(2) + x(34))*x(5,6) in alg)
 
         for _ in 1:numRandomTests
-            a = collect(zip(rand(-20:20, 10), [map(i -> basis[i], rand(1:10, rand(1:20))) for _ in 1:10])) :: PD.AlgebraElement
+            a = collect(zip(Vector{PD.Coefficient}(rand(-20:20, 10)), [map(i -> basis[i], rand(1:10, rand(1:20))) for _ in 1:10])) :: PD.AlgebraElement
             @test a in alg
         end
     end

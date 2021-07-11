@@ -30,7 +30,7 @@ end
 function _normalForm(alg::QuadraticAlgebra, ind::Vector{BasisIndex}) :: LinearCombination{Vector{BasisIndex}}
     toIndex(prod::Product{BasisElement}) = map(b -> findfirst(isequal(b), alg.basis), prod) :: Vector{BasisIndex}
 
-    todo = [(1, ind)] :: LinearCombination{Vector{BasisIndex}}
+    todo = [(1//1, ind)] :: LinearCombination{Vector{BasisIndex}}
     result = LinearCombination{Vector{BasisIndex}}([])
 
     while !isempty(todo)
