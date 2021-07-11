@@ -17,8 +17,9 @@ end
 
 
 function _groupAlgebra(group, groupName::String) :: QuadraticAlgebra{GroupAlgebra}
-    # TODO: assert isGroup oder so
-
+    @assert GAP.IsGroup(group)
+    @assert GAP.Order(group) != GAP.infinity
+    
     order = GAP.Order(group)
 
     relTable = Dict{Tuple{BasisElement, BasisElement}, AlgebraElement}()

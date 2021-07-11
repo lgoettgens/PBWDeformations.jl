@@ -2,6 +2,15 @@
 
 @testset ExtendedTestSet "All PBWDeformations.GroupAlgebra tests" begin
     @testset "different groupAlgebra constructors" begin
+        @testset "not a group" begin
+            @test_throws AssertionError PD._groupAlgebra(toGAP(42), "")
+            @test_throws AssertionError PD._groupAlgebra(toGAP("Hello World!"), "")
+            @test_throws AssertionError PD._groupAlgebra(GAP.SimpleLieAlgebra(toGAP("A"), 2, GAP.Rationals), "")
+
+            @test_throws AssertionError PD._groupAlgebra(GAP.FreeGroup(toGAP("a"), toGAP("b")), "")
+            @test_throws AssertionError PD._groupAlgebra(GAP.GL(2, GAP.Integers), "")
+        end
+
         @testset "trivial group" begin
             for ga in [
                     PD.groupAlgebraCyclicGroup(1),
