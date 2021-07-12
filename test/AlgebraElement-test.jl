@@ -1,14 +1,5 @@
-
-Coefficient = PD.Coefficient
-BasisElement = PD.BasisElement
-Monomial{T} = PD.Monomial{T}
-AlgebraElement = PD.AlgebraElement
-
-algebraElement = PD.algebraElement
-
 sym(x) = (:sym, x)
 coeff(x) = Coefficient(x)
-sameSum = PD.sameSum
 randNum() = rand(-20:20)
 randNums(quantity) = rand(-100:100, quantity)
 randLength(start=0) = rand(start:10)

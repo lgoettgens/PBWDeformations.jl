@@ -39,10 +39,10 @@
                 ind = shuffle(rand(1:ga.extraData.order, rand(2:10)))
 
                 # abelian test
-                @test PD.normalForm(ga, prod(map(x, ind))) == PD.normalForm(ga, prod(map(x, shuffle(ind))))
+                @test normalForm(ga, prod(map(x, ind))) == normalForm(ga, prod(map(x, shuffle(ind))))
 
                 # cyclic test
-                @test PD.normalForm(ga, prod(map(x, ind))) == x(1 + sum(map(i -> i-1, ind)) % n)
+                @test normalForm(ga, prod(map(x, ind))) == x(1 + sum(map(i -> i-1, ind)) % n)
             end
         end
 
@@ -93,7 +93,7 @@
             if n <= 2
                 for _ in 1:numRandomTests
                     ind = shuffle(rand(1:ga.extraData.order, rand(2:10)))
-                    @test PD.normalForm(ga, prod(map(x, ind))) == PD.normalForm(ga, prod(map(x, shuffle(ind))))
+                    @test normalForm(ga, prod(map(x, ind))) == normalForm(ga, prod(map(x, shuffle(ind))))
                 end
             end
 
@@ -115,7 +115,7 @@
             if n <= 3
                 for _ in 1:numRandomTests
                     ind = shuffle(rand(1:ga.extraData.order, rand(2:10)))
-                    @test PD.normalForm(ga, prod(map(x, ind))) == PD.normalForm(ga, prod(map(x, shuffle(ind))))
+                    @test normalForm(ga, prod(map(x, ind))) == normalForm(ga, prod(map(x, shuffle(ind))))
                 end
             end
 

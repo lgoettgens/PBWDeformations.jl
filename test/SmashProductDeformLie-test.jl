@@ -4,7 +4,7 @@
             sp = PD.smashProductLie('B', 2, [1,0])
             nV = sp.extraData.nV
 
-            kappa = fill(PD.AlgebraElement(), nV, nV)
+            kappa = fill(algebraElement(), nV, nV)
 
             deform1 = PD.smashProductSymmDeformLie(sp)
             deform2 = PD.smashProductDeformLie(sp, kappa)
@@ -44,13 +44,13 @@
             sp = PD.smashProductLie('B', 2, [1,0])
             nV = sp.extraData.nV
 
-            kappa = fill(PD.AlgebraElement(), nV+1, nV)
+            kappa = fill(algebraElement(), nV+1, nV)
             @test_throws AssertionError("size of kappa does not match module dimension") PD.smashProductDeformLie(sp, kappa)
 
-            kappa = fill(PD.AlgebraElement(), nV, nV+1)
+            kappa = fill(algebraElement(), nV, nV+1)
             @test_throws AssertionError("size of kappa does not match module dimension") PD.smashProductDeformLie(sp, kappa)
 
-            kappa = fill(PD.AlgebraElement(), nV+1, nV+1)
+            kappa = fill(algebraElement(), nV+1, nV+1)
             @test_throws AssertionError("size of kappa does not match module dimension") PD.smashProductDeformLie(sp, kappa)
         end
 
@@ -60,38 +60,34 @@
 
             # basis of sp consists of (:mod, 1) to (:mod 5) and (:lie, 1) to (:lie, 10)
 
-            kappa = fill(PD.AlgebraElement(), nV, nV)
-            kappa[1,2] = [(1, [(:mod, 1)])]
-            kappa[2,1] = [(-1, [(:mod, 1)])]
+            kappa = fill(algebraElement(), nV, nV)
+            kappa[1,2] = algebraElement(mod(1))
+            kappa[2,1] = -kappa[1,2]
             @test_throws AssertionError("kappa does not only take values in Hopf algebra") PD.smashProductDeformLie(sp, kappa)
 
-            kappa = fill(PD.AlgebraElement(), nV, nV)
-            kappa[1,2] = [(1, [(:lie, 0)])]
-            kappa[2,1] = [(-1, [(:lie, 0)])]
+            kappa = fill(algebraElement(), nV, nV)
+            kappa[1,2] = algebraElement(lie(0))
+            kappa[2,1] = -kappa[1,2]
             @test_throws AssertionError("kappa does not only take values in Hopf algebra") PD.smashProductDeformLie(sp, kappa)
 
-            kappa = fill(PD.AlgebraElement(), nV, nV)
-            kappa[1,2] = [(1, [(:lie, 11)])]
-            kappa[2,1] = [(-1, [(:lie, 11)])]
+            kappa = fill(algebraElement(), nV, nV)
+            kappa[1,2] = algebraElement(lie(11))
+            kappa[2,1] = -kappa[1,2]
             @test_throws AssertionError("kappa does not only take values in Hopf algebra") PD.smashProductDeformLie(sp, kappa)
         end
 
-        #@testset "assert kappa is skew symmetric" begin
-        #    sp = PD.smashProductLie('B', 2, [1,0])
-        #    nV = sp.extraData.nV
+        @testset "assert kappa is skew symmetric" begin
+            sp = PD.smashProductLie('B', 2, [1,0])
+            nV = sp.extraData.nV
 
-        #    kappa = fill(PD.AlgebraElement(), nV, nV)
-        #    kappa[1,1] = [(1, [(:lie, 1)])]
-        #    @test_throws AssertionError("kappa is not skew-symmetric") PD.smashProductDeformLie(sp, kappa)
+            kappa = fill(PD.AlgebraElement(), nV, nV)
+            kappa[1,1] = algebraElement(lie(1))
+            @test_throws AssertionError("kappa is not skew-symmetric") PD.smashProductDeformLie(sp, kappa)
 
-        #    kappa = fill(PD.AlgebraElement(), nV, nV)
-        #    kappa[1,2] = [(1, [(:lie, 1)])]
-        #    @test_throws AssertionError("kappa is not skew-symmetric") PD.smashProductDeformLie(sp, kappa)
-
-        #    kappa = fill(PD.AlgebraElement(), nV, nV)
-        #    kappa[1,2] = [(1, [(:lie, 1)])]
-        #    @test_throws AssertionError("kappa is not skew-symmetric") PD.smashProductDeformLie(sp, kappa)
-        #end
+            kappa = fill(PD.AlgebraElement(), nV, nV)
+            kappa[1,2] = algebraElement(lie(1))
+            @test_throws AssertionError("kappa is not skew-symmetric") PD.smashProductDeformLie(sp, kappa)
+        end
 
     end
 

@@ -1,3 +1,4 @@
+using SymPy: LinearAlgebra
 include("setup.jl")
 
 @testset ExtendedTestSet "All PBWDeformations tests" begin

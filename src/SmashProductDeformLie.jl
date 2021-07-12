@@ -25,12 +25,14 @@ function smashProductDeformLie(sp::QuadraticAlgebra{SmashProductLie}, kappa::Mat
     hopfBasis = filter(!isMod, sp.basis)
     @assert all(e -> issubset(basisElements(e), hopfBasis), kappa) "kappa does not only take values in Hopf algebra"
 
+    for i in 1:nV, j in 1:i
+        @assert sameSum(kappa[i,j], -kappa[j,i]) "kappa is not skew-symmetric"
+    end
+
     relTable = sp.relTable
     symmetric = true
 
     for i in 1:nV, j in 1:i-1
-        #@assert kappa[i,j] == -kappa[j,i] "kappa is not skew-symmetric"
-
         if symmetric && kappa[i,j] != []
             symmetric = false
         end
