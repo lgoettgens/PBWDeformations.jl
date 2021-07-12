@@ -13,73 +13,93 @@ function basisElements(a::AlgebraElement) :: Vector{BasisElement}
     return unique(vcat(monomials(a)...))
 end
 
-algebraElement(c::Coefficient) = [(c, [])] :: AlgebraElement
-algebraElement(b::BasisElement) = [(1//1, [b])] :: AlgebraElement
-algebraElement(p::Product{BasisElement}) = [(1//1, p)] :: AlgebraElement
-algebraElement(a::AlgebraElement) = a :: AlgebraElement
+function collectSummands(a::Union{AlgebraElement, Vector{AlgebraElement}}) :: AlgebraElement
+    a = isa(a, AlgebraElement) ? a : AlgebraElement(vcat(a...))
+    res = AlgebraElement()
 
-function Base.:(+)(a1::AlgebraElement, a2::AlgebraElement) :: AlgebraElement
-    res = copy(a1)
-
-    for (coeff, prod) in a2
+    for (coeff, prod) in a
         i = findfirst(x -> x[2] == prod, res)
 
         if i === nothing
-            append!(res, (coeff, prod))
+            push!(res, (coeff, prod))
         else
-            res[i][1] += coeff
+            # res[i][1] += coeff does not work since tuples are immutable
+            res[i] = (res[i][1] + coeff, res[i][2])
         end
     end
 
-    return res
+    return filter(x -> !iszero(x[1]), res)
 end
 
-function Base.:(+)(a1::Union{Coefficient, BasisElement, Product{BasisElement}, AlgebraElement},
-                   a2::Union{Coefficient, BasisElement, Product{BasisElement}, AlgebraElement}) :: AlgebraElement
-    return algebraElement(a1) + algebraElement(a2)
-end
-
-function Base.:(+)(l1::LinearCombination{Vector{BasisIndex}}, l2::LinearCombination{Vector{BasisIndex}}) :: LinearCombination{Vector{BasisIndex}}
-    res = copy(l1)
-
-    for (coeff, ind) in l2
-        i = findfirst(x -> x[2] == ind, res)
-
-        if i === nothing
-            append!(res, (coeff, ind))
-        else
-            res[i][1] += coeff
-        end
-    end
-
-    return res
+function sameSum(a1::AlgebraElement, a2::AlgebraElement) :: Bool
+    return issetequal(collectSummands(a1), collectSummands(a2))
 end
 
 
-function Base.:(*)(p::Product{BasisElement}, x::Union{BasisElement, Product{BasisElement}}) :: Product{BasisElement}
-    return append!(copy(p), x)
+# emtpy list represents empty sum, which is 0
+algebraElement() = AlgebraElement()
+algebraElement(c::Union{Int64, Coefficient}) = iszero(c) ? AlgebraElement() : [(Coefficient(c), Product{BasisElement}())] :: AlgebraElement
+algebraElement(b::BasisElement) = [(Coefficient(1), [b])] :: AlgebraElement
+algebraElement(p::Product{BasisElement}) = [(Coefficient(1), p)] :: AlgebraElement
+algebraElement(a::AlgebraElement) = a :: AlgebraElement
+
+
+function Base.:(+)(x::Union{Int64, Coefficient, BasisElement, Product{BasisElement}, AlgebraElement},
+                   as::Vararg{Union{BasisElement, Product{BasisElement}, AlgebraElement}}) :: AlgebraElement
+    return collectSummands(map(algebraElement, [x, as...]))
 end
 
-function Base.:(*)(x::Union{BasisElement, Product{BasisElement}}, p::Product{BasisElement}) :: Product{BasisElement}
-    return prepend!(copy(p), x)
+function Base.:(+)(a::Union{BasisElement, Product{BasisElement}, AlgebraElement}, c::Union{Int64, Coefficient}) :: AlgebraElement
+    return c + a
+end
+
+
+function Base.:(*)(x::Union{BasisElement, Product{BasisElement}},
+                   y::Union{BasisElement, Product{BasisElement}}) :: Product{BasisElement}
+    return [x; y]
+end
+
+function Base.:(*)(c::Union{Int64, Coefficient}, a::Union{BasisElement, Product{BasisElement}, AlgebraElement}) :: AlgebraElement
+    return [(c*coeff, mon) for (coeff, mon) in algebraElement(a)]
+end
+
+function Base.:(*)(a::Union{BasisElement, Product{BasisElement}, AlgebraElement}, c::Union{Int64, Coefficient}) :: AlgebraElement
+    return c * a
 end
 
 function Base.:(*)(a1::AlgebraElement, a2::AlgebraElement) :: AlgebraElement
-    return [(c1*c2, p1*p2) for (c1, p1) in a1 for (c2, p2) in a2]
+   return collectSummands([(c1*c2, [m1;m2]) for (c1, m1) in a1 for (c2, m2) in a2])
 end
 
-function Base.:(*)(x::Union{Coefficient, BasisElement, Product{BasisElement}}, a::AlgebraElement) :: AlgebraElement
-    return algebraElement(x) * a
+function Base.:(*)(a::AlgebraElement, m::Union{BasisElement, Product{BasisElement}}) ::AlgebraElement
+    return a * algebraElement(m)
 end
 
-function Base.:(*)(a::AlgebraElement, x::Union{Coefficient, BasisElement, Product{BasisElement}}) :: AlgebraElement
-    return a * algebraElement(x)
+function Base.:(*)(m::Union{BasisElement, Product{BasisElement}}, a::AlgebraElement) ::AlgebraElement
+    return algebraElement(m) * a
 end
 
-function Base.:(*)(coeff::Coefficient, x::Union{BasisElement, Product{BasisElement}}) :: AlgebraElement
-    return coeff * algebraElement(x)
+
+function Base.:(^)(m::Union{BasisElement, Product{BasisElement}}, n::Int64) :: Product{BasisElement}
+    @assert n >= 0
+    return prod([m for _ in 1:n])
 end
 
-function Base.:(*)(x::Union{BasisElement, Product{BasisElement}}, coeff::Coefficient) :: AlgebraElement
-    return coeff * x
+function Base.:(^)(a::AlgebraElement, n::Int64) :: AlgebraElement
+    @assert n >= 0
+    return prod([a for _ in 1:n], init=algebraElement(1))
+end
+
+
+function Base.:(-)(a::Union{BasisElement, Product{BasisElement}, AlgebraElement}) :: AlgebraElement
+    return (-1)*a
+end
+
+function Base.:(-)(x::Union{Int64, Coefficient, BasisElement, Product{BasisElement}, AlgebraElement},
+                   y::Union{BasisElement, Product{BasisElement}, AlgebraElement}) :: AlgebraElement
+    return x + (-y)
+end
+
+function Base.:(-)(a::Union{BasisElement, Product{BasisElement}, AlgebraElement}, c::Union{Int64, Coefficient}) :: AlgebraElement
+    return a + (-c)
 end

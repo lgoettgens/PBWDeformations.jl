@@ -1,5 +1,6 @@
 module PBWDeformations
 
+using Base: Bool
 using Oscar
 using SymPy
 
@@ -16,9 +17,9 @@ include("QuadraticAlgebra.jl")
 lie(i::Int64) = (:lie, i) :: BasisElement
 mod(i::Int64) = (:mod, i) :: BasisElement
 grp(i::Int64) = (:grp, i) :: BasisElement
-isLie(b :: BasisElement) = b[1] == :lie
-isMod(b :: BasisElement) = b[1] == :mod
-isGrp(b :: BasisElement) = b[1] == :grp
+isLie(b::BasisElement) = b[1] == :lie
+isMod(b::BasisElement) = b[1] == :mod
+isGrp(b::BasisElement) = b[1] == :grp
 
 function sanitizeLieInput(dynkin::Char, n::Int64) :: Nothing
     @assert dynkin in ['A', 'B', 'C', 'D']
