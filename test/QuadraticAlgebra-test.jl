@@ -58,7 +58,7 @@
             for _ in 1:numRandomTests
                 ind1 = shuffle(rand(1:n, rand(1:n)))
                 ind2 = shuffle(rand(1:n, rand(1:n)))
-                @test PD.normalForm(alg, x(ind1..., ind2...)-x(ind2..., ind1...)) == PD.comm(alg, x(ind1...), x(ind2...))
+                @test PD.normalForm(alg, x(ind1..., ind2...)-x(ind2..., ind1...)) == PD.normalForm(alg, PD.comm(x(ind1...), x(ind2...)))
             end
         end
 
@@ -78,7 +78,7 @@
             for _ in 1:numRandomTests
                 ind1 = shuffle(rand(1:n, rand(1:n)))
                 ind2 = shuffle(rand(1:n, rand(1:n)))
-                @test PD.normalForm(alg, x(ind1..., ind2...)-x(ind2..., ind1...)) == PD.comm(alg, x(ind1...), x(ind2...))
+                @test PD.normalForm(alg, x(ind1..., ind2...)-x(ind2..., ind1...)) == PD.normalForm(alg, PD.comm(x(ind1...), x(ind2...)))
             end
         end
 
@@ -106,7 +106,7 @@
             for _ in 1:numRandomTests
                 ind1 = unique(shuffle(rand(1:n, rand(1:n))))
                 ind2 = unique(shuffle(rand(1:n, rand(1:n))))
-                @test PD.normalForm(alg, x(ind1..., ind2...)-x(ind2..., ind1...)) == PD.comm(alg, x(ind1...), x(ind2...))
+                @test PD.normalForm(alg, x(ind1..., ind2...)-x(ind2..., ind1...)) == PD.normalForm(alg, PD.comm(x(ind1...), x(ind2...)))
             end
         end
 
@@ -155,7 +155,7 @@
             for _ in 1:numRandomTests
                 ind1 = shuffle(rand(1:n, rand(1:6)))
                 ind2 = shuffle(rand(1:n, rand(1:6)))
-                @test PD.normalForm(sp, x(ind1..., ind2...)-x(ind2..., ind1...)) == PD.comm(sp, x(ind1...), x(ind2...))
+                @test PD.normalForm(sp, x(ind1..., ind2...)-x(ind2..., ind1...)) == PD.normalForm(sp, PD.comm(x(ind1...), x(ind2...)))
             end
         end
 
@@ -206,7 +206,7 @@
             for _ in 1:numRandomTests
                 ind1 = shuffle(rand(1:n, rand(1:6)))
                 ind2 = shuffle(rand(1:n, rand(1:6)))
-                @test PD.normalForm(sp, x(ind1..., ind2...)-x(ind2..., ind1...)) == PD.comm(sp, x(ind1...), x(ind2...))
+                @test PD.normalForm(sp, x(ind1..., ind2...)-x(ind2..., ind1...)) == PD.normalForm(sp, PD.comm(x(ind1...), x(ind2...)))
             end
         end
 

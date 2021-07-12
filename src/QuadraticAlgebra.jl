@@ -26,87 +26,6 @@ function Base.show(io::IO, alg::QuadraticAlgebra) :: Nothing
     print(io, alg.extraData)
 end
 
-
-function _normalForm(alg::QuadraticAlgebra, ind::Vector{BasisIndex}) :: LinearCombination{Vector{BasisIndex}}
-    toIndex(mon::Monomial{BasisElement}) = map(b -> findfirst(isequal(b), alg.basis), mon) :: Vector{BasisIndex}
-
-    todo = [(1//1, ind)] :: LinearCombination{Vector{BasisIndex}}
-    result = LinearCombination{Vector{BasisIndex}}([])
-
-    while !isempty(todo)
-        coeff, currInd = pop!(todo)
-
-        changed = false
-        for i in 1:length(currInd)-1
-            if haskey(alg.relTable, (alg.basis[currInd[i]], alg.basis[currInd[i+1]]))
-                linComb = alg.relTable[(alg.basis[currInd[i]], alg.basis[currInd[i+1]])]
-
-                append!(
-                    todo,
-                    vcat((c * coeff, [currInd[1:i-1]; toIndex(mon); currInd[i+2:end]]) for (c, mon) in linComb)...,
-                )
-                changed = true
-                break
-            end
-        end
-
-        if !changed
-            push!(result, (coeff, currInd))
-        end
-    end
-
-    return result
-end
-
-function _collect(alg::QuadraticAlgebra, factors::Vector{SymPy.Sym}) :: SymPy.Sym
-    done = false
-
-    while !done
-        done = true
-
-        for i in 1:length(factors)-1
-            if factors[i].func == alg.x && factors[i+1].func == alg.x
-                done = false
-
-                factors[i+1] = alg.x(factors[i].args..., factors[i+1].args...)
-                deleteat!(factors, i)
-                break
-            end
-        end
-    end
-
-    return prod(factors)
-end
-
-
-function normalForm(alg::QuadraticAlgebra, expr::SymPy.Sym) :: SymPy.Sym
-    xsum(coll) = isempty(coll) ? toSymPy(0) : sum(coll)
-
-    return expr.
-        expand().
-        replace(
-            sympy.Pow,
-            (base, exp) -> _collect(alg, fill(base, fromSymPy(exp)))
-        ).
-        replace(
-            sympy.Mul,
-            (m...) -> _collect(alg, collect(m))
-        ).
-        replace(
-            f -> f.func == alg.x,
-            f -> xsum(
-                coeff * alg.x(newInd...)
-                for (coeff, newInd) in _normalForm(alg, map(fromSymPy, collect(f.args)))
-            )
-        ).
-        simplify()
-end
-
-
-function comm(alg::QuadraticAlgebra, expr1::SymPy.Sym, expr2::SymPy.Sym) :: SymPy.Sym
-    return normalForm(alg, expr1 * expr2 - expr2 * expr1)
-end
-
 function Base.in(b::BasisElement, alg::QuadraticAlgebra) :: Bool
     return b in alg.basis
 end
@@ -127,4 +46,118 @@ function Base.in(expr::SymPy.Sym, alg::QuadraticAlgebra) :: Bool
     end
 
     return true
+end
+
+
+function toIndex(alg::QuadraticAlgebra, b::BasisElement) :: BasisIndex
+    return findfirst(isequal(b), alg.basis)
+end
+
+function toIndex(alg::QuadraticAlgebra, m::Monomial{BasisElement}) :: Vector{BasisIndex}
+    return map(b -> toIndex(alg, b), m)
+end
+
+
+function toSymPy(alg::QuadraticAlgebra, m::Union{BasisElement, Monomial{BasisElement}}) :: SymPy.Sym
+    return isempty(m) ? sympify(1) : alg.x(toIndex(alg, m)...)
+end
+
+function toSymPy(alg::QuadraticAlgebra, a::AlgebraElement) :: SymPy.Sym
+    return sum([c*toSymPy(alg, m) for (c, m) in a], init=sympify(0))
+end
+
+
+function algebraElement(alg::QuadraticAlgebra, i::BasisIndex) :: BasisElement
+    return alg.basis[i]
+end
+
+function algebraElement(alg::QuadraticAlgebra, ind::Vector{BasisIndex}) :: Monomial{BasisElement}
+    return getindex(alg.basis, ind)
+end
+
+function algebraElement(alg::QuadraticAlgebra, expr::SymPy.Sym) :: AlgebraElement
+    function collectFactors(factors::Vector{SymPy.Sym}) :: SymPy.Sym
+        done = false
+
+        while !done
+            done = true
+
+            for i in 1:length(factors)-1
+                if factors[i].func == alg.x && factors[i+1].func == alg.x
+                    done = false
+
+                    factors[i+1] = alg.x(factors[i].args..., factors[i+1].args...)
+                    deleteat!(factors, i)
+                    break
+                end
+            end
+        end
+
+        return prod(factors)
+    end
+
+    function parseAtom(ex::SymPy.Sym) :: AlgebraElement
+        coeff = Coefficient(1)
+
+        if ex.func == sympy.Mul
+            coeff = Coefficient(fromSymPy(ex.args[1]))
+            ex = ex.args[2]
+        end
+
+        return coeff * algebraElement(alg, map(fromSymPy, collect(ex.args)))
+    end
+
+    @assert expr in alg
+
+    expr = expr.
+        expand().
+        replace(
+            sympy.Pow,
+            (base, exp) -> collectFactors(fill(base, fromSymPy(exp)))
+        ).
+        replace(
+            sympy.Mul,
+            (m...) -> collectFactors(collect(m))
+        )
+
+    if expr.is_number
+        return algebraElement(Coefficient(fromSymPy(expr)))
+    elseif expr.func in (alg.x, sympy.Mul)
+        return parseAtom(expr)
+    elseif expr.func == sympy.Add
+        return sum(parseAtom, expr.args)
+    else
+        throw(ArgumentError("cannot parse expr"))
+    end
+end
+
+
+function normalForm(alg::QuadraticAlgebra, a::AlgebraElement) :: AlgebraElement
+    todo = copy(a)
+    result = algebraElement(0)
+
+    while !isempty(todo)
+        coeff, mon = pop!(todo)
+
+        changed = false
+        for i in 1:length(mon)-1
+            if haskey(alg.relTable, (mon[i], mon[i+1]))
+                changed = true
+
+                todo += coeff * (mon[1:i-1] * alg.relTable[(mon[i], mon[i+1])] * mon[i+2:end])
+
+                break
+            end
+        end
+
+        if !changed
+            push!(result, (coeff, mon))
+        end
+    end
+
+    return result
+end
+
+function normalForm(alg::QuadraticAlgebra, expr::SymPy.Sym) :: SymPy.Sym
+    return toSymPy(alg, normalForm(alg, algebraElement(alg, expr)))
 end

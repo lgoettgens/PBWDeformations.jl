@@ -8,7 +8,6 @@ GAP = Oscar.GAP.Globals
 toGAP = Oscar.GAP.julia_to_gap
 fromGAP = Oscar.GAP.gap_to_julia
 
-toSymPy = sympify
 fromSymPy = N
 
 include("AlgebraElement.jl")
