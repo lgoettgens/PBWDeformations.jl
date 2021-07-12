@@ -28,7 +28,7 @@ end
 
 
 function _normalForm(alg::QuadraticAlgebra, ind::Vector{BasisIndex}) :: LinearCombination{Vector{BasisIndex}}
-    toIndex(prod::Product{BasisElement}) = map(b -> findfirst(isequal(b), alg.basis), prod) :: Vector{BasisIndex}
+    toIndex(mon::Monomial{BasisElement}) = map(b -> findfirst(isequal(b), alg.basis), mon) :: Vector{BasisIndex}
 
     todo = [(1//1, ind)] :: LinearCombination{Vector{BasisIndex}}
     result = LinearCombination{Vector{BasisIndex}}([])
@@ -43,7 +43,7 @@ function _normalForm(alg::QuadraticAlgebra, ind::Vector{BasisIndex}) :: LinearCo
 
                 append!(
                     todo,
-                    vcat((c * coeff, [currInd[1:i-1]; toIndex(prod); currInd[i+2:end]]) for (c, prod) in linComb)...,
+                    vcat((c * coeff, [currInd[1:i-1]; toIndex(mon); currInd[i+2:end]]) for (c, mon) in linComb)...,
                 )
                 changed = true
                 break
@@ -111,12 +111,12 @@ function Base.in(b::BasisElement, alg::QuadraticAlgebra) :: Bool
     return b in alg.basis
 end
 
-function Base.in(p::Product{BasisElement}, alg::QuadraticAlgebra) :: Bool
-    return all(b -> b in alg, p)
+function Base.in(m::Monomial{BasisElement}, alg::QuadraticAlgebra) :: Bool
+    return all(b -> b in alg, m)
 end
 
 function Base.in(a::AlgebraElement, alg::QuadraticAlgebra) :: Bool
-    return all(comb -> comb[2] in alg, a)
+    return all(m in alg for (c, m) in a)
 end
 
 function Base.in(expr::SymPy.Sym, alg::QuadraticAlgebra) :: Bool
