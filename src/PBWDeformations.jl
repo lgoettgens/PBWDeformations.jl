@@ -1,6 +1,5 @@
 module PBWDeformations
 
-using Base: Bool
 using Oscar
 using SymPy
 
@@ -13,12 +12,33 @@ fromSymPy = N
 include("AlgebraElement.jl")
 include("QuadraticAlgebra.jl")
 
-lie(i::Int64) = (:lie, i) :: BasisElement
-mod(i::Int64) = (:mod, i) :: BasisElement
-grp(i::Int64) = (:grp, i) :: BasisElement
-isLie(b::BasisElement) = b[1] == :lie
-isMod(b::BasisElement) = b[1] == :mod
-isGrp(b::BasisElement) = b[1] == :grp
+function createBasisFunctions(name::Symbol)
+    s = Symbol("is", name)
+    return quote
+        ($name)(i::PBWDeformations.BasisIndex) = (Symbol($name), i) :: PBWDeformations.BasisElement
+        ($name)(is::Vector{PBWDeformations.BasisIndex}) = map($name, is) :: PBWDeformations.Monomial{PBWDeformations.BasisElement}
+        ($name)(i::PBWDeformations.BasisIndex, j::PBWDeformations.BasisIndex, ks::Vararg{PBWDeformations.BasisIndex}) = 
+            map($name, [i; j; collect(ks)]) :: PBWDeformations.Monomial{PBWDeformations.BasisElement}
+        ($s)(b::PBWDeformations.BasisElement) = (b[1] === Symbol($name)) :: Bool
+    end
+end
+
+eval(createBasisFunctions(:lie))
+eval(createBasisFunctions(:grp))
+eval(createBasisFunctions(:mod))
+
+#lie(i::BasisIndex) = (:lie, i) :: BasisElement
+#grp(i::BasisIndex) = (:grp, i) :: BasisElement
+#mod(i::BasisIndex) = (:mod, i) :: BasisElement
+#lie(is::Vector{BasisIndex}) = map(lie, collect(is)) :: Monomial{BasisElement}
+#grp(is::Vector{BasisIndex}) = map(grp, collect(is)) :: Monomial{BasisElement}
+#mod(is::Vector{BasisIndex}) = map(mod, collect(is)) :: Monomial{BasisElement}
+#lie(i::BasisIndex, j::BasisIndex, ks::Vararg{BasisIndex}) = map(lie, [i; j; collect(ks)]) :: Monomial{BasisElement}
+#grp(i::BasisIndex, j::BasisIndex, ks::Vararg{BasisIndex}) = map(grp, [i; j; collect(ks)]) :: Monomial{BasisElement}
+#mod(i::BasisIndex, j::BasisIndex, ks::Vararg{BasisIndex}) = map(mod, [i; j; collect(ks)]) :: Monomial{BasisElement}
+#isLie(b::BasisElement) = b[1] === :lie
+#isGrp(b::BasisElement) = b[1] === :grp
+#isMod(b::BasisElement) = b[1] === :mod
 
 function sanitizeLieInput(dynkin::Char, n::Int64) :: Nothing
     @assert dynkin in ['A', 'B', 'C', 'D']

@@ -30,3 +30,9 @@ normalForm = PD.normalForm
 
 numRandomTests = 10
 dimRandomTests = [3, 10, 25, 100]
+
+randLength(start=0) = rand(start:10)
+randNums(quantity) = rand(-20:20, quantity)
+randNum() = randNums(1)[1]
+randMonomial(basis) = [basis[rand(1:length(basis))] for _ in 1:randLength()] :: Monomial{BasisElement}
+randAlgebraElement(basis) = [(Coefficient(randNum()), randMonomial(basis)) for _ in 1:randLength()] :: AlgebraElement

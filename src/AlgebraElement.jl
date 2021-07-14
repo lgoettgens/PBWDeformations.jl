@@ -7,6 +7,49 @@ LinearCombination{T} = Vector{Scaled{T}}
 AlgebraElement = LinearCombination{Monomial{BasisElement}}
 StandardOperand = Union{BasisElement, Monomial{BasisElement}, Scaled{Monomial{BasisElement}}, AlgebraElement}
 
+
+# emtpy list represents empty sum, which is 0
+algebraElement() = AlgebraElement()
+algebraElement(c::Union{Int64, Coefficient}) = iszero(c) ? AlgebraElement() : [(Coefficient(c), Monomial{BasisElement}())] :: AlgebraElement
+algebraElement(b::BasisElement) = [(Coefficient(1), [b])] :: AlgebraElement
+algebraElement(m::Monomial{BasisElement}) = [(Coefficient(1), m)] :: AlgebraElement
+algebraElement(s::Scaled{Monomial{BasisElement}}) = [s] :: AlgebraElement
+algebraElement(a::AlgebraElement) = a :: AlgebraElement
+
+function groupBy(pred, v::Vector{T}) where T
+    tmp = [0; findall([!pred(v[i], v[i+1]) for i in 1:length(v)-1]); length(v)]
+    return [v[tmp[i]+1:tmp[i+1]] for i in 1:length(tmp)-1]
+end
+
+function Base.show(io::IO, b::BasisElement) :: Nothing
+    print(io, b[1], "(", b[2], ")")
+end
+
+function Base.show(io::IO, m::Monomial{BasisElement}) :: Nothing
+    for g in groupBy((x,y) -> x[1] === y[1], m)
+        print(io, g[1][1], "(")
+        for i in 1:length(g)-1
+            print(io, g[i][2], ", ")
+        end
+        print(io, g[end][2], ")")
+    end
+end
+
+function Base.show(io::IO, s::Scaled{Monomial{BasisElement}}) :: Nothing
+    castCoeff(c) = isinteger(c) ? Int(c) : c
+
+    if iszero(s[1])
+        print(io, 0)
+    elseif isempty(s[2])
+        print(io, castCoeff(s[1]))
+    elseif isone(s[1])
+        print(io, s[2])
+    else
+        print(io, castCoeff(s[1]), "⋅", s[2])
+    end
+end
+
+
 function monomials(a::AlgebraElement) :: Vector{Monomial{BasisElement}}
     return unique([mon for (coeff, mon) in a])
 end
@@ -35,15 +78,6 @@ end
 function sameSum(a1::StandardOperand, a2::StandardOperand) :: Bool
     return issetequal(collectSummands(algebraElement(a1)), collectSummands(algebraElement(a2)))
 end
-
-
-# emtpy list represents empty sum, which is 0
-algebraElement() = AlgebraElement()
-algebraElement(c::Union{Int64, Coefficient}) = iszero(c) ? AlgebraElement() : [(Coefficient(c), Monomial{BasisElement}())] :: AlgebraElement
-algebraElement(b::BasisElement) = [(Coefficient(1), [b])] :: AlgebraElement
-algebraElement(m::Monomial{BasisElement}) = [(Coefficient(1), m)] :: AlgebraElement
-algebraElement(s::Scaled{Monomial{BasisElement}}) = [s] :: AlgebraElement
-algebraElement(a::AlgebraElement) = a :: AlgebraElement
 
 
 function Base.:(+)(x::Union{Int64, Coefficient, StandardOperand}, as::Vararg{StandardOperand}) :: AlgebraElement

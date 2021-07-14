@@ -151,7 +151,7 @@ function normalForm(alg::QuadraticAlgebra, a::AlgebraElement) :: AlgebraElement
         end
 
         if !changed
-            push!(result, (coeff, mon))
+            result += coeff*mon
         end
     end
 
