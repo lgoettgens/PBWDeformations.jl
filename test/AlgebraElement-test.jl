@@ -235,43 +235,38 @@ randAlgebraElement() = randAlgebraElement(basis)
 
         for _ in 1:numRandomTests
             a = randAlgebraElement()
-            b = randAlgebraElement()
-            @test -(a+b) ≐ -a-b
+            @test a-0 ≐ a
         end
-        ###
-        b = randNum()
-        n = randLength(1)
-        @test algebraElement(b)^n ≐ b^n
 
-        a = randAlgebraElement()
-        @test a^0 ≐ 1
+        for _ in 1:numRandomTests
+            c = randNum()
+            a = randAlgebraElement()
+            @test a-c ≐ -(c-a)
+        end
 
-        n = rand(1:4)
-        a = randAlgebraElement()
-        @test a^n ≐ prod([a for _ in 1:n])
+        for _ in 1:numRandomTests
+            b = randBasisElement()
+            a = randAlgebraElement()
+            @test a-b ≐ -(b-a)
+        end
 
-        n = rand(1:3)
-        a = randAlgebraElement()
-        @test a^(n+1) ≐ a*(a^n)
-        @test a^(n+1) ≐ (a^n)*a
-    end
+        for _ in 1:numRandomTests
+            m = randMonomial()
+            a = randAlgebraElement()
+            @test a-m ≐ -(m-a)
+        end
 
-    @testset "test subtraction" begin
-        n = randNum()
-        @test -algebraElement(n) == algebraElement(-n)
+        for _ in 1:numRandomTests
+            a1 = randAlgebraElement()
+            a2 = randAlgebraElement()
+            @test a1-a2 ≐ -(a2-a1)
+        end
 
-        a = randAlgebraElement()
-        @test a-a ≐ 0
-
-        a = randAlgebraElement()
-        @test -(-a) ≐ a
-
-        a = randAlgebraElement()
-        @test 0-a ≐ -a
-
-        a = randAlgebraElement()
-        b = randAlgebraElement()
-        @test -(a+b) ≐ -a-b
+        for _ in 1:numRandomTests
+            a1 = randAlgebraElement()
+            a2 = randAlgebraElement()
+            @test -(a1+a2) ≐ -a1-a2
+        end
     end
 
 end
