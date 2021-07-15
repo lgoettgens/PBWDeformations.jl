@@ -1,5 +1,6 @@
 module PBWDeformations
 
+using SymPy: norm
 using Oscar
 using SymPy
 
@@ -12,33 +13,22 @@ fromSymPy = N
 include("AlgebraElement.jl")
 include("QuadraticAlgebra.jl")
 
-function createBasisFunctions(name::Symbol)
+# generates
+# lie(i::BasisIndex) = (:lie, i) :: BasisElement
+# lie(is::Vector{BasisIndex}) = map(lie, collect(is)) :: Monomial{BasisElement}
+# lie(i::BasisIndex, j::BasisIndex, ks::Vararg{BasisIndex}) = map(lie, [i; j; collect(ks)]) :: Monomial{BasisElement}
+# islie(b::BasisElement) = b[1] === :lie
+# and likewise for :grp, :mod, :test
+
+for name in (:lie, :grp, :mod, :test)
     s = Symbol("is", name)
-    return quote
-        ($name)(i::PBWDeformations.BasisIndex) = (Symbol($name), i) :: PBWDeformations.BasisElement
-        ($name)(is::Vector{PBWDeformations.BasisIndex}) = map($name, is) :: PBWDeformations.Monomial{PBWDeformations.BasisElement}
-        ($name)(i::PBWDeformations.BasisIndex, j::PBWDeformations.BasisIndex, ks::Vararg{PBWDeformations.BasisIndex}) = 
-            map($name, [i; j; collect(ks)]) :: PBWDeformations.Monomial{PBWDeformations.BasisElement}
-        ($s)(b::PBWDeformations.BasisElement) = (b[1] === Symbol($name)) :: Bool
+    @eval begin
+        ($name)(i::BasisIndex) = (Symbol($name), i) :: BasisElement
+        ($name)(is::Vector{BasisIndex}) = map($name, is) :: Monomial{BasisElement}
+        ($name)(i::BasisIndex, j::BasisIndex, ks::Vararg{BasisIndex}) = map($name, [i; j; collect(ks)]) :: Monomial{BasisElement}
+        ($s)(b::BasisElement) = (b[1] === Symbol($name)) :: Bool
     end
 end
-
-eval(createBasisFunctions(:lie))
-eval(createBasisFunctions(:grp))
-eval(createBasisFunctions(:mod))
-
-#lie(i::BasisIndex) = (:lie, i) :: BasisElement
-#grp(i::BasisIndex) = (:grp, i) :: BasisElement
-#mod(i::BasisIndex) = (:mod, i) :: BasisElement
-#lie(is::Vector{BasisIndex}) = map(lie, collect(is)) :: Monomial{BasisElement}
-#grp(is::Vector{BasisIndex}) = map(grp, collect(is)) :: Monomial{BasisElement}
-#mod(is::Vector{BasisIndex}) = map(mod, collect(is)) :: Monomial{BasisElement}
-#lie(i::BasisIndex, j::BasisIndex, ks::Vararg{BasisIndex}) = map(lie, [i; j; collect(ks)]) :: Monomial{BasisElement}
-#grp(i::BasisIndex, j::BasisIndex, ks::Vararg{BasisIndex}) = map(grp, [i; j; collect(ks)]) :: Monomial{BasisElement}
-#mod(i::BasisIndex, j::BasisIndex, ks::Vararg{BasisIndex}) = map(mod, [i; j; collect(ks)]) :: Monomial{BasisElement}
-#isLie(b::BasisElement) = b[1] === :lie
-#isGrp(b::BasisElement) = b[1] === :grp
-#isMod(b::BasisElement) = b[1] === :mod
 
 function sanitizeLieInput(dynkin::Char, n::Int64) :: Nothing
     @assert dynkin in ['A', 'B', 'C', 'D']

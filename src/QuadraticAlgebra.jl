@@ -158,6 +158,10 @@ function normalForm(alg::QuadraticAlgebra, a::AlgebraElement) :: AlgebraElement
     return result
 end
 
+function normalForm(alg::QuadraticAlgebra, m::Union{BasisElement, Monomial{BasisElement}}) :: AlgebraElement
+    return normalForm(alg, algebraElement(m))
+end
+
 function normalForm(alg::QuadraticAlgebra, expr::SymPy.Sym) :: SymPy.Sym
     return toSymPy(alg, normalForm(alg, algebraElement(alg, expr)))
 end

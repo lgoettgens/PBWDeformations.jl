@@ -1,6 +1,3 @@
-lie = PD.lie
-mod = PD.mod
-
 @testset ExtendedTestSet "All PBWDeformations.jl tests" begin
     @testset "sanitizeLieInput" begin
         @test_throws AssertionError PD.sanitizeLieInput('A', 0)

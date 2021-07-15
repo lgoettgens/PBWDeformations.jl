@@ -1,18 +1,19 @@
 sym(x) = (:sym, x)
 coeff(x) = Coefficient(x)
 randNum() = rand(-20:20)
-randNums(quantity) = rand(-100:100, quantity)
+randNums(quantity) = rand(-20:20, quantity)
 randLength(start=0) = rand(start:10)
 randBasisElement() = sym(randNum()) :: BasisElement
-randMonomial() = [randBasisElement() for _ in 1:randLength()] :: Monomial{BasisElement}
-randAlgebraElement() = [(randNum()//1, randMonomial()) for _ in 1:randLength()] :: AlgebraElement
+basis = map(sym, collect(-20:20))
+randMonomial() = randMonomial(basis)
+randAlgebraElement() = randAlgebraElement(basis)
 
 @testset ExtendedTestSet "All AlgebraElement.jl tests" begin
     @testset "test conversions" begin
-        @test algebraElement() == algebraElement(0) == algebraElement(coeff(0)) == AlgebraElement([]) == AlgebraElement()
+        @test algebraElement() == algebraElement(0) == algebraElement(0) == AlgebraElement([]) == AlgebraElement()
         @test algebraElement(algebraElement(0)) == algebraElement(0)
 
-        @test algebraElement(1) == algebraElement(Coefficient(1)) == algebraElement(Monomial{BasisElement}()) == [(coeff(1), Monomial{BasisElement}())] :: AlgebraElement
+        @test algebraElement(1) == algebraElement(1) == algebraElement(Monomial{BasisElement}()) == [(coeff(1), Monomial{BasisElement}())] :: AlgebraElement
         @test algebraElement(algebraElement(1)) == algebraElement(1)
 
         @test algebraElement(sym(1)) == algebraElement([sym(1)]) == [(coeff(1), [sym(1)])] :: AlgebraElement
@@ -123,7 +124,7 @@ randAlgebraElement() = [(randNum()//1, randMonomial()) for _ in 1:randLength()] 
 
         l = randLength(1)
         a = randAlgebraElement()
-        @test sameSum(l * a, [(Coefficient(l*coeff), mon) for (coeff, mon) in a])
+        @test sameSum(l * a, algebraElement([(Coefficient(l*coeff), mon) for (coeff, mon) in a]))
 
         @test sym(1) * sym(2) != sym(2) * sym(1)
         @test sym(1) * [sym(2), sym(3)] != [sym(2), sym(3)] * sym(1)

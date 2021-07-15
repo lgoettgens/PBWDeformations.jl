@@ -15,9 +15,16 @@ algebraElement(b::BasisElement) = [(Coefficient(1), [b])] :: AlgebraElement
 algebraElement(m::Monomial{BasisElement}) = [(Coefficient(1), m)] :: AlgebraElement
 algebraElement(s::Scaled{Monomial{BasisElement}}) = [s] :: AlgebraElement
 algebraElement(a::AlgebraElement) = a :: AlgebraElement
+algebraElement(x) = AlgebraElement(x)
+Base.convert(::Type{AlgebraElement}, x::StandardOperand) = algebraElement(x)
 
 function groupBy(pred, v::Vector{T}) where T
+    if isempty(v)
+        return Vector{T}[]
+    end
+
     tmp = [0; findall([!pred(v[i], v[i+1]) for i in 1:length(v)-1]); length(v)]
+
     return [v[tmp[i]+1:tmp[i+1]] for i in 1:length(tmp)-1]
 end
 
@@ -26,12 +33,16 @@ function Base.show(io::IO, b::BasisElement) :: Nothing
 end
 
 function Base.show(io::IO, m::Monomial{BasisElement}) :: Nothing
-    for g in groupBy((x,y) -> x[1] === y[1], m)
-        print(io, g[1][1], "(")
-        for i in 1:length(g)-1
-            print(io, g[i][2], ", ")
+    if isempty(m)
+        print(io, "[]")
+    else
+        for g in groupBy((x,y) -> x[1] === y[1], m)
+            print(io, g[1][1], "(")
+            for i in 1:length(g)-1
+                print(io, g[i][2], ", ")
+            end
+            print(io, g[end][2], ")")
         end
-        print(io, g[end][2], ")")
     end
 end
 
