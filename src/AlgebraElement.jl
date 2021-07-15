@@ -154,7 +154,7 @@ function Base.:(-)(x::Operand, y::StandardOperand) :: AlgebraElement
 end
 
 function Base.:(-)(a::StandardOperand, c::Union{Int64, Coefficient}) :: AlgebraElement
-    return a + (-c)s
+    return a + (-c)
 end
 
 
