@@ -112,7 +112,7 @@ randAlgebraElement() = [(randNum()//1, randMonomial()) for _ in 1:randLength()] 
         for _ in 1:numRandomTests
             l = randLength(1)
             a = randAlgebraElement()
-            b = [(Coefficient(l*coeff), mon) for (coeff, mon) in a] :: AlgebraElement
+            b = algebraElement([(Coefficient(l*coeff), mon) for (coeff, mon) in a])
             @test sameSum(sum(fill(a,l)), b)
         end
 
@@ -170,7 +170,7 @@ randAlgebraElement() = [(randNum()//1, randMonomial()) for _ in 1:randLength()] 
         for _ in 1:numRandomTests
             l = randLength(1)
             a = randAlgebraElement()
-            @test sameSum(l * a, [(Coefficient(l*coeff), mon) for (coeff, mon) in a])
+            @test sameSum(l * a, algebraElement([(Coefficient(l*coeff), mon) for (coeff, mon) in a]))
         end
 
         @test sym(1) * sym(2) != sym(2) * sym(1)

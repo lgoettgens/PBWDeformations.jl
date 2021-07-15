@@ -44,6 +44,7 @@ algebraElement(b::BasisElement) = [(Coefficient(1), [b])] :: AlgebraElement
 algebraElement(m::Monomial{BasisElement}) = [(Coefficient(1), m)] :: AlgebraElement
 algebraElement(s::Scaled{Monomial{BasisElement}}) = [s] :: AlgebraElement
 algebraElement(a::AlgebraElement) = a :: AlgebraElement
+algebraElement(x) = AlgebraElement(x)
 
 
 function Base.:(+)(x::Union{Int64, Coefficient, StandardOperand}, as::Vararg{StandardOperand}) :: AlgebraElement
