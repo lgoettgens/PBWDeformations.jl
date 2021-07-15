@@ -19,14 +19,14 @@ end
 
 function smashProductDeformLie(sp::QuadraticAlgebra{SmashProductLie}, kappa::Matrix{AlgebraElement}) :: QuadraticAlgebra{SmashProductDeformLie}
     nV = sp.extraData.nV
-    @assert size(kappa) == (nV, nV) "size of kappa does not match module dimension"
+    @assert size(kappa) == (nV, nV) "size of kappa matches module dimension"
 
     # basis of smash product consists of basis of module and basis of Hopf algebra
     hopfBasis = filter(!isMod, sp.basis)
-    @assert all(e -> issubset(basisElements(e), hopfBasis), kappa) "kappa does not only take values in Hopf algebra"
+    @assert all(e -> issubset(basisElements(e), hopfBasis), kappa) "kappa only takes values in Hopf algebra"
 
     for i in 1:nV, j in 1:i
-        @assert sameSum(kappa[i,j], -kappa[j,i]) "kappa is not skew-symmetric"
+        @assert sameSum(kappa[i,j], -kappa[j,i]) "kappa is skew-symmetric"
     end
 
     relTable = sp.relTable
