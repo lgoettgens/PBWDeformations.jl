@@ -22,7 +22,7 @@ function smashProductDeformLie(sp::QuadraticAlgebra{SmashProductLie}, kappa::Mat
     @assert size(kappa) == (nV, nV) "size of kappa matches module dimension"
 
     # basis of smash product consists of basis of module and basis of Hopf algebra
-    hopfBasis = filter(!isMod, sp.basis)
+    hopfBasis = filter(!ismod, sp.basis)
     @assert all(e -> issubset(basisElements(e), hopfBasis), kappa) "kappa only takes values in Hopf algebra"
 
     for i in 1:nV, j in 1:i

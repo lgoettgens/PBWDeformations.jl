@@ -1,6 +1,5 @@
 module PBWDeformations
 
-using Base: Bool
 using Oscar
 using SymPy
 
@@ -13,12 +12,22 @@ fromSymPy = N
 include("AlgebraElement.jl")
 include("QuadraticAlgebra.jl")
 
-lie(i::Int64) = (:lie, i) :: BasisElement
-mod(i::Int64) = (:mod, i) :: BasisElement
-grp(i::Int64) = (:grp, i) :: BasisElement
-isLie(b::BasisElement) = b[1] == :lie
-isMod(b::BasisElement) = b[1] == :mod
-isGrp(b::BasisElement) = b[1] == :grp
+# generates
+# lie(i::BasisIndex) = (:lie, i) :: BasisElement
+# lie(is::Vector{BasisIndex}) = map(lie, collect(is)) :: Monomial{BasisElement}
+# lie(i::BasisIndex, j::BasisIndex, ks::Vararg{BasisIndex}) = map(lie, [i; j; collect(ks)]) :: Monomial{BasisElement}
+# islie(b::BasisElement) = b[1] === :lie
+# and likewise for :grp, :mod, :test
+
+for name in (:lie, :grp, :mod, :test)
+    s = Symbol("is", name)
+    @eval begin
+        ($name)(i::BasisIndex) = (Symbol($name), i) :: BasisElement
+        ($name)(is::Vector{BasisIndex}) = map($name, is) :: Monomial{BasisElement}
+        ($name)(i::BasisIndex, j::BasisIndex, ks::Vararg{BasisIndex}) = map($name, [i; j; collect(ks)]) :: Monomial{BasisElement}
+        ($s)(b::BasisElement) = (b[1] === Symbol($name)) :: Bool
+    end
+end
 
 function sanitizeLieInput(dynkin::Char, n::Int64) :: Nothing
     @assert dynkin in ['A', 'B', 'C', 'D']
