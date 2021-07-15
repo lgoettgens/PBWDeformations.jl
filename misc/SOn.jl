@@ -40,7 +40,7 @@ init(3) # default
 
 function _normalForm(ind, ff=1)
     i = findfirst(ind[1:end-1] .> ind[2:end])
-    if i == nothing return [(ff, ind)] end
+    if i === nothing return [(ff, ind)] end
     p = (ind[i], ind[i+1])
     commutators = haskey(comm_table, p) ? comm_table[p] : []
     

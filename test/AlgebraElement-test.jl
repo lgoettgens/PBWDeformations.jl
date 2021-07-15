@@ -1,10 +1,9 @@
-sym(x) = (:sym, x)
-coeff(x) = Coefficient(x)
+x = test
 randNum() = rand(-20:20)
 randNums(quantity) = rand(-20:20, quantity)
 randLength(start=0) = rand(start:10)
-randBasisElement() = sym(randNum()) :: BasisElement
-basis = map(sym, collect(-20:20))
+randBasisElement() = x(randNum()) :: BasisElement
+basis = x(collect(-20:20))
 randMonomial() = randMonomial(basis)
 randAlgebraElement() = randAlgebraElement(basis)
 
@@ -13,16 +12,16 @@ randAlgebraElement() = randAlgebraElement(basis)
         @test algebraElement() == algebraElement(0) == algebraElement(0) == AlgebraElement([]) == AlgebraElement()
         @test algebraElement(algebraElement(0)) == algebraElement(0)
 
-        @test algebraElement(1) == algebraElement(1) == algebraElement(Monomial{BasisElement}()) == [(coeff(1), Monomial{BasisElement}())] :: AlgebraElement
+        @test algebraElement(1) == algebraElement(1) == algebraElement(Monomial{BasisElement}()) == [(Coefficient(1), Monomial{BasisElement}())] :: AlgebraElement
         @test algebraElement(algebraElement(1)) == algebraElement(1)
 
-        @test algebraElement(sym(1)) == algebraElement([sym(1)]) == [(coeff(1), [sym(1)])] :: AlgebraElement
-        @test algebraElement(algebraElement(sym(1))) == algebraElement(sym(1))
+        @test algebraElement(test(1)) == algebraElement([x(1)]) == [(Coefficient(1), [x(1)])] :: AlgebraElement
+        @test algebraElement(algebraElement(x(1))) == algebraElement(x(1))
 
-        @test algebraElement(map(sym, [1,2,3])) == [(coeff(1), map(sym, [1,2,3]))] :: AlgebraElement
-        @test algebraElement(algebraElement(map(sym, [1,2,3]))) == algebraElement(map(sym, [1,2,3]))
+        @test algebraElement(x(1,2,3)) == [(Coefficient(1), x(1,2,3))] :: AlgebraElement
+        @test algebraElement(algebraElement(x(1,2,3))) == algebraElement(x(1,2,3))
 
-        a = [(coeff(1//3), [sym(1)]), (coeff(-1), [sym(1), sym(1)])] :: AlgebraElement
+        a = [(Coefficient(1//3), [x(1)]), (Coefficient(-1), x(1,1))] :: AlgebraElement
         @test algebraElement(a) == a
     end
 
@@ -37,135 +36,141 @@ randAlgebraElement() = randAlgebraElement(basis)
         @test PD.collectSummands(algebraElement(mon)) == algebraElement(mon)
 
         a = randAlgebraElement()
-        @test sameSum(a, PD.collectSummands(a))
+        @test a ≐ PD.collectSummands(a)
 
         a = randAlgebraElement()
-        @test sameSum(a, shuffle(a))
+        @test a ≐ shuffle(a)
 
-        c1, c2, c3 = map(coeff, randNums(3))
+        c1, c2, c3 = map(Coefficient, randNums(3))
         mon = randMonomial()
         mon2 = randMonomial()
-        @test sameSum([(c1, mon), (c2, mon), (c3, mon2)], [(c3, mon2), (c1+c2, mon)])
+        @test [(c1, mon), (c2, mon), (c3, mon2)] ≐ [(c3, mon2), (c1+c2, mon)]
 
-        c1, c2 = map(coeff, randNums(2))
+        c1, c2 = map(Coefficient, randNums(2))
         mon = randMonomial()
         mon2 = randMonomial()
-        @test sameSum([(c1, mon), (c2, mon2), (-c1, mon)], [(c2, mon2)])
+        @test [(c1, mon), (c2, mon2), (-c1, mon)] ≐ [(c2, mon2)]
     end
 
     @testset "test addition" begin
         nums = randNums(randLength(1))
-        @test sameSum(sum(map(algebraElement, nums)), algebraElement(sum(nums)))
+        @test sum(map(algebraElement, nums)) ≐ algebraElement(sum(nums))
 
         as = [randAlgebraElement() for _ in 1:randLength(2)]
-        @test sameSum(sum(shuffle(as)), sum(as))
+        @test sum(shuffle(as)) ≐ sum(as)
 
         a = randAlgebraElement()
-        @test sameSum(0 + a, a)
+        @test 0 + a ≐ a
 
-        x = randNum()
+        c = randNum()
         a = randAlgebraElement()
-        @test sameSum(x + a, coeff(x) + a)
+        @test c + a ≐ Coefficient(c) + a
 
-        x = randNum()
+        c = randNum()
         b = randBasisElement()
         m = randMonomial()
         a = randAlgebraElement()
-        @test sameSum(x + b + a + m, m + a + x + b)
-        @test sameSum(x + b + a + m, sum(map(algebraElement, shuffle([x, b, a, m]))))
+        @test c + b + a + m ≐ sum(algebraElement, shuffle([c, b, a, m]))
 
         l = randLength(1)
         b = randBasisElement()
-        @test sameSum([(coeff(l), [b])], sum(fill(b, l)))
+        @test [(Coefficient(l), [b])] ≐ sum(fill(b, l))
 
         l = randLength(1)
         m = randMonomial()
-        @test sameSum([(coeff(l), m)], sum(fill(m, l)))
+        @test [(Coefficient(l), m)] ≐ sum(fill(m, l))
 
         l = randLength(1)
         a = randAlgebraElement()
         b = [(Coefficient(l*coeff), mon) for (coeff, mon) in a] :: AlgebraElement
-        @test sameSum(sum(fill(a,l)), b)
+        @test sum(fill(a,l)) ≐ b
 
-        @test sameSum(algebraElement(0), [(coeff(1), [sym(1)])] + [(coeff(-1), [sym(1)])])
+        @test [(Coefficient(1), [x(1)])] + [(Coefficient(-1), [x(1)])] ≐ 0
     end
 
     @testset "test multiplication" begin
         nums = randNums(randLength(1))
-        @test sameSum(prod(map(algebraElement, nums)), algebraElement(prod(nums)))
+        @test prod(map(algebraElement, nums)) ≐ prod(nums)
 
         c = randNum()
         a = randAlgebraElement()
-        @test sameSum(c * a, coeff(c) * a)
+        @test c * a ≐ Coefficient(c) * a
 
         c = randNum()
         a = randAlgebraElement()
-        @test sameSum(c * a, a * c)
+        @test c * a ≐ a * c
 
         a = randAlgebraElement()
-        @test sameSum(0 * a, algebraElement(0))
+        @test 0 * a ≐ 0
 
         a = randAlgebraElement()
-        @test sameSum(1 * a, a)
+        @test 1 * a ≐ a
 
-        x = randNum()
+        c = randNum()
         b = randBasisElement()
         m = randMonomial()
         a = randAlgebraElement()
-        @test sameSum(x * b * a * m, prod(map(algebraElement, [x, b, a, m])))
+        @test c * b * a * m ≐ prod(algebraElement, [c, b, a, m])
 
         l = randLength(1)
         b = randBasisElement()
-        @test sameSum(l * b, [(coeff(l), [b])])
+        @test l * b ≐ [(Coefficient(l), [b])]
 
         l = randLength(1)
         m = randMonomial()
-        @test sameSum(l * m, [(coeff(l), m)])
+        @test l * m ≐ [(Coefficient(l), m)]
 
         l = randLength(1)
         a = randAlgebraElement()
-        @test sameSum(l * a, algebraElement([(Coefficient(l*coeff), mon) for (coeff, mon) in a]))
+        @test l * a ≐ [(Coefficient(l*coeff), mon) for (coeff, mon) in a]
 
-        @test sym(1) * sym(2) != sym(2) * sym(1)
-        @test sym(1) * [sym(2), sym(3)] != [sym(2), sym(3)] * sym(1)
-        @test sym(1) * [sym(2), sym(3)] != [sym(2), sym(3)] * sym(1)
+        ind = randNums(10)
+        @test x(ind) == prod(x, ind)
 
-        @test sameSum((sym(1)+sym(2))*(sym(1)+sym(2)), sym(1)*sym(1) + sym(1)*sym(2) + sym(2)*sym(1) + sym(2)*sym(2))
+        ind1 = randNums(10)
+        ind2 = randNums(10)
+        @test x(ind1)*x(ind2) == x([ind1; ind2]) == x(ind1..., ind2...)
+
+        @test x(1) * x(2,3) == x(1,2,3)
+        @test !(x(1,2) ≐ x(2,1))
+        @test !(x(1) * x(2,3) ≐ x(2,3) * x(1))
+        @test (x(1) + x(2)) * (x(1) + x(2)) ≐ x(1,1) + x(1,2) + x(2,1) + x(2,2)
     end
 
     @testset "test exponentiation" begin
         b = randNum()
         n = randLength(1)
-        @test sameSum(algebraElement(b)^n, algebraElement(b^n))
+        @test algebraElement(b)^n ≐ b^n
 
         a = randAlgebraElement()
-        @test sameSum(a^0, algebraElement(1))
+        @test a^0 ≐ 1
+
+        n = rand(1:4)
+        a = randAlgebraElement()
+        @test a^n ≐ prod([a for _ in 1:n])
 
         n = rand(1:3)
         a = randAlgebraElement()
-        @test sameSum(a^n, prod([a for _ in 1:n]))
-
-        n = rand(1:3)
-        a = randAlgebraElement()
-        @test sameSum(a^(n+1), a*(a^n))
+        @test a^(n+1) ≐ a*(a^n)
+        @test a^(n+1) ≐ (a^n)*a
     end
 
     @testset "test subtraction" begin
         n = randNum()
-        @test sameSum(-algebraElement(n), algebraElement(-n))
+        @test -algebraElement(n) == algebraElement(-n)
 
         a = randAlgebraElement()
-        @test sameSum(a-a, algebraElement(0))
+        @test a-a ≐ 0
 
         a = randAlgebraElement()
-        @test sameSum(-(-a), a)
+        @test -(-a) ≐ a
 
         a = randAlgebraElement()
-        @test sameSum(algebraElement(0)-a, -a)
+        @test 0-a ≐ -a
 
         a = randAlgebraElement()
         b = randAlgebraElement()
-        @test sameSum(-(a+b), -a-b)
+        @test -(a+b) ≐ -a-b
     end
 
 end

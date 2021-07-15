@@ -6,6 +6,7 @@ Scaled{T} = Tuple{Coefficient, T}
 LinearCombination{T} = Vector{Scaled{T}}
 AlgebraElement = LinearCombination{Monomial{BasisElement}}
 StandardOperand = Union{BasisElement, Monomial{BasisElement}, Scaled{Monomial{BasisElement}}, AlgebraElement}
+Operand = Union{Int64, Coefficient, BasisElement, Monomial{BasisElement}, Scaled{Monomial{BasisElement}}, AlgebraElement}
 
 
 # emtpy list represents empty sum, which is 0
@@ -16,7 +17,7 @@ algebraElement(m::Monomial{BasisElement}) = [(Coefficient(1), m)] :: AlgebraElem
 algebraElement(s::Scaled{Monomial{BasisElement}}) = [s] :: AlgebraElement
 algebraElement(a::AlgebraElement) = a :: AlgebraElement
 algebraElement(x) = AlgebraElement(x)
-Base.convert(::Type{AlgebraElement}, x::StandardOperand) = algebraElement(x)
+Base.convert(::Type{AlgebraElement}, x::Operand) = algebraElement(x)
 
 function groupBy(pred, v::Vector{T}) where T
     if isempty(v)
@@ -69,11 +70,10 @@ function basisElements(a::AlgebraElement) :: Vector{BasisElement}
     return unique(vcat(monomials(a)...))
 end
 
-function collectSummands(a::Union{AlgebraElement, Vector{AlgebraElement}}) :: AlgebraElement
-    a = isa(a, AlgebraElement) ? a : AlgebraElement(vcat(a...))
-    res = AlgebraElement()
+function collectSummands(a::Operand) :: AlgebraElement
+    res = algebraElement()
 
-    for (coeff, mon) in a
+    for (coeff, mon) in algebraElement(a)
         i = findfirst(x -> x[2] == mon, res)
 
         if i === nothing
@@ -86,12 +86,17 @@ function collectSummands(a::Union{AlgebraElement, Vector{AlgebraElement}}) :: Al
     return filter(x -> !iszero(x[1]), res)
 end
 
-function sameSum(a1::StandardOperand, a2::StandardOperand) :: Bool
-    return issetequal(collectSummands(algebraElement(a1)), collectSummands(algebraElement(a2)))
+function collectSummands(as::Vector{AlgebraElement}) :: AlgebraElement
+    return collectSummands(algebraElement(vcat(as...)))
 end
 
+function sameSum(a1::Operand, a2::Operand) :: Bool
+    return issetequal(collectSummands(a1), collectSummands(a2))
+end
 
-function Base.:(+)(x::Union{Int64, Coefficient, StandardOperand}, as::Vararg{StandardOperand}) :: AlgebraElement
+≐ = sameSum # type symbol via \doteq, autocomplete with tab
+
+function Base.:(+)(x::Operand, as::Vararg{StandardOperand}) :: AlgebraElement
     return collectSummands(map(algebraElement, [x, as...]))
 end
 
@@ -143,7 +148,7 @@ function Base.:(-)(a::StandardOperand) :: AlgebraElement
     return (-1)*a
 end
 
-function Base.:(-)(x::Union{Int64, Coefficient, StandardOperand}, y::StandardOperand) :: AlgebraElement
+function Base.:(-)(x::Operand, y::StandardOperand) :: AlgebraElement
     return x + (-y)
 end
 

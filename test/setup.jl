@@ -29,6 +29,7 @@ algebraElement = PD.algebraElement
 sameSum = PD.sameSum
 normalForm = PD.normalForm
 comm = PD.comm
+≐ = PD.:(≐)
 
 numRandomTests = 10
 dimRandomTests = [3, 10, 25, 100]
