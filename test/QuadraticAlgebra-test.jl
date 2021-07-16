@@ -1,6 +1,6 @@
 @testset ExtendedTestSet "All PBWDeformations.QuadraticAlgebra tests" begin
     @testset "containment" begin
-        basis = test(collect(1:10))
+        basis = test(1:10)
         relTable = Dict()
         alg = PD.QuadraticAlgebra{Nothing}(basis, relTable, nothing) :: PD.QuadraticAlgebra{Nothing}
         x = test
@@ -22,7 +22,7 @@
     @testset "normalForm for abstract cases" begin
         @testset "tensor algebra over V with dim V = $n" for n in dimRandomTests
             x = test
-            basis = x(collect(1:n))
+            basis = x(1:n)
             relTable = Dict()
             alg = PD.QuadraticAlgebra{Nothing}(basis, relTable, nothing)
 
@@ -37,7 +37,7 @@
 
         @testset "symmetric algebra over V with dim V = $n" for n in dimRandomTests
             x = test
-            basis = x(collect(1:n))
+            basis = x(1:n)
             relTable = Dict([((x(i), x(j)), algebraElement(x(j,i))) for i in 1:n for j in 1:i-1])
             alg = PD.QuadraticAlgebra{Nothing}(basis, relTable, nothing)
 
@@ -57,7 +57,7 @@
 
         @testset "exterior algebra over V with dim V = $n" for n in dimRandomTests
             x = test
-            basis = x(collect(1:10))
+            basis = x(1:10)
             relTable = Dict([
                 [((x(i), x(j)), -x(j,i)) for i in 1:n for j in 1:i-1];
                 [((x(i), x(i)), algebraElement(0)) for i in 1:n];

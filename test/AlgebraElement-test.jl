@@ -3,7 +3,7 @@ randNum() = rand(-20:20)
 randNums(quantity) = rand(-20:20, quantity)
 randLength(start=0) = rand(start:10)
 randBasisElement() = x(randNum()) :: BasisElement
-basis = x(collect(-20:20))
+basis = x(-20:20)
 randMonomial() = randMonomial(basis)
 randAlgebraElement() = randAlgebraElement(basis)
 
