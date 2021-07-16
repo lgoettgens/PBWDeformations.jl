@@ -15,6 +15,7 @@ include("QuadraticAlgebra.jl")
 # generates
 # lie(i::BasisIndex) = (:lie, i) :: BasisElement
 # lie(is::Vector{BasisIndex}) = map(lie, collect(is)) :: Monomial{BasisElement}
+# lie(is::UnitRange{BasisIndex}) = lie(collect(is)) :: Monomial{BasisElement}
 # lie(i::BasisIndex, j::BasisIndex, ks::Vararg{BasisIndex}) = map(lie, [i; j; collect(ks)]) :: Monomial{BasisElement}
 # islie(b::BasisElement) = b[1] === :lie
 # and likewise for :grp, :mod, :test
@@ -24,6 +25,7 @@ for name in (:lie, :grp, :mod, :test)
     @eval begin
         ($name)(i::BasisIndex) = (Symbol($name), i) :: BasisElement
         ($name)(is::Vector{BasisIndex}) = map($name, is) :: Monomial{BasisElement}
+        ($name)(is::UnitRange{BasisIndex}) = ($name)(collect(is)) :: Monomial{BasisElement}
         ($name)(i::BasisIndex, j::BasisIndex, ks::Vararg{BasisIndex}) = map($name, [i; j; collect(ks)]) :: Monomial{BasisElement}
         ($s)(b::BasisElement) = (b[1] === Symbol($name)) :: Bool
     end
