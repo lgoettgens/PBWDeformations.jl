@@ -13,7 +13,7 @@
         end
     end
 
-    @testset "smashProducSymmDeformLie constructor" begin
+    @testset "smashProductSymmDeformLie constructor" begin
         @testset "$(dynkin)_$n with hw $lambda" for (dynkin, n, lambda) in [('A', 2, [1,1]), ('B', 2, [1,0])]
             sp = PD.smashProductLie(dynkin, n, lambda)
             deform1 = PD.smashProductSymmDeformLie(sp)
@@ -87,6 +87,24 @@
             kappa = fill(PD.AlgebraElement(), nV, nV)
             kappa[1,2] = algebraElement(lie(1))
             @test_throws AssertionError("kappa is skew-symmetric") PD.smashProductDeformLie(sp, kappa)
+        end
+
+    end
+
+    @testset "isPBWDeformation" begin
+        @testset "symmetric deformation of $(dynkin)_$n with hw $lambda" for (dynkin, n, lambda) in [('A', 2, [1,1]), ('B', 2, [1,0])]
+            d = PD.smashProductSymmDeformLie(dynkin, n, lambda)
+            @test PD.isPBWDeformation(d)
+        end
+
+        @testset "non-PBW deformations" begin
+            sp = PD.smashProductLie('A', 2, [1,0])
+            kappa = fill(algebraElement(0), 3, 3)
+            # some made-up skew-symmetric entries
+            kappa[1,2] = lie(3)
+            kappa[2,1] = -lie(3)
+            d = PD.smashProductDeformLie(sp, kappa)
+            @test !PD.isPBWDeformation(d)
         end
 
     end
