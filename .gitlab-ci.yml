@@ -24,6 +24,9 @@ stages:
         c, t = get_summary(cov)
         using Printf
         @printf "Test coverage %.2f%%\n" 100c / t'
+  artifacts:
+    paths:
+      - "**/*.cov"
 
 unittest-Julia 1.6:
   image: johannesflake/oscar
