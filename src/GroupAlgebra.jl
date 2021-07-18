@@ -16,7 +16,7 @@ function Base.show(io::IO, ga::GroupAlgebra) :: Nothing
 end
 
 
-function _groupAlgebra(group, groupName::String) :: QuadraticAlgebra{GroupAlgebra}
+function _groupAlgebra(group #= :: Gap.Group =#, groupName::String) :: QuadraticAlgebra{GroupAlgebra}
     @assert GAP.IsGroup(group)
     @assert GAP.Order(group) != GAP.infinity
     

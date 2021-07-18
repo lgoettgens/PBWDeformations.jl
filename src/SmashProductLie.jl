@@ -4,11 +4,12 @@ struct SmashProductLie
     lambda :: Vector{Int64}
     nL :: Int64
     nV :: Int64
+    matrixRepL :: Vector{Matrix{Int64}}
 end
 
 function Base.:(==)(sp1::SmashProductLie, sp2::SmashProductLie) :: Bool
-    (sp1.dynkin, sp1.n, sp1.lambda, sp1.nL, sp1.nV) ==
-    (sp2.dynkin, sp2.n, sp2.lambda, sp2.nL, sp2.nV)
+    (sp1.dynkin, sp1.n, sp1.lambda, sp1.nL, sp1.nV, sp1.matrixRepL) ==
+    (sp2.dynkin, sp2.n, sp2.lambda, sp2.nL, sp2.nV, sp2.matrixRepL)
 end
 
 function Base.show(io::IO, sp::SmashProductLie) :: Nothing
@@ -28,7 +29,9 @@ function smashProductLie(dynkin::Char, n::Int64, lambda::Vector{Int64}) :: Quadr
 
     L = GAP.SimpleLieAlgebra(toGAP(string(dynkin)), n, GAP.Rationals)
     nL = GAP.Dimension(L)
+    bL = GAP.BasisVectors(GAP.Basis(L))
     commTableL = fromGAP(GAP.StructureConstantsTable(GAP.Basis(L)))[1:nL]
+    matrixRepL = getMatrixRep(L, [i == 1 ? 1 : 0 for i in 1:n])
 
     for i in 1:nL, j in 1:i-1
         relTable[(lie(i), lie(j))] = [
@@ -39,7 +42,6 @@ function smashProductLie(dynkin::Char, n::Int64, lambda::Vector{Int64}) :: Quadr
 
     V = GAP.HighestWeightModule(L, toGAP(lambda))
     nV = GAP.Dimension(V)
-    bL = GAP.BasisVectors(GAP.Basis(L))
     bV = GAP.BasisVectors(GAP.Basis(V))
 
     for i in 1:nL, j in 1:nV
@@ -49,7 +51,35 @@ function smashProductLie(dynkin::Char, n::Int64, lambda::Vector{Int64}) :: Quadr
         ]
     end
 
-    extraData = SmashProductLie(dynkin, n, lambda, nL, nV)
+    extraData = SmashProductLie(dynkin, n, lambda, nL, nV, matrixRepL)
     basis = [[mod(i) for i in 1:nV]; [lie(i) for i in 1:nL]] :: Vector{BasisElement}
     return QuadraticAlgebra{SmashProductLie}(basis, relTable, extraData)
+end
+
+
+function getMatrixRep(dynkin::Char, n::Int64) :: Vector{Matrix{Int64}}
+    sanitizeLieInput(dynkin, n)
+    
+    L = GAP.SimpleLieAlgebra(toGAP(string(dynkin)), n, GAP.Rationals)
+    lambda = [i == 1 ? 1 : 0 for i in 1:n]
+
+    return getMatrixRep(L, lambda)
+end
+
+function getMatrixRep(L #= :: Gap.LieAlgebra =#, lambda :: Vector{Int64}) :: Vector{Matrix{Int64}}
+    @assert GAP.IsLieAlgebra(L)
+
+    nL = GAP.Dimension(L)
+    bL = GAP.BasisVectors(GAP.Basis(L))
+
+    V = GAP.HighestWeightModule(L, toGAP(lambda))
+    nV = GAP.Dimension(V)
+    bV = GAP.BasisVectors(GAP.Basis(V))
+
+    matrixRep = [zeros(Int64, nV,nV) for _ in 1:nL]
+    for i in 1:nL, j in 1:nV
+        matrixRep[i][:,j] = fromGAP(GAP.Coefficients(GAP.Basis(V), bL[i]^bV[j]))
+    end
+
+    return matrixRep
 end

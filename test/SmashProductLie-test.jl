@@ -8,6 +8,7 @@
             @test sp.extraData.nL == 8
             @test sp.extraData.nV == 8
             @test length(sp.basis) == sp.extraData.nL + sp.extraData.nV
+            @test sp.extraData.matrixRepL == PD.getMatrixRep('A', 2)
 
             showOutput = @test_nowarn sprint(show, sp)
             @test occursin("smash product", lowercase(showOutput))
@@ -119,6 +120,7 @@
             @test sp.extraData.nL == 10
             @test sp.extraData.nV == 5
             @test length(sp.basis) == sp.extraData.nL + sp.extraData.nV
+            @test sp.extraData.matrixRepL == PD.getMatrixRep('B', 2)
 
             showOutput = @test_nowarn sprint(show, sp)
             @test occursin("smash product", lowercase(showOutput))
@@ -224,6 +226,46 @@
                 (lie(10), mod(5)) => [(1, [mod(5), lie(10)])],
             )
         end
+    end
+
+    @testset "getMatrixRep" begin
+        @testset "A_$n" for n in 1:6
+            matrixRep = PD.getMatrixRep('A', n)
+            @test length(matrixRep) == (n+1)^2-1
+            @test all(mat -> size(mat) == (n+1, n+1), matrixRep)
+
+            if n == 1
+                @test matrixRep[1] in [c*[0 1; 0 0] for c in [-1, 1]]
+                @test matrixRep[2] in [c*[0 0; 1 0] for c in [-1, 1]]
+                @test matrixRep[3] in [c*[1 0; 0 -1] for c in [-1, 1]]
+            elseif n == 2
+                for i in 1:6
+                    @test length([x for x in vcat(matrixRep[i]...) if x != 0]) == 1
+                end
+                @test matrixRep[7] in [c*[1 0 0; 0 -1 0; 0 0 0] for c in [-1, 1]]
+                @test matrixRep[8] in [c*[0 0 0; 0 1 0; 0 0 -1] for c in [-1, 1]]
+            end
+
+        end
+
+        @testset "B_$n" for n in 2:6
+            matrixRep = PD.getMatrixRep('B', n)
+            @test length(matrixRep) == 2*n^2+n
+            @test all(mat -> size(mat) == (2n+1, 2n+1), matrixRep)
+        end
+
+        @testset "C_$n" for n in 2:6
+            matrixRep = PD.getMatrixRep('C', n)
+            @test length(matrixRep) == 2*n^2+n
+            @test all(mat -> size(mat) == (2n, 2n), matrixRep)
+        end
+
+        @testset "D_$n" for n in 4:6
+            matrixRep = PD.getMatrixRep('D', n)
+            @test length(matrixRep) == 2*n^2-n
+            @test all(mat -> size(mat) == (2n, 2n), matrixRep)
+        end
+
     end
 
 end
