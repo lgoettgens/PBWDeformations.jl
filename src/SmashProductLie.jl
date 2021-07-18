@@ -5,6 +5,7 @@ struct SmashProductLie
     nL :: Int64
     nV :: Int64
     matrixRepL :: Vector{Matrix{Int64}}
+    weightsV :: Vector{Vector{Int64}}
 end
 
 function Base.:(==)(sp1::SmashProductLie, sp2::SmashProductLie) :: Bool
@@ -51,7 +52,9 @@ function smashProductLie(dynkin::Char, n::Int64, lambda::Vector{Int64}) :: Quadr
         ]
     end
 
-    extraData = SmashProductLie(dynkin, n, lambda, nL, nV, matrixRepL)
+    weightsV = fromGAP(GAP.List(bV, v -> GAP.ExtRepOfObj(GAP.ExtRepOfObj(v))[1][3]))
+
+    extraData = SmashProductLie(dynkin, n, lambda, nL, nV, matrixRepL, weightsV)
     basis = [[mod(i) for i in 1:nV]; [lie(i) for i in 1:nL]] :: Vector{BasisElement}
     return QuadraticAlgebra{SmashProductLie}(basis, relTable, extraData)
 end

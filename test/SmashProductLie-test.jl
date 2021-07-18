@@ -9,6 +9,8 @@
             @test sp.extraData.nV == 8
             @test length(sp.basis) == sp.extraData.nL + sp.extraData.nV
             @test sp.extraData.matrixRepL == PD.getMatrixRep('A', 2)
+            @test length(sp.extraData.weightsV) == sp.extraData.nV
+            @test sp.extraData.weightsV == [[1, 1], [-1, 2], [2, -1], [0, 0], [0, 0], [-2, 1], [1, -2], [-1, -1]]
 
             showOutput = @test_nowarn sprint(show, sp)
             @test occursin("smash product", lowercase(showOutput))
@@ -121,6 +123,8 @@
             @test sp.extraData.nV == 5
             @test length(sp.basis) == sp.extraData.nL + sp.extraData.nV
             @test sp.extraData.matrixRepL == PD.getMatrixRep('B', 2)
+            @test length(sp.extraData.weightsV) == sp.extraData.nV
+            @test sp.extraData.weightsV == [[1, 0], [-1, 2], [0, 0], [1, -2], [-1, 0]]
 
             showOutput = @test_nowarn sprint(show, sp)
             @test occursin("smash product", lowercase(showOutput))
