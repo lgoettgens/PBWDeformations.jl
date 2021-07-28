@@ -1,4 +1,4 @@
-struct QuadraticAlgebra{T}
+struct QuadraticAlgebra{T, C}
     basis :: Vector{BasisElement}
 
     """
@@ -11,7 +11,10 @@ struct QuadraticAlgebra{T}
     x :: SymFunction
 
     QuadraticAlgebra{T}(basis, relTable, extraData = nothing) where T =
-        new{T}(basis, relTable, extraData, SymFunction("x", commutative=false))
+        new{T, Rational{Int64}}(basis, relTable, extraData, SymFunction("x", commutative=false))
+
+    QuadraticAlgebra{T, C}(basis, relTable, extraData = nothing) where {T, C} =
+        new{T, C}(basis, relTable, extraData, SymFunction("x", commutative=false))
 end
 
 function Base.:(==)(alg1::QuadraticAlgebra, alg2::QuadraticAlgebra) :: Bool
