@@ -1,26 +1,68 @@
+include("Structs.jl")
+
+abstract type AbstractAlgebraElement <: Wrapper end
+
 BasisIndex = Int64
-BasisElement = Tuple{Symbol, Int64}
-Monomial{T} = Vector{T}
-Scaled{T, C} = Tuple{C, T}
-LinearCombination{T, C} = Vector{Scaled{T, C}}
-AlgebraElement{C} = LinearCombination{Monomial{BasisElement}, C}
-StandardOperand{C} = Union{BasisElement, Monomial{BasisElement}, Scaled{Monomial{BasisElement}, C}, AlgebraElement{C}}
-Operand{C} = Union{Int64, C, BasisElement, Monomial{BasisElement}, Scaled{Monomial{BasisElement}, C}, AlgebraElement{C}}
+BasisElementInternal = Tuple{Symbol, Int64}
+MonomialInternal = Vector{BasisElementInternal}
+AlgebraElementInternal{C} = Vector{Tuple{C, MonomialInternal}}
 
 
-# emtpy list represents empty sum, which is 0
-algebraElement(::Type{C}) where C = AlgebraElement{C}()
-algebraElement(::Type{C}, c::Union{Int64, C}) where C = iszero(c) ? AlgebraElement() : [(C(c), Monomial{BasisElement}())] :: AlgebraElement{C}
-algebraElement(::Type{C}, b::BasisElement) where C = [(C(1), [b])] :: AlgebraElement{C}
-algebraElement(::Type{C}, m::Monomial{BasisElement}) where C = [(C(1), m)] :: AlgebraElement{C}
-algebraElement(::Type{C}, s::Scaled{Monomial{BasisElement}, C}) where C = [s] :: AlgebraElement{C}
-algebraElement(::Type{C}, a::AlgebraElement{C}) where C = a :: AlgebraElement{C}
-algebraElement(::Type{C}, x) where C = AlgebraElement{C}(x)
-Base.convert(::Type{AlgebraElement{C}}, x::Operand) where C = algebraElement{C}(x)
+struct BasisElement <: AbstractAlgebraElement
+    b :: BasisElementInternal
 
-function groupBy(pred, v::Vector{T}) where T
+    BasisElement(sym::Symbol, ind::Int64) = new((sym, ind))
+    BasisElement(b::BasisElementInternal) = new(b)
+    BasisElement(b::BasisElement) = b
+end
+
+struct Monomial <: AbstractAlgebraElement
+    m :: MonomialInternal
+
+    Monomial() = new([])
+    Monomial(b::BasisElementInternal) = new([b])
+    Monomial(b::BasisElement) = Monomial(unpack(b))
+
+    Monomial(m::MonomialInternal) = new(m)
+    Monomial(m::Vector{BasisElement}) = Monomial(map(unpack, m))
+    Monomial(m::Monomial) = m
+end
+
+struct AlgebraElement{C} <: AbstractAlgebraElement
+    a :: AlgebraElementInternal{C}
+
+    # emtpy list represents empty sum, which is 0
+    AlgebraElement{C}() where C = new{C}([])
+
+    AlgebraElement{C}(c::Int64) where C = iszero(c) ? AlgebraElement{C}() : new{C}([(c, Tuple{Symbol, Int64}[])])
+    AlgebraElement{C}(c::C) where C = new{C}([(c, Tuple{Symbol, Int64}[])])
+
+    AlgebraElement{C}(b::BasisElementInternal) where C = new{C}([(C(1), [b])])
+    AlgebraElement{C}(b::BasisElement) where C = AlgebraElement{C}(unpack(b))
+
+    AlgebraElement{C}(m::MonomialInternal) where C = new{C}([(C(1), m)])
+    AlgebraElement{C}(m::Vector{BasisElement}) where C = AlgebraElement{C}(map(unpack, m))
+    AlgebraElement{C}(m::Monomial) where C = AlgebraElement{C}(unpack(m))
+
+    AlgebraElement{C}(a::AlgebraElementInternal) where C = new{C}(a)
+    AlgebraElement{C}(a::Vector{Tuple{C, Vector{BasisElement}}}) where C = new{C}([(c, map(unpack, m)) for (c, m) in a])
+    AlgebraElement{C}(a::Vector{Tuple{C, Monomial}}) where C = new{C}([(c, unpack(m)) for (c, m) in a])
+    AlgebraElement{C}(a::AlgebraElement{C}) where C = a
+end
+
+StandardOperand{C} = Union{BasisElement, Monomial, AlgebraElement{C},
+    BasisElementInternal, MonomialInternal, AlgebraElementInternal{C}}
+Operand{C} = Union{Int64, C, BasisElement, Monomial, AlgebraElement{C},
+    BasisElementInternal, MonomialInternal, AlgebraElementInternal{C}}
+
+
+function Base.show(io::IO, b::BasisElement) :: Nothing
+    print(io, b[1], "(", b[2], ")")
+end
+
+function groupBy(pred, v)
     if isempty(v)
-        return Vector{T}[]
+        return typeof(v)()
     end
 
     tmp = [0; findall([!pred(v[i], v[i+1]) for i in 1:length(v)-1]); length(v)]
@@ -28,11 +70,8 @@ function groupBy(pred, v::Vector{T}) where T
     return [v[tmp[i]+1:tmp[i+1]] for i in 1:length(tmp)-1]
 end
 
-function Base.show(io::IO, b::BasisElement) :: Nothing
-    print(io, b[1], "(", b[2], ")")
-end
 
-function Base.show(io::IO, m::Monomial{BasisElement}) :: Nothing
+function Base.show(io::IO, m::Monomial) :: Nothing
     if isempty(m)
         print(io, "[]")
     else
@@ -46,33 +85,28 @@ function Base.show(io::IO, m::Monomial{BasisElement}) :: Nothing
     end
 end
 
-function Base.show(io::IO, s::Scaled{Monomial{BasisElement}}) :: Nothing
-    # castCoeff(c) = isinteger(c) ? Int(c) : c
 
-    if iszero(s[1])
-        print(io, 0)
-    elseif isempty(s[2])
-        print(io, castCoeff(s[1]))
-    elseif isone(s[1])
-        print(io, s[2])
-    else
-        print(io, castCoeff(s[1]), "⋅", s[2])
-    end
-end
-
-
-function monomials(a::AlgebraElement) :: Vector{Monomial{BasisElement}}
+function _monomials(a::AlgebraElement) :: Vector{MonomialInternal}
     return unique([mon for (coeff, mon) in a])
 end
 
-function basisElements(a::AlgebraElement) :: Vector{BasisElement}
-    return unique(vcat(monomials(a)...))
+function monomials(a::AlgebraElement) :: Vector{Monomial}
+    return map(Monomial, _monomials(a))
 end
 
-function collectSummands(a::Operand{C}) :: AlgebraElement{C} where C
-    res = algebraElement(C)
+function _basisElements(a::AlgebraElement) :: Vector{BasisElementInternal}
+    return unique(vcat(_monomials(a)...))
+end
 
-    for (coeff, mon) in algebraElement(C, a)
+function basisElements(a::AlgebraElement) :: Vector{BasisElement}
+    return map(BasisElement, _basisElements(a))
+end
+
+
+function _collectSummands(a::Operand{C}) :: AlgebraElementInternal{C} where C
+    res = AlgebraElementInternal{C}()
+
+    for (coeff, mon) in AlgebraElement{C}(a)
         i = findfirst(x -> x[2] == mon, res)
 
         if i === nothing
@@ -85,19 +119,28 @@ function collectSummands(a::Operand{C}) :: AlgebraElement{C} where C
     return filter(x -> !iszero(x[1]), res)
 end
 
-function collectSummands(as::Vector{AlgebraElement{C}}) :: AlgebraElement{C} where C
-    return collectSummands(algebraElement(C, vcat(as...)))
+function collectSummands(a::Operand{C}) :: AlgebraElement{C} where C
+    return AlgebraElement{C}(_collectSummands(a))
 end
 
+function _collectSummands(as::Vector{AlgebraElement{C}}) :: AlgebraElementInternal{C} where C
+    return _collectSummands(vcat(map(unpack, as)...))
+end
+
+function collectSummands(as::Vector{AlgebraElement{C}}) :: AlgebraElement{C} where C
+    return collectSummands(vcat(map(unpack, as)...))
+end
+
+
 function sameSum(a1::Operand{C}, a2::Operand{C}) :: Bool where C
-    return issetequal(collectSummands(a1), collectSummands(a2))
+    return issetequal(_collectSummands(a1), _collectSummands(a2))
 end
 
 ≐ = sameSum # type symbol via \doteq, autocomplete with tab
 
 
 function Base.:(+)(x::Operand{C}, as::Vararg{StandardOperand{C}}) :: AlgebraElement{C} where C
-    return collectSummands(map(y -> algebraElement(C, y), [x, as...]))
+    return collectSummands(map(AlgebraElement{C}, [x; as]))
 end
 
 function Base.:(+)(a::StandardOperand{C}, c::Union{Int64, C}) :: AlgebraElement{C} where C
@@ -105,42 +148,40 @@ function Base.:(+)(a::StandardOperand{C}, c::Union{Int64, C}) :: AlgebraElement{
 end
 
 
-function Base.:(*)(x::Union{BasisElement, Monomial{BasisElement}},
-                   y::Union{BasisElement, Monomial{BasisElement}}) :: Monomial{BasisElement}
-    return [x; y]
+function Base.:(*)(x::Union{BasisElement, Monomial},
+                   y::Union{BasisElement, Monomial}) :: Monomial
+    return Monomial([unpack(x); unpack(y)])
 end
 
 function Base.:(*)(c::Union{Int64, C}, a::StandardOperand{C}) :: AlgebraElement{C} where C
-    return [(c*coeff, mon) for (coeff, mon) in algebraElement(C, a)]
+    return AlgebraElement{C}([(c*coeff, mon) for (coeff, mon) in AlgebraElement{C}(a)])
 end
 
 function Base.:(*)(a::StandardOperand{C}, c::Union{Int64, C}) :: AlgebraElement{C} where C
     return c * a
 end
 
-function Base.:(*)(a1::Union{Scaled{Monomial{BasisElement}, C}, AlgebraElement{C}},
-                   a2::Union{Scaled{Monomial{BasisElement}, C}, AlgebraElement{C}}) :: AlgebraElement{C} where C
-   return collectSummands([(c1*c2, [m1;m2]) for (c1, m1) in algebraElement(C, a1) for (c2, m2) in algebraElement(C, a2)])
+function Base.:(*)(a1::AlgebraElement{C}, a2::AlgebraElement{C}) :: AlgebraElement{C} where C
+   return collectSummands([(c1*c2, [m1;m2]) for (c1, m1) in a1 for (c2, m2) in a2])
 end
 
-function Base.:(*)(a::Union{Scaled{Monomial{BasisElement}, C}, AlgebraElement{C}},
-                   m::Union{BasisElement, Monomial{BasisElement}}) :: AlgebraElement{C} where C
-    return a * algebraElement(C, m)
+function Base.:(*)(a::AlgebraElement{C}, m::Union{BasisElement, Monomial}) :: AlgebraElement{C} where C
+    return a * AlgebraElement{C}(m)
 end
 
-function Base.:(*)(m::Union{BasisElement, Monomial{BasisElement}}, a::AlgebraElement{C}) :: AlgebraElement{C} where C
-    return algebraElement(C, m) * a
+function Base.:(*)(m::Union{BasisElement, Monomial}, a::AlgebraElement{C}) :: AlgebraElement{C} where C
+    return AlgebraElement{C}(m) * a
 end
 
 
-function Base.:(^)(m::Union{BasisElement, Monomial{BasisElement}}, n::Int64) :: Monomial{BasisElement} where C
+function Base.:(^)(m::Union{BasisElement, Monomial}, n::Int64) :: Monomial
     @assert n >= 0
-    return prod([m for _ in 1:n], init=Monomial{BasisElement}())
+    return prod([m for _ in 1:n], init=Monomial())
 end
 
-function Base.:(^)(a::Union{Scaled{Monomial{BasisElement}}, AlgebraElement{C}}, n::Int64) :: AlgebraElement{C} where C
+function Base.:(^)(a::AlgebraElement{C}, n::Int64) :: AlgebraElement{C} where C
     @assert n >= 0
-    return prod([a for _ in 1:n], init=algebraElement(C, 1))
+    return prod([a for _ in 1:n], init=AlgebraElement{C}(1))
 end
 
 

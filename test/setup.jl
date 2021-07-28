@@ -19,12 +19,9 @@ mod = PD.mod
 grp = PD.grp
 test = PD.test
 
-Coefficient = PD.Coefficient
 BasisElement = PD.BasisElement
-Monomial{T} = PD.Monomial{T}
-LinearCombination{T} = PD.LinearCombination{T}
+Monomial = PD.Monomial
 AlgebraElement = PD.AlgebraElement
-algebraElement = PD.algebraElement
 
 sameSum = PD.sameSum
 normalForm = PD.normalForm
@@ -37,5 +34,5 @@ dimRandomTests = [3, 10, 25, 100]
 randLength(start=0) = rand(start:10)
 randNums(quantity) = rand(-20:20, quantity)
 randNum() = randNums(1)[1]
-randMonomial(basis) = Monomial{BasisElement}([basis[rand(1:length(basis))] for _ in 1:randLength()])
-randAlgebraElement(basis) = algebraElement([(Coefficient(randNum()), randMonomial(basis)) for _ in 1:randLength()])
+randMonomial(basis) = Monomial([basis[rand(1:length(basis))] for _ in 1:randLength()])
+randAlgebraElement(basis) = AlgebraElement{Rational{Int64}}([(Rational{Int64}(randNum()), randMonomial(basis)) for _ in 1:randLength()])

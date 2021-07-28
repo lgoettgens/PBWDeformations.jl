@@ -19,11 +19,11 @@ function Base.show(io::IO, sp::SmashProductLie) :: Nothing
 end
 
 
-function smashProductLie(dynkin::Char, n::Int64, lambda::Vector{Int64}) :: QuadraticAlgebra{SmashProductLie}
+function smashProductLie(dynkin::Char, n::Int64, lambda::Vector{Int64}, C::Type = Rational{Int64}) :: QuadraticAlgebra{C, SmashProductLie}
     @assert n == length(lambda)
     sanitizeLieInput(dynkin, n)
 
-    relTable = Dict{Tuple{BasisElement, BasisElement}, AlgebraElement}()
+    relTable = Dict{Tuple{BasisElementInternal, BasisElementInternal}, AlgebraElementInternal{C}}()
         # (lie(i), lie(j)) => [(c, [lie(k)])]
         # (lie(i), mod(j)) => [(c, [mod(k)])]
 
@@ -34,9 +34,9 @@ function smashProductLie(dynkin::Char, n::Int64, lambda::Vector{Int64}) :: Quadr
     matrixRepL = getMatrixRep(L, [i == 1 ? 1 : 0 for i in 1:n])
 
     for i in 1:nL, j in 1:i-1
-        relTable[(lie(i), lie(j))] = [
-            (1, [lie(j), lie(i)]);
-            collect((c, [lie(k)]) for (k, c) in zip(commTableL[i][j]...));
+        relTable[(lieInt(i), lieInt(j))] = [
+            (1, [lieInt(j), lieInt(i)]);
+            collect((C(c), [lieInt(k)]) for (k, c) in zip(commTableL[i][j]...));
         ]
     end
 
@@ -45,15 +45,16 @@ function smashProductLie(dynkin::Char, n::Int64, lambda::Vector{Int64}) :: Quadr
     bV = GAP.BasisVectors(GAP.Basis(V))
 
     for i in 1:nL, j in 1:nV
-        relTable[(lie(i), mod(j))] = [
-            (1, [mod(j), lie(i)]);
-            collect((c, [mod(k)]) for (k, c) in enumerate(fromGAP(GAP.Coefficients(GAP.Basis(V), bL[i]^bV[j]))) if c != 0);
+        relTable[(lieInt(i), modInt(j))] = [
+            (1, [modInt(j), lieInt(i)]);
+            collect((C(c), [modInt(k)]) for (k, c) in enumerate(fromGAP(GAP.Coefficients(GAP.Basis(V), bL[i]^bV[j]))) if !iszero(c));
         ]
     end
 
     extraData = SmashProductLie(dynkin, n, lambda, nL, nV, matrixRepL)
     basis = [[mod(i) for i in 1:nV]; [lie(i) for i in 1:nL]] :: Vector{BasisElement}
-    return QuadraticAlgebra{SmashProductLie}(basis, relTable, extraData)
+
+    return QuadraticAlgebra{C, SmashProductLie}(basis, relTable, extraData)
 end
 
 
@@ -66,7 +67,7 @@ function getMatrixRep(dynkin::Char, n::Int64) :: Vector{Matrix{Int64}}
     return getMatrixRep(L, lambda)
 end
 
-function getMatrixRep(L #= :: Gap.LieAlgebra =#, lambda :: Vector{Int64}) :: Vector{Matrix{Int64}}
+function getMatrixRep(L #= :: Gap.LieAlgebra =#, lambda::Vector{Int64}) :: Vector{Matrix{Int64}}
     @assert GAP.IsLieAlgebra(L)
 
     nL = GAP.Dimension(L)

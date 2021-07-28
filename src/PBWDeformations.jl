@@ -1,5 +1,6 @@
 module PBWDeformations
 
+using Base: _collect
 using Oscar
 using SymPy
 
@@ -13,21 +14,31 @@ include("AlgebraElement.jl")
 include("QuadraticAlgebra.jl")
 
 # generates
-# lie(i::BasisIndex) = (:lie, i) :: BasisElement
-# lie(is::Vector{BasisIndex}) = map(lie, collect(is)) :: Monomial{BasisElement}
-# lie(is::UnitRange{BasisIndex}) = lie(collect(is)) :: Monomial{BasisElement}
-# lie(i::BasisIndex, j::BasisIndex, ks::Vararg{BasisIndex}) = map(lie, [i; j; collect(ks)]) :: Monomial{BasisElement}
-# islie(b::BasisElement) = b[1] === :lie
+#lieInt(i::BasisIndex) = (:lie, i) :: BasisElementInternal
+#lieInt(is::Vector{BasisIndex}) = map($nameInt, is) :: MonomialInternal
+#lieInt(is::UnitRange{BasisIndex}) = lieInt(collect(is)) :: MonomialInternal
+#lieInt(i::BasisIndex, j::BasisIndex, ks::Vararg{BasisIndex}) = map($nameInt, [i; j; collect(ks)]) :: MonomialInternal
+#lie(i::BasisIndex) = BasisElement(:lie, i) :: BasisElement
+#lie(is::Vector{BasisIndex}) = Monomial(map($name, is)) :: Monomial
+#lie(is::UnitRange{BasisIndex}) = lie(collect(is)) :: Monomial
+#lie(i::BasisIndex, j::BasisIndex, ks::Vararg{BasisIndex}) = Monomial(map($name, [i; j; collect(ks)])) :: Monomial
+#islie(b::BasisElement) = (b[1] === :lie) :: Bool
 # and likewise for :grp, :mod, :test
 
 for name in (:lie, :grp, :mod, :test)
-    s = Symbol("is", name)
+    nameInt = Symbol(name, "Int")
+    isname = Symbol("is", name)
     @eval begin
-        ($name)(i::BasisIndex) = (Symbol($name), i) :: BasisElement
-        ($name)(is::Vector{BasisIndex}) = map($name, is) :: Monomial{BasisElement}
-        ($name)(is::UnitRange{BasisIndex}) = ($name)(collect(is)) :: Monomial{BasisElement}
-        ($name)(i::BasisIndex, j::BasisIndex, ks::Vararg{BasisIndex}) = map($name, [i; j; collect(ks)]) :: Monomial{BasisElement}
-        ($s)(b::BasisElement) = (b[1] === Symbol($name)) :: Bool
+        ($nameInt)(i::BasisIndex) = (Symbol($name), i) :: BasisElementInternal
+        ($nameInt)(is::Vector{BasisIndex}) = map($nameInt, is) :: MonomialInternal
+        ($nameInt)(is::UnitRange{BasisIndex}) = ($nameInt)(collect(is)) :: MonomialInternal
+        ($nameInt)(i::BasisIndex, j::BasisIndex, ks::Vararg{BasisIndex}) = map($nameInt, [i; j; collect(ks)]) :: MonomialInternal
+
+        ($name)(i::BasisIndex) = BasisElement(Symbol($name), i) :: BasisElement
+        ($name)(is::Vector{BasisIndex}) = Monomial(map($name, is)) :: Monomial
+        ($name)(is::UnitRange{BasisIndex}) = ($name)(collect(is)) :: Monomial
+        ($name)(i::BasisIndex, j::BasisIndex, ks::Vararg{BasisIndex}) = Monomial(map($name, [i; j; collect(ks)])) :: Monomial
+        ($isname)(b::BasisElement) = (b[1] === Symbol($name)) :: Bool
     end
 end
 
