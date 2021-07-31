@@ -1,6 +1,5 @@
 module PBWDeformations
 
-using Base: _collect
 using Oscar
 using SymPy
 
@@ -10,34 +9,25 @@ fromGAP = Oscar.GAP.gap_to_julia
 
 fromSymPy = N
 
+include("Structs.jl")
 include("AlgebraElement.jl")
 include("QuadraticAlgebra.jl")
 
 # generates
-#lieInt(i::BasisIndex) = (:lie, i) :: BasisElementInternal
-#lieInt(is::Vector{BasisIndex}) = map($nameInt, is) :: MonomialInternal
-#lieInt(is::UnitRange{BasisIndex}) = lieInt(collect(is)) :: MonomialInternal
-#lieInt(i::BasisIndex, j::BasisIndex, ks::Vararg{BasisIndex}) = map($nameInt, [i; j; collect(ks)]) :: MonomialInternal
-#lie(i::BasisIndex) = BasisElement(:lie, i) :: BasisElement
-#lie(is::Vector{BasisIndex}) = Monomial(map($name, is)) :: Monomial
-#lie(is::UnitRange{BasisIndex}) = lie(collect(is)) :: Monomial
-#lie(i::BasisIndex, j::BasisIndex, ks::Vararg{BasisIndex}) = Monomial(map($name, [i; j; collect(ks)])) :: Monomial
+#lie(i::Int64; C::Type=Rational{Int64}) = BasisElement{C}(:lie, i)
+#lie(is::Vector{Int64}; C::Type=Rational{Int64}) = Monomial{C}(map(lie, is))
+#lie(is::UnitRange{Int64}; C::Type=Rational{Int64}) = lie(collect(is; C))
+#lie(i::Int64, j::Int64, ks::Vararg{Int64}; C::Type=Rational{Int64}) = lie([i; j; collect(ks)], C)
 #islie(b::BasisElement) = (b[1] === :lie) :: Bool
 # and likewise for :grp, :mod, :test
 
 for name in (:lie, :grp, :mod, :test)
-    nameInt = Symbol(name, "Int")
     isname = Symbol("is", name)
     @eval begin
-        ($nameInt)(i::BasisIndex) = (Symbol($name), i) :: BasisElementInternal
-        ($nameInt)(is::Vector{BasisIndex}) = map($nameInt, is) :: MonomialInternal
-        ($nameInt)(is::UnitRange{BasisIndex}) = ($nameInt)(collect(is)) :: MonomialInternal
-        ($nameInt)(i::BasisIndex, j::BasisIndex, ks::Vararg{BasisIndex}) = map($nameInt, [i; j; collect(ks)]) :: MonomialInternal
-
-        ($name)(i::BasisIndex) = BasisElement(Symbol($name), i) :: BasisElement
-        ($name)(is::Vector{BasisIndex}) = Monomial(map($name, is)) :: Monomial
-        ($name)(is::UnitRange{BasisIndex}) = ($name)(collect(is)) :: Monomial
-        ($name)(i::BasisIndex, j::BasisIndex, ks::Vararg{BasisIndex}) = Monomial(map($name, [i; j; collect(ks)])) :: Monomial
+        ($name)(i::Int64; C::Type=Rational{Int64}) = BasisElement{C}(Symbol($name), i)
+        ($name)(is::Vector{Int64}; C::Type=Rational{Int64}) = Monomial{C}([($name)(i; C) for i in is])
+        ($name)(is::UnitRange{Int64}; C::Type=Rational{Int64}) = ($name)(collect(is); C)
+        ($name)(i::Int64, j::Int64, ks::Vararg{Int64}; C::Type=Rational{Int64}) = ($name)([i; j; collect(ks)]; C)
         ($isname)(b::BasisElement) = (b[1] === Symbol($name)) :: Bool
     end
 end

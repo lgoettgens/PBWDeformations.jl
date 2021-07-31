@@ -19,11 +19,11 @@ function Base.show(io::IO, sp::SmashProductLie) :: Nothing
 end
 
 
-function smashProductLie(dynkin::Char, n::Int64, lambda::Vector{Int64}, C::Type = Rational{Int64}) :: QuadraticAlgebra{C, SmashProductLie}
+function smashProductLie(dynkin::Char, n::Int64, lambda::Vector{Int64}, C::Type=Rational{Int64}) :: QuadraticAlgebra{C, SmashProductLie}
     @assert n == length(lambda)
     sanitizeLieInput(dynkin, n)
 
-    relTable = Dict{Tuple{BasisElementInternal, BasisElementInternal}, AlgebraElementInternal{C}}()
+    relTable = Dict{Tuple{BasisElement{C}, BasisElement{C}}, AlgebraElement{C}}()
         # (lie(i), lie(j)) => [(c, [lie(k)])]
         # (lie(i), mod(j)) => [(c, [mod(k)])]
 
@@ -34,10 +34,10 @@ function smashProductLie(dynkin::Char, n::Int64, lambda::Vector{Int64}, C::Type 
     matrixRepL = getMatrixRep(L, [i == 1 ? 1 : 0 for i in 1:n])
 
     for i in 1:nL, j in 1:i-1
-        relTable[(lieInt(i), lieInt(j))] = [
-            (1, [lieInt(j), lieInt(i)]);
-            collect((C(c), [lieInt(k)]) for (k, c) in zip(commTableL[i][j]...));
-        ]
+        relTable[(lie(i; C), lie(j; C))] = AlgebraElement{C}([
+            (1, lie(j; C)*lie(i; C));
+            [(C(c), Monomial{C}(lie(k; C))) for (k, c) in zip(commTableL[i][j]...)];
+        ])
     end
 
     V = GAP.HighestWeightModule(L, toGAP(lambda))
@@ -45,14 +45,14 @@ function smashProductLie(dynkin::Char, n::Int64, lambda::Vector{Int64}, C::Type 
     bV = GAP.BasisVectors(GAP.Basis(V))
 
     for i in 1:nL, j in 1:nV
-        relTable[(lieInt(i), modInt(j))] = [
-            (1, [modInt(j), lieInt(i)]);
-            collect((C(c), [modInt(k)]) for (k, c) in enumerate(fromGAP(GAP.Coefficients(GAP.Basis(V), bL[i]^bV[j]))) if !iszero(c));
+        relTable[(lie(i; C), mod(j; C))] = [
+            (1, mod(j; C)*lie(i; C));
+            [(C(c), Monomial{C}(mod(k; C))) for (k, c) in enumerate(fromGAP(GAP.Coefficients(GAP.Basis(V), bL[i]^bV[j]))) if !iszero(c)];
         ]
     end
 
     extraData = SmashProductLie(dynkin, n, lambda, nL, nV, matrixRepL)
-    basis = [[mod(i) for i in 1:nV]; [lie(i) for i in 1:nL]] :: Vector{BasisElement}
+    basis = [[mod(i; C) for i in 1:nV]; [lie(i; C) for i in 1:nL]] :: Vector{BasisElement{C}}
 
     return QuadraticAlgebra{C, SmashProductLie}(basis, relTable, extraData)
 end

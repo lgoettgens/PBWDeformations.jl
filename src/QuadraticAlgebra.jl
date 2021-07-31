@@ -1,38 +1,20 @@
 struct QuadraticAlgebra{C, T}
-    basis :: Vector{BasisElement}
+    basis :: Vector{BasisElement{C}}
 
     """
     Stores relations of the form ab = c for basis elements a,b.
     An empty list represents the empty sum, in which case ab = 0.
     An absent entry means that there is no relation, so we cannot simplify ab.
     """
-    relTable :: Dict{Tuple{BasisElementInternal, BasisElementInternal}, AlgebraElementInternal}
+    relTable :: Dict{Tuple{BasisElement{C}, BasisElement{C}}, AlgebraElement{C}}
     extraData :: T
     x :: SymFunction
 
     QuadraticAlgebra{T}(basis, relTable, extraData = nothing) where T =
-        new{T, Rational{Int64}}(basis, relTable, extraData, SymFunction("x", commutative=false))
+        new{Rational{Int64}, T}(basis, relTable, extraData, SymFunction("x", commutative=false))
 
-    QuadraticAlgebra{T, C}(basis, relTable, extraData = nothing) where {T, C} =
-        new{T, C}(basis, relTable, extraData, SymFunction("x", commutative=false))
-
-    function QuadraticAlgebra{T, C}(basis, relTable::Dict{Tuple{BasisElementInternal, BasisElementInternal}, AlgebraElement}, extraData = nothing) where {T, C}
-        newRelTable = Dict([(k, unpack(v)) for (k, v) in relTable])
-
-        return new{T, C}(basis, newRelTable, extraData, SymFunction("x", commutative=false))
-    end
-
-    function QuadraticAlgebra{T, C}(basis, relTable::Dict{Tuple{BasisElement, BasisElement}, AlgebraElementInternal}, extraData = nothing) where {T, C}
-        newRelTable = Dict([((unpack(k[1]), unpack(k[2])), v) for (k, v) in relTable])
-
-        return new{T, C}(basis, newRelTable, extraData, SymFunction("x", commutative=false))
-    end
-
-    function QuadraticAlgebra{T, C}(basis, relTable::Dict{Tuple{BasisElement, BasisElement}, AlgebraElement}, extraData = nothing) where {T, C}
-        newRelTable = Dict([((unpack(k[1]), unpack(k[2])), unpack(v)) for (k, v) in relTable])
-
-        return new{T, C}(basis, newRelTable, extraData, SymFunction("x", commutative=false))
-    end
+    QuadraticAlgebra{C, T}(basis, relTable, extraData = nothing) where {C, T} =
+        new{C, T}(basis, relTable, extraData, SymFunction("x", commutative=false))
 end
 
 function Base.:(==)(alg1::QuadraticAlgebra{C}, alg2::QuadraticAlgebra{C}) :: Bool where C
@@ -48,11 +30,11 @@ function Base.show(io::IO, alg::QuadraticAlgebra{C}) :: Nothing where C
     print(io, alg.extraData)
 end
 
-function Base.in(b::BasisElement, alg::QuadraticAlgebra) :: Bool
+function Base.in(b::BasisElement{C}, alg::QuadraticAlgebra{C}) :: Bool where C
     return b in alg.basis
 end
 
-function Base.in(m::Monomial, alg::QuadraticAlgebra) :: Bool
+function Base.in(m::Monomial{C}, alg::QuadraticAlgebra{C}) :: Bool where C
     return all(b -> b in alg, m)
 end
 
@@ -71,13 +53,13 @@ end
 #end
 
 
-function toIndex(alg::QuadraticAlgebra, b::BasisElement) :: BasisIndex
-    return findfirst(isequal(b), alg.basis)
-end
-
-function toIndex(alg::QuadraticAlgebra, m::Monomial) :: Vector{BasisIndex}
-    return map(b -> toIndex(alg, b), m)
-end
+#function toIndex(alg::QuadraticAlgebra, b::BasisElement) :: BasisIndex
+#    return findfirst(isequal(b), alg.basis)
+#end
+#
+#function toIndex(alg::QuadraticAlgebra, m::Monomial) :: Vector{BasisIndex}
+#    return map(b -> toIndex(alg, b), m)
+#end
 
 
 #function toSymPy(alg::QuadraticAlgebra, m::Union{BasisElement, Monomial}) :: SymPy.Sym
@@ -166,7 +148,8 @@ function normalForm(alg::QuadraticAlgebra{C}, a::AlgebraElement{C}) :: AlgebraEl
             if haskey(alg.relTable, (mon[i], mon[i+1]))
                 changed = true
 
-                todo += coeff * (mon[1:i-1] * alg.relTable[(mon[i], mon[i+1])] * mon[i+2:end])
+                # TODO: something like this: todo += coeff * (mon[1:i-1] * alg.relTable[(mon[i], mon[i+1])] * mon[i+2:end])
+                todo = unpack(AlgebraElement{C}(todo) + coeff * (mon[1:i-1] * alg.relTable[(mon[i], mon[i+1])] * mon[i+2:end]))
 
                 break
             end
@@ -180,7 +163,7 @@ function normalForm(alg::QuadraticAlgebra{C}, a::AlgebraElement{C}) :: AlgebraEl
     return result
 end
 
-function normalForm(alg::QuadraticAlgebra{C}, m::Union{BasisElement, Monomial}) :: AlgebraElement{C} where C
+function normalForm(alg::QuadraticAlgebra{C}, m::Union{BasisElement{C}, Monomial{C}}) :: AlgebraElement{C} where C
     return normalForm(alg, AlgebraElement{C}(m))
 end
 

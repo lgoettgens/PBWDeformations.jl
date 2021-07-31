@@ -16,46 +16,46 @@ function Base.show(io::IO, ga::GroupAlgebra) :: Nothing
 end
 
 
-function _groupAlgebra(group #= :: Gap.Group =#, groupName::String) :: QuadraticAlgebra{Rational{Int64}, GroupAlgebra}
+function _groupAlgebra(group #= :: Gap.Group =#, groupName::String; C::Type=Rational{Int64}) :: QuadraticAlgebra{C, GroupAlgebra}
     @assert GAP.IsGroup(group)
     @assert GAP.Order(group) != GAP.infinity
     
     order = GAP.Order(group)
 
-    relTable = Dict{Tuple{BasisElement, BasisElement}, AlgebraElement{Rational{Int64}}}()
+    relTable = Dict{Tuple{BasisElement{C}, BasisElement{C}}, AlgebraElement{C}}()
         # (grp(i), grp(j)) => [(coeff, [grp(k)])]
 
     multTable = fromGAP(GAP.MultiplicationTable(group))
 
     for i in 1:order, j in 1:order
-        relTable[(grp(i), grp(j))] = [(1, [grp(multTable[i][j])])]
+        relTable[(grp(i; C), grp(j; C))] = [(C(1), [grp(multTable[i][j]; C)])]
     end
 
     permRep = fromGAP(GAP.List(GAP.Elements(group), GAP.String))
     extraData = Group(groupName, order, permRep)
-    basis = [grp(i) for i in 1:order] :: Vector{BasisElement}
+    basis = [grp(i; C) for i in 1:order] :: Vector{BasisElement{C}}
 
-    return QuadraticAlgebra{GroupAlgebra}(basis, relTable, extraData)
+    return QuadraticAlgebra{C, GroupAlgebra}(basis, relTable, extraData)
 end
 
-function groupAlgebraCyclicGroup(n::Int64) :: QuadraticAlgebra{Rational{Int64}, GroupAlgebra}
-    return _groupAlgebra(GAP.CyclicGroup(GAP.IsPermGroup, n), "C"*string(n))
+function groupAlgebraCyclicGroup(n::Int64; C::Type=Rational{Int64}) :: QuadraticAlgebra{C, GroupAlgebra}
+    return _groupAlgebra(GAP.CyclicGroup(GAP.IsPermGroup, n), "C"*string(n); C)
 end
 
-function groupAlgebraDihedralGroup(n::Int64) :: QuadraticAlgebra{Rational{Int64}, GroupAlgebra}
+function groupAlgebraDihedralGroup(n::Int64; C::Type=Rational{Int64}) :: QuadraticAlgebra{C, GroupAlgebra}
     @assert n % 2 == 0
-    return _groupAlgebra(GAP.DihedralGroup(GAP.IsPermGroup, n), "D"*string(n))
+    return _groupAlgebra(GAP.DihedralGroup(GAP.IsPermGroup, n), "D"*string(n); C)
 end
 
-function groupAlgebraDicyclicGroup(n::Int64) :: QuadraticAlgebra{Rational{Int64}, GroupAlgebra}
+function groupAlgebraDicyclicGroup(n::Int64; C::Type=Rational{Int64}) :: QuadraticAlgebra{C, GroupAlgebra}
     @assert n % 4 == 0
-    return _groupAlgebra(GAP.DicyclicGroup(GAP.IsPermGroup, n), "Dic"*string(n))
+    return _groupAlgebra(GAP.DicyclicGroup(GAP.IsPermGroup, n), "Dic"*string(n); C)
 end
 
-function groupAlgebraAlternatingGroup(n::Int64) :: QuadraticAlgebra{Rational{Int64}, GroupAlgebra}
-    return _groupAlgebra(GAP.AlternatingGroup(GAP.IsPermGroup, n), "A"*string(n))
+function groupAlgebraAlternatingGroup(n::Int64; C::Type=Rational{Int64}) :: QuadraticAlgebra{C, GroupAlgebra}
+    return _groupAlgebra(GAP.AlternatingGroup(GAP.IsPermGroup, n), "A"*string(n); C)
 end
 
-function groupAlgebraSymmetricGroup(n::Int64) :: QuadraticAlgebra{Rational{Int64}, GroupAlgebra}
-    return _groupAlgebra(GAP.SymmetricGroup(GAP.IsPermGroup, n), "S"*string(n))
+function groupAlgebraSymmetricGroup(n::Int64; C::Type=Rational{Int64}) :: QuadraticAlgebra{C, GroupAlgebra}
+    return _groupAlgebra(GAP.SymmetricGroup(GAP.IsPermGroup, n), "S"*string(n); C)
 end
