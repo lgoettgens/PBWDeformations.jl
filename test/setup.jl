@@ -4,7 +4,6 @@ using TestSetExtensions
 using Combinatorics
 using Oscar
 using Random
-using SymPy
 
 using PBWDeformations
 
