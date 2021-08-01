@@ -11,11 +11,11 @@ include("AlgebraElement.jl")
 include("QuadraticAlgebra.jl")
 
 # generates
-#lie(i::Int64; C::Type=Rational{Int64}) = BasisElement{C}(:lie, i)
-#lie(is::Vector{Int64}; C::Type=Rational{Int64}) = Monomial{C}(map(lie, is))
-#lie(is::UnitRange{Int64}; C::Type=Rational{Int64}) = lie(collect(is; C))
-#lie(i::Int64, j::Int64, ks::Vararg{Int64}; C::Type=Rational{Int64}) = lie([i; j; collect(ks)], C)
-#islie(b::BasisElement) = (b[1] === :lie) :: Bool
+# lie(i::Int64; C::Type=Rational{Int64}) = BasisElement{C}(:lie, i)
+# lie(is::Vector{Int64}; C::Type=Rational{Int64}) = Monomial{C}(map(lie, is))
+# lie(is::UnitRange{Int64}; C::Type=Rational{Int64}) = lie(collect(is; C))
+# lie(i::Int64, j::Int64, ks::Vararg{Int64}; C::Type=Rational{Int64}) = lie([i; j; collect(ks)], C)
+# islie(b::BasisElement) = (b[1] === :lie) :: Bool
 # and likewise for :grp, :mod, :test
 
 for name in (:lie, :grp, :mod, :test)

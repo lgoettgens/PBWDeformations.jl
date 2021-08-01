@@ -83,8 +83,7 @@ function monomials(a::AlgebraElement{C}) :: Vector{Monomial{C}} where C
 end
 
 function basisElements(a::AlgebraElement{C}) :: Vector{BasisElement{C}} where C
-    # TODO: implement vcat functionality for wrapper structs
-    return unique(vcat(map(unpack, monomials(a))...))
+    return unique(vcat(monomials(a)...))
 end
 
 
@@ -105,8 +104,7 @@ function collectSummands(a::AlgebraElement{C}) :: AlgebraElement{C} where C
 end
 
 function collectSummands(as::Vector{AlgebraElement{C}}) :: AlgebraElement{C} where C
-    # TODO: implement vcat functionality for wrapper structs
-    return collectSummands(AlgebraElement{C}(vcat(map(unpack, as)...)))
+    return collectSummands(AlgebraElement{C}(vcat(as...)))
 end
 
 
@@ -136,7 +134,7 @@ end
 
 
 function Base.:(*)(x::BasisElement{C}, y::BasisElement{C}) :: Monomial{C} where C
-    return Monomial{C}([x; y])
+    return Monomial{C}([x, y])
 end
 
 function Base.:(*)(x::BasisElement{C}, y::Monomial{C}) :: Monomial{C} where C
@@ -160,8 +158,7 @@ function Base.:(*)(a::StandardOperand{C}, c::Union{Int64, C}) :: AlgebraElement{
 end
 
 function Base.:(*)(a1::AlgebraElement{C}, a2::AlgebraElement{C}) :: AlgebraElement{C} where C
-    # TODO ; for wrapper 
-   return collectSummands(AlgebraElement{C}([(c1*c2, m1*m2) for (c1, m1) in a1 for (c2, m2) in a2]))
+    return collectSummands(AlgebraElement{C}([(c1*c2, m1*m2) for (c1, m1) in a1 for (c2, m2) in a2]))
 end
 
 function Base.:(*)(a::AlgebraElement{C}, m::Union{BasisElement{C}, Monomial{C}}) :: AlgebraElement{C} where C

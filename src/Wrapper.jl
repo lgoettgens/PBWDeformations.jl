@@ -1,50 +1,19 @@
 abstract type Wrapper end
 
+unpack(x) = x
 # Wrappers are supposed to work like haskell's newtype,
 # i.e. a "strong" alias which is its own type.
 function unpack(w::Wrapper)
-    if iszero(fieldcount(typeof(w)))
-        return nothing
-    else
-        return getfield(w, fieldnames(typeof(w))[1])
-    end
+    return getfield(w, fieldnames(typeof(w))[1])
 end
 
-function Base.:(==)(w1::Wrapper, w2::Wrapper) :: Bool
-    T = typeof(w1)
-    if typeof(w2) !== T
-        return false
-    end
+Base.:(==)(w1::Wrapper, w2::Wrapper) = unpack(w1) == unpack(w2)
 
-    for name in fieldnames(T)
-        if getfield(w1, name) != getfield(w2, name)
-            return false
-        end
-    end
+Base.getindex(w::Wrapper, ind)  = getindex(unpack(w), ind)
+Base.iterate(w::Wrapper)        = iterate(unpack(w))
+Base.iterate(w::Wrapper, state) = iterate(unpack(w), state)
+Base.keys(w::Wrapper)           = keys(unpack(w))
+Base.lastindex(w::Wrapper)      = lastindex(unpack(w))
+Base.length(w::Wrapper)         = length(unpack(w))
 
-    return true
-end
-
-function Base.getindex(w::Wrapper, ind)
-    return getindex(unpack(w), ind)
-end
-
-function Base.iterate(w::Wrapper)
-    return iterate(unpack(w))
-end
-
-function Base.iterate(w::Wrapper, state)
-    return iterate(unpack(w), state)
-end
-
-function Base.keys(w::Wrapper)
-    return keys(unpack(w))
-end
-
-function Base.lastindex(w::Wrapper)
-    return lastindex(unpack(w))
-end
-
-function Base.length(w::Wrapper)
-    return length(unpack(w))
-end
+Base.vcat(X::T...) where {T <: Wrapper} = vcat(map(unpack, X)...)
