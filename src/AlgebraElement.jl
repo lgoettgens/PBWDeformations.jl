@@ -109,11 +109,7 @@ end
 
 
 function sameSum(a1::Operand{C}, a2::Operand{C}) :: Bool where C
-    # https://github.com/JuliaLang/julia/issues/41748 
-    _issubset(a, b) = all(x -> x in b, a) # for vectors of length >70 issubset is weird
-    _issetequal(a, b) = _issubset(a, b) && _issubset(b, a)
-
-    return _issetequal(collectSummands(AlgebraElement{C}(a1)),
+    return issetequal(collectSummands(AlgebraElement{C}(a1)),
                       collectSummands(AlgebraElement{C}(a2)))
 end
 

@@ -10,6 +10,7 @@ end
 Base.:(==)(w1::Wrapper, w2::Wrapper) = unpack(w1) == unpack(w2)
 
 Base.getindex(w::Wrapper, ind)  = getindex(unpack(w), ind)
+Base.hash(w::Wrapper, h::UInt)  = hash(unpack(w), hash(typeof(w), h))
 Base.iterate(w::Wrapper)        = iterate(unpack(w))
 Base.iterate(w::Wrapper, state) = iterate(unpack(w), state)
 Base.keys(w::Wrapper)           = keys(unpack(w))
