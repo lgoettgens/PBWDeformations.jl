@@ -7,3 +7,5 @@ Manifest.toml
 
 # code coverage reports
 *.cov
+
+*.vscode
