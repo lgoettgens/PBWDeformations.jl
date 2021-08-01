@@ -50,7 +50,7 @@ function smashProductSymmDeformLie(sp::QuadraticAlgebra{C, SmashProductLie}) :: 
     relTable = sp.relTable
 
     for i in 1:sp.extraData.nV, j in 1:i-1
-        relTable[(mod(i; C), mod(j; C))] = AlgebraElement{C}(modInt(j, i; C))
+        relTable[(mod(i; C), mod(j; C))] = AlgebraElement{C}(mod(j, i; C))
     end
 
     extraData = SmashProductDeformLie{C}(sp.extraData, true, fill(AlgebraElement{C}(), sp.extraData.nV, sp.extraData.nV))

@@ -36,6 +36,14 @@ struct AlgebraElement{C} <: AbstractAlgebraElement
 
     AlgebraElement{C}(a::Vector{Tuple{C, Monomial{C}}}) where C = new{C}(a)
     AlgebraElement{C}(a::AlgebraElement{C}) where C = a
+
+    function AlgebraElement{C}(a::Vector{<:Any}) :: AlgebraElement{C} where C
+        if isempty(a)
+            return AlgebraElement{C}()
+        else
+            throw(DomainError("Cannot cast input to AlgebraElement"))
+        end
+    end
 end
 
 
@@ -103,7 +111,11 @@ function collectSummands(as::Vector{AlgebraElement{C}}) :: AlgebraElement{C} whe
 end
 
 function sameSum(a1::Operand{C}, a2::Operand{C}) :: Bool where C
-    return issetequal(collectSummands(AlgebraElement{C}(a1)),
+    # https://github.com/JuliaLang/julia/issues/41748 
+    _issubset(a, b) = all(x -> x in b, a) # for vectors of length >70 issubset is weird
+    _issetequal(a, b) = _issubset(a, b) && _issubset(b, a)
+
+    return _issetequal(collectSummands(AlgebraElement{C}(a1)),
                       collectSummands(AlgebraElement{C}(a2)))
 end
 
@@ -123,8 +135,19 @@ function Base.:(+)(a::StandardOperand{C}, c::Union{Int64, C}) :: AlgebraElement{
 end
 
 
-function Base.:(*)(x::Union{BasisElement{C}, Monomial{C}},
-                   y::Union{BasisElement{C}, Monomial{C}}) :: Monomial{C} where C
+function Base.:(*)(x::BasisElement{C}, y::BasisElement{C}) :: Monomial{C} where C
+    return Monomial{C}([x; y])
+end
+
+function Base.:(*)(x::BasisElement{C}, y::Monomial{C}) :: Monomial{C} where C
+    return Monomial{C}([x; unpack(y)])
+end
+
+function Base.:(*)(x::Monomial{C}, y::BasisElement{C}) :: Monomial{C} where C
+    return Monomial{C}([unpack(x); y])
+end
+
+function Base.:(*)(x::Monomial{C}, y::Monomial{C}) :: Monomial{C} where C
     return Monomial{C}([unpack(x); unpack(y)])
 end
 
@@ -138,7 +161,7 @@ end
 
 function Base.:(*)(a1::AlgebraElement{C}, a2::AlgebraElement{C}) :: AlgebraElement{C} where C
     # TODO ; for wrapper 
-   return collectSummands([(c1*c2, Monomial{C}([unpack(m1);unpack(m2)])) for (c1, m1) in a1 for (c2, m2) in a2])
+   return collectSummands(AlgebraElement{C}([(c1*c2, m1*m2) for (c1, m1) in a1 for (c2, m2) in a2]))
 end
 
 function Base.:(*)(a::AlgebraElement{C}, m::Union{BasisElement{C}, Monomial{C}}) :: AlgebraElement{C} where C
@@ -152,12 +175,12 @@ end
 
 function Base.:(^)(m::Union{BasisElement{C}, Monomial{C}}, n::Int64) :: Monomial{C} where C
     @assert n >= 0
-    return prod([m for _ in 1:n], init=Monomial{C}())
+    return prod([m for _ in 1:n]; init=Monomial{C}())
 end
 
 function Base.:(^)(a::AlgebraElement{C}, n::Int64) :: AlgebraElement{C} where C
     @assert n >= 0
-    return prod([a for _ in 1:n], init=AlgebraElement{C}(1))
+    return prod([a for _ in 1:n]; init=AlgebraElement{C}(1))
 end
 
 

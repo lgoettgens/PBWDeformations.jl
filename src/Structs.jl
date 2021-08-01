@@ -41,6 +41,10 @@ function Base.keys(w::Wrapper)
     return keys(unpack(w))
 end
 
+function Base.lastindex(w::Wrapper)
+    return lastindex(unpack(w))
+end
+
 function Base.length(w::Wrapper)
     return length(unpack(w))
 end

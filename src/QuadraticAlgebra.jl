@@ -10,9 +10,6 @@ struct QuadraticAlgebra{C, T}
     extraData :: T
     x :: SymFunction
 
-    QuadraticAlgebra{T}(basis, relTable, extraData = nothing) where T =
-        new{Rational{Int64}, T}(basis, relTable, extraData, SymFunction("x", commutative=false))
-
     QuadraticAlgebra{C, T}(basis, relTable, extraData = nothing) where {C, T} =
         new{C, T}(basis, relTable, extraData, SymFunction("x", commutative=false))
 end
@@ -149,7 +146,7 @@ function normalForm(alg::QuadraticAlgebra{C}, a::AlgebraElement{C}) :: AlgebraEl
                 changed = true
 
                 # TODO: something like this: todo += coeff * (mon[1:i-1] * alg.relTable[(mon[i], mon[i+1])] * mon[i+2:end])
-                todo = unpack(AlgebraElement{C}(todo) + coeff * (mon[1:i-1] * alg.relTable[(mon[i], mon[i+1])] * mon[i+2:end]))
+                todo = unpack(AlgebraElement{C}(todo) + coeff * (Monomial{C}(mon[1:i-1]) * alg.relTable[(mon[i], mon[i+1])] * Monomial{C}(mon[i+2:end])))
 
                 break
             end

@@ -23,6 +23,7 @@ BasisElement = PD.BasisElement
 Monomial = PD.Monomial
 AlgebraElement = PD.AlgebraElement
 
+unpack = PD.unpack
 sameSum = PD.sameSum
 normalForm = PD.normalForm
 comm = PD.comm

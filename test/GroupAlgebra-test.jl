@@ -1,4 +1,4 @@
-
+C = Rational{Int64}
 
 @testset ExtendedTestSet "All PBWDeformations.GroupAlgebra tests" begin
     @testset "different groupAlgebra constructors" begin
@@ -20,7 +20,7 @@
                     ]
                 @test ga.extraData.order == length(ga.basis) == length(ga.extraData.permRep) == 1
                 @test ga.extraData.permRep == ["()"]
-                @test ga.relTable == Dict((grp(1), grp(1)) => [(1, [grp(1)])])
+                @test ga.relTable == Dict((grp(1; C), grp(1; C)) => AlgebraElement{C}([(C(1), grp([1]; C))]))
             end
         end
 
@@ -33,16 +33,14 @@
             @test occursin("group algebra", lowercase(showOutput))
             @test occursin("c$n", lowercase(showOutput))
 
-            x = ga.x
-
             for _ in 1:numRandomTests
                 ind = shuffle(rand(1:ga.extraData.order, rand(2:10)))
 
                 # abelian test
-                @test normalForm(ga, prod(map(x, ind))) == normalForm(ga, prod(map(x, shuffle(ind))))
+                @test normalForm(ga, grp(ind; C)) ≐ normalForm(ga, grp(shuffle(ind); C))
 
                 # cyclic test
-                @test normalForm(ga, prod(map(x, ind))) == x(1 + sum(map(i -> i-1, ind)) % n)
+                @test normalForm(ga, grp(ind; C)) ≐ grp(1 + sum(map(i -> i-1, ind)) % n; C)
             end
         end
 
@@ -87,13 +85,11 @@
             @test occursin("group algebra", lowercase(showOutput))
             @test occursin("s$n", lowercase(showOutput))
 
-            x = ga.x
-
             # abelian test
             if n <= 2
                 for _ in 1:numRandomTests
                     ind = shuffle(rand(1:ga.extraData.order, rand(2:10)))
-                    @test normalForm(ga, prod(map(x, ind))) == normalForm(ga, prod(map(x, shuffle(ind))))
+                    @test normalForm(ga, grp(ind; C)) ≐ normalForm(ga, grp(shuffle(ind); C))
                 end
             end
 
@@ -109,13 +105,11 @@
             @test occursin("group algebra", lowercase(showOutput))
             @test occursin("a$n", lowercase(showOutput))
 
-            x = ga.x
-
             # abelian test
             if n <= 3
                 for _ in 1:numRandomTests
                     ind = shuffle(rand(1:ga.extraData.order, rand(2:10)))
-                    @test normalForm(ga, prod(map(x, ind))) == normalForm(ga, prod(map(x, shuffle(ind))))
+                    @test normalForm(ga, grp(ind; C)) ≐ normalForm(ga, grp(shuffle(ind); C))
                 end
             end
 

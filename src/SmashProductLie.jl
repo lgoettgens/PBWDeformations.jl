@@ -19,7 +19,7 @@ function Base.show(io::IO, sp::SmashProductLie) :: Nothing
 end
 
 
-function smashProductLie(dynkin::Char, n::Int64, lambda::Vector{Int64}, C::Type=Rational{Int64}) :: QuadraticAlgebra{C, SmashProductLie}
+function smashProductLie(dynkin::Char, n::Int64, lambda::Vector{Int64}; C::Type=Rational{Int64}) :: QuadraticAlgebra{C, SmashProductLie}
     @assert n == length(lambda)
     sanitizeLieInput(dynkin, n)
 
@@ -35,8 +35,8 @@ function smashProductLie(dynkin::Char, n::Int64, lambda::Vector{Int64}, C::Type=
 
     for i in 1:nL, j in 1:i-1
         relTable[(lie(i; C), lie(j; C))] = AlgebraElement{C}([
-            (1, lie(j; C)*lie(i; C));
-            [(C(c), Monomial{C}(lie(k; C))) for (k, c) in zip(commTableL[i][j]...)];
+            (C(1), lie(j; C)*lie(i; C));
+            Vector{Tuple{C, Monomial{C}}}([(C(c), Monomial{C}(lie(k; C))) for (k, c) in zip(commTableL[i][j]...)]);
         ])
     end
 
@@ -45,10 +45,10 @@ function smashProductLie(dynkin::Char, n::Int64, lambda::Vector{Int64}, C::Type=
     bV = GAP.BasisVectors(GAP.Basis(V))
 
     for i in 1:nL, j in 1:nV
-        relTable[(lie(i; C), mod(j; C))] = [
-            (1, mod(j; C)*lie(i; C));
-            [(C(c), Monomial{C}(mod(k; C))) for (k, c) in enumerate(fromGAP(GAP.Coefficients(GAP.Basis(V), bL[i]^bV[j]))) if !iszero(c)];
-        ]
+        relTable[(lie(i; C), mod(j; C))] = AlgebraElement{C}([
+            (C(1), mod(j; C)*lie(i; C));
+            Vector{Tuple{C, Monomial{C}}}([(C(c), Monomial{C}(mod(k; C))) for (k, c) in enumerate(fromGAP(GAP.Coefficients(GAP.Basis(V), bL[i]^bV[j]))) if !iszero(c)]);
+        ])
     end
 
     extraData = SmashProductLie(dynkin, n, lambda, nL, nV, matrixRepL)
