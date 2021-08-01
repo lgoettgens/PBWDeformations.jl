@@ -1,7 +1,5 @@
 abstract type AbstractAlgebraElement <: Wrapper end
 
-BasisIndex = Int64
-
 struct BasisElement{C} <: AbstractAlgebraElement
     b :: Tuple{Symbol, Int64}
 
@@ -49,34 +47,17 @@ end
 StandardOperand{C} = Union{BasisElement{C}, Monomial{C}, AlgebraElement{C}}
 Operand{C} = Union{Int64, C, BasisElement{C}, Monomial{C}, AlgebraElement{C}}
 
-function Base.show(io::IO, b::BasisElement) :: Nothing
-    print(io, b[1], "(", b[2], ")")
+function Base.one(::Union{Monomial{C}, Type{Monomial{C}}}) :: Monomial{C} where C
+    return Monomial{C}()  
 end
 
-function groupBy(pred, v)
-    if isempty(v)
-        return typeof(v)()
-    end
-
-    tmp = [0; findall([!pred(v[i], v[i+1]) for i in 1:length(v)-1]); length(v)]
-
-    return [v[tmp[i]+1:tmp[i+1]] for i in 1:length(tmp)-1]
+function Base.zero(::Union{AlgebraElement{C}, Type{AlgebraElement{C}}}) :: AlgebraElement{C} where C
+    return AlgebraElement{C}(0)
 end
 
-function Base.show(io::IO, m::Monomial) :: Nothing
-    if isempty(m)
-        print(io, "[]")
-    else
-        for g in groupBy((x,y) -> x[1] === y[1], m)
-            print(io, g[1][1], "(")
-            for i in 1:length(g)-1
-                print(io, g[i][2], ", ")
-            end
-            print(io, g[end][2], ")")
-        end
-    end
+function Base.one(::Union{AlgebraElement{C}, Type{AlgebraElement{C}}}) :: AlgebraElement{C} where C
+    return AlgebraElement{C}(1)
 end
-
 
 function monomials(a::AlgebraElement{C}) :: Vector{Monomial{C}} where C
     return unique([mon for (coeff, mon) in a])
@@ -117,6 +98,10 @@ end
 
 function Base.iszero(a::AlgebraElement{C}) :: Bool where C
     return a ≐ 0
+end
+
+function Base.isone(a::AlgebraElement{C}) :: Bool where C
+    return a ≐ 1
 end
 
 
@@ -168,12 +153,12 @@ end
 
 function Base.:(^)(m::Union{BasisElement{C}, Monomial{C}}, n::Int64) :: Monomial{C} where C
     @assert n >= 0
-    return prod([m for _ in 1:n]; init=Monomial{C}())
+    return prod([m for _ in 1:n]; init=one(Monomial{C}))
 end
 
 function Base.:(^)(a::AlgebraElement{C}, n::Int64) :: AlgebraElement{C} where C
     @assert n >= 0
-    return prod([a for _ in 1:n]; init=AlgebraElement{C}(1))
+    return prod([a for _ in 1:n])
 end
 
 
@@ -191,3 +176,52 @@ end
 
 
 comm(x, y) = x*y - y*x
+
+
+function groupBy(pred, v)
+    if isempty(v)
+        return typeof(v)()
+    end
+
+    tmp = [0; findall([!pred(v[i], v[i+1]) for i in 1:length(v)-1]); length(v)]
+
+    return [v[tmp[i]+1:tmp[i+1]] for i in 1:length(tmp)-1]
+end
+
+function prettyPrint(b::BasisElement{C}) :: String where C
+    return string(b[1], '(', b[2], ')')
+end
+
+function prettyPrint(m::Monomial{C}) :: String where C
+    if isone(m)
+        return "[]"
+    else
+        g = groupBy((x,y) -> x[1] === y[1], m)
+        innerFormat = map(l -> string(l[1][1], '(', join([string(t[2]) for t in l], ", "), ')'), g)
+        return join(innerFormat, "")
+    end
+end
+
+function prettyPrint(t::Tuple{C, Monomial{C}}) :: String where C
+    if isone(t[2])
+        return string(t[1])
+    elseif isone(t[1])
+        return prettyPrint(t[2])
+    elseif isone(-t[1])
+        return string('-', prettyPrint(t[2]))
+    else
+        return string(t[1], '⋅', prettyPrint(t[2]))
+    end
+end
+
+function prettyPrint(a::AlgebraElement{C}) :: String where C
+    if iszero(a)
+        return string(zero(C))
+    else
+        return join(map(prettyPrint, a), " + ")
+    end
+end
+
+function Base.show(io::IO, ::MIME"text/plain", x::StandardOperand{C}) :: Nothing where C
+    print(io, prettyPrint(x))
+end
