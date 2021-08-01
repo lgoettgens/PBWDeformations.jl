@@ -205,7 +205,7 @@ randAlgebraElement() = randAlgebraElement(basis)
         for _ in 1:numRandomTests
             n = rand(0:2) # TODO: increase performance so that we have 1:3 here again, as before
             a = randAlgebraElement()
-            @test a^n ≐ prod([a for _ in 1:n]; init=AlgebraElement{C}(1))
+            @test a^n ≐ prod([a for _ in 1:n])
         end
 
         for _ in 1:numRandomTests

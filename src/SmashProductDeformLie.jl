@@ -73,9 +73,9 @@ function isPBWDeformation(d::QuadraticAlgebra{C, SmashProductDeformLie{C}}) :: B
     kappa = d.extraData.kappa
 
     ## (a) κ is H-invariant
-    exprs = [(sum([c*kappa[m[1][2],j] for (c, m) in normalForm(d, comm(h, mod(i; C)))], init=AlgebraElement{C}()) # κ([h⋅v_i,v_j])
-            + sum([c*kappa[i,m[1][2]] for (c, m) in normalForm(d, comm(h, mod(j; C)))], init=AlgebraElement{C}()) # κ([v_i,h⋅v_j])
-            - normalForm(d, comm(h, kappa[i,j])))                                                                 # h⋅κ([v_i,v_j])
+    exprs = [(sum([c*kappa[m[1][2],j] for (c, m) in normalForm(d, comm(h, mod(i; C)))]) # κ([h⋅v_i,v_j])
+            + sum([c*kappa[i,m[1][2]] for (c, m) in normalForm(d, comm(h, mod(j; C)))]) # κ([v_i,h⋅v_j])
+            - normalForm(d, comm(h, kappa[i,j])))                                       # h⋅κ([v_i,v_j])
         for i in 1:nV for j in i+1:nV for h in lie(1:nL; C)]
     # m[1][2] denotes the index of the only basis element in the monomial m
 
