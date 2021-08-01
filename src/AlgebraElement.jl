@@ -204,13 +204,13 @@ end
 
 function prettyPrint(t::Tuple{C, Monomial{C}}) :: String where C
     if isone(t[2])
-        return string(t[1])
+        return string(isinteger(t[1]) ? Int(t[1]) : t[1])
     elseif isone(t[1])
         return prettyPrint(t[2])
     elseif isone(-t[1])
         return string('-', prettyPrint(t[2]))
     else
-        return string(t[1], '⋅', prettyPrint(t[2]))
+        return string(isinteger(t[1]) ? Int(t[1]) : t[1], '⋅', prettyPrint(t[2]))
     end
 end
 
@@ -218,7 +218,7 @@ function prettyPrint(a::AlgebraElement{C}) :: String where C
     if iszero(a)
         return string(zero(C))
     else
-        return join(map(prettyPrint, a), " + ")
+        return replace(join(map(prettyPrint, a), " + "), "+ -" => "- ")
     end
 end
 
