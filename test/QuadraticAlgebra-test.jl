@@ -1,12 +1,12 @@
 @testset ExtendedTestSet "All PBWDeformations.QuadraticAlgebra tests" begin
     @testset "containment" begin
-        basis = test(collect(1:10))
+        basis = map(test, 1:10)
         relTable = Dict()
-        alg = PD.QuadraticAlgebra{Nothing}(basis, relTable, nothing) :: PD.QuadraticAlgebra{Nothing}
+        alg = PD.QuadraticAlgebra{Rational{Int64}, Nothing}(basis, relTable, nothing) :: PD.QuadraticAlgebra{Rational{Int64}, Nothing}
         x = test
 
         @test basis[1] in alg
-        @test basis in alg # product over all basis elements
+        @test prod(basis) in alg
 
         for _ in 1:numRandomTests
             @test randAlgebraElement(basis) in alg
@@ -22,9 +22,9 @@
     @testset "normalForm for abstract cases" begin
         @testset "tensor algebra over V with dim V = $n" for n in dimRandomTests
             x = test
-            basis = x(collect(1:n))
-            relTable = Dict()
-            alg = PD.QuadraticAlgebra{Nothing}(basis, relTable, nothing)
+            basis = map(x, 1:n)
+            relTable = Dict{Tuple{BasisElement{Rational{Int64}}, BasisElement{Rational{Int64}}}, AlgebraElement{Rational{Int64}}}()
+            alg = PD.QuadraticAlgebra{Rational{Int64}, Nothing}(basis, relTable, nothing)
 
             showOutput = @test_nowarn sprint(show, alg)
 
@@ -37,32 +37,32 @@
 
         @testset "symmetric algebra over V with dim V = $n" for n in dimRandomTests
             x = test
-            basis = x(collect(1:n))
-            relTable = Dict([((x(i), x(j)), algebraElement(x(j,i))) for i in 1:n for j in 1:i-1])
-            alg = PD.QuadraticAlgebra{Nothing}(basis, relTable, nothing)
+            basis = map(x, 1:n)
+            relTable = Dict([((x(i), x(j)), AlgebraElement{Rational{Int64}}(x(j,i))) for i in 1:n for j in 1:i-1])
+            alg = PD.QuadraticAlgebra{Rational{Int64}, Nothing}(basis, relTable, nothing)
 
             showOutput = @test_nowarn sprint(show, alg)
 
             for _ in 1:numRandomTests
                 ind = shuffle(rand(1:n, rand(1:2n)))
-                @test normalForm(alg, x(ind)) == algebraElement(x(sort(ind)))
+                @test normalForm(alg, x(ind)) ≐ x(sort(ind))
             end
 
             for _ in 1:numRandomTests
                 ind1 = shuffle(rand(1:n, rand(1:n)))
                 ind2 = shuffle(rand(1:n, rand(1:n)))
-                @test normalForm(alg, x([ind1; ind2])-x([ind2; ind1])) == normalForm(alg, comm(x(ind1), x(ind2))) == algebraElement(0)
+                @test normalForm(alg, x([ind1; ind2])-x([ind2; ind1])) ≐ normalForm(alg, comm(x(ind1), x(ind2))) ≐ 0
             end
         end
 
         @testset "exterior algebra over V with dim V = $n" for n in dimRandomTests
             x = test
-            basis = x(collect(1:10))
+            basis = map(x, 1:n)
             relTable = Dict([
                 [((x(i), x(j)), -x(j,i)) for i in 1:n for j in 1:i-1];
-                [((x(i), x(i)), algebraElement(0)) for i in 1:n];
+                [((x(i), x(i)), AlgebraElement{Rational{Int64}}(0)) for i in 1:n];
             ])
-            alg = PD.QuadraticAlgebra{Nothing}(basis, relTable, nothing)
+            alg = PD.QuadraticAlgebra{Rational{Int64}, Nothing}(basis, relTable, nothing)
 
             showOutput = @test_nowarn sprint(show, alg)
 
@@ -71,9 +71,9 @@
                 uniqInd = unique(ind)
 
                 if length(unique(ind)) < length(ind)
-                    @test normalForm(alg, x(ind)) == algebraElement(0)
+                    @test normalForm(alg, x(ind)) ≐ 0
                 end
-                @test normalForm(alg, x(uniqInd)) == algebraElement(levicivita(sortperm(uniqInd)) * x(sort(uniqInd)))
+                @test normalForm(alg, x(uniqInd)) ≐ levicivita(sortperm(uniqInd)) * x(sort(uniqInd))
             end
 
             for _ in 1:numRandomTests
@@ -138,7 +138,7 @@
             @test occursin("symmetric deformation", lowercase(showOutput))
 
             # Lie elements commute as usual
-            @test normalForm(sp, comm(lie(7), lie(1))) ≐ 2lie(1)  # [h_1,x_1] = 2x_1
+            @test normalForm(sp, comm(lie(7), lie(1))) ≐ 2lie(1)   # [h_1,x_1] = 2x_1
             @test normalForm(sp, comm(lie(7), lie(2))) ≐ -lie(2)   # [h_1,x_2] = -x_1
             @test normalForm(sp, comm(lie(7), lie(3))) ≐ lie(3)    # [h_1,x_3] =  x_1
             @test normalForm(sp, comm(lie(1), lie(4))) ≐ lie(7)    # [x_1,y_1] =  h_1
@@ -196,18 +196,13 @@
         @testset "dicyclic group Q8" begin
             ga = PD.groupAlgebraDicyclicGroup(8)
 
-            function perm(p::Vararg{Int64}) :: BasisElement
-                str = length(p) == 1 ? string("(", p[1], ")") : string(p)
-                return grp(findfirst(isequal(str), ga.extraData.permRep))
-            end
-
-            e = perm()
-            temp = filter(i -> grp(i) != e && normalForm(ga, grp(i,i)) ≐ e, 1:8)
+            e = grp(findfirst(isequal("()"), ga.extraData.permRep))
+            temp = filter(i -> grp(i) != e && normalForm(ga, grp(i)^2) ≐ e, 1:8)
             @test length(temp) == 1
-            minus_e = first(temp)
+            minus_e = grp(first(temp))
             for i in 1:8
-                if grp(i) != e && i != minus_e
-                    @test normalForm(ga, grp(i,i)) ≐ grp(minus_e)
+                if !(grp(i) in [e, minus_e])
+                    @test normalForm(ga, grp(i)^2) ≐ minus_e
                 end
             end
         end

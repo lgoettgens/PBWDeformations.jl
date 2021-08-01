@@ -1,6 +1,5 @@
 module PBWDeformations
 
-using SymPy: norm
 using Oscar
 using SymPy
 
@@ -10,23 +9,26 @@ fromGAP = Oscar.GAP.gap_to_julia
 
 fromSymPy = N
 
+include("Structs.jl")
 include("AlgebraElement.jl")
 include("QuadraticAlgebra.jl")
 
 # generates
-# lie(i::BasisIndex) = (:lie, i) :: BasisElement
-# lie(is::Vector{BasisIndex}) = map(lie, collect(is)) :: Monomial{BasisElement}
-# lie(i::BasisIndex, j::BasisIndex, ks::Vararg{BasisIndex}) = map(lie, [i; j; collect(ks)]) :: Monomial{BasisElement}
-# islie(b::BasisElement) = b[1] === :lie
+#lie(i::Int64; C::Type=Rational{Int64}) = BasisElement{C}(:lie, i)
+#lie(is::Vector{Int64}; C::Type=Rational{Int64}) = Monomial{C}(map(lie, is))
+#lie(is::UnitRange{Int64}; C::Type=Rational{Int64}) = lie(collect(is; C))
+#lie(i::Int64, j::Int64, ks::Vararg{Int64}; C::Type=Rational{Int64}) = lie([i; j; collect(ks)], C)
+#islie(b::BasisElement) = (b[1] === :lie) :: Bool
 # and likewise for :grp, :mod, :test
 
 for name in (:lie, :grp, :mod, :test)
-    s = Symbol("is", name)
+    isname = Symbol("is", name)
     @eval begin
-        ($name)(i::BasisIndex) = (Symbol($name), i) :: BasisElement
-        ($name)(is::Vector{BasisIndex}) = map($name, is) :: Monomial{BasisElement}
-        ($name)(i::BasisIndex, j::BasisIndex, ks::Vararg{BasisIndex}) = map($name, [i; j; collect(ks)]) :: Monomial{BasisElement}
-        ($s)(b::BasisElement) = (b[1] === Symbol($name)) :: Bool
+        ($name)(i::Int64; C::Type=Rational{Int64}) = BasisElement{C}(Symbol($name), i)
+        ($name)(is::Vector{Int64}; C::Type=Rational{Int64}) = Monomial{C}([($name)(i; C) for i in is])
+        ($name)(is::UnitRange{Int64}; C::Type=Rational{Int64}) = ($name)(collect(is); C)
+        ($name)(i::Int64, j::Int64, ks::Vararg{Int64}; C::Type=Rational{Int64}) = ($name)([i; j; collect(ks)]; C)
+        ($isname)(b::BasisElement) = (b[1] === Symbol($name)) :: Bool
     end
 end
 

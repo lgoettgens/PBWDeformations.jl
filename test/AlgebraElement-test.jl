@@ -2,175 +2,274 @@ x = test
 randNum() = rand(-20:20)
 randNums(quantity) = rand(-20:20, quantity)
 randLength(start=0) = rand(start:10)
-randBasisElement() = x(randNum()) :: BasisElement
-basis = x(collect(-20:20))
+randBasisElement() = x(randNum()) :: BasisElement{Rational{Int64}}
+basis = [x(i) for i in -20:20]
 randMonomial() = randMonomial(basis)
 randAlgebraElement() = randAlgebraElement(basis)
+#randAlgebraElement() = AlgebraElement{Rational{Int64}}()
 
 @testset ExtendedTestSet "All AlgebraElement.jl tests" begin
-    @testset "test conversions" begin
-        @test algebraElement() == algebraElement(0) == algebraElement(0) == AlgebraElement([]) == AlgebraElement()
-        @test algebraElement(algebraElement(0)) == algebraElement(0)
+    @testset "test conversions, Coeff=$C" for C in [Rational{Int64}]
+        @test AlgebraElement{C}() == AlgebraElement{C}(0) == AlgebraElement{C}(C(0))
+        @test AlgebraElement{C}(AlgebraElement{C}(0)) == AlgebraElement{C}(0)
 
-        @test algebraElement(1) == algebraElement(1) == algebraElement(Monomial{BasisElement}()) == [(Coefficient(1), Monomial{BasisElement}())] :: AlgebraElement
-        @test algebraElement(algebraElement(1)) == algebraElement(1)
+        @test AlgebraElement{C}(1) == AlgebraElement{C}(Monomial{C}()) == AlgebraElement{C}([(C(1), Monomial{C}())])
+        @test AlgebraElement{C}(AlgebraElement{C}(1)) == AlgebraElement{C}(1)
 
-        @test algebraElement(test(1)) == algebraElement([x(1)]) == [(Coefficient(1), [x(1)])] :: AlgebraElement
-        @test algebraElement(algebraElement(x(1))) == algebraElement(x(1))
+        @test AlgebraElement{C}(x(1; C)) == AlgebraElement{C}(Monomial{C}(x(1; C))) == AlgebraElement{C}(x([1]; C)) == AlgebraElement{C}([(C(1), x([1]; C))])
+        @test AlgebraElement{C}(AlgebraElement{C}(x(1; C))) == AlgebraElement{C}(x(1; C))
 
-        @test algebraElement(x(1,2,3)) == [(Coefficient(1), x(1,2,3))] :: AlgebraElement
-        @test algebraElement(algebraElement(x(1,2,3))) == algebraElement(x(1,2,3))
+        @test AlgebraElement{C}(x(1,2,3; C)) == AlgebraElement{C}([(C(1), x(1,2,3; C))])
+        @test AlgebraElement{C}(AlgebraElement{C}(x(1,2,3; C))) == AlgebraElement{C}(x(1,2,3; C))
 
-        a = [(Coefficient(1//3), [x(1)]), (Coefficient(-1), x(1,1))] :: AlgebraElement
-        @test algebraElement(a) == a
+        a = AlgebraElement{C}([(C(1//3), x([1]; C)), (C(-1), x(1,1; C))])
+        @test AlgebraElement{C}(a) == a
     end
 
-    @testset "test misc operations" begin
-        nums = randNums(randLength(1))
-        @test PD.collectSummands(map(algebraElement, nums)) == algebraElement(sum(nums))
+    @testset "test misc operations, Coeff=$C" for C in [Rational{Int64}]
+        for _ in 1:numRandomTests
+            nums = randNums(randLength(1))
+            @test PD.collectSummands(map(AlgebraElement{C}, nums)) == AlgebraElement{C}(sum(nums))
+        end
 
-        b = randBasisElement()
-        @test PD.collectSummands(algebraElement(b)) == algebraElement(b)
+        for _ in 1:numRandomTests
+            b = randBasisElement()
+            @test PD.collectSummands(AlgebraElement{C}(b)) == AlgebraElement{C}(b)
+        end
 
-        mon = randMonomial()
-        @test PD.collectSummands(algebraElement(mon)) == algebraElement(mon)
+        for _ in 1:numRandomTests
+            mon = randMonomial()
+            @test PD.collectSummands(AlgebraElement{C}(mon)) == AlgebraElement{C}(mon)
+        end
 
-        a = randAlgebraElement()
-        @test a ≐ PD.collectSummands(a)
+        for _ in 1:numRandomTests
+            a = randAlgebraElement()
+            @test a ≐ PD.collectSummands(a)
+        end
 
-        a = randAlgebraElement()
-        @test a ≐ shuffle(a)
+        for _ in 1:numRandomTests
+            a = randAlgebraElement()
+            @test a ≐ AlgebraElement{C}(shuffle(unpack(a))) # TODO make shuffle work on wrapper
+        end
 
-        c1, c2, c3 = map(Coefficient, randNums(3))
-        mon = randMonomial()
-        mon2 = randMonomial()
-        @test [(c1, mon), (c2, mon), (c3, mon2)] ≐ [(c3, mon2), (c1+c2, mon)]
+        for _ in 1:numRandomTests
+            c1, c2, c3 = map(C, randNums(3))
+            mon = randMonomial()
+            mon2 = randMonomial()
+            @test AlgebraElement{C}([(c1, mon), (c2, mon), (c3, mon2)]) ≐ AlgebraElement{C}([(c3, mon2), (c1+c2, mon)])
+        end
 
-        c1, c2 = map(Coefficient, randNums(2))
-        mon = randMonomial()
-        mon2 = randMonomial()
-        @test [(c1, mon), (c2, mon2), (-c1, mon)] ≐ [(c2, mon2)]
+        for _ in 1:numRandomTests
+            c1, c2 = map(C, randNums(2))
+            mon = randMonomial()
+            mon2 = randMonomial()
+            @test AlgebraElement{C}([(c1, mon), (c2, mon2), (-c1, mon)]) ≐ AlgebraElement{C}([(c2, mon2)])
+        end
     end
 
-    @testset "test addition" begin
-        nums = randNums(randLength(1))
-        @test sum(map(algebraElement, nums)) ≐ algebraElement(sum(nums))
+    @testset "test addition, Coeff=$C" for C in [Rational{Int64}]
+        for _ in 1:numRandomTests
+            nums = randNums(randLength(1))
+            @test sum(map(AlgebraElement{C}, nums)) ≐ AlgebraElement{C}(sum(nums))
+        end
 
-        as = [randAlgebraElement() for _ in 1:randLength(2)]
-        @test sum(shuffle(as)) ≐ sum(as)
+        for _ in 1:numRandomTests
+            as = [randAlgebraElement() for _ in 1:randLength(2)]
+            @test sum(shuffle(as)) ≐ sum(as)
+        end
 
-        a = randAlgebraElement()
-        @test 0 + a ≐ a
+        for _ in 1:numRandomTests
+            a = randAlgebraElement()
+            @test 0 + a ≐ a + 0 ≐ a
+        end
 
-        c = randNum()
-        a = randAlgebraElement()
-        @test c + a ≐ Coefficient(c) + a
+        for _ in 1:numRandomTests
+            c = randNum()
+            a = randAlgebraElement()
+            @test c + a ≐ C(c) + a
+        end
 
-        c = randNum()
-        b = randBasisElement()
-        m = randMonomial()
-        a = randAlgebraElement()
-        @test c + b + a + m ≐ sum(algebraElement, shuffle([c, b, a, m]))
+        for _ in 1:numRandomTests
+            c = randNum()
+            b = randBasisElement()
+            m = randMonomial()
+            a = randAlgebraElement()
+            @test c + b + a + m ≐ sum(AlgebraElement{C}, shuffle([c, b, a, m]))
+        end
 
-        l = randLength(1)
-        b = randBasisElement()
-        @test [(Coefficient(l), [b])] ≐ sum(fill(b, l))
+        for _ in 1:numRandomTests
+            l = randLength(1)
+            b = randBasisElement()
+            @test AlgebraElement{C}([(C(l), Monomial{C}(b))]) ≐ sum(fill(b, l))
+        end
 
-        l = randLength(1)
-        m = randMonomial()
-        @test [(Coefficient(l), m)] ≐ sum(fill(m, l))
+        for _ in 1:numRandomTests
+            l = randLength(1)
+            m = randMonomial()
+            @test AlgebraElement{C}([(C(l), m)]) ≐ sum(fill(m, l))
+        end
 
-        l = randLength(1)
-        a = randAlgebraElement()
-        b = [(Coefficient(l*coeff), mon) for (coeff, mon) in a] :: AlgebraElement
-        @test sum(fill(a,l)) ≐ b
+        for _ in 1:numRandomTests
+            l = randLength(1)
+            a1 = randAlgebraElement()
+            a2 = AlgebraElement{C}([(C(l*coeff), mon) for (coeff, mon) in a1])
+            @test sum(fill(a1,l)) ≐ a2
+        end
 
-        @test [(Coefficient(1), [x(1)])] + [(Coefficient(-1), [x(1)])] ≐ 0
+        @test AlgebraElement{C}([(C(1), x([1]; C))]) + AlgebraElement{C}([(C(-1), x([1]; C))]) ≐ 0
     end
 
-    @testset "test multiplication" begin
-        nums = randNums(randLength(1))
-        @test prod(map(algebraElement, nums)) ≐ prod(nums)
+    @testset "test multiplication, Coeff=$C" for C in [Rational{Int64}]
+        for _ in 1:numRandomTests
+            nums = randNums(randLength(1))
+            @test prod(map(AlgebraElement{C}, nums)) ≐ prod(nums)
+        end
 
-        c = randNum()
-        a = randAlgebraElement()
-        @test c * a ≐ Coefficient(c) * a
+        for _ in 1:numRandomTests
+            c = randNum()
+            a = randAlgebraElement()
+            @test c * a ≐ C(c) * a
+        end
 
-        c = randNum()
-        a = randAlgebraElement()
-        @test c * a ≐ a * c
+        for _ in 1:numRandomTests
+            c = randNum()
+            a = randAlgebraElement()
+            @test c * a ≐ a * c
+        end
 
-        a = randAlgebraElement()
-        @test 0 * a ≐ 0
+        for _ in 1:numRandomTests
+            a = randAlgebraElement()
+            @test 0 * a ≐ a * 0 ≐ 0
+        end
 
-        a = randAlgebraElement()
-        @test 1 * a ≐ a
+        for _ in 1:numRandomTests
+            a = randAlgebraElement()
+            @test 1 * a ≐ a * 1 ≐ a
+        end
 
-        c = randNum()
-        b = randBasisElement()
-        m = randMonomial()
-        a = randAlgebraElement()
-        @test c * b * a * m ≐ prod(algebraElement, [c, b, a, m])
+        for _ in 1:numRandomTests
+            c = randNum()
+            b = randBasisElement()
+            m = randMonomial()
+            a = randAlgebraElement()
+            @test c * b * a * m ≐ prod(AlgebraElement{C}, [c, b, a, m])
+        end
 
-        l = randLength(1)
-        b = randBasisElement()
-        @test l * b ≐ [(Coefficient(l), [b])]
+        for _ in 1:numRandomTests
+            l = randLength(1)
+            b = randBasisElement()
+            @test l * b ≐ AlgebraElement{C}([(C(l), Monomial{C}(b))])
+        end
 
-        l = randLength(1)
-        m = randMonomial()
-        @test l * m ≐ [(Coefficient(l), m)]
+        for _ in 1:numRandomTests
+            l = randLength(1)
+            m = randMonomial()
+            @test l * m ≐ AlgebraElement{C}([(C(l), m)])
+        end
 
-        l = randLength(1)
-        a = randAlgebraElement()
-        @test l * a ≐ [(Coefficient(l*coeff), mon) for (coeff, mon) in a]
-
-        ind = randNums(10)
-        @test x(ind) == prod(x, ind)
-
+        for _ in 1:numRandomTests
+            l = randLength(1)
+            a = randAlgebraElement()
+            @test l * a ≐ AlgebraElement{C}([(C(l*coeff), mon) for (coeff, mon) in a])
+        end
+        
+        for _ in 1:numRandomTests
+            ind = randNums(10)
+            @test x(ind; C) == prod(i -> x(i; C), ind)
+        end
+        
         ind1 = randNums(10)
         ind2 = randNums(10)
-        @test x(ind1)*x(ind2) == x([ind1; ind2]) == x(ind1..., ind2...)
+        @test x(ind1; C) * x(ind2; C) == x([ind1; ind2]; C) == x(ind1..., ind2...; C)
 
-        @test x(1) * x(2,3) == x(1,2,3)
-        @test !(x(1,2) ≐ x(2,1))
-        @test !(x(1) * x(2,3) ≐ x(2,3) * x(1))
-        @test (x(1) + x(2)) * (x(1) + x(2)) ≐ x(1,1) + x(1,2) + x(2,1) + x(2,2)
+        @test x([1]; C) == Monomial{C}(x(1; C))
+        @test x(1; C) * x(2; C) == x([1, 2]; C) == x(1,2; C) == Monomial{C}(x(1; C), x(2; C)) == Monomial{C}([x(1; C), x(2; C)])
+        @test x(1; C) * x(2,3; C) == x(1,2,3; C)
+        @test !(x(1,2; C) ≐ x(2,1; C))
+        @test !(x(1; C) * x(2,3; C) ≐ x(2,3; C) * x(1; C))
+        @test (x(1; C) + x(2; C)) * (x(1; C) + x(2; C)) ≐ x(1,1; C) + x(1,2; C) + x(2,1; C) + x(2,2; C)
     end
 
-    @testset "test exponentiation" begin
-        b = randNum()
-        n = randLength(1)
-        @test algebraElement(b)^n ≐ b^n
+    @testset "test exponentiation, Coeff=$C" for C in [Rational{Int64}]
+        for _ in 1:numRandomTests
+            b = randNum()
+            n = randLength(1)
+            @test AlgebraElement{C}(b)^n ≐ b^n
+        end
 
-        a = randAlgebraElement()
-        @test a^0 ≐ 1
+        for _ in 1:numRandomTests
+            a = randAlgebraElement()
+            @test a^0 ≐ 1
+        end
 
-        n = rand(1:4)
-        a = randAlgebraElement()
-        @test a^n ≐ prod([a for _ in 1:n])
+        for _ in 1:numRandomTests
+            n = rand(0:2) # TODO: increase performance so that we have 1:3 here again, as before
+            a = randAlgebraElement()
+            @test a^n ≐ prod([a for _ in 1:n]; init=AlgebraElement{C}(1))
+        end
 
-        n = rand(1:3)
-        a = randAlgebraElement()
-        @test a^(n+1) ≐ a*(a^n)
-        @test a^(n+1) ≐ (a^n)*a
+        for _ in 1:numRandomTests
+            n = rand(0:2) # TODO: increase performance so that we have 1:3 here again, as before
+            a = randAlgebraElement()
+            @test a*(a^n) ≐ a^(n+1) ≐ (a^n)*a
+        end
     end
 
-    @testset "test subtraction" begin
-        n = randNum()
-        @test -algebraElement(n) == algebraElement(-n)
+    @testset "test subtraction, Coeff=$C" for C in [Rational{Int64}]
+        for _ in 1:numRandomTests
+            n = randNum()
+            @test -AlgebraElement{C}(n) == AlgebraElement{C}(-n)
+        end
 
-        a = randAlgebraElement()
-        @test a-a ≐ 0
+        for _ in 1:numRandomTests
+            a = randAlgebraElement()
+            @test a-a ≐ 0
+        end
 
-        a = randAlgebraElement()
-        @test -(-a) ≐ a
+        for _ in 1:numRandomTests
+            a = randAlgebraElement()
+            @test -(-a) ≐ a
+        end
 
-        a = randAlgebraElement()
-        @test 0-a ≐ -a
+        for _ in 1:numRandomTests
+            a = randAlgebraElement()
+            @test 0-a ≐ -a
+        end
 
-        a = randAlgebraElement()
-        b = randAlgebraElement()
-        @test -(a+b) ≐ -a-b
+        for _ in 1:numRandomTests
+            a = randAlgebraElement()
+            @test a-0 ≐ a
+        end
+
+        for _ in 1:numRandomTests
+            c = randNum()
+            a = randAlgebraElement()
+            @test a-c ≐ -(c-a)
+        end
+
+        for _ in 1:numRandomTests
+            b = randBasisElement()
+            a = randAlgebraElement()
+            @test a-b ≐ -(b-a)
+        end
+
+        for _ in 1:numRandomTests
+            m = randMonomial()
+            a = randAlgebraElement()
+            @test a-m ≐ -(m-a)
+        end
+
+        for _ in 1:numRandomTests
+            a1 = randAlgebraElement()
+            a2 = randAlgebraElement()
+            @test a1-a2 ≐ -(a2-a1)
+        end
+
+        for _ in 1:numRandomTests
+            a1 = randAlgebraElement()
+            a2 = randAlgebraElement()
+            @test -(a1+a2) ≐ -a1-a2
+        end
     end
 
 end
