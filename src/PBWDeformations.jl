@@ -1,13 +1,10 @@
 module PBWDeformations
 
 using Oscar
-using SymPy
 
 GAP = Oscar.GAP.Globals
 toGAP = Oscar.GAP.julia_to_gap
 fromGAP = Oscar.GAP.gap_to_julia
-
-fromSymPy = N
 
 include("Structs.jl")
 include("AlgebraElement.jl")

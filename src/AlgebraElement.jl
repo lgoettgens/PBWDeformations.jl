@@ -46,7 +46,6 @@ struct AlgebraElement{C} <: AbstractAlgebraElement
     end
 end
 
-
 StandardOperand{C} = Union{BasisElement{C}, Monomial{C}, AlgebraElement{C}}
 Operand{C} = Union{Int64, C, BasisElement{C}, Monomial{C}, AlgebraElement{C}}
 
@@ -63,7 +62,6 @@ function groupBy(pred, v)
 
     return [v[tmp[i]+1:tmp[i+1]] for i in 1:length(tmp)-1]
 end
-
 
 function Base.show(io::IO, m::Monomial) :: Nothing
     if isempty(m)
@@ -89,6 +87,7 @@ function basisElements(a::AlgebraElement{C}) :: Vector{BasisElement{C}} where C
     return unique(vcat(map(unpack, monomials(a))...))
 end
 
+
 function collectSummands(a::AlgebraElement{C}) :: AlgebraElement{C} where C
     res = Tuple{C, Monomial{C}}[]
 
@@ -109,6 +108,7 @@ function collectSummands(as::Vector{AlgebraElement{C}}) :: AlgebraElement{C} whe
     # TODO: implement vcat functionality for wrapper structs
     return collectSummands(AlgebraElement{C}(vcat(map(unpack, as)...)))
 end
+
 
 function sameSum(a1::Operand{C}, a2::Operand{C}) :: Bool where C
     # https://github.com/JuliaLang/julia/issues/41748 
