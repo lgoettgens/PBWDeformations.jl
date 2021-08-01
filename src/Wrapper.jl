@@ -1,11 +1,8 @@
 abstract type Wrapper end
 
-unpack(x) = x
 # Wrappers are supposed to work like haskell's newtype,
 # i.e. a "strong" alias which is its own type.
-function unpack(w::Wrapper)
-    return getfield(w, fieldnames(typeof(w))[1])
-end
+unpack(w::Wrapper) = getfield(w, 1)
 
 Base.:(==)(w1::Wrapper, w2::Wrapper) = unpack(w1) == unpack(w2)
 
