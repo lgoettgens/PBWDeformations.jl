@@ -216,7 +216,7 @@ end
 
 function prettyPrint(a::AlgebraElement{C}) :: String where C
     if iszero(a)
-        return string(zero(C))
+        return "0"
     else
         return replace(join(map(prettyPrint, a), " + "), "+ -" => "- ")
     end
