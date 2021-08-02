@@ -65,7 +65,7 @@ function smashProductSymmDeformLie(dynkin::Char, n::Int64, lambda::Vector{Int64}
 end
 
 
-function isPBWDeformation(d::QuadraticAlgebra{C, SmashProductDeformLie{C}}) :: Bool where C
+function isPBWDeform(d::QuadraticAlgebra{C, SmashProductDeformLie{C}}) :: Bool where C
     # Uses Theorem 3.1 of Walton, Witherspoon: Poincare-Birkhoff-Witt deformations of smash product algebras from Hopf actions on Koszul algebras.
     # DOI:	10.2140/ant.2014.8.1701. https://arxiv.org/abs/1308.6011
     nL = d.extraData.sp.nL

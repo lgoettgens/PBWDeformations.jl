@@ -91,10 +91,10 @@
 
     end
 
-    @testset "isPBWDeformation" begin
+    @testset "isPBWDeform" begin
         @testset "symmetric deformation of $(dynkin)_$n with hw $lambda" for (dynkin, n, lambda) in [('A', 2, [1,1]), ('B', 2, [1,0])]
             d = PD.smashProductSymmDeformLie(dynkin, n, lambda)
-            @test PD.isPBWDeformation(d)
+            @test PD.isPBWDeform(d)
         end
 
         @testset "non-PBW deformations" begin
@@ -104,7 +104,7 @@
             kappa[1,2] = 1*lie(3)
             kappa[2,1] = -lie(3)
             d = PD.smashProductDeformLie(sp, kappa)
-            @test !PD.isPBWDeformation(d)
+            @test !PD.isPBWDeform(d)
         end
 
     end
