@@ -130,7 +130,7 @@ function sortVars(vars::Vector{T}, nL, nV, maxdeg) :: Matrix{Vector{Vector{T}}} 
     return m
 end
 
-function varietyOfPBWDeforms(sp::QuadraticAlgebra{Rational{Int64}, SmashProductLie}, maxdeg::Int64)
+function varietyOfPBWDeforms(sp::QuadraticAlgebra{Rational{Int64}, SmashProductLie}, maxdeg::Int64) :: Vector{MPolyElem}
     nL = sp.extraData.nL
     nV = sp.extraData.nV
   
@@ -154,6 +154,20 @@ function varietyOfPBWDeforms(sp::QuadraticAlgebra{Rational{Int64}, SmashProductL
     newSp = QuadraticAlgebra{MPolyElem, SmashProductLie}(newBasis, newRelTable, sp.extraData)
 
     deform = smashProductDeformLie(newSp, kappa, R(1))
-    
-    return PBWDeformEqs(deform, R(1))
+
+    return simplifyEqs(PBWDeformEqs(deform, R(1)))
+end
+
+function simplifyEqs(eqs::Vector{AlgebraElement{C}}) :: Vector{C} where C
+    gens = C[]
+    for eq in eqs
+        # coeffcient comparison
+        for summand in unpack(eq)
+            (c,m) = summand
+            push!(gens, c)
+        end
+    end
+    gens = [(1//content(gen))*gen for gen in gens]
+    gens = [(leading_coefficient(gen) < 0 ? -gen : gen) for gen in gens]
+    return unique(gens)
 end
