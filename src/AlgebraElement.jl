@@ -204,6 +204,14 @@ end
 
 comm(x, y) = x*y - y*x
 
+function changeC(C2::Type, b::BasisElement{C1}) :: BasisElement{C2} where C1
+    return BasisElement{C2}(unpack(b))
+end
+
+function changeC(C2::Type, m::Monomial{C1}) :: Monomial{C2} where C1
+    return Monomial{C2}(map(b -> changeC(C2, b), unpack(m)))
+end
+
 
 function groupBy(pred, v)
     if isempty(v)
