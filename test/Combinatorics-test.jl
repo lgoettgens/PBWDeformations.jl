@@ -14,10 +14,10 @@
         @test PD.multichoose(3, 3) == 10
     end
 
-    @testset "multicombinations" begin
+    @testset "multicombinations(a, k)" begin
         for _ in 1:numRandomTests
-            n = rand(0:20)
-            k = rand(-1:10)
+            n = rand(1:16)
+            k = rand(-1:8)
 
             @test PD.multichoose(n, k) ==
                 length(PD.multicombinations(1:n, k)) ==
@@ -30,6 +30,17 @@
         @test map(join, PD.multicombinations(["a", "b", "c"], 1)) == ["a", "b", "c"]
         @test map(join, PD.multicombinations(["a", "b", "c"], 2)) == ["aa", "ab", "ac", "bb", "bc", "cc"]
         @test map(join, PD.multicombinations(["a", "b", "c"], 3)) == ["aaa", "aab", "aac", "abb", "abc", "acc", "bbb", "bbc", "bcc", "ccc"]
+    end
+
+    @testset "multicombinations(a)" begin
+        for n in 1:10
+            @test length(collect(PD.multicombinations(1:n))) ==
+                sum(PD.multichoose(n, k) for k in 1:n)
+        end
+
+        @test map(join, PD.multicombinations(["a", "b", "c"])) == ["a", "b", "c",
+            "aa", "ab", "ac", "bb", "bc", "cc",
+            "aaa", "aab", "aac", "abb", "abc", "acc", "bbb", "bbc", "bcc", "ccc"]
     end
     
 end
