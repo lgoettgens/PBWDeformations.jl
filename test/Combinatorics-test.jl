@@ -26,10 +26,10 @@
                 length(collect(PD.multicombinations(collect(1:n), k)))
         end
 
-        @test map(join, PD.multicombinations(["a", "b", "c"], 0)) == [""]
-        @test map(join, PD.multicombinations(["a", "b", "c"], 1)) == ["a", "b", "c"]
-        @test map(join, PD.multicombinations(["a", "b", "c"], 2)) == ["aa", "ab", "ac", "bb", "bc", "cc"]
-        @test map(join, PD.multicombinations(["a", "b", "c"], 3)) == ["aaa", "aab", "aac", "abb", "abc", "acc", "bbb", "bbc", "bcc", "ccc"]
+        @test issetequal(map(join, PD.multicombinations(["a", "b", "c"], 0)), [""])
+        @test issetequal(map(join, PD.multicombinations(["a", "b", "c"], 1)), ["a", "b", "c"])
+        @test issetequal(map(join, PD.multicombinations(["a", "b", "c"], 2)), ["aa", "ab", "ac", "bb", "bc", "cc"])
+        @test issetequal(map(join, PD.multicombinations(["a", "b", "c"], 3)), ["aaa", "aab", "aac", "abb", "abc", "acc", "bbb", "bbc", "bcc", "ccc"])
     end
     
 end

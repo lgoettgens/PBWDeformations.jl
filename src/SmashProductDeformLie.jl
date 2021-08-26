@@ -130,18 +130,16 @@ function sortVars(vars::Vector{T}, nL, nV, maxdeg) :: Matrix{Vector{Vector{T}}} 
     return m
 end
 
-function varietyOfPBWDeforms(sp::QuadraticAlgebra{Rational{Int64}, SmashProductLie}, maxdeg::Int64) :: Vector{MPolyElem}
+function varietyOfPBWDeforms(sp::QuadraticAlgebra{Rational{Int64}, SmashProductLie}, maxdeg::Int64) :: Tuple{Vector{MPolyElem}, MPolyRing}
     nL = sp.extraData.nL
     nV = sp.extraData.nV
   
-    nvars, _, _  = paramDeformNumberVars(nL, nV, maxdeg)
 
     R, vars = PolynomialRing(QQ, paramDeformVars(nL, nV, maxdeg))
 
     varMatrix = sortVars(vars, nL, nV, maxdeg)
 
     kappa = fill(AlgebraElement{MPolyElem}(0), nV, nV)
-
     for i in 1:nV, j in i+1:nV, d in 0:maxdeg, (k, ind) in enumerate(multicombinations(1:nL, d))
         kappa[i,j] += varMatrix[i,j][d+1][k]*lie(ind; C=MPolyElem)
         kappa[j,i] -= varMatrix[i,j][d+1][k]*lie(ind; C=MPolyElem)
@@ -155,18 +153,22 @@ function varietyOfPBWDeforms(sp::QuadraticAlgebra{Rational{Int64}, SmashProductL
 
     deform = smashProductDeformLie(newSp, kappa, R(1))
 
-    return simplifyEqs(PBWDeformEqs(deform, R(1)))
+    return simplifyGens(coefficientComparison(PBWDeformEqs(deform, R(1)))), R
 end
 
-function simplifyEqs(eqs::Vector{AlgebraElement{C}}) :: Vector{C} where C
-    gens = C[]
+function coefficientComparison(eqs::Vector{AlgebraElement{C}}) :: Vector{C} where C
+    result = C[]
     for eq in eqs
         # coeffcient comparison
         for summand in unpack(eq)
-            (c,m) = summand
-            push!(gens, c)
+            (c, m) = summand
+            push!(result, c)
         end
     end
+    return result
+end
+
+function simplifyGens(gens::Vector{C}) :: Vector{C} where C
     gens = [(1//content(gen))*gen for gen in gens]
     gens = [(leading_coefficient(gen) < 0 ? -gen : gen) for gen in gens]
     return unique(gens)

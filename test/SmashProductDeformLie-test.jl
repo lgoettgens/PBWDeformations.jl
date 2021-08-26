@@ -109,4 +109,50 @@
 
     end
 
+    @testset "varietyOfPBWDeforms construction stuff" begin
+        @testset "paramDeformNumberVars tests" begin
+            for _ in 1:numRandomTests
+                a, b, c = PD.paramDeformNumberVars(rand(1:10), rand(1:10), rand(0:5))
+                @test a == b * c
+            end
+
+            for i in 1:10
+                @test PD.paramDeformNumberVars(1, i, 0) == (div(i*(i-1), 2), div(i*(i-1), 2), 1)
+                @test PD.paramDeformNumberVars(1, i, 1) == (2*div(i*(i-1), 2), div(i*(i-1), 2), 2)
+                @test PD.paramDeformNumberVars(5, i, 1) == (6*div(i*(i-1), 2), div(i*(i-1), 2), 6)
+                @test PD.paramDeformNumberVars(1, i, 2) == (3*div(i*(i-1), 2), div(i*(i-1), 2), 3)
+                @test PD.paramDeformNumberVars(3, i, 2) == (10*div(i*(i-1), 2), div(i*(i-1), 2), 10)
+            end
+        end
+
+        @testset "paramDeformVars tests" begin
+            for _ in 1:numRandomTests
+                nL, nV, maxdeg = rand(1:10), rand(1:10), rand(0:5)
+                l, _, _ = PD.paramDeformNumberVars(nL, nV, maxdeg)
+                @test l == length(PD.paramDeformVars(nL, nV, maxdeg))
+            end
+        end
+
+        @testset "sortVars tests" begin
+            #TODO
+        end
+
+        @testset "coefficientComparison tests" begin
+            eqs = [2//3*test(1)+88*test(3,4), 12*test(1), 3*test(2)+0*test(4)-2*test(2)]
+            @test issetequal(PD.coefficientComparison(eqs), [2//3, 88, 12, 1])
+        end
+
+        @testset "simplifyGens tests" begin
+            #TODO (maybe using Singular)
+        end
+
+        @testset "everything still works" begin
+            @test_nowarn PD.varietyOfPBWDeforms(PD.smashProductLie('A',2,[1,0]), 1)
+            @test_nowarn PD.varietyOfPBWDeforms(PD.smashProductLie('A',2,[1,0]), 2)
+            @test_nowarn PD.varietyOfPBWDeforms(PD.smashProductLie('A',2,[1,1]), 1)
+            @test_nowarn PD.varietyOfPBWDeforms(PD.smashProductLie('B',2,[1,0]), 1)
+        end
+
+    end
+
 end
