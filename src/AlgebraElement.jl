@@ -17,6 +17,14 @@ struct Monomial{C} <: AbstractAlgebraElement
     Monomial{C}(m::Vector{BasisElement{C}}) where C = new{C}(m)
     Monomial{C}(m1::BasisElement{C}, ms::Vararg{BasisElement{C}}) where C = new{C}([m1; collect(ms)])
     Monomial{C}(m::Monomial{C}) where C = m
+
+    function Monomial{C}(a::Vector{<:Any}) :: Monomial{C} where C
+        if isempty(a)
+            return Monomial{C}()
+        else
+            throw(DomainError("Cannot cast input to Monomial"))
+        end
+    end
 end
 
 struct AlgebraElement{C} <: AbstractAlgebraElement
@@ -29,10 +37,12 @@ struct AlgebraElement{C} <: AbstractAlgebraElement
     AlgebraElement{C}(c::C) where C = iszero(c) ? AlgebraElement{C}() : new{C}([(c, Monomial{C}())])
 
     AlgebraElement{C}(b::BasisElement{C}) where C = new{C}([(C(1), Monomial{C}(b))])
+    AlgebraElement{C}(b::BasisElement{C}, one::C) where C = new{C}([(one, Monomial{C}(b))])
 
     AlgebraElement{C}(m::Monomial{C}) where C = new{C}([(C(1), m)])
+    AlgebraElement{C}(m::Monomial{C}, one::C) where C = new{C}([(one, m)])
 
-    AlgebraElement{C}(a::Vector{Tuple{C, Monomial{C}}}) where C = new{C}(a)
+    AlgebraElement{C}(a::Vector{Tuple{D, Monomial{C}}}) where {C, D <: C} = new{C}(a)
     AlgebraElement{C}(a::AlgebraElement{C}) where C = a
 
     function AlgebraElement{C}(a::Vector{<:Any}) :: AlgebraElement{C} where C
@@ -45,7 +55,7 @@ struct AlgebraElement{C} <: AbstractAlgebraElement
 end
 
 StandardOperand{C} = Union{BasisElement{C}, Monomial{C}, AlgebraElement{C}}
-Operand{C} = Union{Int64, C, BasisElement{C}, Monomial{C}, AlgebraElement{C}}
+Operand{C} = Union{Int64, <:C, BasisElement{C}, Monomial{C}, AlgebraElement{C}}
 
 function Base.one(::Union{Monomial{C}, Type{Monomial{C}}}) :: Monomial{C} where C
     return Monomial{C}()  
@@ -130,8 +140,25 @@ function Base.:(*)(x::Monomial{C}, y::Monomial{C}) :: Monomial{C} where C
     return Monomial{C}([unpack(x); unpack(y)])
 end
 
-function Base.:(*)(c::Union{Int64, C}, a::StandardOperand{C}) :: AlgebraElement{C} where C
+function Base.:(*)(c::C, b::BasisElement{C}) :: AlgebraElement{C} where C
+    return AlgebraElement{C}([(c, Monomial{C}(b))])
+end
+
+function Base.:(*)(c::C, m::Monomial{C}) :: AlgebraElement{C} where C
+    return AlgebraElement{C}([(c, m)])
+    # return AlgebraElement{C}([(c*coeff, mon) for (coeff, mon) in AlgebraElement{C}(m)])
+end
+
+function Base.:(*)(c::Union{Int64, C}, a::AlgebraElement{C}) :: AlgebraElement{C} where C
     return AlgebraElement{C}([(c*coeff, mon) for (coeff, mon) in AlgebraElement{C}(a)])
+end
+
+function Base.:(*)(c::Int64, b::BasisElement{C}) :: AlgebraElement{C} where C
+    return C(c) * b
+end
+
+function Base.:(*)(c::Int64, m::Monomial{C}) :: AlgebraElement{C} where C
+    return C(c) * m
 end
 
 function Base.:(*)(a::StandardOperand{C}, c::Union{Int64, C}) :: AlgebraElement{C} where C
@@ -143,11 +170,11 @@ function Base.:(*)(a1::AlgebraElement{C}, a2::AlgebraElement{C}) :: AlgebraEleme
 end
 
 function Base.:(*)(a::AlgebraElement{C}, m::Union{BasisElement{C}, Monomial{C}}) :: AlgebraElement{C} where C
-    return a * AlgebraElement{C}(m)
+    return collectSummands(AlgebraElement{C}([(c, m2*m) for (c, m2) in a]))
 end
 
 function Base.:(*)(m::Union{BasisElement{C}, Monomial{C}}, a::AlgebraElement{C}) :: AlgebraElement{C} where C
-    return AlgebraElement{C}(m) * a
+    return collectSummands(AlgebraElement{C}([(c, m*m2) for (c, m2) in a]))
 end
 
 
@@ -177,6 +204,14 @@ end
 
 comm(x, y) = x*y - y*x
 
+function changeC(C2::Type, b::BasisElement{C1}) :: BasisElement{C2} where C1
+    return BasisElement{C2}(unpack(b))
+end
+
+function changeC(C2::Type, m::Monomial{C1}) :: Monomial{C2} where C1
+    return Monomial{C2}(map(b -> changeC(C2, b), unpack(m)))
+end
+
 
 function groupBy(pred, v)
     if isempty(v)
@@ -204,13 +239,17 @@ end
 
 function prettyPrint(t::Tuple{C, Monomial{C}}) :: String where C
     if isone(t[2])
-        return string(isinteger(t[1]) ? Int(t[1]) : t[1])
+        # TODO: isinteger is not supported for MPolyElem
+        # return string(isinteger(t[1]) ? Int(t[1]) : t[1])
+        return string(t[1])
     elseif isone(t[1])
         return prettyPrint(t[2])
     elseif isone(-t[1])
         return string('-', prettyPrint(t[2]))
+    elseif C <: Int64 || C <: Rational{Int64}
+        return string(t[1], '⋅', prettyPrint(t[2]))
     else
-        return string(isinteger(t[1]) ? Int(t[1]) : t[1], '⋅', prettyPrint(t[2]))
+        return string('(', t[1], ')', '⋅', prettyPrint(t[2]))
     end
 end
 
