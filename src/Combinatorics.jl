@@ -17,7 +17,7 @@ function Base.iterate(c::Multicombinations, s = [min(1, c.k - i) for i in 1:c.k]
         isempty(s) && return (s, [1])
         return
     end
-    if s[1] == c.n # end iteration because there is none left
+    if s[1] == s[c.k] == c.n # end iteration because there is none left
         return
     end
     for i in c.k:-1:1
