@@ -47,11 +47,3 @@ function multicombinations(a, k::Integer)
     reorder(c) = [a[ci] for ci in c]
     (reorder(c) for c in Multicombinations(length(a), k))
 end
-
-
-"""
-    multicombinations(a)
-Generate multicombinations of the elements of `a` of all orders. Chaining of order iterators
-is eager, but the sequence at each order is lazy.
-"""
-multicombinations(a) = Iterators.flatten([multicombinations(a, k) for k = 1:length(a)])
