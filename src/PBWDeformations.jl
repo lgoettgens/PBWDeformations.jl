@@ -1,5 +1,6 @@
 module PBWDeformations
 
+using Combinatorics
 using Oscar
 
 GAP = Oscar.GAP.Globals
