@@ -125,7 +125,7 @@ function Base.iterate(eqs::PBWDeformEqs{C}, s=nothing) where C
             - kappa[i,k]*mod(j; C) + mod(i; C)*kappa[k,j])
     end
 
-    return (eq, s)
+    return (normalForm(eqs.d, eq), s)
 end
 
 function Base.length(eqs::PBWDeformEqs{C}) where C
@@ -163,13 +163,12 @@ function PBWDeformEqs1(d::QuadraticAlgebra{C, SmashProductDeformLie{C}}, one=C(1
 
     ## (d) trivial
 
-    #return map(eq -> normalForm(d, eq), eqs)
-    return eqs
+    return map(eq -> normalForm(d, eq), eqs)
 end
 
-# function isPBWDeform(d::QuadraticAlgebra{C, SmashProductDeformLie{C}}, one=C(1)::C) :: Bool where C
-#     return all(iszero, PBWDeformEqs(d, one))
-# end
+function isPBWDeform(d::QuadraticAlgebra{C, SmashProductDeformLie{C}}, one=C(1)::C) :: Bool where C
+    return all(iszero, PBWDeformEqs{C}(d, one))
+end
 
 
 function paramDeformNumberVars(nL::Int64, nV::Int64, maxdeg::Int64) :: Tuple{Int64, Int64, Int64}

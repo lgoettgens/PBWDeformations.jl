@@ -138,11 +138,11 @@
         end
 
         @testset "coefficientComparison tests" begin
-            eqs = [2//3*test(1)+88*test(3,4), 12*test(1), 3*test(2)+0*test(4)-2*test(2)]
-            @test issetequal(PD.coefficientComparison(eqs), [2//3, 88, 12, 1])
+            eq = 2//3*test(1) + 88*test(3,4) - 12*test(1,5) + 3*test(2) + 0*test(4) - 2*test(2) + 12*test(1,5)
+            @test issetequal(PD.coefficientComparison(eq), [2//3, 88, 1])
         end
 
-        @testset "simplifyGens tests" begin
+        @testset "simplifyGen tests" begin
             #TODO (maybe using Singular)
         end
 
