@@ -91,7 +91,7 @@ function collectSummands(a::AlgebraElement{C}) :: AlgebraElement{C} where C
         end
     end
 
-    return AlgebraElement{C}(filter(x -> !iszero(x[1]), res))
+    return AlgebraElement{C}(filter!(x -> !iszero(x[1]), res))
 end
 
 function collectSummands(as::Vector{AlgebraElement{C}}) :: AlgebraElement{C} where C
