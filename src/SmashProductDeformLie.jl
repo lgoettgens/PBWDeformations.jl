@@ -78,18 +78,17 @@ function Base.iterate(eqs::PBWDeformEqs{C}, s=nothing) where C
 
     #s = (flag = 1, c_state, h) oder (flag = 2, i, j, k)
 
-    comb = Combinatorics.Combinations(nV,2)
     if s === nothing # may fail for nV<2
         s = Any[1, 1, nothing]
     end
 
     if s[1] == 1
+        comb = Combinatorics.Combinations(nV,2)
         res = s[3] === nothing ? iterate(comb) : iterate(comb, s[3])
         if res === nothing
             s[2] += 1
             if s[2] > nL
                 s[1] = 2
-                comb = Combinatorics.Combinations(nV, 3)
                 s[3] = nothing
             else
                 comb = Combinatorics.Combinations(nV,2)
@@ -101,6 +100,7 @@ function Base.iterate(eqs::PBWDeformEqs{C}, s=nothing) where C
         end
     end
     if s[1] == 2
+        comb = Combinatorics.Combinations(nV,3)
         res = s[3] === nothing ? iterate(comb) : iterate(comb, s[3])
         if res === nothing
             return nothing
@@ -111,7 +111,7 @@ function Base.iterate(eqs::PBWDeformEqs{C}, s=nothing) where C
 
     if s[1] == 1
         i,j = res[1]
-        h = AlgebraElement{C}(lie(s[2]; C), eqs.one)
+        #h = AlgebraElement{C}(lie(s[2]; C), eqs.one)
         # eq = (sum([c*kappa[m[1][2],j] for (c, m) in normalForm(eqs.d, comm(h, mod(i; C)))]; init=AlgebraElement{C}()) # κ([h⋅v_i,v_j])
         #     + sum([c*kappa[i,m[1][2]] for (c, m) in normalForm(eqs.d, comm(h, mod(j; C)))]; init=AlgebraElement{C}()) # κ([v_i,h⋅v_j])
         #     - normalForm(eqs.d, comm(h, kappa[i,j])))
