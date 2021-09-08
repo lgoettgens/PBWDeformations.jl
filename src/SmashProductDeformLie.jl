@@ -223,29 +223,8 @@ function varietyOfPBWDeforms(sp::QuadraticAlgebra{Rational{Int64}, SmashProductL
 
     deform = smashProductDeformLie(newSp, kappa, R(1))
 
-
-    function poly2vec(a::fmpq_mpoly) :: SparseVector{fmpq}
-        res = spzeros(fmpq, numVars)
-        for i in 1:length(a)
-            res += coeff(a,i) .* sparsevec(
-                Dict(j => fmpq(p) for (j,p) in enumerate(exponent_vector(a,i)) if !iszero(p)),
-                numVars
-            )
-        end
-        return res
-    end
-
-    # this version is cleaner but slower and takes more memory
-    #function poly2vec2(a::fmpq_mpoly) :: SparseVector{fmpq}
-    #    res = spzeros(fmpq, numVars)
-    #    for i in 1:length(a)
-    #        res += coeff(a,i) .* sparsevec(Vector{fmpq}(exponent_vector(a,i)))
-    #    end
-    #    return res
-    #end
-
     return Set(
-        Iterators.map(poly2vec,
+        Iterators.map(x -> poly2vec(x, numVars),
             Iterators.map(simplifyGen,
                 Iterators.flatten(
                     Iterators.map(coefficientComparison,
@@ -257,8 +236,16 @@ function varietyOfPBWDeforms(sp::QuadraticAlgebra{Rational{Int64}, SmashProductL
     ), R
 end
 
-
-
+function poly2vec(a::fmpq_mpoly, numVars::Int64) :: SparseVector{fmpq}
+    res = spzeros(fmpq, numVars)
+    for i in 1:length(a)
+        res += coeff(a,i) .* sparsevec(
+            Dict(j => fmpq(p) for (j,p) in enumerate(exponent_vector(a,i)) if !iszero(p)),
+            numVars
+        )
+    end
+    return res
+end
 
 function coefficientComparison(eq::AlgebraElement{C}) :: Vector{C} where C
     result = C[]
