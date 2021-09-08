@@ -204,7 +204,6 @@ function varietyOfPBWDeforms(sp::QuadraticAlgebra{Rational{Int64}, SmashProductL
     nL = sp.extraData.nL
     nV = sp.extraData.nV
   
-
     R, vars = PolynomialRing(QQ, paramDeformVars(nL, nV, maxdeg))
 
     varMatrix = sortVars(vars, nL, nV, maxdeg)
@@ -223,7 +222,15 @@ function varietyOfPBWDeforms(sp::QuadraticAlgebra{Rational{Int64}, SmashProductL
 
     deform = smashProductDeformLie(newSp, kappa, R(1))
 
-    return unique(vcat([map(simplifyGen, coefficientComparison(a)) for a in PBWDeformEqs{MPolyElem}(deform, R(1))]...)), R
+    return unique(
+        Iterators.map(simplifyGen,
+            Iterators.flatten(
+                Iterators.map(coefficientComparison,
+                    PBWDeformEqs{MPolyElem}(deform, R(1))
+                )
+            )
+        )
+    )
 end
 
 function coefficientComparison(eq::AlgebraElement{C}) :: Vector{C} where C
