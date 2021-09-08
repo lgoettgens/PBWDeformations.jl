@@ -200,11 +200,12 @@ function sortVars(vars::Vector{T}, nL, nV, maxdeg) :: Matrix{Vector{Vector{T}}} 
     return m
 end
 
-function varietyOfPBWDeforms(sp::QuadraticAlgebra{Rational{Int64}, SmashProductLie}, maxdeg::Int64) #:: Tuple{Vector{MPolyElem}, MPolyRing}
+function varietyOfPBWDeforms(sp::QuadraticAlgebra{Rational{Int64}, SmashProductLie}, maxdeg::Int64) :: Tuple{Set{SparseVector{fmpq}}, MPolyRing}
     nL = sp.extraData.nL
     nV = sp.extraData.nV
   
     R, vars = PolynomialRing(QQ, paramDeformVars(nL, nV, maxdeg))
+    numVars = length(vars)
 
     varMatrix = sortVars(vars, nL, nV, maxdeg)
 
@@ -222,16 +223,42 @@ function varietyOfPBWDeforms(sp::QuadraticAlgebra{Rational{Int64}, SmashProductL
 
     deform = smashProductDeformLie(newSp, kappa, R(1))
 
-    return unique(
-        Iterators.map(simplifyGen,
-            Iterators.flatten(
-                Iterators.map(coefficientComparison,
-                    PBWDeformEqs{MPolyElem}(deform, R(1))
+
+    function poly2vec(a::fmpq_mpoly) :: SparseVector{fmpq}
+        res = spzeros(fmpq, numVars)
+        for i in 1:length(a)
+            res += coeff(a,i) .* sparsevec(
+                Dict(j => fmpq(p) for (j,p) in enumerate(exponent_vector(a,i)) if !iszero(p)),
+                numVars
+            )
+        end
+        return res
+    end
+
+    # this version is cleaner but slower and takes more memory
+    #function poly2vec2(a::fmpq_mpoly) :: SparseVector{fmpq}
+    #    res = spzeros(fmpq, numVars)
+    #    for i in 1:length(a)
+    #        res += coeff(a,i) .* sparsevec(Vector{fmpq}(exponent_vector(a,i)))
+    #    end
+    #    return res
+    #end
+
+    return Set(
+        Iterators.map(poly2vec,
+            Iterators.map(simplifyGen,
+                Iterators.flatten(
+                    Iterators.map(coefficientComparison,
+                        PBWDeformEqs{MPolyElem}(deform, R(1))
+                    )
                 )
             )
         )
-    )
+    ), R
 end
+
+
+
 
 function coefficientComparison(eq::AlgebraElement{C}) :: Vector{C} where C
     result = C[]

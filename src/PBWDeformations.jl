@@ -2,6 +2,7 @@ module PBWDeformations
 
 using Combinatorics
 using Oscar
+using SparseArrays
 
 GAP = Oscar.GAP.Globals
 toGAP = Oscar.GAP.julia_to_gap
