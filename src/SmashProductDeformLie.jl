@@ -300,6 +300,20 @@ function varietyOfPBWDeformsLinear(sp::QuadraticAlgebra{Rational{Int64}, SmashPr
         deleteat!(lgs[i], 2:length(lgs[i]))
     end
 
+    # reduce row-echelon form
+    for i in length(lgs):-1:1
+        if isempty(lgs[i])
+            continue
+        end
+        nzIndices, nzValues = findnz(lgs[i][1])
+        for (ind,j) in enumerate(nzIndices[2:end])
+            if !isempty(lgs[j])
+                lgs[i][1] -= nzValues[ind+1] .* lgs[j][1]
+            end
+        end
+    end
+
+
     mat = spzeros(fmpq, numVars, numVars)
     for i in 1:numVars
         if !isempty(lgs[i])
