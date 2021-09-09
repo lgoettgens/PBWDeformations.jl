@@ -147,10 +147,14 @@
         end
 
         @testset "everything still works" begin
-            @test_nowarn PD.varietyOfPBWDeforms(PD.smashProductLie('A',2,[1,0]), 1)
-            @test_nowarn PD.varietyOfPBWDeforms(PD.smashProductLie('A',2,[1,0]), 2)
-            @test_nowarn PD.varietyOfPBWDeforms(PD.smashProductLie('A',2,[1,1]), 1)
-            @test_nowarn PD.varietyOfPBWDeforms(PD.smashProductLie('B',2,[1,0]), 1)
+            @test_nowarn PD.varietyOfPBWDeformsLinear(PD.smashProductLie('A',2,[1,0]), 1)
+            @test_nowarn PD.varietyOfPBWDeformsLinear(PD.smashProductLie('A',2,[1,0]), 2)
+            @test_nowarn PD.varietyOfPBWDeformsLinear(PD.smashProductLie('A',2,[1,1]), 1)
+            @test_nowarn PD.varietyOfPBWDeformsLinear(PD.smashProductLie('B',2,[1,0]), 1)
+            @test_nowarn PD.varietyOfPBWDeforms1(PD.smashProductLie('A',2,[1,0]), 1)
+            @test_nowarn PD.varietyOfPBWDeforms1(PD.smashProductLie('A',2,[1,0]), 2)
+            @test_nowarn PD.varietyOfPBWDeforms1(PD.smashProductLie('A',2,[1,1]), 1)
+            @test_nowarn PD.varietyOfPBWDeforms1(PD.smashProductLie('B',2,[1,0]), 1)
         end
 
     end
