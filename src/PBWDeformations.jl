@@ -1,12 +1,12 @@
 module PBWDeformations
 
+using Combinatorics
 using Oscar
 
 GAP = Oscar.GAP.Globals
 toGAP = Oscar.GAP.julia_to_gap
 fromGAP = Oscar.GAP.gap_to_julia
 
-include("Combinatorics.jl")
 include("Wrapper.jl")
 include("AlgebraElement.jl")
 include("QuadraticAlgebra.jl")

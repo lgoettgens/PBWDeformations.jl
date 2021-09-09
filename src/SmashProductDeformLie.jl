@@ -103,14 +103,14 @@ end
 
 function paramDeformNumberVars(nL::Int64, nV::Int64, maxdeg::Int64) :: Tuple{Int64, Int64, Int64}
     nKappaEntries = div(nV*(nV-1), 2)
-    nEntryCoeffs = sum(multichoose(nL, k) for k in 0:maxdeg)
+    nEntryCoeffs = sum(binomial(nL + k - 1, k) for k in 0:maxdeg)
     
     return nKappaEntries * nEntryCoeffs, nKappaEntries, nEntryCoeffs
 end
 
 function paramDeformVars(nL::Int64, nV::Int64, maxdeg::Int64) :: Vector{String}
     # format: "c_{i,j,deg,[inds]}"
-    return ["c_{$i,$j,$deg,$(isempty(inds) ? "[]" : inds)}" for i in 1:nV for j in i+1:nV for deg in 0:maxdeg for inds=multicombinations(1:nL, deg)]
+    return ["c_{$i,$j,$deg,$(isempty(inds) ? "[]" : inds)}" for i in 1:nV for j in i+1:nV for deg in 0:maxdeg for inds=Combinatorics.with_replacement_combinations(1:nL, deg)]
 end
 
 function sortVars(vars::Vector{T}, nL, nV, maxdeg) :: Matrix{Vector{Vector{T}}} where T
@@ -121,7 +121,7 @@ function sortVars(vars::Vector{T}, nL, nV, maxdeg) :: Matrix{Vector{Vector{T}}} 
         offset = 0
         m[i,j] = fill(T[], maxdeg+1)
         for d in 0:maxdeg
-            curr = multichoose(nL, d)
+            curr = binomial(nL + d - 1, d)
             m[i,j][d+1] = vars[k*nEntryCoeffs+1+offset : k*nEntryCoeffs+offset+curr]
             offset += curr
         end
@@ -140,7 +140,7 @@ function varietyOfPBWDeforms(sp::QuadraticAlgebra{Rational{Int64}, SmashProductL
     varMatrix = sortVars(vars, nL, nV, maxdeg)
 
     kappa = fill(AlgebraElement{MPolyElem}(0), nV, nV)
-    for i in 1:nV, j in i+1:nV, d in 0:maxdeg, (k, ind) in enumerate(multicombinations(1:nL, d))
+    for i in 1:nV, j in i+1:nV, d in 0:maxdeg, (k, ind) in enumerate(Combinatorics.with_replacement_combinations(1:nL, d))
         kappa[i,j] += varMatrix[i,j][d+1][k]*lie(ind; C=MPolyElem)
         kappa[j,i] -= varMatrix[i,j][d+1][k]*lie(ind; C=MPolyElem)
     end
