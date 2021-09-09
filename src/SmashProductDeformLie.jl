@@ -200,12 +200,50 @@ function sortVars(vars::Vector{T}, nL, nV, maxdeg) :: Matrix{Vector{Vector{T}}} 
     return m
 end
 
-function varietyOfPBWDeforms(sp::QuadraticAlgebra{Rational{Int64}, SmashProductLie}, maxdeg::Int64) :: Tuple{Set{SparseVector{fmpq}}, MPolyRing}
+#function varietyOfPBWDeforms(sp::QuadraticAlgebra{Rational{Int64}, SmashProductLie}, maxdeg::Int64) :: Tuple{Set{SparseVector{fmpq}}, MPolyRing}
+#    nL = sp.extraData.nL
+#    nV = sp.extraData.nV
+#  
+#    R, vars = PolynomialRing(QQ, paramDeformVars(nL, nV, maxdeg))
+#    numVars = length(vars)
+#
+#    varMatrix = sortVars(vars, nL, nV, maxdeg)
+#
+#    kappa = fill(AlgebraElement{MPolyElem}(0), nV, nV)
+#    for i in 1:nV, j in i+1:nV, d in 0:maxdeg, (k, ind) in enumerate(multicombinations(1:nL, d))
+#        kappa[i,j] += varMatrix[i,j][d+1][k]*lie(ind; C=MPolyElem)
+#        kappa[j,i] -= varMatrix[i,j][d+1][k]*lie(ind; C=MPolyElem)
+#    end
+#
+#    newBasis = [changeC(MPolyElem, b) for b in sp.basis]
+#    newRelTable = Dict([(changeC(MPolyElem, b1), changeC(MPolyElem, b2)) => 
+#        AlgebraElement{MPolyElem}(map(x -> (R(x[1]), changeC(MPolyElem, x[2])), unpack(a))) 
+#        for ((b1, b2), a) in pairs(sp.relTable)])
+#    newSp = QuadraticAlgebra{MPolyElem, SmashProductLie}(newBasis, newRelTable, sp.extraData)
+#
+#    deform = smashProductDeformLie(newSp, kappa, R(1))
+#
+#    return Set(
+#        Iterators.map(x -> poly2vec(x, numVars),
+#            Iterators.map(simplifyGen,
+#                Iterators.flatten(
+#                    Iterators.map(coefficientComparison,
+#                        PBWDeformEqs{MPolyElem}(deform, R(1))
+#                    )
+#                )
+#            )
+#        )
+#    ), R
+#end
+
+
+function varietyOfPBWDeformsLinear(sp::QuadraticAlgebra{Rational{Int64}, SmashProductLie}, maxdeg::Int64)
     nL = sp.extraData.nL
     nV = sp.extraData.nV
   
     R, vars = PolynomialRing(QQ, paramDeformVars(nL, nV, maxdeg))
     numVars = length(vars)
+    varLookup = Dict(vars[i] => i for i in 1:numVars)
 
     varMatrix = sortVars(vars, nL, nV, maxdeg)
 
@@ -223,17 +261,58 @@ function varietyOfPBWDeforms(sp::QuadraticAlgebra{Rational{Int64}, SmashProductL
 
     deform = smashProductDeformLie(newSp, kappa, R(1))
 
-    return Set(
-        Iterators.map(x -> poly2vec(x, numVars),
-            Iterators.map(simplifyGen,
-                Iterators.flatten(
-                    Iterators.map(coefficientComparison,
-                        PBWDeformEqs{MPolyElem}(deform, R(1))
-                    )
-                )
+    function poly2vecLinear(a::fmpq_mpoly) :: SparseVector{fmpq, Int64}
+        #@assert all(i -> sum(exponent_vector(a,i)) == 1, 1:length(a))
+
+        return sparsevec(
+            Dict(varLookup[monomial(a,i)] => coeff(a,i) for i in 1:length(a)),
+            numVars
+        )
+    end
+
+    iter = Iterators.map(poly2vecLinear,
+        Iterators.flatten(
+            Iterators.map(coefficientComparison,
+                PBWDeformEqs{MPolyElem}(deform, R(1))
             )
         )
-    ), R
+    )
+
+    # group sparse vectors by index of first non-zero entry
+    lgs = [Vector{SparseVector{fmpq, Int64}}() for _ in 1:numVars]
+    for v in iter
+        normalizeAndStore!(lgs, v)
+    end
+
+    # create row-echelon form
+    for i in 1:length(lgs)
+        unique!(lgs[i])
+        if length(lgs[i]) <= 1
+            continue
+        end
+
+        for j in 2:length(lgs[i])
+            lgs[i][j] -= lgs[i][1]
+            if !iszero(lgs[i][j])
+                normalizeAndStore!(lgs, lgs[i][j])
+            end
+        end
+        deleteat!(lgs[i], 2:length(lgs[i]))
+    end
+
+    mat = spzeros(fmpq, numVars, numVars)
+    for i in 1:numVars
+        if !isempty(lgs[i])
+            mat[i,:] = lgs[i][1]
+        end
+    end
+
+    return mat
+end
+
+function normalizeAndStore!(lgs::Vector{Vector{SparseVector{fmpq, Int64}}}, v::SparseVector{fmpq, Int64})
+    nzIndices, nzValues = findnz(v)
+    push!(lgs[nzIndices[1]], 1//nzValues[1] .* v)
 end
 
 function poly2vec(a::fmpq_mpoly, numVars::Int64) :: SparseVector{fmpq}
