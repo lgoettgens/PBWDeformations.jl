@@ -80,7 +80,7 @@ function Base.iterate(eqs::PBWDeformEqs{C}, s=nothing) where C
     kappa = eqs.d.extraData.kappa
 
     # The following rather complicated code computes the parameters for the current equation and the next state, using the given state of the previous iteration
-    #s = (phase = 1, c_state, h) or (phase = 2, counter, c_state)
+    #s = (phase = 1, c_state, h) or (phase = 3, counter, c_state)
 
     if s === nothing # may fail for nV<2
         s = Any[1, 1, nothing]
@@ -93,7 +93,7 @@ function Base.iterate(eqs::PBWDeformEqs{C}, s=nothing) where C
             @debug "Equation generation, first phase $(floor(Int, 100*s[2] / nL))%"
             s[2] += 1
             if s[2] > nL
-                s[1] = 2
+                s[1] = 3
                 s[2] = 0
                 s[3] = nothing
             else
@@ -105,7 +105,7 @@ function Base.iterate(eqs::PBWDeformEqs{C}, s=nothing) where C
             s[3] = res[2]
         end
     end
-    if s[1] == 2
+    if s[1] == 3
         comb = Combinatorics.Combinations(nV,3)
         res = s[3] === nothing ? iterate(comb) : iterate(comb, s[3])
         if res === nothing
