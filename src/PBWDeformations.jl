@@ -8,8 +8,6 @@ GAP = Oscar.GAP.Globals
 toGAP = Oscar.GAP.julia_to_gap
 fromGAP = Oscar.GAP.gap_to_julia
 
-log(s::String) = println(s)
-
 include("Combinatorics.jl")
 include("Wrapper.jl")
 include("AlgebraElement.jl")

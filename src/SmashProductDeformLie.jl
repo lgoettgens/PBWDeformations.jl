@@ -76,7 +76,7 @@ function Base.iterate(eqs::PBWDeformEqs{C}, s=nothing) where C
     nV = eqs.d.extraData.sp.nV
     kappa = eqs.d.extraData.kappa
 
-    #s = (flag = 1, c_state, h) oder (flag = 2, i, j, k)
+    #s = (flag = 1, c_state, h) oder (flag = 2, counter, c_state)
 
     if s === nothing # may fail for nV<2
         s = Any[1, 1, nothing]
@@ -86,9 +86,11 @@ function Base.iterate(eqs::PBWDeformEqs{C}, s=nothing) where C
         comb = Combinatorics.Combinations(nV,2)
         res = s[3] === nothing ? iterate(comb) : iterate(comb, s[3])
         if res === nothing
+            @debug "Equation generation, first phase $(floor(Int, 100*s[2] / nL))%"
             s[2] += 1
             if s[2] > nL
                 s[1] = 2
+                s[2] = 0
                 s[3] = nothing
             else
                 comb = Combinatorics.Combinations(nV,2)
@@ -106,6 +108,10 @@ function Base.iterate(eqs::PBWDeformEqs{C}, s=nothing) where C
             return nothing
         else
             s[3] = res[2]
+        end
+        s[2] += 1
+        if (s[2] % 250 == 0)
+            @debug "Equation generation, second phase $(floor(Int, 100*s[2] / binomial(nV, 3)))%"
         end
     end
 
@@ -142,6 +148,8 @@ function PBWDeformEqs1(d::QuadraticAlgebra{C, SmashProductDeformLie{C}}, one=C(1
     nV = d.extraData.sp.nV
     kappa = d.extraData.kappa
 
+    @debug "Equation generation, first phase"
+
     ## (a) κ is H-invariant
     eqs = [(sum([c*kappa[m[1][2],j] for (c, m) in normalForm(d, comm(h, mod(i; C)))]; init=AlgebraElement{C}()) # κ([h⋅v_i,v_j])
           + sum([c*kappa[i,m[1][2]] for (c, m) in normalForm(d, comm(h, mod(j; C)))]; init=AlgebraElement{C}()) # κ([v_i,h⋅v_j])
@@ -150,6 +158,8 @@ function PBWDeformEqs1(d::QuadraticAlgebra{C, SmashProductDeformLie{C}}, one=C(1
     # m[1][2] denotes the index of the only basis element in the monomial m
 
     ## (b) trivial
+
+    @debug "Equation generation, second phase"
 
     ## (c) 0 = κ ⊗ id - id ⊗ κ on (I ⊗ V) ∩ (V ⊗ I)
     # (I ⊗ V) ∩ (V ⊗ I) has basis v_iv_jv_k + v_jv_kv_i + v_kv_iv_j - v_kv_jv_i - v_jv_iv_k - v_iv_kv_j for i<j<k
@@ -206,31 +216,31 @@ function varietyOfPBWDeformsLinear(sp::QuadraticAlgebra{Rational{Int64}, SmashPr
     nL = sp.extraData.nL
     nV = sp.extraData.nV
   
-    log("Constructing MPolyRing...")
+    @info "Constructing MPolyRing..."
     R, vars = PolynomialRing(QQ, paramDeformVars(nL, nV, maxdeg))
     numVars = length(vars)
     varLookup = Dict(vars[i] => i for i in 1:numVars)
 
     varMatrix = sortVars(vars, nL, nV, maxdeg)
 
-    log("Constructing kappa...")
+    @info "Constructing kappa..."
     kappa = fill(AlgebraElement{MPolyElem}(0), nV, nV)
     for i in 1:nV, j in i+1:nV, d in 0:maxdeg, (k, ind) in enumerate(multicombinations(1:nL, d))
         kappa[i,j] += varMatrix[i,j][d+1][k]*lie(ind; C=MPolyElem)
         kappa[j,i] -= varMatrix[i,j][d+1][k]*lie(ind; C=MPolyElem)
     end
 
-    log("Changing SmashProductLie coeffcient type...")
+    @info "Changing SmashProductLie coeffcient type..."
     newBasis = [changeC(MPolyElem, b) for b in sp.basis]
     newRelTable = Dict([(changeC(MPolyElem, b1), changeC(MPolyElem, b2)) => 
         AlgebraElement{MPolyElem}(map(x -> (R(x[1]), changeC(MPolyElem, x[2])), unpack(a))) 
         for ((b1, b2), a) in pairs(sp.relTable)])
     newSp = QuadraticAlgebra{MPolyElem, SmashProductLie}(newBasis, newRelTable, sp.extraData)
 
-    log("Constructing deformation...")
+    @info "Constructing deformation..."
     deform = smashProductDeformLie(newSp, kappa, R(1))
 
-    log("Generating equation iterator...")
+    @info "Generating equation iterator..."
     iter = Iterators.map(a -> poly2vecLinear(a, varLookup, numVars),
         Iterators.flatten(
             Iterators.map(coefficientComparison,
@@ -240,18 +250,18 @@ function varietyOfPBWDeformsLinear(sp::QuadraticAlgebra{Rational{Int64}, SmashPr
     )
 
     # group sparse vectors by index of first non-zero entry
-    log("Collecting rows...")
+    @info "Collecting rows..."
     lgs = [Vector{SparseVector{fmpq, Int64}}() for _ in 1:numVars]
     for v in iter
         normalizeAndStore!(lgs, v)
     end
 
     # create row-echelon form
-    log("Computing row-echelon form...")
+    @info "Computing row-echelon form..."
     row_echelon!(lgs)
 
     # reduce row-echelon form
-    log("Computing reduced row-echelon form...")
+    @info "Computing reduced row-echelon form..."
     reduced_row_echelon!(lgs)
 
     return lgs2mat(lgs, numVars)
@@ -273,6 +283,9 @@ end
 
 function row_echelon!(lgs::Vector{Vector{SparseVector{T, Int64}}}) :: Vector{Vector{SparseVector{T, Int64}}} where {T <: AbstractAlgebra.RingElement}
     for i in 1:length(lgs)
+        if (i % 10 == 0)
+            @debug "Row echelon, $i/$(length(lgs)), $(floor(Int, 100*i / length(lgs)))%"
+        end
         unique!(lgs[i])
         if length(lgs[i]) <= 1
             continue
@@ -332,45 +345,45 @@ function varietyOfPBWDeforms1(sp::QuadraticAlgebra{Rational{Int64}, SmashProduct
     nL = sp.extraData.nL
     nV = sp.extraData.nV
 
-    log("Constructing MPolyRing...")
+    @info "Constructing MPolyRing..."
     R, vars = PolynomialRing(QQ, paramDeformVars(nL, nV, maxdeg))
     numVars = length(vars)
     varLookup = Dict(vars[i] => i for i in 1:numVars)
     varMatrix = sortVars(vars, nL, nV, maxdeg)
 
-    log("Constructing kappa...")
+    @info "Constructing kappa..."
     kappa = fill(AlgebraElement{MPolyElem}(0), nV, nV)
     for i in 1:nV, j in i+1:nV, d in 0:maxdeg, (k, ind) in enumerate(multicombinations(1:nL, d))
         kappa[i,j] += varMatrix[i,j][d+1][k]*lie(ind; C=MPolyElem)
         kappa[j,i] -= varMatrix[i,j][d+1][k]*lie(ind; C=MPolyElem)
     end
 
-    log("Changing SmashProductLie coeffcient type...")
+    @info "Changing SmashProductLie coeffcient type..."
     newBasis = [changeC(MPolyElem, b) for b in sp.basis]
     newRelTable = Dict([(changeC(MPolyElem, b1), changeC(MPolyElem, b2)) =>
         AlgebraElement{MPolyElem}(map(x -> (R(x[1]), changeC(MPolyElem, x[2])), unpack(a)))
         for ((b1, b2), a) in pairs(sp.relTable)])
     newSp = QuadraticAlgebra{MPolyElem, SmashProductLie}(newBasis, newRelTable, sp.extraData)
 
-    log("Constructing deformation...")
+    @info "Constructing deformation..."
     deform = smashProductDeformLie(newSp, kappa, R(1))
 
-    log("Generating equations...")
+    @info "Generating equations..."
     iter = map(a -> poly2vecLinear(a, varLookup, numVars), coefficientComparison1(PBWDeformEqs1(deform, R(1))))
 
     # group sparse vectors by index of first non-zero entry
-    log("Collecting rows...")
+    @info "Collecting rows..."
     lgs = [Vector{SparseVector{fmpq, Int64}}() for _ in 1:numVars]
     for v in iter
         normalizeAndStore!(lgs, v)
     end
 
     # create row-echelon form
-    log("Computing row-echelon form...")
+    @info "Computing row-echelon form..."
     row_echelon!(lgs)
 
     # reduce row-echelon form
-    log("Computing reduced row-echelon form...")
+    @info "Computing reduced row-echelon form..."
     reduced_row_echelon!(lgs)
 
     return lgs2mat(lgs, numVars)
