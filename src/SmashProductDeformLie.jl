@@ -72,11 +72,15 @@ struct PBWDeformEqs{C}
 end
 
 function Base.iterate(eqs::PBWDeformEqs{C}, s=nothing) where C
+    # Uses Theorem 3.1 of Walton, Witherspoon: Poincare-Birkhoff-Witt deformations of smash product algebras from Hopf actions on Koszul algebras.
+    # DOI:	10.2140/ant.2014.8.1701. https://arxiv.org/abs/1308.6011
+
     nL = eqs.d.extraData.sp.nL
     nV = eqs.d.extraData.sp.nV
     kappa = eqs.d.extraData.kappa
 
-    #s = (flag = 1, c_state, h) oder (flag = 2, counter, c_state)
+    # The following rather complicated code computes the parameters for the current equation and the next state, using the given state of the previous iteration
+    #s = (phase = 1, c_state, h) or (phase = 2, counter, c_state)
 
     if s === nothing # may fail for nV<2
         s = Any[1, 1, nothing]
@@ -115,13 +119,20 @@ function Base.iterate(eqs::PBWDeformEqs{C}, s=nothing) where C
         end
     end
 
+    ## (a) κ is H-invariant
     if s[1] == 1
         i,j = res[1]
         h = AlgebraElement{C}(lie(s[2]; C), eqs.one)
         eq = (sum([c*kappa[m[1][2],j] for (c, m) in normalForm(eqs.d, comm(h, mod(i; C)))]; init=AlgebraElement{C}()) # κ([h⋅v_i,v_j])
             + sum([c*kappa[i,m[1][2]] for (c, m) in normalForm(eqs.d, comm(h, mod(j; C)))]; init=AlgebraElement{C}()) # κ([v_i,h⋅v_j])
             - normalForm(eqs.d, comm(h, kappa[i,j])))                                                                 # h⋅κ([v_i,v_j])
-    else
+        # m[1][2] denotes the index of the only basis element in the monomial m
+
+    ## (b) trivial
+
+    ## (c) 0 = κ ⊗ id - id ⊗ κ on (I ⊗ V) ∩ (V ⊗ I)
+    # (I ⊗ V) ∩ (V ⊗ I) has basis v_iv_jv_k + v_jv_kv_i + v_kv_iv_j - v_kv_jv_i - v_jv_iv_k - v_iv_kv_j for i<j<k
+    elseif s[1] == 3
         i,j,k = res[1]
         eq = (kappa[i,j]*mod(k; C) - mod(i; C)*kappa[j,k]
             + kappa[j,k]*mod(i; C) - mod(j; C)*kappa[k,i]
@@ -129,6 +140,10 @@ function Base.iterate(eqs::PBWDeformEqs{C}, s=nothing) where C
             - kappa[k,j]*mod(i; C) + mod(k; C)*kappa[j,i]
             - kappa[j,i]*mod(k; C) + mod(j; C)*kappa[i,k]
             - kappa[i,k]*mod(j; C) + mod(i; C)*kappa[k,j])
+
+    ## (d) trivial
+    else
+        @error "This should nod be reached."
     end
 
     return (normalForm(eqs.d, eq), s)
