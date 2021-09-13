@@ -146,15 +146,16 @@
             #TODO (maybe using Singular)
         end
 
-        @testset "everything still works" begin
-            @test_nowarn PD.varietyOfPBWDeformsLinear(PD.smashProductLie('A',2,[1,0]), 1)
-            @test_nowarn PD.varietyOfPBWDeformsLinear(PD.smashProductLie('A',2,[1,0]), 2)
-            @test_nowarn PD.varietyOfPBWDeformsLinear(PD.smashProductLie('A',2,[1,1]), 1)
-            @test_nowarn PD.varietyOfPBWDeformsLinear(PD.smashProductLie('B',2,[1,0]), 1)
-            @test_nowarn PD.varietyOfPBWDeforms1(PD.smashProductLie('A',2,[1,0]), 1)
-            @test_nowarn PD.varietyOfPBWDeforms1(PD.smashProductLie('A',2,[1,0]), 2)
-            @test_nowarn PD.varietyOfPBWDeforms1(PD.smashProductLie('A',2,[1,1]), 1)
-            @test_nowarn PD.varietyOfPBWDeforms1(PD.smashProductLie('B',2,[1,0]), 1)
+        @testset "both implementations return the same" begin
+            sp = PD.smashProductLie('A',2,[1,1])
+            @test PD.varietyOfPBWDeforms(sp, 1, use_iterators=false) == PD.varietyOfPBWDeforms(sp, 1, use_iterators=true)
+        end
+
+        @testset "everything still works with use_iterators=$use_iterators" for use_iterators in [false, true]
+            @test_nowarn PD.varietyOfPBWDeforms(PD.smashProductLie('A',2,[1,0]), 1; use_iterators)
+            @test_nowarn PD.varietyOfPBWDeforms(PD.smashProductLie('A',2,[1,0]), 2; use_iterators)
+            @test_nowarn PD.varietyOfPBWDeforms(PD.smashProductLie('A',2,[1,1]), 1; use_iterators)
+            @test_nowarn PD.varietyOfPBWDeforms(PD.smashProductLie('B',2,[1,0]), 1; use_iterators)
         end
 
     end

@@ -156,7 +156,7 @@ function Base.length(eqs::PBWDeformEqs{C}) where C
 end
 
 
-function PBWDeformEqs1(d::QuadraticAlgebra{C, SmashProductDeformLie{C}}, one=C(1)::C) :: Vector{AlgebraElement{C}} where C
+function PBWDeformEqs_noiter(d::QuadraticAlgebra{C, SmashProductDeformLie{C}}, one=C(1)::C) :: Vector{AlgebraElement{C}} where C
     # Uses Theorem 3.1 of Walton, Witherspoon: Poincare-Birkhoff-Witt deformations of smash product algebras from Hopf actions on Koszul algebras.
     # DOI:	10.2140/ant.2014.8.1701. https://arxiv.org/abs/1308.6011
     nL = d.extraData.sp.nL
@@ -227,15 +227,14 @@ end
 
 
 
-function varietyOfPBWDeformsLinear(sp::QuadraticAlgebra{Rational{Int64}, SmashProductLie}, maxdeg::Int64) :: SparseArrays.SparseMatrixCSC{fmpq, Int64}
+function varietyOfPBWDeforms(sp::QuadraticAlgebra{Rational{Int64}, SmashProductLie}, maxdeg::Int64; use_iterators=true::Bool) :: SparseArrays.SparseMatrixCSC{fmpq, Int64}
     nL = sp.extraData.nL
     nV = sp.extraData.nV
-  
+
     @info "Constructing MPolyRing..."
     R, vars = PolynomialRing(QQ, paramDeformVars(nL, nV, maxdeg))
     numVars = length(vars)
     varLookup = Dict(vars[i] => i for i in 1:numVars)
-
     varMatrix = sortVars(vars, nL, nV, maxdeg)
 
     @info "Constructing kappa..."
@@ -247,22 +246,28 @@ function varietyOfPBWDeformsLinear(sp::QuadraticAlgebra{Rational{Int64}, SmashPr
 
     @info "Changing SmashProductLie coeffcient type..."
     newBasis = [changeC(MPolyElem, b) for b in sp.basis]
-    newRelTable = Dict([(changeC(MPolyElem, b1), changeC(MPolyElem, b2)) => 
-        AlgebraElement{MPolyElem}(map(x -> (R(x[1]), changeC(MPolyElem, x[2])), unpack(a))) 
+
+    newRelTable = Dict([(changeC(MPolyElem, b1), changeC(MPolyElem, b2)) =>
+        AlgebraElement{MPolyElem}(map(x -> (R(x[1]), changeC(MPolyElem, x[2])), unpack(a)))
         for ((b1, b2), a) in pairs(sp.relTable)])
     newSp = QuadraticAlgebra{MPolyElem, SmashProductLie}(newBasis, newRelTable, sp.extraData)
 
     @info "Constructing deformation..."
     deform = smashProductDeformLie(newSp, kappa, R(1))
 
-    @info "Generating equation iterator..."
-    iter = Iterators.map(a -> poly2vecLinear(a, varLookup, numVars),
-        Iterators.flatten(
-            Iterators.map(coefficientComparison,
-                PBWDeformEqs{MPolyElem}(deform, R(1))
+    if use_iterators
+        @info "Generating equation iterator..."
+        iter = Iterators.map(a -> poly2vecLinear(a, varLookup, numVars),
+            Iterators.flatten(
+                Iterators.map(coefficientComparison,
+                    PBWDeformEqs{MPolyElem}(deform, R(1))
+                )
             )
         )
-    )
+    else
+        @info "Generating equations..."
+        iter = map(a -> poly2vecLinear(a, varLookup, numVars), reduce(vcat, map(coefficientComparison, PBWDeformEqs_noiter(deform, R(1)))))
+    end
 
     # group sparse vectors by index of first non-zero entry
     @info "Collecting rows..."
@@ -349,75 +354,4 @@ function coefficientComparison(eq::AlgebraElement{C}) :: Vector{C} where C
         push!(result, c)
     end
     return result
-end
-
-function simplifyGen(gen::MPolyElem) :: MPolyElem
-    return ((leading_coefficient(gen) < 0 ? -1 : 1)//content(gen))*gen
-end
-
-
-function varietyOfPBWDeforms1(sp::QuadraticAlgebra{Rational{Int64}, SmashProductLie}, maxdeg::Int64) :: SparseArrays.SparseMatrixCSC{fmpq, Int64}
-    nL = sp.extraData.nL
-    nV = sp.extraData.nV
-
-    @info "Constructing MPolyRing..."
-    R, vars = PolynomialRing(QQ, paramDeformVars(nL, nV, maxdeg))
-    numVars = length(vars)
-    varLookup = Dict(vars[i] => i for i in 1:numVars)
-    varMatrix = sortVars(vars, nL, nV, maxdeg)
-
-    @info "Constructing kappa..."
-    kappa = fill(AlgebraElement{MPolyElem}(0), nV, nV)
-    for i in 1:nV, j in i+1:nV, d in 0:maxdeg, (k, ind) in enumerate(multicombinations(1:nL, d))
-        kappa[i,j] += varMatrix[i,j][d+1][k]*lie(ind; C=MPolyElem)
-        kappa[j,i] -= varMatrix[i,j][d+1][k]*lie(ind; C=MPolyElem)
-    end
-
-    @info "Changing SmashProductLie coeffcient type..."
-    newBasis = [changeC(MPolyElem, b) for b in sp.basis]
-    newRelTable = Dict([(changeC(MPolyElem, b1), changeC(MPolyElem, b2)) =>
-        AlgebraElement{MPolyElem}(map(x -> (R(x[1]), changeC(MPolyElem, x[2])), unpack(a)))
-        for ((b1, b2), a) in pairs(sp.relTable)])
-    newSp = QuadraticAlgebra{MPolyElem, SmashProductLie}(newBasis, newRelTable, sp.extraData)
-
-    @info "Constructing deformation..."
-    deform = smashProductDeformLie(newSp, kappa, R(1))
-
-    @info "Generating equations..."
-    iter = map(a -> poly2vecLinear(a, varLookup, numVars), coefficientComparison1(PBWDeformEqs1(deform, R(1))))
-
-    # group sparse vectors by index of first non-zero entry
-    @info "Collecting rows..."
-    lgs = [Vector{SparseVector{fmpq, Int64}}() for _ in 1:numVars]
-    for v in iter
-        normalizeAndStore!(lgs, v)
-    end
-
-    # create row-echelon form
-    @info "Computing row-echelon form..."
-    row_echelon!(lgs)
-
-    # reduce row-echelon form
-    @info "Computing reduced row-echelon form..."
-    reduced_row_echelon!(lgs)
-
-    return lgs2mat(lgs, numVars)
-end
-
-function coefficientComparison1(eqs::Vector{AlgebraElement{C}}) :: Vector{C} where C
-    result = C[]
-    for eq in eqs
-        # coeffcient comparison
-        for summand in unpack(eq)
-            (c, m) = summand
-            push!(result, c)
-        end
-    end
-    return result
-end
-
-function simplifyGens1(gens::Vector{C}) :: Vector{C} where C
-    gens = [(1//content(gen))*gen for gen in gens]
-    gens = [(leading_coefficient(gen) < 0 ? -gen : gen) for gen in gens]
-    return unique(gens)
 end
