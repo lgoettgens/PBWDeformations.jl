@@ -204,6 +204,7 @@ end
 
 comm(x, y) = x*y - y*x
 
+
 function changeC(C2::Type, b::BasisElement{C1}) :: BasisElement{C2} where C1
     return BasisElement{C2}(unpack(b))
 end
