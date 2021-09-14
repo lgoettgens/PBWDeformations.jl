@@ -138,19 +138,24 @@
         end
 
         @testset "coefficientComparison tests" begin
-            eqs = [2//3*test(1)+88*test(3,4), 12*test(1), 3*test(2)+0*test(4)-2*test(2)]
-            @test issetequal(PD.coefficientComparison(eqs), [2//3, 88, 12, 1])
+            eq = 2//3*test(1) + 88*test(3,4) - 12*test(1,5) + 3*test(2) + 0*test(4) - 2*test(2) + 12*test(1,5)
+            @test issetequal(PD.coefficientComparison(eq), [2//3, 88, 1])
         end
 
-        @testset "simplifyGens tests" begin
+        @testset "simplifyGen tests" begin
             #TODO (maybe using Singular)
         end
 
-        @testset "everything still works" begin
-            @test_nowarn PD.varietyOfPBWDeforms(PD.smashProductLie('A',2,[1,0]), 1)
-            @test_nowarn PD.varietyOfPBWDeforms(PD.smashProductLie('A',2,[1,0]), 2)
-            @test_nowarn PD.varietyOfPBWDeforms(PD.smashProductLie('A',2,[1,1]), 1)
-            @test_nowarn PD.varietyOfPBWDeforms(PD.smashProductLie('B',2,[1,0]), 1)
+        @testset "both implementations return the same" begin
+            sp = PD.smashProductLie('A',2,[1,1])
+            @test PD.varietyOfPBWDeforms(sp, 1, use_iterators=false) == PD.varietyOfPBWDeforms(sp, 1, use_iterators=true)
+        end
+
+        @testset "everything still works with use_iterators=$use_iterators" for use_iterators in [false, true]
+            @test_nowarn PD.varietyOfPBWDeforms(PD.smashProductLie('A',2,[1,0]), 1; use_iterators)
+            @test_nowarn PD.varietyOfPBWDeforms(PD.smashProductLie('A',2,[1,0]), 2; use_iterators)
+            @test_nowarn PD.varietyOfPBWDeforms(PD.smashProductLie('A',2,[1,1]), 1; use_iterators)
+            @test_nowarn PD.varietyOfPBWDeforms(PD.smashProductLie('B',2,[1,0]), 1; use_iterators)
         end
 
     end
