@@ -71,7 +71,7 @@ struct PBWDeformEqs{C}
     PBWDeformEqs{C}(d::QuadraticAlgebra{C, SmashProductDeformLie{C}}, one = C(1)) where C = new{C}(d, one)
 end
 
-function Base.iterate(eqs::PBWDeformEqs{C}, s=nothing) where C
+function Base.iterate(eqs::PBWDeformEqs{C}, s::Tuple{Int64, Int64, Union{Nothing, Vector{Int64}}}=(0, 0, nothing)) where C
     # Uses Theorem 3.1 of Walton, Witherspoon: Poincare-Birkhoff-Witt deformations of smash product algebras from Hopf actions on Koszul algebras.
     # DOI:	10.2140/ant.2014.8.1701. https://arxiv.org/abs/1308.6011
 
@@ -80,10 +80,14 @@ function Base.iterate(eqs::PBWDeformEqs{C}, s=nothing) where C
     kappa = eqs.d.extraData.kappa
 
     # The following rather complicated code computes the parameters for the current equation and the next state, using the given state of the previous iteration
-    #s = (phase = 1, c_state, h) or (phase = 3, counter, c_state)
+    #s = (phase = 1, h, c_state) or (phase = 3, counter, c_state)
 
-    if s === nothing # may fail for nV<2
-        s = Any[1, 1, nothing]
+    if nV < 2 # for these cases no equations exist
+        return nothing
+    end
+
+    if s[1] == 0
+        s = (1, 1, nothing)
     end
 
     if s[1] == 1
@@ -91,18 +95,16 @@ function Base.iterate(eqs::PBWDeformEqs{C}, s=nothing) where C
         res = s[3] === nothing ? iterate(comb) : iterate(comb, s[3])
         if res === nothing
             @debug "Equation generation, first phase $(floor(Int, 100*s[2] / nL))%"
-            s[2] += 1
+            s = (s[1], s[2]+1, s[3])
             if s[2] > nL
-                s[1] = 3
-                s[2] = 0
-                s[3] = nothing
+                s = (3, 0, nothing)
             else
                 comb = Combinatorics.Combinations(nV,2)
                 res = iterate(comb)
-                s[3] = res[2]
+                s = (s[1], s[2], res[2])
             end
         else
-            s[3] = res[2]
+            s = (s[1], s[2], res[2])
         end
     end
     if s[1] == 3
@@ -111,9 +113,9 @@ function Base.iterate(eqs::PBWDeformEqs{C}, s=nothing) where C
         if res === nothing
             return nothing
         else
-            s[3] = res[2]
+            s = (s[1], s[2], res[2])
         end
-        s[2] += 1
+        s = (s[1], s[2]+1, s[3])
         if (s[2] % 250 == 0)
             @debug "Equation generation, second phase $(floor(Int, 100*s[2] / binomial(nV, 3)))%"
         end
@@ -224,7 +226,6 @@ function sortVars(vars::Vector{T}, nL, nV, maxdeg) :: Matrix{Vector{Vector{T}}} 
     end
     return m
 end
-
 
 
 function varietyOfPBWDeforms(sp::QuadraticAlgebra{Rational{Int64}, SmashProductLie}, maxdeg::Int64; use_iterators=true::Bool) :: SparseArrays.SparseMatrixCSC{fmpq, Int64}
