@@ -29,22 +29,22 @@ randAlgebraElement() = randAlgebraElement(basis)
     @testset "test misc operations, Coeff=$C" for C in [Rational{Int64}]
         for _ in 1:numRandomTests
             nums = randNums(randLength(1))
-            @test PD.collectSummands(map(AlgebraElement{C}, nums)) == AlgebraElement{C}(sum(nums))
+            @test PD.collect_summands(map(AlgebraElement{C}, nums)) == AlgebraElement{C}(sum(nums))
         end
 
         for _ in 1:numRandomTests
             b = randBasisElement()
-            @test PD.collectSummands(AlgebraElement{C}(b)) == AlgebraElement{C}(b)
+            @test PD.collect_summands(AlgebraElement{C}(b)) == AlgebraElement{C}(b)
         end
 
         for _ in 1:numRandomTests
             mon = randMonomial()
-            @test PD.collectSummands(AlgebraElement{C}(mon)) == AlgebraElement{C}(mon)
+            @test PD.collect_summands(AlgebraElement{C}(mon)) == AlgebraElement{C}(mon)
         end
 
         for _ in 1:numRandomTests
             a = randAlgebraElement()
-            @test a ≐ PD.collectSummands(a)
+            @test a ≐ PD.collect_summands(a)
         end
 
         for _ in 1:numRandomTests

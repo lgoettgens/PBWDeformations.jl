@@ -73,12 +73,12 @@ function monomials(a::AlgebraElement{C}) :: Vector{Monomial{C}} where C
     return unique([mon for (coeff, mon) in a])
 end
 
-function basisElements(a::AlgebraElement{C}) :: Vector{BasisElement{C}} where C
+function basis_elements(a::AlgebraElement{C}) :: Vector{BasisElement{C}} where C
     return unique(vcat(monomials(a)...))
 end
 
 
-function collectSummands(a::AlgebraElement{C}) :: AlgebraElement{C} where C
+function collect_summands(a::AlgebraElement{C}) :: AlgebraElement{C} where C
     res = Tuple{C, Monomial{C}}[]
 
     for (coeff, mon) in AlgebraElement{C}(a)
@@ -94,17 +94,17 @@ function collectSummands(a::AlgebraElement{C}) :: AlgebraElement{C} where C
     return AlgebraElement{C}(filter!(x -> !iszero(x[1]), res))
 end
 
-function collectSummands(as::Vector{AlgebraElement{C}}) :: AlgebraElement{C} where C
-    return collectSummands(AlgebraElement{C}(vcat(as...)))
+function collect_summands(as::Vector{AlgebraElement{C}}) :: AlgebraElement{C} where C
+    return collect_summands(AlgebraElement{C}(vcat(as...)))
 end
 
 
-function sameSum(a1::Operand{C}, a2::Operand{C}) :: Bool where C
-    return issetequal(collectSummands(AlgebraElement{C}(a1)),
-                      collectSummands(AlgebraElement{C}(a2)))
+function issamesum(a1::Operand{C}, a2::Operand{C}) :: Bool where C
+    return issetequal(collect_summands(AlgebraElement{C}(a1)),
+                      collect_summands(AlgebraElement{C}(a2)))
 end
 
-≐ = sameSum # type symbol via \doteq, autocomplete with tab
+≐ = issamesum # type symbol via \doteq, autocomplete with tab
 
 function Base.iszero(a::AlgebraElement{C}) :: Bool where C
     return a ≐ 0
@@ -116,7 +116,7 @@ end
 
 
 function Base.:(+)(x::Operand{C}, y::StandardOperand{C}) :: AlgebraElement{C} where C
-    return collectSummands([AlgebraElement{C}(x), AlgebraElement{C}(y)])
+    return collect_summands([AlgebraElement{C}(x), AlgebraElement{C}(y)])
 end
 
 function Base.:(+)(a::StandardOperand{C}, c::Union{Int64, C}) :: AlgebraElement{C} where C
@@ -166,15 +166,15 @@ function Base.:(*)(a::StandardOperand{C}, c::Union{Int64, C}) :: AlgebraElement{
 end
 
 function Base.:(*)(a1::AlgebraElement{C}, a2::AlgebraElement{C}) :: AlgebraElement{C} where C
-    return collectSummands(AlgebraElement{C}([(c1*c2, m1*m2) for (c1, m1) in a1 for (c2, m2) in a2]))
+    return collect_summands(AlgebraElement{C}([(c1*c2, m1*m2) for (c1, m1) in a1 for (c2, m2) in a2]))
 end
 
 function Base.:(*)(a::AlgebraElement{C}, m::Union{BasisElement{C}, Monomial{C}}) :: AlgebraElement{C} where C
-    return collectSummands(AlgebraElement{C}([(c, m2*m) for (c, m2) in a]))
+    return collect_summands(AlgebraElement{C}([(c, m2*m) for (c, m2) in a]))
 end
 
 function Base.:(*)(m::Union{BasisElement{C}, Monomial{C}}, a::AlgebraElement{C}) :: AlgebraElement{C} where C
-    return collectSummands(AlgebraElement{C}([(c, m*m2) for (c, m2) in a]))
+    return collect_summands(AlgebraElement{C}([(c, m*m2) for (c, m2) in a]))
 end
 
 
@@ -205,16 +205,16 @@ end
 comm(x, y) = x*y - y*x
 
 
-function changeC(C2::Type, b::BasisElement{C1}) :: BasisElement{C2} where C1
+function change_c(C2::Type, b::BasisElement{C1}) :: BasisElement{C2} where C1
     return BasisElement{C2}(unpack(b))
 end
 
-function changeC(C2::Type, m::Monomial{C1}) :: Monomial{C2} where C1
-    return Monomial{C2}(map(b -> changeC(C2, b), unpack(m)))
+function change_c(C2::Type, m::Monomial{C1}) :: Monomial{C2} where C1
+    return Monomial{C2}(map(b -> change_c(C2, b), unpack(m)))
 end
 
 
-function groupBy(pred, v)
+function groupby(pred, v)
     if isempty(v)
         return typeof(v)()
     end
@@ -224,44 +224,44 @@ function groupBy(pred, v)
     return [v[tmp[i]+1:tmp[i+1]] for i in 1:length(tmp)-1]
 end
 
-function prettyPrint(b::BasisElement{C}) :: String where C
+function prettyprint(b::BasisElement{C}) :: String where C
     return string(b[1], '(', b[2], ')')
 end
 
-function prettyPrint(m::Monomial{C}) :: String where C
+function prettyprint(m::Monomial{C}) :: String where C
     if isone(m)
         return "[]"
     else
-        g = groupBy((x,y) -> x[1] === y[1], m)
+        g = groupby((x,y) -> x[1] === y[1], m)
         innerFormat = map(l -> string(l[1][1], '(', join([string(t[2]) for t in l], ", "), ')'), g)
         return join(innerFormat, "")
     end
 end
 
-function prettyPrint(t::Tuple{C, Monomial{C}}) :: String where C
+function prettyprint(t::Tuple{C, Monomial{C}}) :: String where C
     if isone(t[2])
         # TODO: isinteger is not supported for MPolyElem
         # return string(isinteger(t[1]) ? Int(t[1]) : t[1])
         return string(t[1])
     elseif isone(t[1])
-        return prettyPrint(t[2])
+        return prettyprint(t[2])
     elseif isone(-t[1])
-        return string('-', prettyPrint(t[2]))
+        return string('-', prettyprint(t[2]))
     elseif C <: Int64 || C <: Rational{Int64}
-        return string(t[1], '⋅', prettyPrint(t[2]))
+        return string(t[1], '⋅', prettyprint(t[2]))
     else
-        return string('(', t[1], ')', '⋅', prettyPrint(t[2]))
+        return string('(', t[1], ')', '⋅', prettyprint(t[2]))
     end
 end
 
-function prettyPrint(a::AlgebraElement{C}) :: String where C
+function prettyprint(a::AlgebraElement{C}) :: String where C
     if iszero(a)
         return "0"
     else
-        return replace(join(map(prettyPrint, a), " + "), "+ -" => "- ")
+        return replace(join(map(prettyprint, a), " + "), "+ -" => "- ")
     end
 end
 
 function Base.show(io::IO, ::MIME"text/plain", x::StandardOperand{C}) :: Nothing where C
-    print(io, prettyPrint(x))
+    print(io, prettyprint(x))
 end

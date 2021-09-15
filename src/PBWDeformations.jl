@@ -31,7 +31,7 @@ for name in (:lie, :grp, :mod, :test)
     end
 end
 
-function sanitizeLieInput(dynkin::Char, n::Int64) :: Nothing
+function sanitize_lie_input(dynkin::Char, n::Int64) :: Nothing
     @assert dynkin in ['A', 'B', 'C', 'D']
     if dynkin == 'A'
         @assert n >= 1

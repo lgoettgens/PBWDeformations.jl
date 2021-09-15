@@ -19,9 +19,9 @@ function Base.show(io::IO, sp::SmashProductLie) :: Nothing
 end
 
 
-function smashProductLie(dynkin::Char, n::Int64, lambda::Vector{Int64}; C::Type=Rational{Int64}) :: QuadraticAlgebra{C, SmashProductLie}
+function smash_product_lie(dynkin::Char, n::Int64, lambda::Vector{Int64}; C::Type=Rational{Int64}) :: QuadraticAlgebra{C, SmashProductLie}
     @assert n == length(lambda)
-    sanitizeLieInput(dynkin, n)
+    sanitize_lie_input(dynkin, n)
 
     relTable = Dict{Tuple{BasisElement{C}, BasisElement{C}}, AlgebraElement{C}}()
         # (lie(i), lie(j)) => [(c, [lie(k)])]
@@ -31,7 +31,7 @@ function smashProductLie(dynkin::Char, n::Int64, lambda::Vector{Int64}; C::Type=
     nL = GAP.Dimension(L)
     bL = GAP.BasisVectors(GAP.Basis(L))
     commTableL = fromGAP(GAP.StructureConstantsTable(GAP.Basis(L)))[1:nL]
-    matrixRepL = getMatrixRep(L, [i == 1 ? 1 : 0 for i in 1:n])
+    matrixRepL = get_matrix_rep(L, [i == 1 ? 1 : 0 for i in 1:n])
 
     for i in 1:nL, j in 1:i-1
         relTable[(lie(i; C), lie(j; C))] = AlgebraElement{C}([
@@ -58,16 +58,16 @@ function smashProductLie(dynkin::Char, n::Int64, lambda::Vector{Int64}; C::Type=
 end
 
 
-function getMatrixRep(dynkin::Char, n::Int64) :: Vector{Matrix{Int64}}
-    sanitizeLieInput(dynkin, n)
+function get_matrix_rep(dynkin::Char, n::Int64) :: Vector{Matrix{Int64}}
+    sanitize_lie_input(dynkin, n)
     
     L = GAP.SimpleLieAlgebra(toGAP(string(dynkin)), n, GAP.Rationals)
     lambda = [i == 1 ? 1 : 0 for i in 1:n]
 
-    return getMatrixRep(L, lambda)
+    return get_matrix_rep(L, lambda)
 end
 
-function getMatrixRep(L #= :: Gap.LieAlgebra =#, lambda::Vector{Int64}) :: Vector{Matrix{Int64}}
+function get_matrix_rep(L #= :: Gap.LieAlgebra =#, lambda::Vector{Int64}) :: Vector{Matrix{Int64}}
     @assert GAP.IsLieAlgebra(L)
 
     nL = GAP.Dimension(L)

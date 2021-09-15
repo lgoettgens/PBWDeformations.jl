@@ -1,16 +1,16 @@
 C = Rational{Int64}
 
 @testset ExtendedTestSet "All PBWDeformations.SmashProductLie tests" begin
-    @testset "smashProductLie constructor" begin
+    @testset "smash_product_lie constructor" begin
         @testset "A_2 with hw [1,1]" begin
-            sp = PD.smashProductLie('A', 2, [1,1])
+            sp = PD.smash_product_lie('A', 2, [1,1])
             @test sp.extraData.dynkin == 'A'
             @test sp.extraData.n == 2
             @test sp.extraData.lambda == [1,1]
             @test sp.extraData.nL == 8
             @test sp.extraData.nV == 8
             @test length(sp.basis) == sp.extraData.nL + sp.extraData.nV
-            @test sp.extraData.matrixRepL == PD.getMatrixRep('A', 2)
+            @test sp.extraData.matrixRepL == PD.get_matrix_rep('A', 2)
 
             showOutput = @test_nowarn sprint(show, sp)
             @test occursin("smash product", lowercase(showOutput))
@@ -115,14 +115,14 @@ C = Rational{Int64}
         end
 
         @testset "B_2 with hw [1,0]" begin
-            sp = PD.smashProductLie('B', 2, [1,0])
+            sp = PD.smash_product_lie('B', 2, [1,0])
             @test sp.extraData.dynkin == 'B'
             @test sp.extraData.n == 2
             @test sp.extraData.lambda == [1,0]
             @test sp.extraData.nL == 10
             @test sp.extraData.nV == 5
             @test length(sp.basis) == sp.extraData.nL + sp.extraData.nV
-            @test sp.extraData.matrixRepL == PD.getMatrixRep('B', 2)
+            @test sp.extraData.matrixRepL == PD.get_matrix_rep('B', 2)
 
             showOutput = @test_nowarn sprint(show, sp)
             @test occursin("smash product", lowercase(showOutput))
@@ -230,9 +230,9 @@ C = Rational{Int64}
         end
     end
 
-    @testset "getMatrixRep" begin
+    @testset "get_matrix_rep" begin
         @testset "A_$n" for n in 1:6
-            matrixRep = PD.getMatrixRep('A', n)
+            matrixRep = PD.get_matrix_rep('A', n)
             @test length(matrixRep) == (n+1)^2-1
             @test all(mat -> size(mat) == (n+1, n+1), matrixRep)
 
@@ -251,19 +251,19 @@ C = Rational{Int64}
         end
 
         @testset "B_$n" for n in 2:6
-            matrixRep = PD.getMatrixRep('B', n)
+            matrixRep = PD.get_matrix_rep('B', n)
             @test length(matrixRep) == 2*n^2+n
             @test all(mat -> size(mat) == (2n+1, 2n+1), matrixRep)
         end
 
         @testset "C_$n" for n in 2:6
-            matrixRep = PD.getMatrixRep('C', n)
+            matrixRep = PD.get_matrix_rep('C', n)
             @test length(matrixRep) == 2*n^2+n
             @test all(mat -> size(mat) == (2n, 2n), matrixRep)
         end
 
         @testset "D_$n" for n in 4:6
-            matrixRep = PD.getMatrixRep('D', n)
+            matrixRep = PD.get_matrix_rep('D', n)
             @test length(matrixRep) == 2*n^2-n
             @test all(mat -> size(mat) == (2n, 2n), matrixRep)
         end

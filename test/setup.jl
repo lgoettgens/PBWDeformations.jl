@@ -23,8 +23,8 @@ Monomial = PD.Monomial
 AlgebraElement = PD.AlgebraElement
 
 unpack = PD.unpack
-sameSum = PD.sameSum
-normalForm = PD.normalForm
+issamesum = PD.issamesum
+normal_form = PD.normal_form
 comm = PD.comm
 ≐ = PD.:(≐)
 

@@ -39,7 +39,7 @@ function Base.in(a::AlgebraElement{C}, alg::QuadraticAlgebra{C}) :: Bool where C
 end
 
 
-function normalForm(alg::QuadraticAlgebra{C}, a::AlgebraElement{C}) :: AlgebraElement{C} where C
+function normal_form(alg::QuadraticAlgebra{C}, a::AlgebraElement{C}) :: AlgebraElement{C} where C
     todo = copy(unpack(a))
     result = AlgebraElement{C}(0)
 
@@ -66,6 +66,6 @@ function normalForm(alg::QuadraticAlgebra{C}, a::AlgebraElement{C}) :: AlgebraEl
     return result
 end
 
-function normalForm(alg::QuadraticAlgebra{C}, m::Union{BasisElement{C}, Monomial{C}}) :: AlgebraElement{C} where C
-    return normalForm(alg, AlgebraElement{C}(m))
+function normal_form(alg::QuadraticAlgebra{C}, m::Union{BasisElement{C}, Monomial{C}}) :: AlgebraElement{C} where C
+    return normal_form(alg, AlgebraElement{C}(m))
 end

@@ -19,7 +19,7 @@
     end
 
 
-    @testset "normalForm for abstract cases" begin
+    @testset "normal_form for abstract cases" begin
         @testset "tensor algebra over V with dim V = $n" for n in dimRandomTests
             x = test
             basis = map(x, 1:n)
@@ -31,7 +31,7 @@
             for _ in 1:numRandomTests
                 ind1 = shuffle(rand(1:n, rand(1:n)))
                 ind2 = shuffle(rand(1:n, rand(1:n)))
-                @test normalForm(alg, x([ind1; ind2])-x([ind2; ind1])) ≐ normalForm(alg, comm(x(ind1), x(ind2)))
+                @test normal_form(alg, x([ind1; ind2])-x([ind2; ind1])) ≐ normal_form(alg, comm(x(ind1), x(ind2)))
             end
         end
 
@@ -45,13 +45,13 @@
 
             for _ in 1:numRandomTests
                 ind = shuffle(rand(1:n, rand(1:2n)))
-                @test normalForm(alg, x(ind)) ≐ x(sort(ind))
+                @test normal_form(alg, x(ind)) ≐ x(sort(ind))
             end
 
             for _ in 1:numRandomTests
                 ind1 = shuffle(rand(1:n, rand(1:n)))
                 ind2 = shuffle(rand(1:n, rand(1:n)))
-                @test normalForm(alg, x([ind1; ind2])-x([ind2; ind1])) ≐ normalForm(alg, comm(x(ind1), x(ind2))) ≐ 0
+                @test normal_form(alg, x([ind1; ind2])-x([ind2; ind1])) ≐ normal_form(alg, comm(x(ind1), x(ind2))) ≐ 0
             end
         end
 
@@ -71,23 +71,23 @@
                 uniqInd = unique(ind)
 
                 if length(unique(ind)) < length(ind)
-                    @test normalForm(alg, x(ind)) ≐ 0
+                    @test normal_form(alg, x(ind)) ≐ 0
                 end
-                @test normalForm(alg, x(uniqInd)) ≐ levicivita(sortperm(uniqInd)) * x(sort(uniqInd))
+                @test normal_form(alg, x(uniqInd)) ≐ levicivita(sortperm(uniqInd)) * x(sort(uniqInd))
             end
 
             for _ in 1:numRandomTests
                 ind1 = unique(shuffle(rand(1:n, rand(1:n))))
                 ind2 = unique(shuffle(rand(1:n, rand(1:n))))
-                @test normalForm(alg, x([ind1; ind2])-x([ind2; ind1])) ≐ normalForm(alg, comm(x(ind1), x(ind2)))
+                @test normal_form(alg, x([ind1; ind2])-x([ind2; ind1])) ≐ normal_form(alg, comm(x(ind1), x(ind2)))
             end
         end
 
     end
 
-    @testset "normalForm for smashProductLie" begin
+    @testset "normal_form for smash_product_lie" begin
         @testset "A_2 with hw [1,1]" begin
-            sp = PD.smashProductLie('A', 2, [1,1])
+            sp = PD.smash_product_lie('A', 2, [1,1])
 
             showOutput = @test_nowarn sprint(show, sp)
             @test occursin("smash product", lowercase(showOutput))
@@ -96,39 +96,39 @@
             @test occursin("[1,1]", showOutput) || occursin("[1, 1]", showOutput)
 
             # Lie elements commute as usual
-            @test normalForm(sp, comm(lie(7), lie(1))) ≐ 2*lie(1)  # [h_1,x_1] = 2x_1
-            @test normalForm(sp, comm(lie(7), lie(2))) ≐ -lie(2)   # [h_1,x_2] = -x_1
-            @test normalForm(sp, comm(lie(7), lie(3))) ≐ lie(3)    # [h_1,x_3] =  x_1
-            @test normalForm(sp, comm(lie(1), lie(4))) ≐ lie(7)    # [x_1,y_1] =  h_1
+            @test normal_form(sp, comm(lie(7), lie(1))) ≐ 2*lie(1)  # [h_1,x_1] = 2x_1
+            @test normal_form(sp, comm(lie(7), lie(2))) ≐ -lie(2)   # [h_1,x_2] = -x_1
+            @test normal_form(sp, comm(lie(7), lie(3))) ≐ lie(3)    # [h_1,x_3] =  x_1
+            @test normal_form(sp, comm(lie(1), lie(4))) ≐ lie(7)    # [x_1,y_1] =  h_1
 
             # Module elements do not commute at all
-            @test normalForm(sp, mod(1, 2)) ≐ mod(1, 2)
-            @test normalForm(sp, mod(2, 1)) ≐ mod(2, 1)
-            @test normalForm(sp, mod(5, 1)) ≐ mod(5, 1)
-            @test normalForm(sp, mod(8, 4)) ≐ mod(8, 4)
-            @test normalForm(sp, mod(1, 5, 8, 4, 2)) ≐ mod(1, 5, 8, 4, 2)
+            @test normal_form(sp, mod(1, 2)) ≐ mod(1, 2)
+            @test normal_form(sp, mod(2, 1)) ≐ mod(2, 1)
+            @test normal_form(sp, mod(5, 1)) ≐ mod(5, 1)
+            @test normal_form(sp, mod(8, 4)) ≐ mod(8, 4)
+            @test normal_form(sp, mod(1, 5, 8, 4, 2)) ≐ mod(1, 5, 8, 4, 2)
 
             # Application commutators
-            @test normalForm(sp, comm(lie(1), mod(1))) ≐ 0
-            @test normalForm(sp, comm(lie(2), mod(1))) ≐ 0
-            @test normalForm(sp, comm(lie(3), mod(1))) ≐ 0
-            @test normalForm(sp, comm(lie(4), mod(1))) ≐ mod(2)
-            @test normalForm(sp, comm(lie(5), mod(1))) ≐ mod(3)
-            @test normalForm(sp, comm(lie(6), mod(1))) ≐ mod(5)
-            @test normalForm(sp, comm(lie(7), mod(1))) ≐ mod(1)
-            @test normalForm(sp, comm(lie(8), mod(1))) ≐ mod(1)
-            @test normalForm(sp, comm(lie(4), mod(3))) ≐ mod(4)
-            @test normalForm(sp, comm(lie(5), mod(2))) ≐ mod(4) - mod(5)
+            @test normal_form(sp, comm(lie(1), mod(1))) ≐ 0
+            @test normal_form(sp, comm(lie(2), mod(1))) ≐ 0
+            @test normal_form(sp, comm(lie(3), mod(1))) ≐ 0
+            @test normal_form(sp, comm(lie(4), mod(1))) ≐ mod(2)
+            @test normal_form(sp, comm(lie(5), mod(1))) ≐ mod(3)
+            @test normal_form(sp, comm(lie(6), mod(1))) ≐ mod(5)
+            @test normal_form(sp, comm(lie(7), mod(1))) ≐ mod(1)
+            @test normal_form(sp, comm(lie(8), mod(1))) ≐ mod(1)
+            @test normal_form(sp, comm(lie(4), mod(3))) ≐ mod(4)
+            @test normal_form(sp, comm(lie(5), mod(2))) ≐ mod(4) - mod(5)
 
             # Some more complicated
-            @test normalForm(sp, lie(7, 1, 2, 3)) ≐ 2*lie(1, 2, 3) + lie(1, 2, 3, 7)
+            @test normal_form(sp, lie(7, 1, 2, 3)) ≐ 2*lie(1, 2, 3) + lie(1, 2, 3, 7)
         end
 
     end
 
-    @testset "normalForm for smashProductSymmDeformLie" begin
+    @testset "normal_form for smash_product_symm_deform_lie" begin
         @testset "A_2 with hw [1,1]" begin
-            sp = PD.smashProductSymmDeformLie('A', 2, [1,1])
+            sp = PD.smash_product_symm_deform_lie('A', 2, [1,1])
 
             showOutput = @test_nowarn sprint(show, sp)
             @test occursin("smash product", lowercase(showOutput))
@@ -138,71 +138,71 @@
             @test occursin("symmetric deformation", lowercase(showOutput))
 
             # Lie elements commute as usual
-            @test normalForm(sp, comm(lie(7), lie(1))) ≐ 2lie(1)   # [h_1,x_1] = 2x_1
-            @test normalForm(sp, comm(lie(7), lie(2))) ≐ -lie(2)   # [h_1,x_2] = -x_1
-            @test normalForm(sp, comm(lie(7), lie(3))) ≐ lie(3)    # [h_1,x_3] =  x_1
-            @test normalForm(sp, comm(lie(1), lie(4))) ≐ lie(7)    # [x_1,y_1] =  h_1
+            @test normal_form(sp, comm(lie(7), lie(1))) ≐ 2lie(1)   # [h_1,x_1] = 2x_1
+            @test normal_form(sp, comm(lie(7), lie(2))) ≐ -lie(2)   # [h_1,x_2] = -x_1
+            @test normal_form(sp, comm(lie(7), lie(3))) ≐ lie(3)    # [h_1,x_3] =  x_1
+            @test normal_form(sp, comm(lie(1), lie(4))) ≐ lie(7)    # [x_1,y_1] =  h_1
 
             # Module elements do commute
-            @test normalForm(sp, mod(1, 2)) ≐ mod(1, 2)
-            @test normalForm(sp, mod(2, 1)) ≐ mod(1, 2)
-            @test normalForm(sp, mod(5, 1)) ≐ mod(1, 5)
-            @test normalForm(sp, mod(8, 4)) ≐ mod(4, 8)
-            @test normalForm(sp, mod(1, 5, 8, 4, 2)) ≐ mod(1, 2, 4, 5, 8)
+            @test normal_form(sp, mod(1, 2)) ≐ mod(1, 2)
+            @test normal_form(sp, mod(2, 1)) ≐ mod(1, 2)
+            @test normal_form(sp, mod(5, 1)) ≐ mod(1, 5)
+            @test normal_form(sp, mod(8, 4)) ≐ mod(4, 8)
+            @test normal_form(sp, mod(1, 5, 8, 4, 2)) ≐ mod(1, 2, 4, 5, 8)
             
 
             # Application commutators
-            @test normalForm(sp, comm(lie(1), mod(1))) ≐ 0
-            @test normalForm(sp, comm(lie(2), mod(1))) ≐ 0
-            @test normalForm(sp, comm(lie(3), mod(1))) ≐ 0
-            @test normalForm(sp, comm(lie(4), mod(1))) ≐ mod(2)
-            @test normalForm(sp, comm(lie(5), mod(1))) ≐ mod(3)
-            @test normalForm(sp, comm(lie(6), mod(1))) ≐ mod(5)
-            @test normalForm(sp, comm(lie(7), mod(1))) ≐ mod(1)
-            @test normalForm(sp, comm(lie(8), mod(1))) ≐ mod(1)
-            @test normalForm(sp, comm(lie(4), mod(3))) ≐ mod(4)
-            @test normalForm(sp, comm(lie(5), mod(2))) ≐ mod(4) - mod(5)
+            @test normal_form(sp, comm(lie(1), mod(1))) ≐ 0
+            @test normal_form(sp, comm(lie(2), mod(1))) ≐ 0
+            @test normal_form(sp, comm(lie(3), mod(1))) ≐ 0
+            @test normal_form(sp, comm(lie(4), mod(1))) ≐ mod(2)
+            @test normal_form(sp, comm(lie(5), mod(1))) ≐ mod(3)
+            @test normal_form(sp, comm(lie(6), mod(1))) ≐ mod(5)
+            @test normal_form(sp, comm(lie(7), mod(1))) ≐ mod(1)
+            @test normal_form(sp, comm(lie(8), mod(1))) ≐ mod(1)
+            @test normal_form(sp, comm(lie(4), mod(3))) ≐ mod(4)
+            @test normal_form(sp, comm(lie(5), mod(2))) ≐ mod(4) - mod(5)
 
             # Some more complicated
-            @test normalForm(sp, lie(7, 1, 2, 3)) ≐ 2*lie(1, 2, 3) + lie(1, 2, 3, 7)
+            @test normal_form(sp, lie(7, 1, 2, 3)) ≐ 2*lie(1, 2, 3) + lie(1, 2, 3, 7)
         end
 
     end
 
-    @testset "normalForm for groupAlgebra" begin
+    @testset "normal_form for groupAlgebra" begin
         @testset "symmetric group S3" begin
-            ga = PD.groupAlgebraSymmetricGroup(3)
+            ga = PD.group_algebra_symmetric_group(3)
 
             function perm(p::Vararg{Int64}) :: BasisElement
                 str = filter(c -> !isspace(c), length(p) == 1 ? string("(", p[1], ")") : string(p))
                 return grp(findfirst(isequal(str), ga.extraData.permRep))
             end
 
-            @test normalForm(ga, perm(1,2)^2) ≐ perm()
-            @test normalForm(ga, perm(1,3)^2) ≐ perm()
-            @test normalForm(ga, perm(2,3)^2) ≐ perm()
-            @test normalForm(ga, perm(1,2,3)^3) ≐ perm()
-            @test normalForm(ga, perm(1,3,2)^3) ≐ perm()
+            @test normal_form(ga, perm(1,2)^2) ≐ perm()
+            @test normal_form(ga, perm(1,3)^2) ≐ perm()
+            @test normal_form(ga, perm(2,3)^2) ≐ perm()
+            @test normal_form(ga, perm(1,2,3)^3) ≐ perm()
+            @test normal_form(ga, perm(1,3,2)^3) ≐ perm()
 
             for _ in 1:numRandomTests
                 ind = rand(1:factorial(3), rand(1:6))
-                @test normalForm(ga, perm() * grp(ind)) ≐ normalForm(ga, grp(ind) * perm()) ≐ normalForm(ga, grp(ind))
+                @test normal_form(ga, perm() * grp(ind)) ≐ normal_form(ga, grp(ind) * perm()) ≐ normal_form(ga, grp(ind))
             end
 
-            @test normalForm(ga, perm(1,2) * perm(2,3)) ≐ perm(1,3,2)
-            @test normalForm(ga, perm(2,3) * perm(1,2)) ≐ perm(1,2,3)
+            @test normal_form(ga, perm(1,2) * perm(2,3)) ≐ perm(1,3,2)
+            @test normal_form(ga, perm(2,3) * perm(1,2)) ≐ perm(1,2,3)
         end
 
         @testset "dicyclic group Q8" begin
-            ga = PD.groupAlgebraDicyclicGroup(8)
+            ga = PD.group_algebra_dicyclic_group(8)
 
             e = grp(findfirst(isequal("()"), ga.extraData.permRep))
-            temp = filter(i -> grp(i) != e && normalForm(ga, grp(i)^2) ≐ e, 1:8)
+            temp = filter(i -> grp(i) != e && normal_form(ga, grp(i)^2) ≐ e, 1:8)
             @test length(temp) == 1
             minus_e = grp(first(temp))
             for i in 1:8
                 if !(grp(i) in [e, minus_e])
-                    @test normalForm(ga, grp(i)^2) ≐ minus_e
+                    @test normal_form(ga, grp(i)^2) ≐ minus_e
                 end
             end
         end
