@@ -18,19 +18,25 @@ stages:
         using Pkg
         Pkg.add("Coverage")
         using Coverage
-        c, t = get_summary(process_folder())
+        cov = process_folder()
+        display(map(x -> (x.filename, get_summary(x)), cov))
+        println()
+        c, t = get_summary(cov)
         using Printf
         @printf "Test coverage %.2f%%\n" 100c / t'
+  artifacts:
+    paths:
+      - "**/*.cov"
 
 unittest-Julia 1.6:
-  image: julia:1.6
+  image: johannesflake/oscar
   stage: test
   extends:
     - .script
     - .coverage
 
 doctest:
-  image: julia:1.6
+  image: johannesflake/oscar
   stage: test
   script:
     - |
@@ -44,6 +50,8 @@ doctest:
   artifacts:
     paths:
       - docs/build
+  only:
+    - master
 
 pages:
   stage: deploy
