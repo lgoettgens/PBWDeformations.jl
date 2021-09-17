@@ -40,7 +40,7 @@ init(3) # default
 
 function _normalForm(ind, ff=1)
     i = findfirst(ind[1:end-1] .> ind[2:end])
-    if i == nothing return [(ff, ind)] end
+    if i === nothing return [(ff, ind)] end
     p = (ind[i], ind[i+1])
     commutators = haskey(comm_table, p) ? comm_table[p] : []
     
@@ -104,7 +104,7 @@ letter(i, nc=true) = i < base() ? sympy.Symbol("v_$i", commutative=!nc) : sympy.
 format(ex, nc=true) = ex.replace(f -> f.func == x,
   f -> prod(letter(i, nc) for i in N.(f.args))
 )
-vars() = [Sym("e_$k") for k in [1:n..., (q(i,j) for i=1:n for j=i+1:n)...]]
+vars() = [(Sym("v_$k") for k in 1:n)..., (Sym("X_$k") for k in [q(i,j) for i=1:n for j=i+1:n])...]
 coeffs(ex) = sympy.poly(format(ex, false), vars()...).coeffs()
 show(ex) = (display.(format.(ex)); return)
 
