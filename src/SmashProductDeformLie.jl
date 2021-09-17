@@ -116,7 +116,7 @@ function Base.iterate(eqs::PBWDeformEqs{C}, s::Tuple{Int64, Int64, Union{Nothing
             s = (s[1], s[2], res[2])
         end
         s = (s[1], s[2]+1, s[3])
-        if (s[2] % 250 == 0)
+        if (s[2] % 100 == 0)
             @debug "Equation generation, second phase $(floor(Int, 100*s[2] / binomial(nV, 3)))%"
         end
     end
@@ -228,7 +228,9 @@ function sortVars(vars::Vector{T}, nL, nV, maxdeg) :: Matrix{Vector{Vector{T}}} 
 end
 
 
-function varietyOfPBWDeforms(sp::QuadraticAlgebra{Rational{Int64}, SmashProductLie}, maxdeg::Int64; use_iterators=true::Bool) :: SparseArrays.SparseMatrixCSC{fmpq, Int64}
+function possible_pbw_deforms(sp::QuadraticAlgebra{Rational{Int64}, SmashProductLie}, maxdeg::Int64;
+            use_iterators=true::Bool, special_return::Type{T}=Nothing) where T <: Union{Nothing, SparseMatrixCSC}
+
     nL = sp.extraData.nL
     nV = sp.extraData.nV
 
@@ -285,7 +287,40 @@ function varietyOfPBWDeforms(sp::QuadraticAlgebra{Rational{Int64}, SmashProductL
     @info "Computing reduced row-echelon form..."
     reduced_row_echelon!(lgs)
 
-    return lgs2mat(lgs, numVars)
+    mat = lgs2mat(lgs, numVars)
+    #return mat, R, vars
+
+    if special_return === SparseMatrixCSC
+        return mat, vars
+    end
+
+    freedom_ind = indices_of_freedom(mat)
+    kappa = fill(AlgebraElement{MPolyElem}(0), nV, nV)
+    if length(freedom_ind) > 0
+        S, free_params = PolynomialRing(QQ, ["t_$i" for i in 1:length(freedom_ind)])
+        for i in 1:nV, j in i+1:nV, d in 0:maxdeg, (k, ind) in enumerate(Combinatorics.with_replacement_combinations(1:nL, d))
+            var_ind = varLookup[varMatrix[i,j][d+1][k]]
+            if iszero(mat[var_ind,var_ind])
+                kappa[i,j] += free_params[findfirst(isequal(var_ind), freedom_ind)] * lie(ind; C=MPolyElem)
+                kappa[j,i] -= free_params[findfirst(isequal(var_ind), freedom_ind)] * lie(ind; C=MPolyElem)
+            else
+                for col in var_ind+1:numVars
+                    if !iszero(mat[var_ind,col])
+                        kappa[i,j] += -mat[var_ind,col]*free_params[findfirst(isequal(col), freedom_ind)] * lie(ind; C=MPolyElem)
+                        kappa[j,i] -= -mat[var_ind,col]*free_params[findfirst(isequal(col), freedom_ind)] * lie(ind; C=MPolyElem)
+                    end
+                end
+            end
+        end
+        return kappa, free_params
+    else
+        return kappa, fmpq_mpoly[]
+    end
+end
+
+function indices_of_freedom(mat::SparseArrays.SparseMatrixCSC{fmpq, Int64}) :: Vector{Int64}
+    size(mat)[1] == size(mat)[2] || throw(ArgumentError("Matrix needs to be square."))
+    return filter(i -> mat[i,i] == 0, 1:size(mat)[1])
 end
 
 @inline function normalizeAndStore!(lgs::Vector{Vector{SparseVector{T, Int64}}}, v::SparseVector{T, Int64}) where {T <: AbstractAlgebra.RingElement}
