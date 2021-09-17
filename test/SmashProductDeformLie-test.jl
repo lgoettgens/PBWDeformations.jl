@@ -109,7 +109,7 @@
 
     end
 
-    @testset "variety_of_pbwdeforms construction stuff" begin
+    @testset "possible_pbw_deforms construction stuff" begin
         @testset "param_deform_number_vars tests" begin
             for _ in 1:numRandomTests
                 a, b, c = PD.param_deform_number_vars(rand(1:10), rand(1:10), rand(0:5))
@@ -148,14 +148,14 @@
 
         @testset "both implementations return the same" begin
             sp = PD.smash_product_lie('A',2,[1,1])
-            @test PD.variety_of_pbwdeforms(sp, 1, use_iterators=false) == PD.variety_of_pbwdeforms(sp, 1, use_iterators=true)
+            @test PD.possible_pbw_deforms(sp, 1, use_iterators=false) == PD.possible_pbw_deforms(sp, 1, use_iterators=true)
         end
 
-        @testset "everything still works with use_iterators=$use_iterators" for use_iterators in [false, true]
-            @test_nowarn PD.variety_of_pbwdeforms(PD.smash_product_lie('A',2,[1,0]), 1; use_iterators)
-            @test_nowarn PD.variety_of_pbwdeforms(PD.smash_product_lie('A',2,[1,0]), 2; use_iterators)
-            @test_nowarn PD.variety_of_pbwdeforms(PD.smash_product_lie('A',2,[1,1]), 1; use_iterators)
-            @test_nowarn PD.variety_of_pbwdeforms(PD.smash_product_lie('B',2,[1,0]), 1; use_iterators)
+        @testset "everything still works with use_iterators=$use_iterators with special_return=$special_return" for use_iterators in [false, true], special_return in [Nothing, SparseArrays.SparseMatrixCSC]
+            @test_nowarn PD.possible_pbw_deforms(PD.smash_product_lie('A',2,[1,0]), 1; use_iterators, special_return)
+            @test_nowarn PD.possible_pbw_deforms(PD.smash_product_lie('A',2,[1,0]), 2; use_iterators, special_return)
+            @test_nowarn PD.possible_pbw_deforms(PD.smash_product_lie('A',2,[1,1]), 1; use_iterators, special_return)
+            @test_nowarn PD.possible_pbw_deforms(PD.smash_product_lie('B',2,[1,0]), 1; use_iterators, special_return)
         end
 
     end

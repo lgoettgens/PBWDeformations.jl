@@ -4,6 +4,7 @@ using TestSetExtensions
 using Combinatorics
 using Oscar
 using Random
+using SparseArrays
 
 using PBWDeformations
 
