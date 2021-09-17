@@ -1,7 +1,7 @@
 abstract type AbstractAlgebraElement <: Wrapper end
 
-ScalarTypes = Any
-DefaultScalarType = Rational{Int64}
+ScalarTypes = RingElement
+DefaultScalarType = fmpq
 
 struct BasisElement{C <: ScalarTypes} <: AbstractAlgebraElement
     b :: Tuple{Symbol, Int64}
@@ -21,8 +21,8 @@ struct Monomial{C <: ScalarTypes} <: AbstractAlgebraElement
     Monomial{C}(m1::BasisElement{C}, ms::Vararg{BasisElement{C}}) where C <: ScalarTypes = new{C}([m1; collect(ms)])
     Monomial{C}(m::Monomial{C}) where C <: ScalarTypes = m
 
-    function Monomial{C}(a::Vector{<:Any}) :: Monomial{C} where C <: ScalarTypes
-        if isempty(a)
+    function Monomial{C}(iterable) :: Monomial{C} where C <: ScalarTypes
+        if isempty(iterable)
             return Monomial{C}()
         else
             throw(DomainError("Cannot cast input to Monomial"))
@@ -39,17 +39,17 @@ struct AlgebraElement{C <: ScalarTypes} <: AbstractAlgebraElement
     AlgebraElement{C}(c::Int64) where C <: ScalarTypes = iszero(c) ? AlgebraElement{C}() : new{C}([(C(c), Monomial{C}())])
     AlgebraElement{C}(c::C) where C <: ScalarTypes = iszero(c) ? AlgebraElement{C}() : new{C}([(c, Monomial{C}())])
 
-    AlgebraElement{C}(b::BasisElement{C}) where C <: ScalarTypes = new{C}([(C(1), Monomial{C}(b))])
-    AlgebraElement{C}(b::BasisElement{C}, one::C) where C <: ScalarTypes = new{C}([(one, Monomial{C}(b))])
+    AlgebraElement{C}(b::BasisElement{C}) where C <: ScalarTypes = new{C}([(one(C), Monomial{C}(b))])
+    # AlgebraElement{C}(b::BasisElement{C}, one::C) where C <: ScalarTypes = new{C}([(one, Monomial{C}(b))])
 
-    AlgebraElement{C}(m::Monomial{C}) where C <: ScalarTypes = new{C}([(C(1), m)])
-    AlgebraElement{C}(m::Monomial{C}, one::C) where C <: ScalarTypes = new{C}([(one, m)])
+    AlgebraElement{C}(m::Monomial{C}) where C <: ScalarTypes = new{C}([(one(C), m)])
+    # AlgebraElement{C}(m::Monomial{C}, one::C) where C <: ScalarTypes = new{C}([(one, m)])
 
-    AlgebraElement{C}(a::Vector{Tuple{D, Monomial{C}}}) where {C, D <: C} = new{C}(a)
+    AlgebraElement{C}(a::Vector{Tuple{D, Monomial{C}}}) where {C <: ScalarTypes, D <: C} = new{C}(a)
     AlgebraElement{C}(a::AlgebraElement{C}) where C <: ScalarTypes = a
 
-    function AlgebraElement{C}(a::Vector{<:Any}) :: AlgebraElement{C} where C <: ScalarTypes
-        if isempty(a)
+    function AlgebraElement{C}(iterable) :: AlgebraElement{C} where C <: ScalarTypes
+        if isempty(iterable)
             return AlgebraElement{C}()
         else
             throw(DomainError("Cannot cast input to AlgebraElement"))

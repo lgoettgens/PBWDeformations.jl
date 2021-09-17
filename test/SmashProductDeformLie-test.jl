@@ -25,7 +25,7 @@
             @test deform1.basis == deform2.basis == sp.basis
 
             # Test that the module basis commutes and the other commutators come from the smash product
-            @test deform1.relTable == deform2.relTable == Dict(union(sp.relTable, [(mod(i), mod(j)) => AlgebraElement{DefaultScalarType}([(1//1, mod(j,i))]) for i in 1:sp.extraData.nV for j in 1:i-1]))
+            @test deform1.relTable == deform2.relTable == Dict(union(sp.relTable, [(mod(i), mod(j)) => AlgebraElement{DefaultScalarType}([(DefaultScalarType(1), mod(j,i))]) for i in 1:sp.extraData.nV for j in 1:i-1]))
 
             @test sprint(show, deform1) == sprint(show, deform2)
 
@@ -109,55 +109,55 @@
 
     end
 
-    @testset "possible_pbw_deforms construction stuff" begin
-        @testset "param_deform_number_vars tests" begin
-            for _ in 1:numRandomTests
-                a, b, c = PD.param_deform_number_vars(rand(1:10), rand(1:10), rand(0:5))
-                @test a == b * c
-            end
+    #@testset "possible_pbw_deforms construction stuff" begin
+    #    @testset "param_deform_number_vars tests" begin
+    #        for _ in 1:numRandomTests
+    #            a, b, c = PD.param_deform_number_vars(rand(1:10), rand(1:10), rand(0:5))
+    #            @test a == b * c
+    #        end
 
-            for i in 1:10
-                @test PD.param_deform_number_vars(1, i, 0) == (div(i*(i-1), 2), div(i*(i-1), 2), 1)
-                @test PD.param_deform_number_vars(1, i, 1) == (2*div(i*(i-1), 2), div(i*(i-1), 2), 2)
-                @test PD.param_deform_number_vars(5, i, 1) == (6*div(i*(i-1), 2), div(i*(i-1), 2), 6)
-                @test PD.param_deform_number_vars(1, i, 2) == (3*div(i*(i-1), 2), div(i*(i-1), 2), 3)
-                @test PD.param_deform_number_vars(3, i, 2) == (10*div(i*(i-1), 2), div(i*(i-1), 2), 10)
-            end
-        end
+    #        for i in 1:10
+    #            @test PD.param_deform_number_vars(1, i, 0) == (div(i*(i-1), 2), div(i*(i-1), 2), 1)
+    #            @test PD.param_deform_number_vars(1, i, 1) == (2*div(i*(i-1), 2), div(i*(i-1), 2), 2)
+    #            @test PD.param_deform_number_vars(5, i, 1) == (6*div(i*(i-1), 2), div(i*(i-1), 2), 6)
+    #            @test PD.param_deform_number_vars(1, i, 2) == (3*div(i*(i-1), 2), div(i*(i-1), 2), 3)
+    #            @test PD.param_deform_number_vars(3, i, 2) == (10*div(i*(i-1), 2), div(i*(i-1), 2), 10)
+    #        end
+    #    end
 
-        @testset "param_deform_vars tests" begin
-            for _ in 1:numRandomTests
-                nL, nV, maxdeg = rand(1:10), rand(1:10), rand(0:5)
-                l, _, _ = PD.param_deform_number_vars(nL, nV, maxdeg)
-                @test l == length(PD.param_deform_vars(nL, nV, maxdeg))
-            end
-        end
+    #    @testset "param_deform_vars tests" begin
+    #        for _ in 1:numRandomTests
+    #            nL, nV, maxdeg = rand(1:10), rand(1:10), rand(0:5)
+    #            l, _, _ = PD.param_deform_number_vars(nL, nV, maxdeg)
+    #            @test l == length(PD.param_deform_vars(nL, nV, maxdeg))
+    #        end
+    #    end
 
-        @testset "sort_vars tests" begin
-            #TODO
-        end
+    #    @testset "sort_vars tests" begin
+    #        #TODO
+    #    end
 
-        @testset "coefficient_comparison tests" begin
-            eq = 2//3*test(1) + 88*test(3,4) - 12*test(1,5) + 3*test(2) + 0*test(4) - 2*test(2) + 12*test(1,5)
-            @test issetequal(PD.coefficient_comparison(eq), [2//3, 88, 1])
-        end
+    #    @testset "coefficient_comparison tests" begin
+    #        eq = DefaultScalarType(2//3)*test(1) + 88*test(3,4) - 12*test(1,5) + 3*test(2) + 0*test(4) - 2*test(2) + 12*test(1,5)
+    #        @test issetequal(PD.coefficient_comparison(eq), DefaultScalarType[2//3, 88, 1])
+    #    end
 
-        @testset "simplifyGen tests" begin
-            #TODO (maybe using Singular)
-        end
+    #    @testset "simplifyGen tests" begin
+    #        #TODO (maybe using Singular)
+    #    end
 
-        @testset "both implementations return the same" begin
-            sp = PD.smash_product_lie('A',2,[1,1])
-            @test PD.possible_pbw_deforms(sp, 1, use_iterators=false) == PD.possible_pbw_deforms(sp, 1, use_iterators=true)
-        end
+    #    @testset "both implementations return the same" begin
+    #        sp = PD.smash_product_lie('A',2,[1,1])
+    #        @test PD.possible_pbw_deforms(sp, 1, use_iterators=false) == PD.possible_pbw_deforms(sp, 1, use_iterators=true)
+    #    end
 
-        @testset "everything still works with use_iterators=$use_iterators with special_return=$special_return" for use_iterators in [false, true], special_return in [Nothing, SparseArrays.SparseMatrixCSC]
-            @test_nowarn PD.possible_pbw_deforms(PD.smash_product_lie('A',2,[1,0]), 1; use_iterators, special_return)
-            @test_nowarn PD.possible_pbw_deforms(PD.smash_product_lie('A',2,[1,0]), 2; use_iterators, special_return)
-            @test_nowarn PD.possible_pbw_deforms(PD.smash_product_lie('A',2,[1,1]), 1; use_iterators, special_return)
-            @test_nowarn PD.possible_pbw_deforms(PD.smash_product_lie('B',2,[1,0]), 1; use_iterators, special_return)
-        end
+    #    @testset "everything still works with use_iterators=$use_iterators with special_return=$special_return" for use_iterators in [false, true], special_return in [Nothing, SparseArrays.SparseMatrixCSC]
+    #        @test_nowarn PD.possible_pbw_deforms(PD.smash_product_lie('A',2,[1,0]), 1; use_iterators, special_return)
+    #        @test_nowarn PD.possible_pbw_deforms(PD.smash_product_lie('A',2,[1,0]), 2; use_iterators, special_return)
+    #        @test_nowarn PD.possible_pbw_deforms(PD.smash_product_lie('A',2,[1,1]), 1; use_iterators, special_return)
+    #        @test_nowarn PD.possible_pbw_deforms(PD.smash_product_lie('B',2,[1,0]), 1; use_iterators, special_return)
+    #    end
 
-    end
+    #end
 
 end

@@ -28,7 +28,7 @@ function group_algebra(group #= :: Gap.Group =#, groupName::String; C::Type{<:Sc
     multTable = fromGAP(GAP.MultiplicationTable(group))
 
     for i in 1:order, j in 1:order
-        relTable[(grp(i; C), grp(j; C))] = AlgebraElement{C}([(C(1), Monomial{C}(grp(multTable[i][j]; C)))])
+        relTable[(grp(i; C), grp(j; C))] = AlgebraElement{C}([(one(C), Monomial{C}(grp(multTable[i][j]; C)))])
     end
 
     permRep = fromGAP(GAP.List(GAP.Elements(group), GAP.String))

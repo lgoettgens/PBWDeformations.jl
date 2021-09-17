@@ -18,7 +18,7 @@ function Base.show(io::IO, spd::SmashProductDeformLie) :: Nothing
 end
 
 
-function smash_product_deform_lie(sp::QuadraticAlgebra{C, SmashProductLie}, kappa::Matrix{AlgebraElement{C}}, one=C(1)::C) :: QuadraticAlgebra{C, SmashProductDeformLie{C}} where C <: ScalarTypes
+function smash_product_deform_lie(sp::QuadraticAlgebra{C, SmashProductLie}, kappa::Matrix{AlgebraElement{C}}) :: QuadraticAlgebra{C, SmashProductDeformLie{C}} where C <: ScalarTypes
     nV = sp.extraData.nV
     @assert size(kappa) == (nV, nV) "size of kappa matches module dimension"
 
@@ -38,7 +38,7 @@ function smash_product_deform_lie(sp::QuadraticAlgebra{C, SmashProductLie}, kapp
 
         # We have the commutator relation [mod(i), mod(j)] = kappa[i,j]
         # which is equivalent to mod(i)*mod(j) = mod(j)*mod(i) + kappa[i,j]
-        relTable[(mod(i; C), mod(j; C))] = AlgebraElement{C}(mod(j, i; C), one) + kappa[i,j]
+        relTable[(mod(i; C), mod(j; C))] = AlgebraElement{C}(mod(j, i; C)) + kappa[i,j]
     end
 
     extraData = SmashProductDeformLie{C}(sp.extraData, symmetric, kappa)
@@ -66,9 +66,8 @@ end
 
 struct PBWDeformEqs{C <: ScalarTypes}
     d :: QuadraticAlgebra{C, SmashProductDeformLie{C}}
-    one :: C
 
-    PBWDeformEqs{C}(d::QuadraticAlgebra{C, SmashProductDeformLie{C}}, one = C(1)) where C <: ScalarTypes = new{C}(d, one)
+    PBWDeformEqs{C}(d::QuadraticAlgebra{C, SmashProductDeformLie{C}}) where C <: ScalarTypes = new{C}(d)
 end
 
 function Base.iterate(eqs::PBWDeformEqs{C}, s::Tuple{Int64, Int64, Union{Nothing, Vector{Int64}}} = (0, 0, nothing)) where C <: ScalarTypes
@@ -124,7 +123,7 @@ function Base.iterate(eqs::PBWDeformEqs{C}, s::Tuple{Int64, Int64, Union{Nothing
     ## (a) κ is H-invariant
     if s[1] == 1
         i,j = res[1]
-        h = AlgebraElement{C}(lie(s[2]; C), eqs.one)
+        h = AlgebraElement{C}(lie(s[2]; C))
         eq = (sum([c*kappa[m[1][2],j] for (c, m) in normal_form(eqs.d, comm(h, mod(i; C)))]; init=AlgebraElement{C}()) # κ([h⋅v_i,v_j])
             + sum([c*kappa[i,m[1][2]] for (c, m) in normal_form(eqs.d, comm(h, mod(j; C)))]; init=AlgebraElement{C}()) # κ([v_i,h⋅v_j])
             - normal_form(eqs.d, comm(h, kappa[i,j])))                                                                 # h⋅κ([v_i,v_j])
@@ -158,7 +157,7 @@ function Base.length(eqs::PBWDeformEqs{C}) where C <: ScalarTypes
 end
 
 
-function pbwdeform_eqs_noiter(d::QuadraticAlgebra{C, SmashProductDeformLie{C}}, one = C(1)::C) :: Vector{AlgebraElement{C}} where C <: ScalarTypes
+function pbwdeform_eqs_noiter(d::QuadraticAlgebra{C, SmashProductDeformLie{C}}) :: Vector{AlgebraElement{C}} where C <: ScalarTypes
     # Uses Theorem 3.1 of Walton, Witherspoon: Poincare-Birkhoff-Witt deformations of smash product algebras from Hopf actions on Koszul algebras.
     # DOI:	10.2140/ant.2014.8.1701. https://arxiv.org/abs/1308.6011
     nL = d.extraData.sp.nL
@@ -171,7 +170,7 @@ function pbwdeform_eqs_noiter(d::QuadraticAlgebra{C, SmashProductDeformLie{C}}, 
     eqs = [(sum([c*kappa[m[1][2],j] for (c, m) in normal_form(d, comm(h, mod(i; C)))]; init=AlgebraElement{C}()) # κ([h⋅v_i,v_j])
           + sum([c*kappa[i,m[1][2]] for (c, m) in normal_form(d, comm(h, mod(j; C)))]; init=AlgebraElement{C}()) # κ([v_i,h⋅v_j])
           - normal_form(d, comm(h, kappa[i,j])))                                                                 # h⋅κ([v_i,v_j])
-        for h in map(b -> AlgebraElement{C}(b, one), lie(1:nL; C)) for i in 1:nV for j in i+1:nV]
+        for h in map(b -> AlgebraElement{C}(b), lie(1:nL; C)) for i in 1:nV for j in i+1:nV]
     # m[1][2] denotes the index of the only basis element in the monomial m
 
     ## (b) trivial
@@ -193,8 +192,8 @@ function pbwdeform_eqs_noiter(d::QuadraticAlgebra{C, SmashProductDeformLie{C}}, 
     return map(eq -> normal_form(d, eq), eqs)
 end
 
-function ispbwdeform(d::QuadraticAlgebra{C, SmashProductDeformLie{C}}, one = C(1)::C) :: Bool where C <: ScalarTypes
-    return all(iszero, PBWDeformEqs{C}(d, one))
+function ispbwdeform(d::QuadraticAlgebra{C, SmashProductDeformLie{C}}) :: Bool where C <: ScalarTypes
+    return all(iszero, PBWDeformEqs{C}(d))
 end
 
 
@@ -241,35 +240,35 @@ function possible_pbw_deforms(sp::QuadraticAlgebra{DefaultScalarType, SmashProdu
     varMatrix = sort_vars(vars, nL, nV, maxdeg)
 
     @info "Constructing kappa..."
-    kappa = fill(AlgebraElement{MPolyElem}(0), nV, nV)
+    kappa = fill(AlgebraElement{fmpq_mpoly}(0), nV, nV)
     for i in 1:nV, j in i+1:nV, d in 0:maxdeg, (k, ind) in enumerate(Combinatorics.with_replacement_combinations(1:nL, d))
-        kappa[i,j] += varMatrix[i,j][d+1][k]*lie(ind; C=MPolyElem)
-        kappa[j,i] -= varMatrix[i,j][d+1][k]*lie(ind; C=MPolyElem)
+        kappa[i,j] += varMatrix[i,j][d+1][k]*lie(ind; C=fmpq_mpoly)
+        kappa[j,i] -= varMatrix[i,j][d+1][k]*lie(ind; C=fmpq_mpoly)
     end
 
     @info "Changing SmashProductLie coeffcient type..."
-    newBasis = [change_c(MPolyElem, b) for b in sp.basis]
+    newBasis = [change_c(fmpq_mpoly, b) for b in sp.basis]
 
-    newRelTable = Dict([(change_c(MPolyElem, b1), change_c(MPolyElem, b2)) =>
-        AlgebraElement{MPolyElem}(map(x -> (R(x[1]), change_c(MPolyElem, x[2])), unpack(a)))
+    newRelTable = Dict([(change_c(fmpq_mpoly, b1), change_c(fmpq_mpoly, b2)) =>
+        AlgebraElement{fmpq_mpoly}(map(x -> (R(x[1]), change_c(fmpq_mpoly, x[2])), unpack(a)))
         for ((b1, b2), a) in pairs(sp.relTable)])
-    newSp = QuadraticAlgebra{MPolyElem, SmashProductLie}(newBasis, newRelTable, sp.extraData)
+    newSp = QuadraticAlgebra{fmpq_mpoly, SmashProductLie}(newBasis, newRelTable, sp.extraData)
 
     @info "Constructing deformation..."
-    deform = smash_product_deform_lie(newSp, kappa, R(1))
+    deform = smash_product_deform_lie(newSp, kappa)
 
     if use_iterators
         @info "Generating equation iterator..."
         iter = Iterators.map(a -> poly2vec_linear(a, varLookup, numVars),
             Iterators.flatten(
                 Iterators.map(coefficient_comparison,
-                    PBWDeformEqs{MPolyElem}(deform, R(1))
+                    PBWDeformEqs{fmpq_mpoly}(deform)
                 )
             )
         )
     else
         @info "Generating equations..."
-        iter = map(a -> poly2vec_linear(a, varLookup, numVars), reduce(vcat, map(coefficient_comparison, pbwdeform_eqs_noiter(deform, R(1)))))
+        iter = map(a -> poly2vec_linear(a, varLookup, numVars), reduce(vcat, map(coefficient_comparison, pbwdeform_eqs_noiter(deform))))
     end
 
     # group sparse vectors by index of first non-zero entry
@@ -295,19 +294,19 @@ function possible_pbw_deforms(sp::QuadraticAlgebra{DefaultScalarType, SmashProdu
     end
 
     freedom_ind = indices_of_freedom(mat)
-    kappa = fill(AlgebraElement{MPolyElem}(0), nV, nV)
+    kappa = fill(AlgebraElement{fmpq_mpoly}(0), nV, nV)
     if length(freedom_ind) > 0
         S, free_params = PolynomialRing(QQ, ["t_$i" for i in 1:length(freedom_ind)])
         for i in 1:nV, j in i+1:nV, d in 0:maxdeg, (k, ind) in enumerate(Combinatorics.with_replacement_combinations(1:nL, d))
             var_ind = varLookup[varMatrix[i,j][d+1][k]]
             if iszero(mat[var_ind,var_ind])
-                kappa[i,j] += free_params[findfirst(isequal(var_ind), freedom_ind)] * lie(ind; C=MPolyElem)
-                kappa[j,i] -= free_params[findfirst(isequal(var_ind), freedom_ind)] * lie(ind; C=MPolyElem)
+                kappa[i,j] += free_params[findfirst(isequal(var_ind), freedom_ind)] * lie(ind; C=fmpq_mpoly)
+                kappa[j,i] -= free_params[findfirst(isequal(var_ind), freedom_ind)] * lie(ind; C=fmpq_mpoly)
             else
                 for col in var_ind+1:numVars
                     if !iszero(mat[var_ind,col])
-                        kappa[i,j] += -mat[var_ind,col]*free_params[findfirst(isequal(col), freedom_ind)] * lie(ind; C=MPolyElem)
-                        kappa[j,i] -= -mat[var_ind,col]*free_params[findfirst(isequal(col), freedom_ind)] * lie(ind; C=MPolyElem)
+                        kappa[i,j] += -mat[var_ind,col]*free_params[findfirst(isequal(col), freedom_ind)] * lie(ind; C=fmpq_mpoly)
+                        kappa[j,i] -= -mat[var_ind,col]*free_params[findfirst(isequal(col), freedom_ind)] * lie(ind; C=fmpq_mpoly)
                     end
                 end
             end
