@@ -1,24 +1,27 @@
 abstract type AbstractAlgebraElement <: Wrapper end
 
-struct BasisElement{C} <: AbstractAlgebraElement
+ScalarTypes = Any
+DefaultScalarType = Rational{Int64}
+
+struct BasisElement{C <: ScalarTypes} <: AbstractAlgebraElement
     b :: Tuple{Symbol, Int64}
 
-    BasisElement{C}(sym::Symbol, ind::Int64) where C = new{C}((sym, ind))
-    BasisElement{C}(b::Tuple{Symbol, Int64}) where C = new{C}(b)
-    BasisElement{C}(b::BasisElement{C}) where C = b
+    BasisElement{C}(sym::Symbol, ind::Int64) where C <: ScalarTypes = new{C}((sym, ind))
+    BasisElement{C}(b::Tuple{Symbol, Int64}) where C <: ScalarTypes = new{C}(b)
+    BasisElement{C}(b::BasisElement{C}) where C <: ScalarTypes = b
 end
 
-struct Monomial{C} <: AbstractAlgebraElement
+struct Monomial{C <: ScalarTypes} <: AbstractAlgebraElement
     m :: Vector{BasisElement{C}}
 
-    Monomial{C}() where C = new{C}([])
-    Monomial{C}(b::BasisElement{C}) where C = new{C}([b])
+    Monomial{C}() where C <: ScalarTypes = new{C}([])
+    Monomial{C}(b::BasisElement{C}) where C <: ScalarTypes = new{C}([b])
 
-    Monomial{C}(m::Vector{BasisElement{C}}) where C = new{C}(m)
-    Monomial{C}(m1::BasisElement{C}, ms::Vararg{BasisElement{C}}) where C = new{C}([m1; collect(ms)])
-    Monomial{C}(m::Monomial{C}) where C = m
+    Monomial{C}(m::Vector{BasisElement{C}}) where C <: ScalarTypes = new{C}(m)
+    Monomial{C}(m1::BasisElement{C}, ms::Vararg{BasisElement{C}}) where C <: ScalarTypes = new{C}([m1; collect(ms)])
+    Monomial{C}(m::Monomial{C}) where C <: ScalarTypes = m
 
-    function Monomial{C}(a::Vector{<:Any}) :: Monomial{C} where C
+    function Monomial{C}(a::Vector{<:Any}) :: Monomial{C} where C <: ScalarTypes
         if isempty(a)
             return Monomial{C}()
         else
@@ -27,25 +30,25 @@ struct Monomial{C} <: AbstractAlgebraElement
     end
 end
 
-struct AlgebraElement{C} <: AbstractAlgebraElement
+struct AlgebraElement{C <: ScalarTypes} <: AbstractAlgebraElement
     a :: Vector{Tuple{C, Monomial{C}}}
 
     # emtpy list represents empty sum, which is 0
-    AlgebraElement{C}() where C = new{C}([])
+    AlgebraElement{C}() where C <: ScalarTypes = new{C}([])
 
-    AlgebraElement{C}(c::Int64) where C = iszero(c) ? AlgebraElement{C}() : new{C}([(C(c), Monomial{C}())])
-    AlgebraElement{C}(c::C) where C = iszero(c) ? AlgebraElement{C}() : new{C}([(c, Monomial{C}())])
+    AlgebraElement{C}(c::Int64) where C <: ScalarTypes = iszero(c) ? AlgebraElement{C}() : new{C}([(C(c), Monomial{C}())])
+    AlgebraElement{C}(c::C) where C <: ScalarTypes = iszero(c) ? AlgebraElement{C}() : new{C}([(c, Monomial{C}())])
 
-    AlgebraElement{C}(b::BasisElement{C}) where C = new{C}([(C(1), Monomial{C}(b))])
-    AlgebraElement{C}(b::BasisElement{C}, one::C) where C = new{C}([(one, Monomial{C}(b))])
+    AlgebraElement{C}(b::BasisElement{C}) where C <: ScalarTypes = new{C}([(C(1), Monomial{C}(b))])
+    AlgebraElement{C}(b::BasisElement{C}, one::C) where C <: ScalarTypes = new{C}([(one, Monomial{C}(b))])
 
-    AlgebraElement{C}(m::Monomial{C}) where C = new{C}([(C(1), m)])
-    AlgebraElement{C}(m::Monomial{C}, one::C) where C = new{C}([(one, m)])
+    AlgebraElement{C}(m::Monomial{C}) where C <: ScalarTypes = new{C}([(C(1), m)])
+    AlgebraElement{C}(m::Monomial{C}, one::C) where C <: ScalarTypes = new{C}([(one, m)])
 
     AlgebraElement{C}(a::Vector{Tuple{D, Monomial{C}}}) where {C, D <: C} = new{C}(a)
-    AlgebraElement{C}(a::AlgebraElement{C}) where C = a
+    AlgebraElement{C}(a::AlgebraElement{C}) where C <: ScalarTypes = a
 
-    function AlgebraElement{C}(a::Vector{<:Any}) :: AlgebraElement{C} where C
+    function AlgebraElement{C}(a::Vector{<:Any}) :: AlgebraElement{C} where C <: ScalarTypes
         if isempty(a)
             return AlgebraElement{C}()
         else
@@ -54,31 +57,31 @@ struct AlgebraElement{C} <: AbstractAlgebraElement
     end
 end
 
-StandardOperand{C} = Union{BasisElement{C}, Monomial{C}, AlgebraElement{C}}
-Operand{C} = Union{Int64, <:C, BasisElement{C}, Monomial{C}, AlgebraElement{C}}
+StandardOperand{C <: ScalarTypes} = Union{BasisElement{C}, Monomial{C}, AlgebraElement{C}}
+Operand{C <: ScalarTypes} = Union{Int64, <:C, BasisElement{C}, Monomial{C}, AlgebraElement{C}}
 
-function Base.one(::Union{Monomial{C}, Type{Monomial{C}}}) :: Monomial{C} where C
+function Base.one(::Union{Monomial{C}, Type{Monomial{C}}}) :: Monomial{C} where C <: ScalarTypes
     return Monomial{C}()  
 end
 
-function Base.zero(::Union{AlgebraElement{C}, Type{AlgebraElement{C}}}) :: AlgebraElement{C} where C
+function Base.zero(::Union{AlgebraElement{C}, Type{AlgebraElement{C}}}) :: AlgebraElement{C} where C <: ScalarTypes
     return AlgebraElement{C}(0)
 end
 
-function Base.one(::Union{AlgebraElement{C}, Type{AlgebraElement{C}}}) :: AlgebraElement{C} where C
+function Base.one(::Union{AlgebraElement{C}, Type{AlgebraElement{C}}}) :: AlgebraElement{C} where C <: ScalarTypes
     return AlgebraElement{C}(1)
 end
 
-function monomials(a::AlgebraElement{C}) :: Vector{Monomial{C}} where C
+function monomials(a::AlgebraElement{C}) :: Vector{Monomial{C}} where C <: ScalarTypes
     return unique([mon for (coeff, mon) in a])
 end
 
-function basis_elements(a::AlgebraElement{C}) :: Vector{BasisElement{C}} where C
+function basis_elements(a::AlgebraElement{C}) :: Vector{BasisElement{C}} where C <: ScalarTypes
     return unique(vcat(monomials(a)...))
 end
 
 
-function collect_summands(a::AlgebraElement{C}) :: AlgebraElement{C} where C
+function collect_summands(a::AlgebraElement{C}) :: AlgebraElement{C} where C <: ScalarTypes
     res = Tuple{C, Monomial{C}}[]
 
     for (coeff, mon) in AlgebraElement{C}(a)
@@ -94,110 +97,109 @@ function collect_summands(a::AlgebraElement{C}) :: AlgebraElement{C} where C
     return AlgebraElement{C}(filter!(x -> !iszero(x[1]), res))
 end
 
-function collect_summands(as::Vector{AlgebraElement{C}}) :: AlgebraElement{C} where C
+function collect_summands(as::Vector{AlgebraElement{C}}) :: AlgebraElement{C} where C <: ScalarTypes
     return collect_summands(AlgebraElement{C}(vcat(as...)))
 end
 
 
-function issamesum(a1::Operand{C}, a2::Operand{C}) :: Bool where C
+function issamesum(a1::Operand{C}, a2::Operand{C}) :: Bool where C <: ScalarTypes
     return issetequal(collect_summands(AlgebraElement{C}(a1)),
                       collect_summands(AlgebraElement{C}(a2)))
 end
 
 ≐ = issamesum # type symbol via \doteq, autocomplete with tab
 
-function Base.iszero(a::AlgebraElement{C}) :: Bool where C
+function Base.iszero(a::AlgebraElement{C}) :: Bool where C <: ScalarTypes
     return a ≐ 0
 end
 
-function Base.isone(a::AlgebraElement{C}) :: Bool where C
+function Base.isone(a::AlgebraElement{C}) :: Bool where C <: ScalarTypes
     return a ≐ 1
 end
 
 
-function Base.:(+)(x::Operand{C}, y::StandardOperand{C}) :: AlgebraElement{C} where C
+function Base.:(+)(x::Operand{C}, y::StandardOperand{C}) :: AlgebraElement{C} where C <: ScalarTypes
     return collect_summands([AlgebraElement{C}(x), AlgebraElement{C}(y)])
 end
 
-function Base.:(+)(a::StandardOperand{C}, c::Union{Int64, C}) :: AlgebraElement{C} where C
+function Base.:(+)(a::StandardOperand{C}, c::Union{Int64, C}) :: AlgebraElement{C} where C <: ScalarTypes
     return c + a
 end
 
 
-function Base.:(*)(x::BasisElement{C}, y::BasisElement{C}) :: Monomial{C} where C
+function Base.:(*)(x::BasisElement{C}, y::BasisElement{C}) :: Monomial{C} where C <: ScalarTypes
     return Monomial{C}([x, y])
 end
 
-function Base.:(*)(x::BasisElement{C}, y::Monomial{C}) :: Monomial{C} where C
+function Base.:(*)(x::BasisElement{C}, y::Monomial{C}) :: Monomial{C} where C <: ScalarTypes
     return Monomial{C}([x; unpack(y)])
 end
 
-function Base.:(*)(x::Monomial{C}, y::BasisElement{C}) :: Monomial{C} where C
+function Base.:(*)(x::Monomial{C}, y::BasisElement{C}) :: Monomial{C} where C <: ScalarTypes
     return Monomial{C}([unpack(x); y])
 end
 
-function Base.:(*)(x::Monomial{C}, y::Monomial{C}) :: Monomial{C} where C
+function Base.:(*)(x::Monomial{C}, y::Monomial{C}) :: Monomial{C} where C <: ScalarTypes
     return Monomial{C}([unpack(x); unpack(y)])
 end
 
-function Base.:(*)(c::C, b::BasisElement{C}) :: AlgebraElement{C} where C
+function Base.:(*)(c::C, b::BasisElement{C}) :: AlgebraElement{C} where C <: ScalarTypes
     return AlgebraElement{C}([(c, Monomial{C}(b))])
 end
 
-function Base.:(*)(c::C, m::Monomial{C}) :: AlgebraElement{C} where C
+function Base.:(*)(c::C, m::Monomial{C}) :: AlgebraElement{C} where C <: ScalarTypes
     return AlgebraElement{C}([(c, m)])
-    # return AlgebraElement{C}([(c*coeff, mon) for (coeff, mon) in AlgebraElement{C}(m)])
 end
 
-function Base.:(*)(c::Union{Int64, C}, a::AlgebraElement{C}) :: AlgebraElement{C} where C
+function Base.:(*)(c::Union{Int64, C}, a::AlgebraElement{C}) :: AlgebraElement{C} where C <: ScalarTypes
     return AlgebraElement{C}([(c*coeff, mon) for (coeff, mon) in AlgebraElement{C}(a)])
 end
 
-function Base.:(*)(c::Int64, b::BasisElement{C}) :: AlgebraElement{C} where C
+function Base.:(*)(c::Int64, b::BasisElement{C}) :: AlgebraElement{C} where C <: ScalarTypes
     return C(c) * b
 end
 
-function Base.:(*)(c::Int64, m::Monomial{C}) :: AlgebraElement{C} where C
+function Base.:(*)(c::Int64, m::Monomial{C}) :: AlgebraElement{C} where C <: ScalarTypes
     return C(c) * m
 end
 
-function Base.:(*)(a::StandardOperand{C}, c::Union{Int64, C}) :: AlgebraElement{C} where C
+function Base.:(*)(a::StandardOperand{C}, c::Union{Int64, C}) :: AlgebraElement{C} where C <: ScalarTypes
     return c * a
 end
 
-function Base.:(*)(a1::AlgebraElement{C}, a2::AlgebraElement{C}) :: AlgebraElement{C} where C
+function Base.:(*)(a1::AlgebraElement{C}, a2::AlgebraElement{C}) :: AlgebraElement{C} where C <: ScalarTypes
     return collect_summands(AlgebraElement{C}([(c1*c2, m1*m2) for (c1, m1) in a1 for (c2, m2) in a2]))
 end
 
-function Base.:(*)(a::AlgebraElement{C}, m::Union{BasisElement{C}, Monomial{C}}) :: AlgebraElement{C} where C
+function Base.:(*)(a::AlgebraElement{C}, m::Union{BasisElement{C}, Monomial{C}}) :: AlgebraElement{C} where C <: ScalarTypes
     return collect_summands(AlgebraElement{C}([(c, m2*m) for (c, m2) in a]))
 end
 
-function Base.:(*)(m::Union{BasisElement{C}, Monomial{C}}, a::AlgebraElement{C}) :: AlgebraElement{C} where C
+function Base.:(*)(m::Union{BasisElement{C}, Monomial{C}}, a::AlgebraElement{C}) :: AlgebraElement{C} where C <: ScalarTypes
     return collect_summands(AlgebraElement{C}([(c, m*m2) for (c, m2) in a]))
 end
 
 
-function Base.:(^)(m::Union{BasisElement{C}, Monomial{C}}, n::Int64) :: Monomial{C} where C
+function Base.:(^)(m::Union{BasisElement{C}, Monomial{C}}, n::Int64) :: Monomial{C} where C <: ScalarTypes
     @assert n >= 0
     return prod([m for _ in 1:n]; init=one(Monomial{C}))
 end
 
-function Base.:(^)(a::AlgebraElement{C}, n::Int64) :: AlgebraElement{C} where C
+function Base.:(^)(a::AlgebraElement{C}, n::Int64) :: AlgebraElement{C} where C <: ScalarTypes
     @assert n >= 0
     return prod([a for _ in 1:n])
 end
 
 
-function Base.:(-)(a::StandardOperand{C}) :: AlgebraElement{C} where C
+function Base.:(-)(a::StandardOperand{C}) :: AlgebraElement{C} where C <: ScalarTypes
     return (-1)*a
 end
 
-function Base.:(-)(x::Operand{C}, y::StandardOperand{C}) :: AlgebraElement{C} where C
+function Base.:(-)(x::Operand{C}, y::StandardOperand{C}) :: AlgebraElement{C} where C <: ScalarTypes
     return x + (-y)
 end
 
-function Base.:(-)(a::StandardOperand{C}, c::Union{Int64, C}) :: AlgebraElement{C} where C
+function Base.:(-)(a::StandardOperand{C}, c::Union{Int64, C}) :: AlgebraElement{C} where C <: ScalarTypes
     return a + (-c)
 end
 
@@ -205,11 +207,11 @@ end
 comm(x, y) = x*y - y*x
 
 
-function change_c(C2::Type, b::BasisElement{C1}) :: BasisElement{C2} where C1
+function change_c(C2::Type{<:ScalarTypes}, b::BasisElement{C1}) :: BasisElement{C2} where C1 <: ScalarTypes
     return BasisElement{C2}(unpack(b))
 end
 
-function change_c(C2::Type, m::Monomial{C1}) :: Monomial{C2} where C1
+function change_c(C2::Type{<:ScalarTypes}, m::Monomial{C1}) :: Monomial{C2} where C1 <: ScalarTypes
     return Monomial{C2}(map(b -> change_c(C2, b), unpack(m)))
 end
 
@@ -224,11 +226,11 @@ function groupby(pred, v)
     return [v[tmp[i]+1:tmp[i+1]] for i in 1:length(tmp)-1]
 end
 
-function prettyprint(b::BasisElement{C}) :: String where C
+function prettyprint(b::BasisElement{C}) :: String where C <: ScalarTypes
     return string(b[1], '(', b[2], ')')
 end
 
-function prettyprint(m::Monomial{C}) :: String where C
+function prettyprint(m::Monomial{C}) :: String where C <: ScalarTypes
     if isone(m)
         return "[]"
     else
@@ -238,7 +240,7 @@ function prettyprint(m::Monomial{C}) :: String where C
     end
 end
 
-function prettyprint(t::Tuple{C, Monomial{C}}) :: String where C
+function prettyprint(t::Tuple{C, Monomial{C}}) :: String where C <: ScalarTypes
     if isone(t[2])
         # TODO: isinteger is not supported for MPolyElem
         # return string(isinteger(t[1]) ? Int(t[1]) : t[1])
@@ -254,7 +256,7 @@ function prettyprint(t::Tuple{C, Monomial{C}}) :: String where C
     end
 end
 
-function prettyprint(a::AlgebraElement{C}) :: String where C
+function prettyprint(a::AlgebraElement{C}) :: String where C <: ScalarTypes
     if iszero(a)
         return "0"
     else
@@ -262,6 +264,6 @@ function prettyprint(a::AlgebraElement{C}) :: String where C
     end
 end
 
-function Base.show(io::IO, ::MIME"text/plain", x::StandardOperand{C}) :: Nothing where C
+function Base.show(io::IO, ::MIME"text/plain", x::StandardOperand{C}) :: Nothing where C <: ScalarTypes
     print(io, prettyprint(x))
 end

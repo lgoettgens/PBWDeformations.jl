@@ -16,7 +16,7 @@ function Base.show(io::IO, ga::GroupAlgebra) :: Nothing
 end
 
 
-function group_algebra(group #= :: Gap.Group =#, groupName::String; C::Type=Rational{Int64}) :: QuadraticAlgebra{C, GroupAlgebra}
+function group_algebra(group #= :: Gap.Group =#, groupName::String; C::Type{<:ScalarTypes} = DefaultScalarType) :: QuadraticAlgebra{C, GroupAlgebra}
     @assert GAP.IsGroup(group)
     @assert GAP.Order(group) != GAP.infinity
     
@@ -38,24 +38,24 @@ function group_algebra(group #= :: Gap.Group =#, groupName::String; C::Type=Rati
     return QuadraticAlgebra{C, GroupAlgebra}(basis, relTable, extraData)
 end
 
-function group_algebra_cyclic_group(n::Int64; C::Type=Rational{Int64}) :: QuadraticAlgebra{C, GroupAlgebra}
+function group_algebra_cyclic_group(n::Int64; C::Type{<:ScalarTypes} = DefaultScalarType) :: QuadraticAlgebra{C, GroupAlgebra}
     return group_algebra(GAP.CyclicGroup(GAP.IsPermGroup, n), "C"*string(n); C)
 end
 
-function group_algebra_dihedral_group(n::Int64; C::Type=Rational{Int64}) :: QuadraticAlgebra{C, GroupAlgebra}
+function group_algebra_dihedral_group(n::Int64; C::Type{<:ScalarTypes} = DefaultScalarType) :: QuadraticAlgebra{C, GroupAlgebra}
     @assert n % 2 == 0
     return group_algebra(GAP.DihedralGroup(GAP.IsPermGroup, n), "D"*string(n); C)
 end
 
-function group_algebra_dicyclic_group(n::Int64; C::Type=Rational{Int64}) :: QuadraticAlgebra{C, GroupAlgebra}
+function group_algebra_dicyclic_group(n::Int64; C::Type{<:ScalarTypes} = DefaultScalarType) :: QuadraticAlgebra{C, GroupAlgebra}
     @assert n % 4 == 0
     return group_algebra(GAP.DicyclicGroup(GAP.IsPermGroup, n), "Dic"*string(n); C)
 end
 
-function group_algebra_alternating_group(n::Int64; C::Type=Rational{Int64}) :: QuadraticAlgebra{C, GroupAlgebra}
+function group_algebra_alternating_group(n::Int64; C::Type{<:ScalarTypes} = DefaultScalarType) :: QuadraticAlgebra{C, GroupAlgebra}
     return group_algebra(GAP.AlternatingGroup(GAP.IsPermGroup, n), "A"*string(n); C)
 end
 
-function group_algebra_symmetric_group(n::Int64; C::Type=Rational{Int64}) :: QuadraticAlgebra{C, GroupAlgebra}
+function group_algebra_symmetric_group(n::Int64; C::Type{<:ScalarTypes} = DefaultScalarType) :: QuadraticAlgebra{C, GroupAlgebra}
     return group_algebra(GAP.SymmetricGroup(GAP.IsPermGroup, n), "S"*string(n); C)
 end

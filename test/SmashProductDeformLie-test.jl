@@ -4,7 +4,7 @@
             sp = PD.smash_product_lie('B', 2, [1,0])
             nV = sp.extraData.nV
 
-            kappa = fill(AlgebraElement{Rational{Int64}}(), nV, nV)
+            kappa = fill(AlgebraElement{DefaultScalarType}(), nV, nV)
 
             deform1 = PD.smash_product_symm_deform_lie(sp)
             deform2 = PD.smash_product_deform_lie(sp, kappa)
@@ -25,7 +25,7 @@
             @test deform1.basis == deform2.basis == sp.basis
 
             # Test that the module basis commutes and the other commutators come from the smash product
-            @test deform1.relTable == deform2.relTable == Dict(union(sp.relTable, [(mod(i), mod(j)) => AlgebraElement{Rational{Int64}}([(1//1, mod(j,i))]) for i in 1:sp.extraData.nV for j in 1:i-1]))
+            @test deform1.relTable == deform2.relTable == Dict(union(sp.relTable, [(mod(i), mod(j)) => AlgebraElement{DefaultScalarType}([(1//1, mod(j,i))]) for i in 1:sp.extraData.nV for j in 1:i-1]))
 
             @test sprint(show, deform1) == sprint(show, deform2)
 
@@ -44,13 +44,13 @@
             sp = PD.smash_product_lie('B', 2, [1,0])
             nV = sp.extraData.nV
 
-            kappa = fill(AlgebraElement{Rational{Int64}}(), nV+1, nV)
+            kappa = fill(AlgebraElement{DefaultScalarType}(), nV+1, nV)
             @test_throws AssertionError("size of kappa matches module dimension") PD.smash_product_deform_lie(sp, kappa)
 
-            kappa = fill(AlgebraElement{Rational{Int64}}(), nV, nV+1)
+            kappa = fill(AlgebraElement{DefaultScalarType}(), nV, nV+1)
             @test_throws AssertionError("size of kappa matches module dimension") PD.smash_product_deform_lie(sp, kappa)
 
-            kappa = fill(AlgebraElement{Rational{Int64}}(), nV+1, nV+1)
+            kappa = fill(AlgebraElement{DefaultScalarType}(), nV+1, nV+1)
             @test_throws AssertionError("size of kappa matches module dimension") PD.smash_product_deform_lie(sp, kappa)
         end
 
@@ -60,18 +60,18 @@
 
             # basis of sp consists of (:mod, 1) to (:mod 5) and (:lie, 1) to (:lie, 10)
 
-            kappa = fill(AlgebraElement{Rational{Int64}}(), nV, nV)
-            kappa[1,2] = AlgebraElement{Rational{Int64}}(mod(1))
+            kappa = fill(AlgebraElement{DefaultScalarType}(), nV, nV)
+            kappa[1,2] = AlgebraElement{DefaultScalarType}(mod(1))
             kappa[2,1] = -kappa[1,2]
             @test_throws AssertionError("kappa only takes values in Hopf algebra") PD.smash_product_deform_lie(sp, kappa)
 
-            kappa = fill(AlgebraElement{Rational{Int64}}(), nV, nV)
-            kappa[1,2] = AlgebraElement{Rational{Int64}}(lie(0))
+            kappa = fill(AlgebraElement{DefaultScalarType}(), nV, nV)
+            kappa[1,2] = AlgebraElement{DefaultScalarType}(lie(0))
             kappa[2,1] = -kappa[1,2]
             @test_throws AssertionError("kappa only takes values in Hopf algebra") PD.smash_product_deform_lie(sp, kappa)
 
-            kappa = fill(AlgebraElement{Rational{Int64}}(), nV, nV)
-            kappa[1,2] = AlgebraElement{Rational{Int64}}(lie(11))
+            kappa = fill(AlgebraElement{DefaultScalarType}(), nV, nV)
+            kappa[1,2] = AlgebraElement{DefaultScalarType}(lie(11))
             kappa[2,1] = -kappa[1,2]
             @test_throws AssertionError("kappa only takes values in Hopf algebra") PD.smash_product_deform_lie(sp, kappa)
         end
@@ -80,12 +80,12 @@
             sp = PD.smash_product_lie('B', 2, [1,0])
             nV = sp.extraData.nV
 
-            kappa = fill(PD.AlgebraElement{Rational{Int64}}(), nV, nV)
-            kappa[1,1] = AlgebraElement{Rational{Int64}}(lie(1))
+            kappa = fill(PD.AlgebraElement{DefaultScalarType}(), nV, nV)
+            kappa[1,1] = AlgebraElement{DefaultScalarType}(lie(1))
             @test_throws AssertionError("kappa is skew-symmetric") PD.smash_product_deform_lie(sp, kappa)
 
-            kappa = fill(PD.AlgebraElement{Rational{Int64}}(), nV, nV)
-            kappa[1,2] = AlgebraElement{Rational{Int64}}(lie(1))
+            kappa = fill(PD.AlgebraElement{DefaultScalarType}(), nV, nV)
+            kappa[1,2] = AlgebraElement{DefaultScalarType}(lie(1))
             @test_throws AssertionError("kappa is skew-symmetric") PD.smash_product_deform_lie(sp, kappa)
         end
 
@@ -99,7 +99,7 @@
 
         @testset "non-PBW deformations" begin
             sp = PD.smash_product_lie('A', 2, [1,0])
-            kappa = fill(AlgebraElement{Rational{Int64}}(0), 3, 3)
+            kappa = fill(AlgebraElement{DefaultScalarType}(0), 3, 3)
             # some made-up skew-symmetric entries
             kappa[1,2] = 1*lie(3)
             kappa[2,1] = -lie(3)

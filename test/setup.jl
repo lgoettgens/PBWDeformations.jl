@@ -19,6 +19,9 @@ mod = PD.mod
 grp = PD.grp
 test = PD.test
 
+ScalarTypes = PD.ScalarTypes
+DefaultScalarType = PD.DefaultScalarType
+
 BasisElement = PD.BasisElement
 Monomial = PD.Monomial
 AlgebraElement = PD.AlgebraElement
@@ -35,5 +38,5 @@ dimRandomTests = [3, 10, 25, 100]
 randLength(start=0) = rand(start:10)
 randNums(quantity) = rand(-20:20, quantity)
 randNum() = randNums(1)[1]
-randMonomial(basis) = Monomial{Rational{Int64}}([basis[rand(1:length(basis))] for _ in 1:randLength()])
-randAlgebraElement(basis) = AlgebraElement{Rational{Int64}}([(Rational{Int64}(randNum()), randMonomial(basis)) for _ in 1:randLength()])
+randMonomial(basis) = Monomial{DefaultScalarType}([basis[rand(1:length(basis))] for _ in 1:randLength()])
+randAlgebraElement(basis) = AlgebraElement{DefaultScalarType}([(DefaultScalarType(randNum()), randMonomial(basis)) for _ in 1:randLength()])

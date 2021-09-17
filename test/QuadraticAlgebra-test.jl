@@ -2,7 +2,7 @@
     @testset "containment" begin
         basis = map(test, 1:10)
         relTable = Dict()
-        alg = PD.QuadraticAlgebra{Rational{Int64}, Nothing}(basis, relTable, nothing) :: PD.QuadraticAlgebra{Rational{Int64}, Nothing}
+        alg = PD.QuadraticAlgebra{DefaultScalarType, Nothing}(basis, relTable, nothing) :: PD.QuadraticAlgebra{DefaultScalarType, Nothing}
         x = test
 
         @test basis[1] in alg
@@ -23,8 +23,8 @@
         @testset "tensor algebra over V with dim V = $n" for n in dimRandomTests
             x = test
             basis = map(x, 1:n)
-            relTable = Dict{Tuple{BasisElement{Rational{Int64}}, BasisElement{Rational{Int64}}}, AlgebraElement{Rational{Int64}}}()
-            alg = PD.QuadraticAlgebra{Rational{Int64}, Nothing}(basis, relTable, nothing)
+            relTable = Dict{Tuple{BasisElement{DefaultScalarType}, BasisElement{DefaultScalarType}}, AlgebraElement{DefaultScalarType}}()
+            alg = PD.QuadraticAlgebra{DefaultScalarType, Nothing}(basis, relTable, nothing)
 
             showOutput = @test_nowarn sprint(show, alg)
 
@@ -38,8 +38,8 @@
         @testset "symmetric algebra over V with dim V = $n" for n in dimRandomTests
             x = test
             basis = map(x, 1:n)
-            relTable = Dict([((x(i), x(j)), AlgebraElement{Rational{Int64}}(x(j,i))) for i in 1:n for j in 1:i-1])
-            alg = PD.QuadraticAlgebra{Rational{Int64}, Nothing}(basis, relTable, nothing)
+            relTable = Dict([((x(i), x(j)), AlgebraElement{DefaultScalarType}(x(j,i))) for i in 1:n for j in 1:i-1])
+            alg = PD.QuadraticAlgebra{DefaultScalarType, Nothing}(basis, relTable, nothing)
 
             showOutput = @test_nowarn sprint(show, alg)
 
@@ -60,9 +60,9 @@
             basis = map(x, 1:n)
             relTable = Dict([
                 [((x(i), x(j)), -x(j,i)) for i in 1:n for j in 1:i-1];
-                [((x(i), x(i)), AlgebraElement{Rational{Int64}}(0)) for i in 1:n];
+                [((x(i), x(i)), AlgebraElement{DefaultScalarType}(0)) for i in 1:n];
             ])
-            alg = PD.QuadraticAlgebra{Rational{Int64}, Nothing}(basis, relTable, nothing)
+            alg = PD.QuadraticAlgebra{DefaultScalarType, Nothing}(basis, relTable, nothing)
 
             showOutput = @test_nowarn sprint(show, alg)
 

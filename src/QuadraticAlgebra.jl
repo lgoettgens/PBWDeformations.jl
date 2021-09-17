@@ -1,4 +1,4 @@
-struct QuadraticAlgebra{C, T}
+struct QuadraticAlgebra{C <: ScalarTypes, T}
     basis :: Vector{BasisElement{C}}
 
     """
@@ -9,16 +9,16 @@ struct QuadraticAlgebra{C, T}
     relTable :: Dict{Tuple{BasisElement{C}, BasisElement{C}}, AlgebraElement{C}}
     extraData :: T
 
-    QuadraticAlgebra{C, T}(basis, relTable, extraData = nothing) where {C, T} =
+    QuadraticAlgebra{C, T}(basis, relTable, extraData = nothing) where {C <: ScalarTypes, T} =
         new{C, T}(basis, relTable, extraData)
 end
 
-function Base.:(==)(alg1::QuadraticAlgebra{C}, alg2::QuadraticAlgebra{C}) :: Bool where C
+function Base.:(==)(alg1::QuadraticAlgebra{C}, alg2::QuadraticAlgebra{C}) :: Bool where C <: ScalarTypes
     (alg1.basis, alg1.relTable, alg1.extraData) ==
     (alg2.basis, alg2.relTable, alg2.extraData)
 end
 
-function Base.show(io::IO, alg::QuadraticAlgebra{C}) :: Nothing where C
+function Base.show(io::IO, alg::QuadraticAlgebra{C}) :: Nothing where C <: ScalarTypes
     println(io, "Algebra with quadratic relations of dimension ", length(alg.basis))
     println(io, "Relation table has ", length(alg.relTable), " entries")
     println(io, "Coefficients of type ", C)
@@ -26,20 +26,20 @@ function Base.show(io::IO, alg::QuadraticAlgebra{C}) :: Nothing where C
     print(io, alg.extraData)
 end
 
-function Base.in(b::BasisElement{C}, alg::QuadraticAlgebra{C}) :: Bool where C
+function Base.in(b::BasisElement{C}, alg::QuadraticAlgebra{C}) :: Bool where C <: ScalarTypes
     return b in alg.basis
 end
 
-function Base.in(m::Monomial{C}, alg::QuadraticAlgebra{C}) :: Bool where C
+function Base.in(m::Monomial{C}, alg::QuadraticAlgebra{C}) :: Bool where C <: ScalarTypes
     return all(b -> b in alg, m)
 end
 
-function Base.in(a::AlgebraElement{C}, alg::QuadraticAlgebra{C}) :: Bool where C
+function Base.in(a::AlgebraElement{C}, alg::QuadraticAlgebra{C}) :: Bool where C <: ScalarTypes
     return all(m in alg for (c, m) in a)
 end
 
 
-function normal_form(alg::QuadraticAlgebra{C}, a::AlgebraElement{C}) :: AlgebraElement{C} where C
+function normal_form(alg::QuadraticAlgebra{C}, a::AlgebraElement{C}) :: AlgebraElement{C} where C <: ScalarTypes
     todo = copy(unpack(a))
     result = AlgebraElement{C}(0)
 
@@ -66,6 +66,6 @@ function normal_form(alg::QuadraticAlgebra{C}, a::AlgebraElement{C}) :: AlgebraE
     return result
 end
 
-function normal_form(alg::QuadraticAlgebra{C}, m::Union{BasisElement{C}, Monomial{C}}) :: AlgebraElement{C} where C
+function normal_form(alg::QuadraticAlgebra{C}, m::Union{BasisElement{C}, Monomial{C}}) :: AlgebraElement{C} where C <: ScalarTypes
     return normal_form(alg, AlgebraElement{C}(m))
 end

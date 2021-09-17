@@ -1,4 +1,4 @@
-C = Rational{Int64}
+C = DefaultScalarType
 
 @testset ExtendedTestSet "All PBWDeformations.SmashProductLie tests" begin
     @testset "smash_product_lie constructor" begin

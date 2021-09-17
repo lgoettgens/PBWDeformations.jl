@@ -1,4 +1,4 @@
-C = Rational{Int64}
+C = DefaultScalarType
 
 @testset ExtendedTestSet "All PBWDeformations.GroupAlgebra tests" begin
     @testset "different group_algebra constructors" begin

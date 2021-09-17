@@ -1,10 +1,10 @@
-struct SmashProductDeformLie{C}
+struct SmashProductDeformLie{C <: ScalarTypes}
     sp :: SmashProductLie
     symmetric :: Bool
     kappa :: Matrix{AlgebraElement{C}}
 end
 
-function Base.:(==)(spd1::SmashProductDeformLie{C}, spd2::SmashProductDeformLie{C}) :: Bool where C
+function Base.:(==)(spd1::SmashProductDeformLie{C}, spd2::SmashProductDeformLie{C}) :: Bool where C <: ScalarTypes
     (spd1.sp, spd1.symmetric) == (spd2.sp, spd2.symmetric)
 end
 
@@ -18,7 +18,7 @@ function Base.show(io::IO, spd::SmashProductDeformLie) :: Nothing
 end
 
 
-function smash_product_deform_lie(sp::QuadraticAlgebra{C, SmashProductLie}, kappa::Matrix{AlgebraElement{C}}, one=C(1)::C) :: QuadraticAlgebra{C, SmashProductDeformLie{C}} where C
+function smash_product_deform_lie(sp::QuadraticAlgebra{C, SmashProductLie}, kappa::Matrix{AlgebraElement{C}}, one=C(1)::C) :: QuadraticAlgebra{C, SmashProductDeformLie{C}} where C <: ScalarTypes
     nV = sp.extraData.nV
     @assert size(kappa) == (nV, nV) "size of kappa matches module dimension"
 
@@ -46,7 +46,7 @@ function smash_product_deform_lie(sp::QuadraticAlgebra{C, SmashProductLie}, kapp
 end
 
 
-function smash_product_symm_deform_lie(sp::QuadraticAlgebra{C, SmashProductLie}) :: QuadraticAlgebra{C, SmashProductDeformLie{C}} where C
+function smash_product_symm_deform_lie(sp::QuadraticAlgebra{C, SmashProductLie}) :: QuadraticAlgebra{C, SmashProductDeformLie{C}} where C <: ScalarTypes
     relTable = sp.relTable
 
     for i in 1:sp.extraData.nV, j in 1:i-1
@@ -57,21 +57,21 @@ function smash_product_symm_deform_lie(sp::QuadraticAlgebra{C, SmashProductLie})
     return QuadraticAlgebra{C, SmashProductDeformLie{C}}(sp.basis, relTable, extraData)
 end
 
-function smash_product_symm_deform_lie(dynkin::Char, n::Int64, lambda::Vector{Int64}; C::Type=Rational{Int64}) :: QuadraticAlgebra{C, SmashProductDeformLie{C}}
+function smash_product_symm_deform_lie(dynkin::Char, n::Int64, lambda::Vector{Int64}; C::Type{<:ScalarTypes} = DefaultScalarType) :: QuadraticAlgebra{C, SmashProductDeformLie{C}}
     @assert n == length(lambda)
     sanitize_lie_input(dynkin, n)
 
     return smash_product_symm_deform_lie(smash_product_lie(dynkin, n, lambda; C))
 end
 
-struct PBWDeformEqs{C}
+struct PBWDeformEqs{C <: ScalarTypes}
     d :: QuadraticAlgebra{C, SmashProductDeformLie{C}}
     one :: C
 
-    PBWDeformEqs{C}(d::QuadraticAlgebra{C, SmashProductDeformLie{C}}, one = C(1)) where C = new{C}(d, one)
+    PBWDeformEqs{C}(d::QuadraticAlgebra{C, SmashProductDeformLie{C}}, one = C(1)) where C <: ScalarTypes = new{C}(d, one)
 end
 
-function Base.iterate(eqs::PBWDeformEqs{C}, s::Tuple{Int64, Int64, Union{Nothing, Vector{Int64}}}=(0, 0, nothing)) where C
+function Base.iterate(eqs::PBWDeformEqs{C}, s::Tuple{Int64, Int64, Union{Nothing, Vector{Int64}}} = (0, 0, nothing)) where C <: ScalarTypes
     # Uses Theorem 3.1 of Walton, Witherspoon: Poincare-Birkhoff-Witt deformations of smash product algebras from Hopf actions on Koszul algebras.
     # DOI:	10.2140/ant.2014.8.1701. https://arxiv.org/abs/1308.6011
 
@@ -151,14 +151,14 @@ function Base.iterate(eqs::PBWDeformEqs{C}, s::Tuple{Int64, Int64, Union{Nothing
     return (normal_form(eqs.d, eq), s)
 end
 
-function Base.length(eqs::PBWDeformEqs{C}) where C
+function Base.length(eqs::PBWDeformEqs{C}) where C <: ScalarTypes
     nL = eqs.d.extraData.sp.nL
     nV = eqs.d.extraData.sp.nV
     return binomial(nV,2)*nL + binomial(nV,3)
 end
 
 
-function pbwdeform_eqs_noiter(d::QuadraticAlgebra{C, SmashProductDeformLie{C}}, one=C(1)::C) :: Vector{AlgebraElement{C}} where C
+function pbwdeform_eqs_noiter(d::QuadraticAlgebra{C, SmashProductDeformLie{C}}, one = C(1)::C) :: Vector{AlgebraElement{C}} where C <: ScalarTypes
     # Uses Theorem 3.1 of Walton, Witherspoon: Poincare-Birkhoff-Witt deformations of smash product algebras from Hopf actions on Koszul algebras.
     # DOI:	10.2140/ant.2014.8.1701. https://arxiv.org/abs/1308.6011
     nL = d.extraData.sp.nL
@@ -193,7 +193,7 @@ function pbwdeform_eqs_noiter(d::QuadraticAlgebra{C, SmashProductDeformLie{C}}, 
     return map(eq -> normal_form(d, eq), eqs)
 end
 
-function ispbwdeform(d::QuadraticAlgebra{C, SmashProductDeformLie{C}}, one=C(1)::C) :: Bool where C
+function ispbwdeform(d::QuadraticAlgebra{C, SmashProductDeformLie{C}}, one = C(1)::C) :: Bool where C <: ScalarTypes
     return all(iszero, PBWDeformEqs{C}(d, one))
 end
 
@@ -228,7 +228,7 @@ function sort_vars(vars::Vector{T}, nL, nV, maxdeg) :: Matrix{Vector{Vector{T}}}
 end
 
 
-function possible_pbw_deforms(sp::QuadraticAlgebra{Rational{Int64}, SmashProductLie}, maxdeg::Int64;
+function possible_pbw_deforms(sp::QuadraticAlgebra{DefaultScalarType, SmashProductLie}, maxdeg::Int64;
             use_iterators=true::Bool, special_return::Type{T}=Nothing) where T <: Union{Nothing, SparseMatrixCSC}
 
     nL = sp.extraData.nL
@@ -323,7 +323,7 @@ function indices_of_freedom(mat::SparseArrays.SparseMatrixCSC{fmpq, Int64}) :: V
     return filter(i -> mat[i,i] == 0, 1:size(mat)[1])
 end
 
-@inline function normalize_and_store!(lgs::Vector{Vector{SparseVector{T, Int64}}}, v::SparseVector{T, Int64}) where {T <: AbstractAlgebra.RingElement}
+@inline function normalize_and_store!(lgs::Vector{Vector{SparseVector{C, Int64}}}, v::SparseVector{C, Int64}) where C <: ScalarTypes
     nzIndices, nzValues = findnz(v)
     push!(lgs[nzIndices[1]], inv(nzValues[1]) .* v)
 end
@@ -337,7 +337,7 @@ end
     )
 end
 
-function row_echelon!(lgs::Vector{Vector{SparseVector{T, Int64}}}) :: Vector{Vector{SparseVector{T, Int64}}} where {T <: AbstractAlgebra.RingElement}
+function row_echelon!(lgs::Vector{Vector{SparseVector{C, Int64}}}) :: Vector{Vector{SparseVector{C, Int64}}} where C <: ScalarTypes
     for i in 1:length(lgs)
         if (i % 10 == 0)
             @debug "Row echelon, $i/$(length(lgs)), $(floor(Int, 100*i / length(lgs)))%"
@@ -358,7 +358,7 @@ function row_echelon!(lgs::Vector{Vector{SparseVector{T, Int64}}}) :: Vector{Vec
     return lgs
 end
 
-function reduced_row_echelon!(lgs::Vector{Vector{SparseVector{T, Int64}}}) :: Vector{Vector{SparseVector{T, Int64}}} where {T <: AbstractAlgebra.RingElement}
+function reduced_row_echelon!(lgs::Vector{Vector{SparseVector{C, Int64}}}) :: Vector{Vector{SparseVector{C, Int64}}} where C <: ScalarTypes
     for i in length(lgs):-1:1
         if isempty(lgs[i])
             continue
@@ -373,7 +373,7 @@ function reduced_row_echelon!(lgs::Vector{Vector{SparseVector{T, Int64}}}) :: Ve
     return lgs
 end
 
-function lgs2mat(lgs::Vector{Vector{SparseVector{T, Int64}}}, n::Int64) :: SparseArrays.SparseMatrixCSC{T, Int64}  where {T <: AbstractAlgebra.RingElement}
+function lgs2mat(lgs::Vector{Vector{SparseVector{C, Int64}}}, n::Int64) :: SparseArrays.SparseMatrixCSC{C, Int64}  where C <: ScalarTypes
     mat = spzeros(fmpq, n, n)
     for i in 1:n
         if !isempty(lgs[i])
@@ -383,7 +383,7 @@ function lgs2mat(lgs::Vector{Vector{SparseVector{T, Int64}}}, n::Int64) :: Spars
     return mat
 end
 
-function coefficient_comparison(eq::AlgebraElement{C}) :: Vector{C} where C
+function coefficient_comparison(eq::AlgebraElement{C}) :: Vector{C} where C <: ScalarTypes
     result = C[]
     for summand in unpack(eq)
         (c, m) = summand

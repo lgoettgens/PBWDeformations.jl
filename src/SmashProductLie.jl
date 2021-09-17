@@ -19,7 +19,7 @@ function Base.show(io::IO, sp::SmashProductLie) :: Nothing
 end
 
 
-function smash_product_lie(dynkin::Char, n::Int64, lambda::Vector{Int64}; C::Type=Rational{Int64}) :: QuadraticAlgebra{C, SmashProductLie}
+function smash_product_lie(dynkin::Char, n::Int64, lambda::Vector{Int64}; C::Type{<:ScalarTypes} = DefaultScalarType) :: QuadraticAlgebra{C, SmashProductLie}
     @assert n == length(lambda)
     sanitize_lie_input(dynkin, n)
 
