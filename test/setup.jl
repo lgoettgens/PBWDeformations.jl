@@ -34,9 +34,16 @@ comm = PD.comm
 
 numRandomTests = 10
 dimRandomTests = [3, 10, 25, 100]
+indexRange = -20:20
 
 randLength(start=0) = rand(start:10)
-randNums(quantity) = rand(-20:20, quantity)
+randNums(quantity) = rand(indexRange, quantity)
 randNum() = randNums(1)[1]
+
+randBasisElement() = test(randNum())
+
 randMonomial(basis) = Monomial{DefaultScalarType}([basis[rand(1:length(basis))] for _ in 1:randLength()])
+randMonomial() = randMonomial(test(indexRange))
+
 randAlgebraElement(basis) = AlgebraElement{DefaultScalarType}([(DefaultScalarType(randNum()), randMonomial(basis)) for _ in 1:randLength()])
+randAlgebraElement() = randAlgebraElement(test(indexRange))

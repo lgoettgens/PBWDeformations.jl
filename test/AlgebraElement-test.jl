@@ -1,12 +1,4 @@
 x = test
-randNum() = rand(-20:20)
-randNums(quantity) = rand(-20:20, quantity)
-randLength(start=0) = rand(start:10)
-randBasisElement() = x(randNum()) :: BasisElement{DefaultScalarType}
-basis = [x(i) for i in -20:20]
-randMonomial() = randMonomial(basis)
-randAlgebraElement() = randAlgebraElement(basis)
-#randAlgebraElement() = AlgebraElement{DefaultScalarType}()
 
 @testset ExtendedTestSet "All AlgebraElement.jl tests" begin
     @testset "test conversions, Coeff=$C" for C in [DefaultScalarType]
