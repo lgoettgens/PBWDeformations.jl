@@ -1,7 +1,7 @@
 abstract type AbstractAlgebraElement <: Wrapper end
 
 ScalarTypes = RingElement
-DefaultScalarType = fmpq
+DefaultScalarType = fmpq # type C that should have constructor C(c::Rational{Int64})
 
 struct BasisElement{C <: ScalarTypes} <: AbstractAlgebraElement
     b :: Tuple{Symbol, Int64}
@@ -40,10 +40,10 @@ struct AlgebraElement{C <: ScalarTypes} <: AbstractAlgebraElement
     AlgebraElement{C}(c::C) where C <: ScalarTypes = iszero(c) ? AlgebraElement{C}() : new{C}([(c, Monomial{C}())])
 
     AlgebraElement{C}(b::BasisElement{C}) where C <: ScalarTypes = new{C}([(one(C), Monomial{C}(b))])
-    # AlgebraElement{C}(b::BasisElement{C}, one::C) where C <: ScalarTypes = new{C}([(one, Monomial{C}(b))])
+    AlgebraElement{C}(b::BasisElement{C}, one::C) where C <: ScalarTypes = new{C}([(one, Monomial{C}(b))])
 
     AlgebraElement{C}(m::Monomial{C}) where C <: ScalarTypes = new{C}([(one(C), m)])
-    # AlgebraElement{C}(m::Monomial{C}, one::C) where C <: ScalarTypes = new{C}([(one, m)])
+    AlgebraElement{C}(m::Monomial{C}, one::C) where C <: ScalarTypes = new{C}([(one, m)])
 
     AlgebraElement{C}(a::Vector{Tuple{D, Monomial{C}}}) where {C <: ScalarTypes, D <: C} = new{C}(a)
     AlgebraElement{C}(a::AlgebraElement{C}) where C <: ScalarTypes = a

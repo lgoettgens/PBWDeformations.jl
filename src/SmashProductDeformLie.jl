@@ -18,7 +18,7 @@ function Base.show(io::IO, spd::SmashProductDeformLie) :: Nothing
 end
 
 
-function smash_product_deform_lie(sp::QuadraticAlgebra{C, SmashProductLie}, kappa::Matrix{AlgebraElement{C}}) :: QuadraticAlgebra{C, SmashProductDeformLie{C}} where C <: ScalarTypes
+function smash_product_deform_lie(sp::QuadraticAlgebra{C, SmashProductLie}, kappa::Matrix{AlgebraElement{C}}, one::C = one(C)) :: QuadraticAlgebra{C, SmashProductDeformLie{C}} where C <: ScalarTypes
     nV = sp.extraData.nV
     @assert size(kappa) == (nV, nV) "size of kappa matches module dimension"
 
@@ -38,7 +38,7 @@ function smash_product_deform_lie(sp::QuadraticAlgebra{C, SmashProductLie}, kapp
 
         # We have the commutator relation [mod(i), mod(j)] = kappa[i,j]
         # which is equivalent to mod(i)*mod(j) = mod(j)*mod(i) + kappa[i,j]
-        relTable[(mod(i; C), mod(j; C))] = AlgebraElement{C}(mod(j, i; C)) + kappa[i,j]
+        relTable[(mod(i; C), mod(j; C))] = AlgebraElement{C}(mod(j, i; C), one) + kappa[i,j]
     end
 
     extraData = SmashProductDeformLie{C}(sp.extraData, symmetric, kappa)
@@ -66,8 +66,9 @@ end
 
 struct PBWDeformEqs{C <: ScalarTypes}
     d :: QuadraticAlgebra{C, SmashProductDeformLie{C}}
+    one :: C
 
-    PBWDeformEqs{C}(d::QuadraticAlgebra{C, SmashProductDeformLie{C}}) where C <: ScalarTypes = new{C}(d)
+    PBWDeformEqs{C}(d::QuadraticAlgebra{C, SmashProductDeformLie{C}}, one::C = one(C)) where C <: ScalarTypes = new{C}(d, one)
 end
 
 function Base.iterate(eqs::PBWDeformEqs{C}, s::Tuple{Int64, Int64, Union{Nothing, Vector{Int64}}} = (0, 0, nothing)) where C <: ScalarTypes
@@ -123,7 +124,7 @@ function Base.iterate(eqs::PBWDeformEqs{C}, s::Tuple{Int64, Int64, Union{Nothing
     ## (a) κ is H-invariant
     if s[1] == 1
         i,j = res[1]
-        h = AlgebraElement{C}(lie(s[2]; C))
+        h = AlgebraElement{C}(lie(s[2]; C), eqs.one)
         eq = (sum([c*kappa[m[1][2],j] for (c, m) in normal_form(eqs.d, comm(h, mod(i; C)))]; init=AlgebraElement{C}()) # κ([h⋅v_i,v_j])
             + sum([c*kappa[i,m[1][2]] for (c, m) in normal_form(eqs.d, comm(h, mod(j; C)))]; init=AlgebraElement{C}()) # κ([v_i,h⋅v_j])
             - normal_form(eqs.d, comm(h, kappa[i,j])))                                                                 # h⋅κ([v_i,v_j])
@@ -157,7 +158,7 @@ function Base.length(eqs::PBWDeformEqs{C}) where C <: ScalarTypes
 end
 
 
-function pbwdeform_eqs_noiter(d::QuadraticAlgebra{C, SmashProductDeformLie{C}}) :: Vector{AlgebraElement{C}} where C <: ScalarTypes
+function pbwdeform_eqs_noiter(d::QuadraticAlgebra{C, SmashProductDeformLie{C}}, one::C = one(C)) :: Vector{AlgebraElement{C}} where C <: ScalarTypes
     # Uses Theorem 3.1 of Walton, Witherspoon: Poincare-Birkhoff-Witt deformations of smash product algebras from Hopf actions on Koszul algebras.
     # DOI:	10.2140/ant.2014.8.1701. https://arxiv.org/abs/1308.6011
     nL = d.extraData.sp.nL
@@ -170,7 +171,7 @@ function pbwdeform_eqs_noiter(d::QuadraticAlgebra{C, SmashProductDeformLie{C}}) 
     eqs = [(sum([c*kappa[m[1][2],j] for (c, m) in normal_form(d, comm(h, mod(i; C)))]; init=AlgebraElement{C}()) # κ([h⋅v_i,v_j])
           + sum([c*kappa[i,m[1][2]] for (c, m) in normal_form(d, comm(h, mod(j; C)))]; init=AlgebraElement{C}()) # κ([v_i,h⋅v_j])
           - normal_form(d, comm(h, kappa[i,j])))                                                                 # h⋅κ([v_i,v_j])
-        for h in map(b -> AlgebraElement{C}(b), lie(1:nL; C)) for i in 1:nV for j in i+1:nV]
+        for h in map(b -> AlgebraElement{C}(b, one), lie(1:nL; C)) for i in 1:nV for j in i+1:nV]
     # m[1][2] denotes the index of the only basis element in the monomial m
 
     ## (b) trivial
@@ -192,8 +193,8 @@ function pbwdeform_eqs_noiter(d::QuadraticAlgebra{C, SmashProductDeformLie{C}}) 
     return map(eq -> normal_form(d, eq), eqs)
 end
 
-function ispbwdeform(d::QuadraticAlgebra{C, SmashProductDeformLie{C}}) :: Bool where C <: ScalarTypes
-    return all(iszero, PBWDeformEqs{C}(d))
+function ispbwdeform(d::QuadraticAlgebra{C, SmashProductDeformLie{C}}, one::C = one(C)) :: Bool where C <: ScalarTypes
+    return all(iszero, PBWDeformEqs{C}(d, one))
 end
 
 
@@ -228,7 +229,7 @@ end
 
 
 function possible_pbw_deforms(sp::QuadraticAlgebra{DefaultScalarType, SmashProductLie}, maxdeg::Int64;
-            use_iterators=true::Bool, special_return::Type{T}=Nothing) where T <: Union{Nothing, SparseMatrixCSC}
+            use_iterators=true::Bool, special_return::Type{T} = Nothing) where T <: Union{Nothing, SparseMatrixCSC}
 
     nL = sp.extraData.nL
     nV = sp.extraData.nV
@@ -255,20 +256,20 @@ function possible_pbw_deforms(sp::QuadraticAlgebra{DefaultScalarType, SmashProdu
     newSp = QuadraticAlgebra{fmpq_mpoly, SmashProductLie}(newBasis, newRelTable, sp.extraData)
 
     @info "Constructing deformation..."
-    deform = smash_product_deform_lie(newSp, kappa)
+    deform = smash_product_deform_lie(newSp, kappa, one(R))
 
     if use_iterators
         @info "Generating equation iterator..."
         iter = Iterators.map(a -> poly2vec_linear(a, varLookup, numVars),
             Iterators.flatten(
                 Iterators.map(coefficient_comparison,
-                    PBWDeformEqs{fmpq_mpoly}(deform)
+                    PBWDeformEqs{fmpq_mpoly}(deform, one(R))
                 )
             )
         )
     else
         @info "Generating equations..."
-        iter = map(a -> poly2vec_linear(a, varLookup, numVars), reduce(vcat, map(coefficient_comparison, pbwdeform_eqs_noiter(deform))))
+        iter = map(a -> poly2vec_linear(a, varLookup, numVars), reduce(vcat, map(coefficient_comparison, pbwdeform_eqs_noiter(deform, one(R)))))
     end
 
     # group sparse vectors by index of first non-zero entry
