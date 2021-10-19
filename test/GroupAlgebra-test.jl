@@ -1,22 +1,22 @@
-C = Rational{Int64}
+C = DefaultScalarType
 
 @testset ExtendedTestSet "All PBWDeformations.GroupAlgebra tests" begin
-    @testset "different groupAlgebra constructors" begin
+    @testset "different group_algebra constructors" begin
         @testset "not a group" begin
-            @test_throws AssertionError PD._groupAlgebra(toGAP(42), "")
-            @test_throws AssertionError PD._groupAlgebra(toGAP("Hello World!"), "")
-            @test_throws AssertionError PD._groupAlgebra(GAP.SimpleLieAlgebra(toGAP("A"), 2, GAP.Rationals), "")
+            @test_throws AssertionError PD.group_algebra(toGAP(42), "")
+            @test_throws AssertionError PD.group_algebra(toGAP("Hello World!"), "")
+            @test_throws AssertionError PD.group_algebra(GAP.SimpleLieAlgebra(toGAP("A"), 2, GAP.Rationals), "")
 
-            @test_throws AssertionError PD._groupAlgebra(GAP.FreeGroup(toGAP("a"), toGAP("b")), "")
-            @test_throws AssertionError PD._groupAlgebra(GAP.GL(2, GAP.Integers), "")
+            @test_throws AssertionError PD.group_algebra(GAP.FreeGroup(toGAP("a"), toGAP("b")), "")
+            @test_throws AssertionError PD.group_algebra(GAP.GL(2, GAP.Integers), "")
         end
 
         @testset "trivial group" begin
             for ga in [
-                    PD.groupAlgebraCyclicGroup(1),
-                    PD.groupAlgebraAlternatingGroup(1),
-                    PD.groupAlgebraAlternatingGroup(2),
-                    PD.groupAlgebraSymmetricGroup(1),
+                    PD.group_algebra_cyclic_group(1),
+                    PD.group_algebra_alternating_group(1),
+                    PD.group_algebra_alternating_group(2),
+                    PD.group_algebra_symmetric_group(1),
                     ]
                 @test ga.extraData.order == length(ga.basis) == length(ga.extraData.permRep) == 1
                 @test ga.extraData.permRep == ["()"]
@@ -25,7 +25,7 @@ C = Rational{Int64}
         end
 
         @testset "cyclic group C$n" for n in dimRandomTests
-            ga = PD.groupAlgebraCyclicGroup(n)
+            ga = PD.group_algebra_cyclic_group(n)
 
             @test ga.extraData.order == length(ga.basis) == length(ga.extraData.permRep) == n
 
@@ -37,18 +37,18 @@ C = Rational{Int64}
                 ind = shuffle(rand(1:ga.extraData.order, rand(2:10)))
 
                 # abelian test
-                @test normalForm(ga, grp(ind; C)) ≐ normalForm(ga, grp(shuffle(ind); C))
+                @test normal_form(ga, grp(ind; C)) ≐ normal_form(ga, grp(shuffle(ind); C))
 
                 # cyclic test
-                @test normalForm(ga, grp(ind; C)) ≐ grp(1 + sum(map(i -> i-1, ind)) % n; C)
+                @test normal_form(ga, grp(ind; C)) ≐ grp(1 + sum(map(i -> i-1, ind)) % n; C)
             end
         end
 
         @testset "dihedral group D$n" for n in dimRandomTests
             if n % 2 != 0
-                @test_throws AssertionError ga = PD.groupAlgebraDihedralGroup(n)
+                @test_throws AssertionError ga = PD.group_algebra_dihedral_group(n)
             else
-                ga = PD.groupAlgebraDihedralGroup(n)
+                ga = PD.group_algebra_dihedral_group(n)
 
                 @test ga.extraData.order == length(ga.basis) == length(ga.extraData.permRep) == n
 
@@ -62,9 +62,9 @@ C = Rational{Int64}
 
         @testset "dicyclic group Dic$n" for n in dimRandomTests
             if n % 4 != 0
-                @test_throws AssertionError ga = PD.groupAlgebraDicyclicGroup(n)
+                @test_throws AssertionError ga = PD.group_algebra_dicyclic_group(n)
             else
-                ga = PD.groupAlgebraDicyclicGroup(n)
+                ga = PD.group_algebra_dicyclic_group(n)
 
                 @test ga.extraData.order == length(ga.basis) == length(ga.extraData.permRep) == n
 
@@ -77,7 +77,7 @@ C = Rational{Int64}
         end
 
         @testset "symmetric group S$n" for n in 2:6
-            ga = PD.groupAlgebraSymmetricGroup(n)
+            ga = PD.group_algebra_symmetric_group(n)
 
             @test ga.extraData.order == length(ga.basis) == length(ga.extraData.permRep) == factorial(n)
 
@@ -89,7 +89,7 @@ C = Rational{Int64}
             if n <= 2
                 for _ in 1:numRandomTests
                     ind = shuffle(rand(1:ga.extraData.order, rand(2:10)))
-                    @test normalForm(ga, grp(ind; C)) ≐ normalForm(ga, grp(shuffle(ind); C))
+                    @test normal_form(ga, grp(ind; C)) ≐ normal_form(ga, grp(shuffle(ind); C))
                 end
             end
 
@@ -97,7 +97,7 @@ C = Rational{Int64}
         end
 
         @testset "alternating group A$n" for n in 2:6
-            ga = PD.groupAlgebraAlternatingGroup(n)
+            ga = PD.group_algebra_alternating_group(n)
 
             @test ga.extraData.order == length(ga.basis) == length(ga.extraData.permRep) == factorial(n)/2
 
@@ -109,7 +109,7 @@ C = Rational{Int64}
             if n <= 3
                 for _ in 1:numRandomTests
                     ind = shuffle(rand(1:ga.extraData.order, rand(2:10)))
-                    @test normalForm(ga, grp(ind; C)) ≐ normalForm(ga, grp(shuffle(ind); C))
+                    @test normal_form(ga, grp(ind; C)) ≐ normal_form(ga, grp(shuffle(ind); C))
                 end
             end
 

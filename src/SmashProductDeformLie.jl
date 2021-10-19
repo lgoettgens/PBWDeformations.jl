@@ -1,10 +1,10 @@
-struct SmashProductDeformLie{C}
+struct SmashProductDeformLie{C <: ScalarTypes}
     sp :: SmashProductLie
     symmetric :: Bool
     kappa :: Matrix{AlgebraElement{C}}
 end
 
-function Base.:(==)(spd1::SmashProductDeformLie{C}, spd2::SmashProductDeformLie{C}) :: Bool where C
+function Base.:(==)(spd1::SmashProductDeformLie{C}, spd2::SmashProductDeformLie{C}) :: Bool where C <: ScalarTypes
     (spd1.sp, spd1.symmetric) == (spd2.sp, spd2.symmetric)
 end
 
@@ -18,13 +18,13 @@ function Base.show(io::IO, spd::SmashProductDeformLie) :: Nothing
 end
 
 
-function smashProductDeformLie(sp::QuadraticAlgebra{C, SmashProductLie}, kappa::Matrix{AlgebraElement{C}}, one=C(1)::C) :: QuadraticAlgebra{C, SmashProductDeformLie{C}} where C
+function smash_product_deform_lie(sp::QuadraticAlgebra{C, SmashProductLie}, kappa::Matrix{AlgebraElement{C}}, one::C = one(C)) :: QuadraticAlgebra{C, SmashProductDeformLie{C}} where C <: ScalarTypes
     nV = sp.extraData.nV
     @assert size(kappa) == (nV, nV) "size of kappa matches module dimension"
 
     # basis of smash product consists of basis of module and basis of Hopf algebra
     hopfBasis = filter(!ismod, sp.basis)
-    @assert all(e -> issubset(basisElements(e), hopfBasis), kappa) "kappa only takes values in Hopf algebra"
+    @assert all(e -> issubset(basis_elements(e), hopfBasis), kappa) "kappa only takes values in Hopf algebra"
 
     for i in 1:nV, j in 1:i
         @assert kappa[i,j] ≐ -kappa[j,i] "kappa is skew-symmetric"
@@ -46,7 +46,7 @@ function smashProductDeformLie(sp::QuadraticAlgebra{C, SmashProductLie}, kappa::
 end
 
 
-function smashProductSymmDeformLie(sp::QuadraticAlgebra{C, SmashProductLie}) :: QuadraticAlgebra{C, SmashProductDeformLie{C}} where C
+function smash_product_symm_deform_lie(sp::QuadraticAlgebra{C, SmashProductLie}) :: QuadraticAlgebra{C, SmashProductDeformLie{C}} where C <: ScalarTypes
     relTable = sp.relTable
 
     for i in 1:sp.extraData.nV, j in 1:i-1
@@ -57,21 +57,21 @@ function smashProductSymmDeformLie(sp::QuadraticAlgebra{C, SmashProductLie}) :: 
     return QuadraticAlgebra{C, SmashProductDeformLie{C}}(sp.basis, relTable, extraData)
 end
 
-function smashProductSymmDeformLie(dynkin::Char, n::Int64, lambda::Vector{Int64}; C::Type=Rational{Int64}) :: QuadraticAlgebra{C, SmashProductDeformLie{C}}
+function smash_product_symm_deform_lie(dynkin::Char, n::Int64, lambda::Vector{Int64}; C::Type{<:ScalarTypes} = DefaultScalarType) :: QuadraticAlgebra{C, SmashProductDeformLie{C}}
     @assert n == length(lambda)
-    sanitizeLieInput(dynkin, n)
+    sanitize_lie_input(dynkin, n)
 
-    return smashProductSymmDeformLie(smashProductLie(dynkin, n, lambda; C))
+    return smash_product_symm_deform_lie(smash_product_lie(dynkin, n, lambda; C))
 end
 
-struct PBWDeformEqs{C}
+struct PBWDeformEqs{C <: ScalarTypes}
     d :: QuadraticAlgebra{C, SmashProductDeformLie{C}}
     one :: C
 
-    PBWDeformEqs{C}(d::QuadraticAlgebra{C, SmashProductDeformLie{C}}, one = C(1)) where C = new{C}(d, one)
+    PBWDeformEqs{C}(d::QuadraticAlgebra{C, SmashProductDeformLie{C}}, one::C = one(C)) where C <: ScalarTypes = new{C}(d, one)
 end
 
-function Base.iterate(eqs::PBWDeformEqs{C}, s::Tuple{Int64, Int64, Union{Nothing, Vector{Int64}}}=(0, 0, nothing)) where C
+function Base.iterate(eqs::PBWDeformEqs{C}, s::Tuple{Int64, Int64, Union{Nothing, Vector{Int64}}} = (0, 0, nothing)) where C <: ScalarTypes
     # Uses Theorem 3.1 of Walton, Witherspoon: Poincare-Birkhoff-Witt deformations of smash product algebras from Hopf actions on Koszul algebras.
     # DOI:	10.2140/ant.2014.8.1701. https://arxiv.org/abs/1308.6011
 
@@ -125,9 +125,9 @@ function Base.iterate(eqs::PBWDeformEqs{C}, s::Tuple{Int64, Int64, Union{Nothing
     if s[1] == 1
         i,j = res[1]
         h = AlgebraElement{C}(lie(s[2]; C), eqs.one)
-        eq = (sum([c*kappa[m[1][2],j] for (c, m) in normalForm(eqs.d, comm(h, mod(i; C)))]; init=AlgebraElement{C}()) # κ([h⋅v_i,v_j])
-            + sum([c*kappa[i,m[1][2]] for (c, m) in normalForm(eqs.d, comm(h, mod(j; C)))]; init=AlgebraElement{C}()) # κ([v_i,h⋅v_j])
-            - normalForm(eqs.d, comm(h, kappa[i,j])))                                                                 # h⋅κ([v_i,v_j])
+        eq = (sum([c*kappa[m[1][2],j] for (c, m) in normal_form(eqs.d, comm(h, mod(i; C)))]; init=AlgebraElement{C}()) # κ([h⋅v_i,v_j])
+            + sum([c*kappa[i,m[1][2]] for (c, m) in normal_form(eqs.d, comm(h, mod(j; C)))]; init=AlgebraElement{C}()) # κ([v_i,h⋅v_j])
+            - normal_form(eqs.d, comm(h, kappa[i,j])))                                                                 # h⋅κ([v_i,v_j])
         # m[1][2] denotes the index of the only basis element in the monomial m
 
     ## (b) trivial
@@ -148,17 +148,17 @@ function Base.iterate(eqs::PBWDeformEqs{C}, s::Tuple{Int64, Int64, Union{Nothing
         @error "This should nod be reached."
     end
 
-    return (normalForm(eqs.d, eq), s)
+    return (normal_form(eqs.d, eq), s)
 end
 
-function Base.length(eqs::PBWDeformEqs{C}) where C
+function Base.length(eqs::PBWDeformEqs{C}) where C <: ScalarTypes
     nL = eqs.d.extraData.sp.nL
     nV = eqs.d.extraData.sp.nV
     return binomial(nV,2)*nL + binomial(nV,3)
 end
 
 
-function PBWDeformEqs_noiter(d::QuadraticAlgebra{C, SmashProductDeformLie{C}}, one=C(1)::C) :: Vector{AlgebraElement{C}} where C
+function pbwdeform_eqs_noiter(d::QuadraticAlgebra{C, SmashProductDeformLie{C}}, one::C = one(C)) :: Vector{AlgebraElement{C}} where C <: ScalarTypes
     # Uses Theorem 3.1 of Walton, Witherspoon: Poincare-Birkhoff-Witt deformations of smash product algebras from Hopf actions on Koszul algebras.
     # DOI:	10.2140/ant.2014.8.1701. https://arxiv.org/abs/1308.6011
     nL = d.extraData.sp.nL
@@ -168,9 +168,9 @@ function PBWDeformEqs_noiter(d::QuadraticAlgebra{C, SmashProductDeformLie{C}}, o
     @debug "Equation generation, first phase"
 
     ## (a) κ is H-invariant
-    eqs = [(sum([c*kappa[m[1][2],j] for (c, m) in normalForm(d, comm(h, mod(i; C)))]; init=AlgebraElement{C}()) # κ([h⋅v_i,v_j])
-          + sum([c*kappa[i,m[1][2]] for (c, m) in normalForm(d, comm(h, mod(j; C)))]; init=AlgebraElement{C}()) # κ([v_i,h⋅v_j])
-          - normalForm(d, comm(h, kappa[i,j])))                                                                 # h⋅κ([v_i,v_j])
+    eqs = [(sum([c*kappa[m[1][2],j] for (c, m) in normal_form(d, comm(h, mod(i; C)))]; init=AlgebraElement{C}()) # κ([h⋅v_i,v_j])
+          + sum([c*kappa[i,m[1][2]] for (c, m) in normal_form(d, comm(h, mod(j; C)))]; init=AlgebraElement{C}()) # κ([v_i,h⋅v_j])
+          - normal_form(d, comm(h, kappa[i,j])))                                                                 # h⋅κ([v_i,v_j])
         for h in map(b -> AlgebraElement{C}(b, one), lie(1:nL; C)) for i in 1:nV for j in i+1:nV]
     # m[1][2] denotes the index of the only basis element in the monomial m
 
@@ -190,28 +190,28 @@ function PBWDeformEqs_noiter(d::QuadraticAlgebra{C, SmashProductDeformLie{C}}, o
 
     ## (d) trivial
 
-    return map(eq -> normalForm(d, eq), eqs)
+    return map(eq -> normal_form(d, eq), eqs)
 end
 
-function isPBWDeform(d::QuadraticAlgebra{C, SmashProductDeformLie{C}}, one=C(1)::C) :: Bool where C
+function ispbwdeform(d::QuadraticAlgebra{C, SmashProductDeformLie{C}}, one::C = one(C)) :: Bool where C <: ScalarTypes
     return all(iszero, PBWDeformEqs{C}(d, one))
 end
 
 
-function paramDeformNumberVars(nL::Int64, nV::Int64, maxdeg::Int64) :: Tuple{Int64, Int64, Int64}
+function param_deform_number_vars(nL::Int64, nV::Int64, maxdeg::Int64) :: Tuple{Int64, Int64, Int64}
     nKappaEntries = div(nV*(nV-1), 2)
     nEntryCoeffs = sum(binomial(nL + k - 1, k) for k in 0:maxdeg)
     
     return nKappaEntries * nEntryCoeffs, nKappaEntries, nEntryCoeffs
 end
 
-function paramDeformVars(nL::Int64, nV::Int64, maxdeg::Int64) :: Vector{String}
+function param_deform_vars(nL::Int64, nV::Int64, maxdeg::Int64) :: Vector{String}
     # format: "c_{i,j,deg,[inds]}"
     return ["c_{$i,$j,$deg,$(isempty(inds) ? "[]" : inds)}" for i in 1:nV for j in i+1:nV for deg in 0:maxdeg for inds=Combinatorics.with_replacement_combinations(1:nL, deg)]
 end
 
-function sortVars(vars::Vector{T}, nL, nV, maxdeg) :: Matrix{Vector{Vector{T}}} where T
-    _, nKappaEntries, nEntryCoeffs = paramDeformNumberVars(nL, nV, maxdeg)
+function sort_vars(vars::Vector{T}, nL, nV, maxdeg) :: Matrix{Vector{Vector{T}}} where T
+    _, nKappaEntries, nEntryCoeffs = param_deform_number_vars(nL, nV, maxdeg)
     m = fill(Vector{T}[], nV, nV)
     k = 0
     for i in 1:nV, j in i+1:nV
@@ -228,55 +228,55 @@ function sortVars(vars::Vector{T}, nL, nV, maxdeg) :: Matrix{Vector{Vector{T}}} 
 end
 
 
-function possible_pbw_deforms(sp::QuadraticAlgebra{Rational{Int64}, SmashProductLie}, maxdeg::Int64;
-            use_iterators=true::Bool, special_return::Type{T}=Nothing) where T <: Union{Nothing, SparseMatrixCSC}
+function possible_pbw_deforms(sp::QuadraticAlgebra{DefaultScalarType, SmashProductLie}, maxdeg::Int64;
+            use_iterators=true::Bool, special_return::Type{T} = Nothing) where T <: Union{Nothing, SparseMatrixCSC}
 
     nL = sp.extraData.nL
     nV = sp.extraData.nV
 
     @info "Constructing MPolyRing..."
-    R, vars = PolynomialRing(QQ, paramDeformVars(nL, nV, maxdeg))
+    R, vars = PolynomialRing(QQ, param_deform_vars(nL, nV, maxdeg))
     numVars = length(vars)
     varLookup = Dict(vars[i] => i for i in 1:numVars)
-    varMatrix = sortVars(vars, nL, nV, maxdeg)
+    varMatrix = sort_vars(vars, nL, nV, maxdeg)
 
     @info "Constructing kappa..."
-    kappa = fill(AlgebraElement{MPolyElem}(0), nV, nV)
+    kappa = fill(AlgebraElement{fmpq_mpoly}(0), nV, nV)
     for i in 1:nV, j in i+1:nV, d in 0:maxdeg, (k, ind) in enumerate(Combinatorics.with_replacement_combinations(1:nL, d))
-        kappa[i,j] += varMatrix[i,j][d+1][k]*lie(ind; C=MPolyElem)
-        kappa[j,i] -= varMatrix[i,j][d+1][k]*lie(ind; C=MPolyElem)
+        kappa[i,j] += varMatrix[i,j][d+1][k]*lie(ind; C=fmpq_mpoly)
+        kappa[j,i] -= varMatrix[i,j][d+1][k]*lie(ind; C=fmpq_mpoly)
     end
 
     @info "Changing SmashProductLie coeffcient type..."
-    newBasis = [changeC(MPolyElem, b) for b in sp.basis]
+    newBasis = [change_c(fmpq_mpoly, b) for b in sp.basis]
 
-    newRelTable = Dict([(changeC(MPolyElem, b1), changeC(MPolyElem, b2)) =>
-        AlgebraElement{MPolyElem}(map(x -> (R(x[1]), changeC(MPolyElem, x[2])), unpack(a)))
+    newRelTable = Dict([(change_c(fmpq_mpoly, b1), change_c(fmpq_mpoly, b2)) =>
+        AlgebraElement{fmpq_mpoly}(map(x -> (R(x[1]), change_c(fmpq_mpoly, x[2])), unpack(a)))
         for ((b1, b2), a) in pairs(sp.relTable)])
-    newSp = QuadraticAlgebra{MPolyElem, SmashProductLie}(newBasis, newRelTable, sp.extraData)
+    newSp = QuadraticAlgebra{fmpq_mpoly, SmashProductLie}(newBasis, newRelTable, sp.extraData)
 
     @info "Constructing deformation..."
-    deform = smashProductDeformLie(newSp, kappa, R(1))
+    deform = smash_product_deform_lie(newSp, kappa, one(R))
 
     if use_iterators
         @info "Generating equation iterator..."
-        iter = Iterators.map(a -> poly2vecLinear(a, varLookup, numVars),
+        iter = Iterators.map(a -> poly2vec_linear(a, varLookup, numVars),
             Iterators.flatten(
-                Iterators.map(coefficientComparison,
-                    PBWDeformEqs{MPolyElem}(deform, R(1))
+                Iterators.map(coefficient_comparison,
+                    PBWDeformEqs{fmpq_mpoly}(deform, one(R))
                 )
             )
         )
     else
         @info "Generating equations..."
-        iter = map(a -> poly2vecLinear(a, varLookup, numVars), reduce(vcat, map(coefficientComparison, PBWDeformEqs_noiter(deform, R(1)))))
+        iter = map(a -> poly2vec_linear(a, varLookup, numVars), reduce(vcat, map(coefficient_comparison, pbwdeform_eqs_noiter(deform, one(R)))))
     end
 
     # group sparse vectors by index of first non-zero entry
     @info "Collecting rows..."
     lgs = [Vector{SparseVector{fmpq, Int64}}() for _ in 1:numVars]
     for v in iter
-        normalizeAndStore!(lgs, v)
+        normalize_and_store!(lgs, v)
     end
 
     # create row-echelon form
@@ -295,19 +295,19 @@ function possible_pbw_deforms(sp::QuadraticAlgebra{Rational{Int64}, SmashProduct
     end
 
     freedom_ind = indices_of_freedom(mat)
-    kappa = fill(AlgebraElement{MPolyElem}(0), nV, nV)
+    kappa = fill(AlgebraElement{fmpq_mpoly}(0), nV, nV)
     if length(freedom_ind) > 0
         S, free_params = PolynomialRing(QQ, ["t_$i" for i in 1:length(freedom_ind)])
         for i in 1:nV, j in i+1:nV, d in 0:maxdeg, (k, ind) in enumerate(Combinatorics.with_replacement_combinations(1:nL, d))
             var_ind = varLookup[varMatrix[i,j][d+1][k]]
             if iszero(mat[var_ind,var_ind])
-                kappa[i,j] += free_params[findfirst(isequal(var_ind), freedom_ind)] * lie(ind; C=MPolyElem)
-                kappa[j,i] -= free_params[findfirst(isequal(var_ind), freedom_ind)] * lie(ind; C=MPolyElem)
+                kappa[i,j] += free_params[findfirst(isequal(var_ind), freedom_ind)] * lie(ind; C=fmpq_mpoly)
+                kappa[j,i] -= free_params[findfirst(isequal(var_ind), freedom_ind)] * lie(ind; C=fmpq_mpoly)
             else
                 for col in var_ind+1:numVars
                     if !iszero(mat[var_ind,col])
-                        kappa[i,j] += -mat[var_ind,col]*free_params[findfirst(isequal(col), freedom_ind)] * lie(ind; C=MPolyElem)
-                        kappa[j,i] -= -mat[var_ind,col]*free_params[findfirst(isequal(col), freedom_ind)] * lie(ind; C=MPolyElem)
+                        kappa[i,j] += -mat[var_ind,col]*free_params[findfirst(isequal(col), freedom_ind)] * lie(ind; C=fmpq_mpoly)
+                        kappa[j,i] -= -mat[var_ind,col]*free_params[findfirst(isequal(col), freedom_ind)] * lie(ind; C=fmpq_mpoly)
                     end
                 end
             end
@@ -323,12 +323,12 @@ function indices_of_freedom(mat::SparseArrays.SparseMatrixCSC{fmpq, Int64}) :: V
     return filter(i -> mat[i,i] == 0, 1:size(mat)[1])
 end
 
-@inline function normalizeAndStore!(lgs::Vector{Vector{SparseVector{T, Int64}}}, v::SparseVector{T, Int64}) where {T <: AbstractAlgebra.RingElement}
+@inline function normalize_and_store!(lgs::Vector{Vector{SparseVector{C, Int64}}}, v::SparseVector{C, Int64}) where C <: ScalarTypes
     nzIndices, nzValues = findnz(v)
     push!(lgs[nzIndices[1]], inv(nzValues[1]) .* v)
 end
 
-@inline function poly2vecLinear(a::fmpq_mpoly, varLookup::Dict{fmpq_mpoly, Int64}, numVars::Int64) :: SparseVector{fmpq, Int64}
+@inline function poly2vec_linear(a::fmpq_mpoly, varLookup::Dict{fmpq_mpoly, Int64}, numVars::Int64) :: SparseVector{fmpq, Int64}
     @assert total_degree(a) == 1
 
     return sparsevec(
@@ -337,7 +337,7 @@ end
     )
 end
 
-function row_echelon!(lgs::Vector{Vector{SparseVector{T, Int64}}}) :: Vector{Vector{SparseVector{T, Int64}}} where {T <: AbstractAlgebra.RingElement}
+function row_echelon!(lgs::Vector{Vector{SparseVector{C, Int64}}}) :: Vector{Vector{SparseVector{C, Int64}}} where C <: ScalarTypes
     for i in 1:length(lgs)
         if (i % 10 == 0)
             @debug "Row echelon, $i/$(length(lgs)), $(floor(Int, 100*i / length(lgs)))%"
@@ -350,7 +350,7 @@ function row_echelon!(lgs::Vector{Vector{SparseVector{T, Int64}}}) :: Vector{Vec
         for j in 2:length(lgs[i])
             lgs[i][j] -= lgs[i][1]
             if !iszero(lgs[i][j])
-                normalizeAndStore!(lgs, lgs[i][j])
+                normalize_and_store!(lgs, lgs[i][j])
             end
         end
         deleteat!(lgs[i], 2:length(lgs[i]))
@@ -358,7 +358,7 @@ function row_echelon!(lgs::Vector{Vector{SparseVector{T, Int64}}}) :: Vector{Vec
     return lgs
 end
 
-function reduced_row_echelon!(lgs::Vector{Vector{SparseVector{T, Int64}}}) :: Vector{Vector{SparseVector{T, Int64}}} where {T <: AbstractAlgebra.RingElement}
+function reduced_row_echelon!(lgs::Vector{Vector{SparseVector{C, Int64}}}) :: Vector{Vector{SparseVector{C, Int64}}} where C <: ScalarTypes
     for i in length(lgs):-1:1
         if isempty(lgs[i])
             continue
@@ -373,7 +373,7 @@ function reduced_row_echelon!(lgs::Vector{Vector{SparseVector{T, Int64}}}) :: Ve
     return lgs
 end
 
-function lgs2mat(lgs::Vector{Vector{SparseVector{T, Int64}}}, n::Int64) :: SparseArrays.SparseMatrixCSC{T, Int64}  where {T <: AbstractAlgebra.RingElement}
+function lgs2mat(lgs::Vector{Vector{SparseVector{C, Int64}}}, n::Int64) :: SparseArrays.SparseMatrixCSC{C, Int64}  where C <: ScalarTypes
     mat = spzeros(fmpq, n, n)
     for i in 1:n
         if !isempty(lgs[i])
@@ -383,7 +383,7 @@ function lgs2mat(lgs::Vector{Vector{SparseVector{T, Int64}}}, n::Int64) :: Spars
     return mat
 end
 
-function coefficientComparison(eq::AlgebraElement{C}) :: Vector{C} where C
+function coefficient_comparison(eq::AlgebraElement{C}) :: Vector{C} where C <: ScalarTypes
     result = C[]
     for summand in unpack(eq)
         (c, m) = summand
