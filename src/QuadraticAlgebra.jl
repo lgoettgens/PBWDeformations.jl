@@ -285,6 +285,7 @@ function Base.:-(a::QuadraticAlgebraElem{C}) where C <: RingElement
     return r
 end
 
+
 function Base.:+(a::QuadraticAlgebraElem{C}, b::QuadraticAlgebraElem{C}) where C <: RingElement
     check_parent(a, b)
     r = deepcopy(a)
@@ -326,6 +327,7 @@ function Base.:-(a::QuadraticAlgebraElem{C}, b::QuadraticAlgebraElem{C}) where C
     return r
 end
 
+
 function Base.:*(c::C, a::QuadraticAlgebraElem{C}) where C <: RingElement
     parent(c) == base_ring(a) || throw(ArgumentError("Incompatible coefficient rings"))
     r = zero(a)
@@ -338,7 +340,6 @@ function Base.:*(c::C, a::QuadraticAlgebraElem{C}) where C <: RingElement
     end
     return r
 end
-
 
 function Base.:*(a::QuadraticAlgebraElem{C}, b::QuadraticAlgebraElem{C}) where C <: RingElement
     check_parent(a, b)
@@ -357,6 +358,21 @@ function Base.:*(a::QuadraticAlgebraElem{C}, b::QuadraticAlgebraElem{C}) where C
                 r.coeffs[k] += c
             end
         end
+    end
+    return r
+end
+
+
+function Base.:^(a::QuadraticAlgebraElem{C}, n::Int) where C <: RingElement
+    n >= 0 || throw(DomainError(n, "The exponent needs to be nonnegative."))
+
+    r = one(a)
+    while n > 0
+        if !iszero(n & 1)
+            r = r*a
+        end
+        n >>= 1;
+        a = a*a
     end
     return r
 end

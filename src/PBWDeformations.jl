@@ -6,7 +6,7 @@ using SparseArrays
 
 import AbstractAlgebra: NCRing, NCRingElem, Ring, RingElement, base_ring, check_parent, coeff, elem_type, gen, gens, isgen, ismonomial, monomial, ngens, parent_type, symbols
 
-import Base: Array, deepcopy, deepcopy_internal, hash, isone, iszero, length, one, parent, show, xor, zero, +, -, *, ==
+import Base: Array, deepcopy, deepcopy_internal, hash, isone, iszero, length, one, parent, show, xor, zero, +, -, *, ^, ==
 
 GAP = Oscar.GAP.Globals
 toGAP = Oscar.GAP.julia_to_gap
