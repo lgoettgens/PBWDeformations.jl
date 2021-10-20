@@ -217,9 +217,57 @@ function show(io::IO, a::QuadraticAlgebraElem{C}) where C <: RingElement
     end
 end
 
+
+###############################################################################
+#
+#   Comparison functions
+#
+###############################################################################
+
 function Base.:(==)(A1::QuadraticAlgebra{C}, A2::QuadraticAlgebra{C}) where C <: RingElement
     return (A1.base_ring, A1.S, A1.num_gens) == (A2.base_ring, A2.S, A2.num_gens)
 end
+
+
+function Base.:(==)(a::QuadraticAlgebraElem{C}, b::QuadraticAlgebraElem{C}) where C <: RingElement
+    check_parent(a, b, false) || return false
+    if a.length != b.length
+       return false
+    end
+    for i = 1:a.length
+        if a.coeffs[i] != coeff(b, a.monoms[i])
+            return false
+        end
+    end
+    return true
+end
+
+
+function Base.:(==)(a::QuadraticAlgebraElem, n::Union{Integer, Rational, AbstractFloat})
+    if iszero(n)
+       return iszero(a)
+    elseif a.length == 1
+       return a.coeffs[1] == n && a.monoms[1] == Int[]
+    else
+        return false
+    end
+end
+
+Base.:(==)(n::Union{Integer, Rational, AbstractFloat}, a::QuadraticAlgebraElem) = a == n
+
+
+function Base.:(==)(a::QuadraticAlgebraElem{C}, n::C) where C <: RingElem
+    if iszero(n)
+        return iszero(a)
+     elseif a.length == 1
+        return a.coeffs[1] == n && a.monoms[1] == Int[]
+     else
+         return false
+     end
+end
+ 
+Base.:(==)(n::C, a::QuadraticAlgebraElem{C}) where C <: RingElem = a == n
+
 
 ###############################################################################
 #
@@ -354,7 +402,7 @@ function (A::QuadraticAlgebra{C})() where C <: RingElement
 end
      
 function (A::QuadraticAlgebra{C})(b::Union{Integer, Rational, AbstractFloat}) where C <: RingElement
-    return GenericQuadraticAlgebraElem{C}(A, base_ring(A)(b))
+    return iszero(b) ? A() : GenericQuadraticAlgebraElem{C}(A, base_ring(A)(b))
 end
      
 function (A::QuadraticAlgebra{C})(b::C) where C <: RingElement
