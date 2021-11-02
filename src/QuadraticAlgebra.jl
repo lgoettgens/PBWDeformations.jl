@@ -129,7 +129,6 @@ end
 # TODO monomial!
 
 function term(a::QuadraticAlgebraElem, i::Int)
-    R = base_ring(a)
     return parent(a)([deepcopy(a.coeffs[i])], [a.monoms[i]])
 end
 
@@ -138,10 +137,10 @@ function length(a::QuadraticAlgebraElem)
 end
 
 function iszero(a::QuadraticAlgebraElem)
-    return a.length == 0
+    return a.length == 0 || normal_form(a).length == 0
 end
 
-function isone(a::QuadraticAlgebraElem)
+function isone(a::QuadraticAlgebraElem) # TODO: fix isone with normal_form
     return a.length == 1 && isempty(a.monoms[1]) && isone(a.coeffs[1])
 end
 
@@ -230,6 +229,20 @@ end
 
 
 function Base.:(==)(a::QuadraticAlgebraElem{C}, b::QuadraticAlgebraElem{C}) where C <: RingElement
+    check_parent(a, b, false) || return false
+    if a ≐ b
+        return true
+    end
+    return normal_form(a) ≐ normal_form(b)
+end
+
+
+"""
+    ≐(a::QuadraticAlgebraElem{C}, b::QuadraticAlgebraElem{C}) where C <: RingElement
+
+Returns if the two QuadraticAlgebraElem are represented as the same sum (up to permutations).
+"""
+function ≐(a::QuadraticAlgebraElem{C}, b::QuadraticAlgebraElem{C}) where C <: RingElement
     check_parent(a, b, false) || return false
     if a.length != b.length
        return false
@@ -430,6 +443,19 @@ function (A::QuadraticAlgebra{C})(b::QuadraticAlgebraElem{C}) where C <: RingEle
     parent(b) != A && error("Non-matching algebras")
     return b
 end
+
+
+###############################################################################
+#
+#   QuadraticAlgebra specific functions
+#
+###############################################################################
+
+function normal_form(a::QuadraticAlgebraElem{C}) where C <: RingElement
+    # TODO
+    return a
+end
+
 
 # mutable struct SmashProductLie{C <: RingElement} <: QuadraticAlgebra{C}
 #     base_ring :: Ring
