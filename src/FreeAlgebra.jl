@@ -3,12 +3,12 @@ mutable struct FreeAlgebra{C <: RingElement} <: Algebra{C}
     S :: Vector{Symbol}
     num_gens :: Int
 
-    function FreeAlgebra{C}(R::Ring, S::Vector{Symbol}) where C <: RingElement
-        return new{C}(R, S, length(S))
+    function FreeAlgebra{C}(R::Ring, symb::Vector{Symbol}) where C <: RingElement
+        return new{C}(R, symb, length(symb))
     end
 
-    function FreeAlgebra{C}(R::Ring, S::Vector{String}) where C <: RingElement
-        return new{C}(R, [Symbol(s) for s in S], length(S))
+    function FreeAlgebra{C}(R::Ring, symb::Vector{String}) where C <: RingElement
+        return new{C}(R, map(Symbol, symb), length(symb))
     end
 
 end

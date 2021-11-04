@@ -7,9 +7,7 @@ import AbstractAlgebra: NCRing, NCRingElem, Ring, RingElement, base_ring, check_
 
 import Base: Array, deepcopy, deepcopy_internal, hash, isone, iszero, length, one, parent, show, xor, zero, +, -, *, ^, ==
 
-GAP = Oscar.GAP.Globals
-toGAP = Oscar.GAP.julia_to_gap
-fromGAP = Oscar.GAP.gap_to_julia
+GAP = Oscar.GAP
 
 include("Util.jl")
 include("Algebra.jl")
@@ -27,6 +25,8 @@ function sanitize_lie_input(dynkin::Char, n::Int64) :: Nothing
         @assert n >= 4
     end
 end
+
+include("SmashProductLie.jl")
 
 
 end
