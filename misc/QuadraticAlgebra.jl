@@ -1,0 +1,88 @@
+
+###############################################################################
+#
+#   Algebra specific functions
+#
+###############################################################################
+
+function normal_form(a::AlgebraElem{C}) where C <: RingElement
+    # TODO
+    return a
+end
+
+
+# mutable struct SmashProductLie{C <: RingElement} <: QuadraticAlgebra{C}
+#     base_ring :: Ring
+#     S :: Vector{Symbol}
+#     num_gens :: Int
+
+#     """
+#     Stores relations of the form ab = c for basis elements a,b.
+#     An empty list represents the empty sum, in which case ab = 0.
+#     An absent entry means that there is no relation, so we cannot simplify ab.
+#     """
+#     relTable :: Dict{Tuple{BasisElement{C}, BasisElement{C}}, AlgebraElement{C}}
+#     extraData
+
+#     SmashProductLie{C}(basis, relTable, extraData = nothing) where {C <: ScalarTypes} =
+#         new{C}(basis, relTable, extraData)
+# end
+
+
+
+# function Base.:(==)(alg1::QuadraticAlgebra{C}, alg2::QuadraticAlgebra{C}) :: Bool where C <: ScalarTypes
+#     (alg1.basis, alg1.relTable, alg1.extraData) ==
+#     (alg2.basis, alg2.relTable, alg2.extraData)
+# end
+
+# function Base.show(io::IO, alg::QuadraticAlgebra{C}) :: Nothing where C <: ScalarTypes
+#     println(io, "Algebra with quadratic relations of dimension ", length(alg.basis))
+#     println(io, "Relation table has ", length(alg.relTable), " entries")
+#     println(io, "Coefficients of type ", C)
+#     println(io, "Extra data:")
+#     print(io, alg.extraData)
+# end
+
+# function Base.in(b::BasisElement{C}, alg::QuadraticAlgebra{C}) :: Bool where C <: ScalarTypes
+#     return b in alg.basis
+# end
+
+# function Base.in(m::Monomial{C}, alg::QuadraticAlgebra{C}) :: Bool where C <: ScalarTypes
+#     return all(b -> b in alg, m)
+# end
+
+# function Base.in(a::AlgebraElement{C}, alg::QuadraticAlgebra{C}) :: Bool where C <: ScalarTypes
+#     return all(m in alg for (c, m) in a)
+# end
+
+
+# function normal_form(alg::QuadraticAlgebra{C}, a::AlgebraElement{C}) :: AlgebraElement{C} where C <: ScalarTypes
+#     todo = copy(unpack(a))
+#     result = AlgebraElement{C}(0)
+
+#     while !isempty(todo)
+#         coeff, mon = pop!(todo)
+
+#         changed = false
+#         for i in 1:length(mon)-1
+#             if haskey(alg.relTable, (mon[i], mon[i+1]))
+#                 changed = true
+
+#                 # TODO: something like this: todo += coeff * (mon[1:i-1] * alg.relTable[(mon[i], mon[i+1])] * mon[i+2:end])
+#                 todo = unpack(AlgebraElement{C}(todo) + coeff * (Monomial{C}(mon[1:i-1]) * alg.relTable[(mon[i], mon[i+1])] * Monomial{C}(mon[i+2:end])))
+
+#                 break
+#             end
+#         end
+
+#         if !changed
+#             result += coeff * mon
+#         end
+#     end
+
+#     return result
+# end
+
+# function normal_form(alg::QuadraticAlgebra{C}, m::Union{BasisElement{C}, Monomial{C}}) :: AlgebraElement{C} where C <: ScalarTypes
+#     return normal_form(alg, AlgebraElement{C}(m))
+# end

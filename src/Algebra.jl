@@ -1,54 +1,6 @@
 abstract type Algebra{C} <: NCRing end
 abstract type AlgebraElem{C} <: NCRingElem end
 
-mutable struct FreeAlgebra{C <: RingElement} <: Algebra{C}
-    base_ring :: Ring
-    S :: Vector{Symbol}
-    num_gens :: Int
-
-    function FreeAlgebra{C}(R::Ring, S::Vector{Symbol}) where C <: RingElement
-        return new{C}(R, S, length(S))
-    end
-
-    function FreeAlgebra{C}(R::Ring, S::Vector{String}) where C <: RingElement
-        return new{C}(R, [Symbol(s) for s in S], length(S))
-    end
-
-end
-
-mutable struct FreeAlgebraElem{C <: RingElement} <: AlgebraElem{C}
-    coeffs :: Vector{C}
-    monoms :: Vector{Vector{Int}}
-    length :: Int
-    parent :: FreeAlgebra{C}
-
-    function FreeAlgebraElem{C}(A::Algebra) where C <: RingElement
-        return new{C}(Array{C}(undef, 0), Array{Vector{Int}}(undef, 0), 0, A)
-    end
-
-    function FreeAlgebraElem{C}(A::Algebra, c::Vector{C}, m::Vector{Vector{Int}}) where C <: RingElement
-        length(c) == length(m) || throw(DimensionMismatch("c and m are requiered to have the same length."))
-        return new{C}(c, m, length(c), A)
-    end
-
-    function FreeAlgebraElem{C}(A::Algebra, a::C) where C <: RingElement
-        return new{C}([a], [Int[]], 1, A)
-    end
-
-end
-
-
-parent_type(::Type{FreeAlgebraElem{C}}) where C <: RingElement = FreeAlgebra{C}
-
-elem_type(::Type{FreeAlgebra{C}}) where C <: RingElement = FreeAlgebraElem{C}
-
-
-###############################################################################
-#
-#   Starting here only Algebra and AlgebraElem functions
-#
-###############################################################################
-
 parent(a::AlgebraElem{C}) where C <: RingElement = a.parent
 
 base_ring(A::Algebra{C}) where C <: RingElement = A.base_ring::parent_type(C)
@@ -121,14 +73,6 @@ end
 
 # TODO function isunit(a::AlgebraElem{C}) where C <: RingElement
 
-function isgen(a::AlgebraElem{C}) where C <: RingElement
-    return length(a) == 1 && isone(a.coeffs[1]) && length(a.monoms[1]) == 1
-end
-
-function ismonomial(a::AlgebraElem{C}) where C <: RingElement
-    return length(a) == 1 && isone(a.coeffs[1])
-end
-
 function monomial(a::AlgebraElem, i::Int)
     R = base_ring(a)
     return parent(a)([one(R)], [a.monoms[i]])
@@ -148,10 +92,6 @@ function iszero(a::AlgebraElem)
     return a.length == 0 || normal_form(a).length == 0
 end
 
-function isone(a::AlgebraElem) # TODO: fix isone with normal_form
-    return a.length == 1 && isempty(a.monoms[1]) && isone(a.coeffs[1])
-end
-
 function zero(A::Algebra{C}) where C <: RingElement
     return A()
 end
@@ -163,23 +103,15 @@ end
 function one(A::Algebra{C}) where C <: RingElement
     return A(one(C))
 end
+
 function one(a::AlgebraElem)
     return one(parent(a))
-end
-
-function Base.deepcopy_internal(a::AlgebraElem{C}, dict::IdDict) where C <: RingElement
-    Rm = deepcopy_internal(a.monoms, dict)
-    Rc = Array{C}(undef, a.length)
-    for i = 1:a.length
-       Rc[i] = deepcopy(a.coeffs[i])
-    end
-    return parent(a)(Rc, Rm)
 end
 
 function show(io::IO, A::Algebra)
     local max_gens = 5 # largest number of generators to print
     n = A.num_gens
-    print(io, "Quadratic Algebra with ")
+    print(io, showname(typeof(A)) * " with ")
     if n > max_gens
        print(io, A.num_gens)
        print(io, " generators ")
@@ -230,11 +162,6 @@ end
 #   Comparison functions
 #
 ###############################################################################
-
-function Base.:(==)(A1::Algebra{C}, A2::Algebra{C}) where C <: RingElement
-    return (A1.base_ring, A1.S, A1.num_gens) == (A2.base_ring, A2.S, A2.num_gens)
-end
-
 
 function Base.:(==)(a::AlgebraElem{C}, b::AlgebraElem{C}) where C <: RingElement
     check_parent(a, b, false) || return false
@@ -417,92 +344,3 @@ function (A::Algebra{C})(b::AlgebraElem{C}) where C <: RingElement
     parent(b) != A && error("Non-matching algebras")
     return b
 end
-
-
-###############################################################################
-#
-#   Algebra specific functions
-#
-###############################################################################
-
-function normal_form(a::AlgebraElem{C}) where C <: RingElement
-    # TODO
-    return a
-end
-
-
-# mutable struct SmashProductLie{C <: RingElement} <: QuadraticAlgebra{C}
-#     base_ring :: Ring
-#     S :: Vector{Symbol}
-#     num_gens :: Int
-
-#     """
-#     Stores relations of the form ab = c for basis elements a,b.
-#     An empty list represents the empty sum, in which case ab = 0.
-#     An absent entry means that there is no relation, so we cannot simplify ab.
-#     """
-#     relTable :: Dict{Tuple{BasisElement{C}, BasisElement{C}}, AlgebraElement{C}}
-#     extraData
-
-#     SmashProductLie{C}(basis, relTable, extraData = nothing) where {C <: ScalarTypes} =
-#         new{C}(basis, relTable, extraData)
-# end
-
-
-
-# function Base.:(==)(alg1::QuadraticAlgebra{C}, alg2::QuadraticAlgebra{C}) :: Bool where C <: ScalarTypes
-#     (alg1.basis, alg1.relTable, alg1.extraData) ==
-#     (alg2.basis, alg2.relTable, alg2.extraData)
-# end
-
-# function Base.show(io::IO, alg::QuadraticAlgebra{C}) :: Nothing where C <: ScalarTypes
-#     println(io, "Algebra with quadratic relations of dimension ", length(alg.basis))
-#     println(io, "Relation table has ", length(alg.relTable), " entries")
-#     println(io, "Coefficients of type ", C)
-#     println(io, "Extra data:")
-#     print(io, alg.extraData)
-# end
-
-# function Base.in(b::BasisElement{C}, alg::QuadraticAlgebra{C}) :: Bool where C <: ScalarTypes
-#     return b in alg.basis
-# end
-
-# function Base.in(m::Monomial{C}, alg::QuadraticAlgebra{C}) :: Bool where C <: ScalarTypes
-#     return all(b -> b in alg, m)
-# end
-
-# function Base.in(a::AlgebraElement{C}, alg::QuadraticAlgebra{C}) :: Bool where C <: ScalarTypes
-#     return all(m in alg for (c, m) in a)
-# end
-
-
-# function normal_form(alg::QuadraticAlgebra{C}, a::AlgebraElement{C}) :: AlgebraElement{C} where C <: ScalarTypes
-#     todo = copy(unpack(a))
-#     result = AlgebraElement{C}(0)
-
-#     while !isempty(todo)
-#         coeff, mon = pop!(todo)
-
-#         changed = false
-#         for i in 1:length(mon)-1
-#             if haskey(alg.relTable, (mon[i], mon[i+1]))
-#                 changed = true
-
-#                 # TODO: something like this: todo += coeff * (mon[1:i-1] * alg.relTable[(mon[i], mon[i+1])] * mon[i+2:end])
-#                 todo = unpack(AlgebraElement{C}(todo) + coeff * (Monomial{C}(mon[1:i-1]) * alg.relTable[(mon[i], mon[i+1])] * Monomial{C}(mon[i+2:end])))
-
-#                 break
-#             end
-#         end
-
-#         if !changed
-#             result += coeff * mon
-#         end
-#     end
-
-#     return result
-# end
-
-# function normal_form(alg::QuadraticAlgebra{C}, m::Union{BasisElement{C}, Monomial{C}}) :: AlgebraElement{C} where C <: ScalarTypes
-#     return normal_form(alg, AlgebraElement{C}(m))
-# end
