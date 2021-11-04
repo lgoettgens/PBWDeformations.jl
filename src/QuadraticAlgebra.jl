@@ -230,53 +230,19 @@ end
 
 function Base.:(==)(a::QuadraticAlgebraElem{C}, b::QuadraticAlgebraElem{C}) where C <: RingElement
     check_parent(a, b, false) || return false
-    if a ≐ b
-        return true
-    end
-    return normal_form(a) ≐ normal_form(b)
-end
-
-
-"""
-    ≐(a::QuadraticAlgebraElem{C}, b::QuadraticAlgebraElem{C}) where C <: RingElement
-
-Returns if the two QuadraticAlgebraElem are represented as the same sum (up to permutations).
-"""
-function ≐(a::QuadraticAlgebraElem{C}, b::QuadraticAlgebraElem{C}) where C <: RingElement
-    check_parent(a, b, false) || return false
-    if a.length != b.length
-       return false
-    end
-    for i = 1:a.length
-        if a.coeffs[i] != coeff(b, a.monoms[i])
-            return false
-        end
-    end
-    return true
+    return iszero(a - b)
 end
 
 
 function Base.:(==)(a::QuadraticAlgebraElem, n::Union{Integer, Rational, AbstractFloat})
-    if iszero(n)
-       return iszero(a)
-    elseif a.length == 1
-       return a.coeffs[1] == n && a.monoms[1] == Int[]
-    else
-        return false
-    end
+    return iszero(a - parent(a)(n))
 end
+
 
 Base.:(==)(n::Union{Integer, Rational, AbstractFloat}, a::QuadraticAlgebraElem) = a == n
 
-
 function Base.:(==)(a::QuadraticAlgebraElem{C}, n::C) where C <: RingElem
-    if iszero(n)
-        return iszero(a)
-     elseif a.length == 1
-        return a.coeffs[1] == n && a.monoms[1] == Int[]
-     else
-         return false
-     end
+    return iszero(a - parent(a)(n))
 end
  
 Base.:(==)(n::C, a::QuadraticAlgebraElem{C}) where C <: RingElem = a == n
