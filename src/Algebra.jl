@@ -88,10 +88,6 @@ function length(a::AlgebraElem)
     return a.length
 end
 
-function iszero(a::AlgebraElem)
-    return a.length == 0 || normal_form(a).length == 0
-end
-
 function zero(A::Algebra{C}) where C <: RingElement
     return A()
 end
@@ -251,6 +247,10 @@ function Base.:*(c::C, a::AlgebraElem{C}) where C <: RingElement
             r.coeffs[i] = c*a.coeffs[i]
             r.monoms = deepcopy(a.monoms)
         end
+        zeroinds = findall(iszero, r.coeffs)
+        deleteat!(r.coeffs, zeroinds)
+        deleteat!(r.monoms, zeroinds)
+        r.length -= length(zeroinds)
     end
     return r
 end
@@ -273,6 +273,10 @@ function Base.:*(a::AlgebraElem{C}, b::AlgebraElem{C}) where C <: RingElement
             end
         end
     end
+    zeroinds = findall(iszero, r.coeffs)
+    deleteat!(r.coeffs, zeroinds)
+    deleteat!(r.monoms, zeroinds)
+    r.length -= length(zeroinds)
     return r
 end
 
@@ -288,6 +292,10 @@ function Base.:^(a::AlgebraElem{C}, n::Int) where C <: RingElement
         n >>= 1;
         a = a*a
     end
+    zeroinds = findall(iszero, r.coeffs)
+    deleteat!(r.coeffs, zeroinds)
+    deleteat!(r.monoms, zeroinds)
+    r.length -= length(zeroinds)
     return r
 end
 
@@ -336,11 +344,11 @@ function (A::Algebra{C})(b::Union{Integer, Rational, AbstractFloat}) where C <: 
 end
      
 function (A::Algebra{C})(b::C) where C <: RingElement
-    parent(b) != base_ring(A) && throw(ArgumentError("Non-matching base rings"))
+    parent(b) == base_ring(A) || throw(ArgumentError("Non-matching base rings"))
     return elem_type(A)(A, b)
 end
      
 function (A::Algebra{C})(b::AlgebraElem{C}) where C <: RingElement
-    parent(b) != A && error("Non-matching algebras")
+    parent(b) == A || throw(ArgumentError("Non-matching algebras"))
     return b
 end

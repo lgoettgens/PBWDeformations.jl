@@ -1,35 +1,4 @@
 
-###############################################################################
-#
-#   Algebra specific functions
-#
-###############################################################################
-
-function normal_form(a::AlgebraElem{C}) where C <: RingElement
-    # TODO
-    return a
-end
-
-
-# mutable struct SmashProductLie{C <: RingElement} <: QuadraticAlgebra{C}
-#     base_ring :: Ring
-#     S :: Vector{Symbol}
-#     num_gens :: Int
-
-#     """
-#     Stores relations of the form ab = c for basis elements a,b.
-#     An empty list represents the empty sum, in which case ab = 0.
-#     An absent entry means that there is no relation, so we cannot simplify ab.
-#     """
-#     relTable :: Dict{Tuple{BasisElement{C}, BasisElement{C}}, AlgebraElement{C}}
-#     extraData
-
-#     SmashProductLie{C}(basis, relTable, extraData = nothing) where {C <: ScalarTypes} =
-#         new{C}(basis, relTable, extraData)
-# end
-
-
-
 # function Base.:(==)(alg1::QuadraticAlgebra{C}, alg2::QuadraticAlgebra{C}) :: Bool where C <: ScalarTypes
 #     (alg1.basis, alg1.relTable, alg1.extraData) ==
 #     (alg2.basis, alg2.relTable, alg2.extraData)

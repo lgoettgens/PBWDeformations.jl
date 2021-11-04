@@ -19,16 +19,19 @@ mutable struct FreeAlgebraElem{C <: RingElement} <: AlgebraElem{C}
     length :: Int
     parent :: FreeAlgebra{C}
 
-    function FreeAlgebraElem{C}(A::Algebra) where C <: RingElement
+    function FreeAlgebraElem{C}(A::FreeAlgebra{C}) where C <: RingElement
         return new{C}(Array{C}(undef, 0), Array{Vector{Int}}(undef, 0), 0, A)
     end
 
-    function FreeAlgebraElem{C}(A::Algebra, c::Vector{C}, m::Vector{Vector{Int}}) where C <: RingElement
+    function FreeAlgebraElem{C}(A::FreeAlgebra{C}, c::Vector{C}, m::Vector{Vector{Int}}) where C <: RingElement
         length(c) == length(m) || throw(DimensionMismatch("c and m are requiered to have the same length."))
+        zeroinds = findall(iszero, c)
+        deleteat!(c, zeroinds)
+        deleteat!(m, zeroinds)
         return new{C}(c, m, length(c), A)
     end
 
-    function FreeAlgebraElem{C}(A::Algebra, a::C) where C <: RingElement
+    function FreeAlgebraElem{C}(A::FreeAlgebra{C}, a::C) where C <: RingElement
         return new{C}([a], [Int[]], 1, A)
     end
 

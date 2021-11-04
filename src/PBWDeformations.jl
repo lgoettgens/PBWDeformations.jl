@@ -14,6 +14,7 @@ fromGAP = Oscar.GAP.gap_to_julia
 include("Util.jl")
 include("Algebra.jl")
 include("FreeAlgebra.jl")
+include("QuadraticQuoAlgebra.jl")
 
 
 function sanitize_lie_input(dynkin::Char, n::Int64) :: Nothing
