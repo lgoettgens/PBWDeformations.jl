@@ -19,7 +19,7 @@ mutable struct GenericQuadraticAlgebraElem{C <: RingElement} <: QuadraticAlgebra
     coeffs :: Vector{C}
     monoms :: Vector{Vector{Int}}
     length :: Int
-    parent :: QuadraticAlgebra{C}
+    parent :: GenericQuadraticAlgebra{C}
 
     function GenericQuadraticAlgebraElem{C}(A::QuadraticAlgebra) where C <: RingElement
         return new{C}(Array{C}(undef, 0), Array{Vector{Int}}(undef, 0), 0, A)
@@ -37,11 +37,18 @@ mutable struct GenericQuadraticAlgebraElem{C <: RingElement} <: QuadraticAlgebra
 end
 
 
+parent_type(::Type{GenericQuadraticAlgebraElem{C}}) where C <: RingElement = GenericQuadraticAlgebra{C}
+
+elem_type(::Type{GenericQuadraticAlgebra{C}}) where C <: RingElement = GenericQuadraticAlgebraElem{C}
+
+
+###############################################################################
+#
+#   Starting here only QuadraticAlgebra and QuadraticAlgebraElem functions
+#
+###############################################################################
+
 parent(a::QuadraticAlgebraElem{C}) where C <: RingElement = a.parent
-
-parent_type(::Type{QuadraticAlgebraElem{C}}) where C <: RingElement = QuadraticAlgebra{C}
-
-elem_type(::Type{QuadraticAlgebra{C}}) where C <: RingElement = QuadraticAlgebraElem{C}
 
 base_ring(A::QuadraticAlgebra{C}) where C <: RingElement = A.base_ring::parent_type(C)
 
@@ -57,7 +64,7 @@ ngens(A::QuadraticAlgebra) = A.num_gens
 
 function gen(A::QuadraticAlgebra{C}, i::Int) where C <: RingElement 
     1 <= i <= A.num_gens || throw(ArgumentError("Invalid generator index `i`."))
-    return GenericQuadraticAlgebraElem{C}(A, [one(C)], [[i]])
+    return elem_type(A)(A, [one(C)], [[i]])
 end
 
 function gens(A::QuadraticAlgebra{C}) where C <: RingElement
@@ -385,7 +392,7 @@ end
 ###############################################################################
 
 function (A::QuadraticAlgebra{C})(c::Vector{C}, m::Vector{Vector{Int}}) where C <: RingElement
-    return GenericQuadraticAlgebraElem{C}(A, c, m)
+    return elem_type(A)(A, c, m)
 end
 
 function (A::QuadraticAlgebra{C})(b::RingElement) where C <: RingElement
@@ -393,16 +400,16 @@ function (A::QuadraticAlgebra{C})(b::RingElement) where C <: RingElement
 end
      
 function (A::QuadraticAlgebra{C})() where C <: RingElement
-    return GenericQuadraticAlgebraElem{C}(A)
+    return elem_type(A)(A)
 end
      
 function (A::QuadraticAlgebra{C})(b::Union{Integer, Rational, AbstractFloat}) where C <: RingElement
-    return iszero(b) ? A() : GenericQuadraticAlgebraElem{C}(A, base_ring(A)(b))
+    return iszero(b) ? A() : elem_type(A)(A, base_ring(A)(b))
 end
      
 function (A::QuadraticAlgebra{C})(b::C) where C <: RingElement
     parent(b) != base_ring(A) && throw(ArgumentError("Non-matching base rings"))
-    return GenericQuadraticAlgebraElem{C}(A, b)
+    return elem_type(A)(A, b)
 end
      
 function (A::QuadraticAlgebra{C})(b::QuadraticAlgebraElem{C}) where C <: RingElement
