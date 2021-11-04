@@ -44,6 +44,9 @@ mutable struct QuadraticQuoAlgebraElem{C <: RingElement} <: AlgebraElem{C}
 
 end
 
+quadratic_quo_algebra(free_alg::FreeAlgebra{C}, rels::Dict{Tuple{Int,Int},FreeAlgebraElem{C}}) where C <: RingElement = QuadraticQuoAlgebra{C}(free_alg, rels)
+quo(free_alg::FreeAlgebra{C}, rels::Dict{Tuple{Int,Int},FreeAlgebraElem{C}}) where C <: RingElement = QuadraticQuoAlgebra{C}(free_alg, rels)
+
 
 parent_type(::Type{QuadraticQuoAlgebraElem{C}}) where C <: RingElement = QuadraticQuoAlgebra{C}
 

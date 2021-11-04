@@ -37,6 +37,9 @@ mutable struct FreeAlgebraElem{C <: RingElement} <: AlgebraElem{C}
 
 end
 
+free_algebra(R::Ring, S::Vector{Symbol}) = FreeAlgebra{elem_type(R)}(R, S)
+free_algebra(R::Ring, S::Vector{String}) = FreeAlgebra{elem_type(R)}(R, S)
+
 
 parent_type(::Type{FreeAlgebraElem{C}}) where C <: RingElement = FreeAlgebra{C}
 
