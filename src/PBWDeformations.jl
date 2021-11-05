@@ -3,7 +3,7 @@ module PBWDeformations
 using Combinatorics
 using Oscar
 
-import AbstractAlgebra: NCRing, NCRingElem, Ring, RingElement, base_ring, check_parent, coeff, elem_type, gen, gens, isgen, ismonomial, monomial, ngens, parent_type, quo, symbols
+import AbstractAlgebra: NCRing, NCRingElem, Ring, RingElement, base_ring, check_parent, coeff, elem_type, gen, gens, isgen, ismonomial, monomial, ngens, parent_type, quo, symbols, vars
 
 import Base: Array, deepcopy, deepcopy_internal, hash, isone, iszero, length, one, parent, show, xor, zero, +, -, *, ^, ==
 
@@ -27,6 +27,7 @@ function sanitize_lie_input(dynkin::Char, n::Int64) :: Nothing
 end
 
 include("SmashProductLie.jl")
+include("SmashProductDeformLie.jl")
 
 
 end

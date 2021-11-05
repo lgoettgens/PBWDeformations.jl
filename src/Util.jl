@@ -1,3 +1,7 @@
+function flatten(a::Vector{Vector{T}}) where T
+    return vcat(a...)
+end
+
 function groupBy(a::Vector{T}; cmp=(==)) where T
     if isempty(a)
         return Vector{T}[]

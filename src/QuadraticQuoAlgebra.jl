@@ -1,4 +1,3 @@
-
 mutable struct QuadraticQuoAlgebra{C <: RingElement} <: Algebra{C}
     base_ring :: Ring
     S :: Vector{Symbol}
@@ -6,9 +5,15 @@ mutable struct QuadraticQuoAlgebra{C <: RingElement} <: Algebra{C}
     free_alg :: FreeAlgebra{C}
     rels #:: Dict{Tuple{Int,Int}, QuadraticQuoAlgebraElem{C}}
 
-    function QuadraticQuoAlgebra{C}(free_alg::FreeAlgebra{C}, rels::Dict{Tuple{Int,Int},FreeAlgebraElem{C}}) where C <: RingElement
-        this = new{C}(free_alg.base_ring, free_alg.S, free_alg.num_gens, free_alg, Dict{Tuple{Int,Int},FreeAlgebraElem{C}}())
+    function QuadraticQuoAlgebra{C}(free_alg::FreeAlgebra{C}, rels::Dict{Tuple{Int,Int}, FreeAlgebraElem{C}}) where C <: RingElement
+        this = new{C}(free_alg.base_ring, free_alg.S, free_alg.num_gens, free_alg, Dict{Tuple{Int,Int}, QuadraticQuoAlgebraElem{C}}())
         this.rels = Dict{Tuple{Int,Int}, QuadraticQuoAlgebraElem{C}}(k => this(a) for (k, a) in rels)
+        return this
+    end
+
+    function QuadraticQuoAlgebra{C}(paren_alg::QuadraticQuoAlgebra{C}, rels) where C <: RingElement #rels::Dict{Tuple{Int,Int}, QuadraticQuoAlgebraElem{C}}
+        this = new{C}(paren_alg.base_ring, paren_alg.S, paren_alg.num_gens, paren_alg.free_alg, Dict{Tuple{Int,Int}, QuadraticQuoAlgebraElem{C}}())
+        this.rels = Dict{Tuple{Int,Int}, QuadraticQuoAlgebraElem{C}}(k => this(a) for (k, a) in [collect(paren_alg.rels); collect(rels)])
         return this
     end
 
@@ -41,10 +46,17 @@ mutable struct QuadraticQuoAlgebraElem{C <: RingElement} <: AlgebraElem{C}
         return new{C}(deepcopy(b.coeffs), deepcopy(b.monoms), length(b.coeffs), A)
     end
 
+    function QuadraticQuoAlgebraElem{C}(A::QuadraticQuoAlgebra{C}, b::QuadraticQuoAlgebraElem{C}) where C <: RingElement
+        A.free_alg === parent(b).free_alg || throw(ArgumentError("Non-matching algebras"))
+        return new{C}(deepcopy(b.coeffs), deepcopy(b.monoms), length(b.coeffs), A)
+    end
+
 end
 
 quadratic_quo_algebra(free_alg::FreeAlgebra{C}, rels::Dict{Tuple{Int,Int},FreeAlgebraElem{C}}) where C <: RingElement = QuadraticQuoAlgebra{C}(free_alg, rels)
+quadratic_quo_algebra(free_alg::QuadraticQuoAlgebra{C}, rels::Dict{Tuple{Int,Int}, QuadraticQuoAlgebraElem{C}}) where C <: RingElement = QuadraticQuoAlgebra{C}(free_alg, rels)
 quo(free_alg::FreeAlgebra{C}, rels::Dict{Tuple{Int,Int},FreeAlgebraElem{C}}) where C <: RingElement = QuadraticQuoAlgebra{C}(free_alg, rels)
+quo(free_alg::QuadraticQuoAlgebra{C}, rels::Dict{Tuple{Int,Int},FreeAlgebraElem{C}}) where C <: RingElement = QuadraticQuoAlgebra{C}(free_alg, rels)
 
 
 parent_type(::Type{QuadraticQuoAlgebraElem{C}}) where C <: RingElement = QuadraticQuoAlgebra{C}
@@ -90,6 +102,12 @@ function (A::QuadraticQuoAlgebra{C})(b::FreeAlgebraElem{C}) where C <: RingEleme
     A.free_alg === parent(b) || throw(ArgumentError("Non-matching algebras"))
     return elem_type(A)(A, b)
 end
+
+function (A::QuadraticQuoAlgebra{C})(b::QuadraticQuoAlgebraElem{C}) where C <: RingElement
+    A.free_alg === parent(b).free_alg || throw(ArgumentError("Non-matching algebras"))
+    return elem_type(A)(A, b)
+end
+
 
 ###############################################################################
 #

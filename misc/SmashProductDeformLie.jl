@@ -4,65 +4,6 @@ struct SmashProductDeformLie{C <: ScalarTypes}
     kappa :: Matrix{AlgebraElement{C}}
 end
 
-function Base.:(==)(spd1::SmashProductDeformLie{C}, spd2::SmashProductDeformLie{C}) :: Bool where C <: ScalarTypes
-    (spd1.sp, spd1.symmetric) == (spd2.sp, spd2.symmetric)
-end
-
-function Base.show(io::IO, spd::SmashProductDeformLie) :: Nothing
-    if spd.symmetric
-        println(io, "Symmetric deformation of:")
-    else
-        println(io, "Deformation of:")
-    end
-    print(io, spd.sp)
-end
-
-
-function smash_product_deform_lie(sp::QuadraticAlgebra{C, SmashProductLie}, kappa::Matrix{AlgebraElement{C}}, one::C = one(C)) :: QuadraticAlgebra{C, SmashProductDeformLie{C}} where C <: ScalarTypes
-    nV = sp.extraData.nV
-    @assert size(kappa) == (nV, nV) "size of kappa matches module dimension"
-
-    # basis of smash product consists of basis of module and basis of Hopf algebra
-    hopfBasis = filter(!ismod, sp.basis)
-    @assert all(e -> issubset(basis_elements(e), hopfBasis), kappa) "kappa only takes values in Hopf algebra"
-
-    for i in 1:nV, j in 1:i
-        @assert kappa[i,j] ≐ -kappa[j,i] "kappa is skew-symmetric"
-    end
-
-    relTable = sp.relTable
-    symmetric = true
-
-    for i in 1:nV, j in 1:i-1
-        symmetric &= (kappa[i,j] ≐ 0)
-
-        # We have the commutator relation [mod(i), mod(j)] = kappa[i,j]
-        # which is equivalent to mod(i)*mod(j) = mod(j)*mod(i) + kappa[i,j]
-        relTable[(mod(i; C), mod(j; C))] = AlgebraElement{C}(mod(j, i; C), one) + kappa[i,j]
-    end
-
-    extraData = SmashProductDeformLie{C}(sp.extraData, symmetric, kappa)
-    return QuadraticAlgebra{C, SmashProductDeformLie{C}}(sp.basis, relTable, extraData)
-end
-
-
-function smash_product_symm_deform_lie(sp::QuadraticAlgebra{C, SmashProductLie}) :: QuadraticAlgebra{C, SmashProductDeformLie{C}} where C <: ScalarTypes
-    relTable = sp.relTable
-
-    for i in 1:sp.extraData.nV, j in 1:i-1
-        relTable[(mod(i; C), mod(j; C))] = AlgebraElement{C}(mod(j, i; C))
-    end
-
-    extraData = SmashProductDeformLie{C}(sp.extraData, true, fill(AlgebraElement{C}(), sp.extraData.nV, sp.extraData.nV))
-    return QuadraticAlgebra{C, SmashProductDeformLie{C}}(sp.basis, relTable, extraData)
-end
-
-function smash_product_symm_deform_lie(dynkin::Char, n::Int64, lambda::Vector{Int64}; C::Type{<:ScalarTypes} = DefaultScalarType) :: QuadraticAlgebra{C, SmashProductDeformLie{C}}
-    @assert n == length(lambda)
-    sanitize_lie_input(dynkin, n)
-
-    return smash_product_symm_deform_lie(smash_product_lie(dynkin, n, lambda; C))
-end
 
 struct PBWDeformEqs{C <: ScalarTypes}
     d :: QuadraticAlgebra{C, SmashProductDeformLie{C}}

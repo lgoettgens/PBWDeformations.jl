@@ -24,10 +24,14 @@ function gens(A::Algebra{C}) where C <: RingElement
     return [gen(A, i) for i in 1:A.num_gens]
 end
 
-# TODO: variables actually occuring in a.
-# https://github.com/Nemocas/AbstractAlgebra.jl/blob/76891dd23ccf5b3b8dc0f6c6b00fb7ad64e6acc4/src/generic/MPoly.jl#L83
-# function vars(a::AlgebraElem{C}) where C <: RingElement
-# end
+# variables actually occuring in a.
+function vars(a::AlgebraElem{C}) where C <: RingElement
+    return [gen(parent(a), i) for i in var_ids(a)]
+end
+
+function var_ids(a::AlgebraElem{C}) where C <: RingElement
+    return sort!(unique!(flatten(a.monoms)))
+end
 
 function check_parent(a1::AlgebraElem{C}, a2::AlgebraElem{C}, throw::Bool = true) where C <: RingElement
     b = parent(a1) !== parent(a2)

@@ -1,0 +1,77 @@
+mutable struct SmashProductDeformLie{C <: RingElement}
+    dimL :: Int64
+    dimV :: Int64
+    baseL :: Vector{QuadraticQuoAlgebraElem{C}}
+    baseV :: Vector{QuadraticQuoAlgebraElem{C}}
+    coeff_ring :: Ring
+    alg :: QuadraticQuoAlgebra{C}
+    # dynkin :: Char
+    # n :: Int64
+    # lambda :: Vector{Int64}
+    # matrixRepL :: Vector{Matrix{Int64}}
+    symmetric :: Bool
+    kappa :: Matrix{QuadraticQuoAlgebraElem{C}}
+end
+
+
+function smash_product_deform_lie(sp::SmashProductLie{C}, kappa::Matrix{QuadraticQuoAlgebraElem{C}}) where C <: RingElement
+    size(kappa) == (sp.dimV, sp.dimV) || throw(ArgumentError("kappa has wrong dimensions."))
+    
+    dimL = sp.dimL
+    dimV = sp.dimV
+    coeff_ring = sp.coeff_ring
+    baseL = sp.baseL
+    baseV = sp.baseV
+
+    for i in 1:dimV, j in 1:i
+        kappa[i,j] == -kappa[j,i] || throw(ArgumentError("kappa is not skew-symmetric."))
+        all(x -> x > dimL, vars(kappa[i,j])) || throw(ArgumentError("kappa does not only take values in the hopf algebra"))
+        all(x -> x > dimL, vars(kappa[j,i])) || throw(ArgumentError("kappa does not only take values in the hopf algebra"))
+    end
+
+    symmetric = true
+    rels = Dict{Tuple{Int,Int}, QuadraticQuoAlgebraElem{C}}()
+    for i in 1:dimV, j in 1:dimV
+        # We have the commutator relation [v_i, v_j] = kappa[i,j]
+        # which is equivalent to v_i*v_j = v_j*v_i + kappa[i,j]
+        rels[(i, j)] = baseV[j] * baseV[i] + kappa[i,j]
+        symmetric &= iszero(kappa[i,j])
+    end
+
+    alg = quadratic_quo_algebra(sp.alg, rels)
+    baseL = map(alg, baseL)
+    baseV = map(alg, baseV)
+
+    return SmashProductDeformLie{C}(dimL, dimV, baseL, baseV, coeff_ring, alg, symmetric, kappa), (baseL, baseV)
+end
+
+function smash_product_symmdeform_lie(sp::SmashProductLie{C}) where C <: RingElement
+    kappa = fill(zero(sp.alg), sp.dimV, sp.dimV)
+    return smash_product_deform_lie(sp, kappa)
+end
+
+
+function show(io::IO, deform::SmashProductDeformLie)
+    local max_gens = 4 # largest number of generators to print
+    if deform.symmetric
+        print(io, "Symmetric ")
+    end
+    print(io, "Deformation of ")
+    print(io, "Lie Algebra Smash Product with basis ")
+    for i = 1:min(deform.dimL - 1, max_gens - 1)
+       print(io, string(deform.alg.S[i]), ", ")
+    end
+    if deform.dimL > max_gens
+       print(io, "..., ")
+    end
+    print(io, string(deform.alg.S[deform.dimL]) * ", ")
+    for i = 1:min(deform.dimV - 1, max_gens - 1)
+        print(io, string(deform.alg.S[deform.dimL+i]), ", ")
+     end
+     if deform.dimV > max_gens
+        print(io, "..., ")
+     end
+     print(io, string(deform.alg.S[deform.dimL+deform.dimV]))
+    print(io, " over ")
+    print(IOContext(io, :compact => true), deform.coeff_ring)
+end
