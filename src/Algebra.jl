@@ -30,7 +30,7 @@ end
 # end
 
 function check_parent(a1::AlgebraElem{C}, a2::AlgebraElem{C}, throw::Bool = true) where C <: RingElement
-    b = parent(a1) != parent(a2)
+    b = parent(a1) !== parent(a2)
     b & throw && error("Incompatible quadratic algebra elements")
     return !b
 end
@@ -239,7 +239,7 @@ end
 
 
 function Base.:*(c::C, a::AlgebraElem{C}) where C <: RingElement
-    parent(c) == base_ring(a) || throw(ArgumentError("Incompatible coefficient rings"))
+    parent(c) === base_ring(a) || throw(ArgumentError("Incompatible coefficient rings"))
     r = zero(a)
     if !iszero(c)
         fit!(r, length(a))
@@ -344,11 +344,11 @@ function (A::Algebra{C})(b::Union{Integer, Rational, AbstractFloat}) where C <: 
 end
      
 function (A::Algebra{C})(b::C) where C <: RingElement
-    parent(b) == base_ring(A) || throw(ArgumentError("Non-matching base rings"))
+    parent(b) === base_ring(A) || throw(ArgumentError("Non-matching base rings"))
     return elem_type(A)(A, b)
 end
      
 function (A::Algebra{C})(b::AlgebraElem{C}) where C <: RingElement
-    parent(b) == A || throw(ArgumentError("Non-matching algebras"))
+    parent(b) === A || throw(ArgumentError("Non-matching algebras"))
     return b
 end

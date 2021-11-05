@@ -4,12 +4,11 @@ mutable struct QuadraticQuoAlgebra{C <: RingElement} <: Algebra{C}
     S :: Vector{Symbol}
     num_gens :: Int
     free_alg :: FreeAlgebra{C}
-    free_rels #:: Dict{Tuple{Int,Int}, FreeAlgebraElem{C}}
     rels #:: Dict{Tuple{Int,Int}, QuadraticQuoAlgebraElem{C}}
 
     function QuadraticQuoAlgebra{C}(free_alg::FreeAlgebra{C}, rels::Dict{Tuple{Int,Int},FreeAlgebraElem{C}}) where C <: RingElement
-        this = new{C}(free_alg.base_ring, free_alg.S, free_alg.num_gens, free_alg, rels, Dict{Tuple{Int,Int},FreeAlgebraElem{C}}())
-        this.rels = Dict{Tuple{Int,Int}, QuadraticQuoAlgebraElem{C}}(k => this(a) for (k, a) in this.free_rels)
+        this = new{C}(free_alg.base_ring, free_alg.S, free_alg.num_gens, free_alg, Dict{Tuple{Int,Int},FreeAlgebraElem{C}}())
+        this.rels = Dict{Tuple{Int,Int}, QuadraticQuoAlgebraElem{C}}(k => this(a) for (k, a) in rels)
         return this
     end
 
@@ -38,7 +37,7 @@ mutable struct QuadraticQuoAlgebraElem{C <: RingElement} <: AlgebraElem{C}
     end
 
     function QuadraticQuoAlgebraElem{C}(A::QuadraticQuoAlgebra{C}, b::FreeAlgebraElem{C}) where C <: RingElement
-        A.free_alg == parent(b) || throw(ArgumentError("Non-matching algebras"))
+        A.free_alg === parent(b) || throw(ArgumentError("Non-matching algebras"))
         return new{C}(deepcopy(b.coeffs), deepcopy(b.monoms), length(b.coeffs), A)
     end
 
@@ -88,7 +87,7 @@ function Base.:(==)(A1::QuadraticQuoAlgebra{C}, A2::QuadraticQuoAlgebra{C}) wher
 end
 
 function (A::QuadraticQuoAlgebra{C})(b::FreeAlgebraElem{C}) where C <: RingElement
-    A.free_alg == parent(b) || throw(ArgumentError("Non-matching algebras"))
+    A.free_alg === parent(b) || throw(ArgumentError("Non-matching algebras"))
     return elem_type(A)(A, b)
 end
 

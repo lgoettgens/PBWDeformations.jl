@@ -37,7 +37,7 @@ function smash_product_lie(coeff_ring :: Ring, symbL :: Vector{Symbol}, symbV ::
     baseL = [gen(alg, i) for i in 1:dimL]
     baseV = [gen(alg, dimL+i) for i in 1:dimV]
 
-    return SmashProductLie{C}(dimL, dimV, baseL, baseV, coeff_ring, alg)
+    return SmashProductLie{C}(dimL, dimV, baseL, baseV, coeff_ring, alg), (baseL, baseV)
 end
 
 function smash_product_lie(coeff_ring :: Ring, symbL :: Vector{String}, symbV :: Vector{String}, struct_const_L :: Matrix{Vector{Tuple{Int, Int}}}, struct_const_V :: Matrix{Vector{Tuple{Int, Int}}})
