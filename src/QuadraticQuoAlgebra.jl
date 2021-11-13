@@ -152,3 +152,30 @@ function normal_form(a::QuadraticQuoAlgebraElem{C}) where C <: RingElement
     # TODO
     return a
 end
+
+# function normal_form(alg::QuadraticAlgebra{C}, a::AlgebraElement{C}) :: AlgebraElement{C} where C <: ScalarTypes
+#     todo = copy(unpack(a))
+#     result = AlgebraElement{C}(0)
+
+#     while !isempty(todo)
+#         coeff, mon = pop!(todo)
+
+#         changed = false
+#         for i in 1:length(mon)-1
+#             if haskey(alg.relTable, (mon[i], mon[i+1]))
+#                 changed = true
+
+#                 # TODO: something like this: todo += coeff * (mon[1:i-1] * alg.relTable[(mon[i], mon[i+1])] * mon[i+2:end])
+#                 todo = unpack(AlgebraElement{C}(todo) + coeff * (Monomial{C}(mon[1:i-1]) * alg.relTable[(mon[i], mon[i+1])] * Monomial{C}(mon[i+2:end])))
+
+#                 break
+#             end
+#         end
+
+#         if !changed
+#             result += coeff * mon
+#         end
+#     end
+
+#     return result
+# end
