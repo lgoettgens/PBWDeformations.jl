@@ -102,3 +102,11 @@ function show(io::IO, sp::SmashProductLie)
     print(io, " over ")
     print(IOContext(io, :compact => true), sp.coeff_ring)
 end
+
+function change_base_ring(R::Ring, sp::SmashProductLie{C}) where C <: RingElement
+    alg = change_base_ring(R, sp.alg)
+    baseL = [gen(alg, i) for i in 1:sp.dimL]
+    baseV = [gen(alg, sp.dimL+i) for i in 1:sp.dimV]
+
+    return SmashProductLie{elem_type(R)}(sp.dimL, sp.dimV, baseL, baseV, R, alg)
+end

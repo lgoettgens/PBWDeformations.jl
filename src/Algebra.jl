@@ -17,7 +17,7 @@ ngens(A::Algebra) = A.num_gens
 
 function gen(A::Algebra{C}, i::Int) where C <: RingElement 
     1 <= i <= A.num_gens || throw(ArgumentError("Invalid generator index `i`."))
-    return elem_type(A)(A, [one(C)], [[i]])
+    return elem_type(A)(A, [one(A.base_ring)], [[i]])
 end
 
 function gens(A::Algebra{C}) where C <: RingElement
@@ -101,7 +101,7 @@ function zero(a::AlgebraElem)
 end
 
 function one(A::Algebra{C}) where C <: RingElement
-    return A(one(C))
+    return A(one(A.base_ring))
 end
 
 function one(a::AlgebraElem)

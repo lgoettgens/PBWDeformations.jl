@@ -51,6 +51,11 @@ mutable struct QuadraticQuoAlgebraElem{C <: RingElement} <: AlgebraElem{C}
         return new{C}(deepcopy(b.coeffs), deepcopy(b.monoms), length(b.coeffs), A)
     end
 
+    function QuadraticQuoAlgebraElem{C1}(A::QuadraticQuoAlgebra{C1}, b::QuadraticQuoAlgebraElem{C2}) where {C1 <: RingElement, C2 <: RingElement}
+        A.S == parent(b).S || throw(ArgumentError("Non-matching algebras"))
+        return new{C1}(map(base_ring(A), deepcopy(b.coeffs)), deepcopy(b.monoms), length(b.coeffs), A)
+    end
+
 end
 
 function quadratic_quo_algebra(free_alg::FreeAlgebra{C}, rels::Dict{Tuple{Int,Int},FreeAlgebraElem{C}}) where C <: RingElement
@@ -102,7 +107,7 @@ function showname(::Type{QuadraticQuoAlgebra{C}}) where C <: RingElement
 end
 
 
-function Base.:(==)(A1::QuadraticQuoAlgebra{C}, A2::QuadraticQuoAlgebra{C}) where C <: RingElement
+function Base.:(==)(A1::QuadraticQuoAlgebra{C}, A2::QuadraticQuoAlgebra{C}) where C <: RingElement # TODO: fix
     return (A1.base_ring, A1.S, A1.num_gens, A1.free_rels) == (A2.base_ring, A2.S, A2.num_gens, A2.free_rels)
 end
 
@@ -116,6 +121,21 @@ function (A::QuadraticQuoAlgebra{C})(b::QuadraticQuoAlgebraElem{C}) where C <: R
     return elem_type(A)(A, b)
 end
 
+function (A::QuadraticQuoAlgebra{C1})(b::QuadraticQuoAlgebraElem{C2}) where {C1 <: RingElement, C2 <: RingElement}
+    A.S == parent(b).S || throw(ArgumentError("Non-matching algebras"))
+    return elem_type(A)(A, b)
+end
+
+
+function change_base_ring(R::Ring, A::QuadraticQuoAlgebra{C1}) where C1 <: RingElement
+    C2 = elem_type(R)
+    free_alg = change_base_ring(R, A.free_alg)
+
+    this = quadratic_quo_algebra(free_alg, Dict{Tuple{Int,Int}, FreeAlgebraElem{C2}}())
+    this.rels = Dict{Tuple{Int,Int}, QuadraticQuoAlgebraElem{C2}}(k => this(a) for (k, a) in A.rels)
+
+    return this
+end
 
 ###############################################################################
 #

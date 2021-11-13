@@ -79,3 +79,8 @@ end
 function Base.:(==)(A1::FreeAlgebra{C}, A2::FreeAlgebra{C}) where C <: RingElement
     return (A1.base_ring, A1.S, A1.num_gens) == (A2.base_ring, A2.S, A2.num_gens)
 end
+
+
+function change_base_ring(R::Ring, A::FreeAlgebra{C}) where C <: RingElement
+    return free_algebra(R, A.S)
+end

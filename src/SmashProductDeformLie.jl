@@ -82,6 +82,15 @@ function show(io::IO, deform::SmashProductDeformLie)
     print(IOContext(io, :compact => true), deform.coeff_ring)
 end
 
+function change_base_ring(R::Ring, d::SmashProductDeformLie{C}) where C <: RingElement
+    alg = change_base_ring(R, d.alg)
+    baseL = [gen(alg, i) for i in 1:d.dimL]
+    baseV = [gen(alg, d.dimL+i) for i in 1:d.dimV]
+    kappa = map(alg, d.kappa)
+
+    return SmashProductDeformLie{elem_type(R)}(d.dimL, d.dimV, baseL, baseV, R, alg, d.symmetric, kappa)
+end
+
 
 function pbwdeform_eqs(deform::SmashProductDeformLie{C}) where C <: RingElement
     # Uses Theorem 3.1 of Walton, Witherspoon: Poincare-Birkhoff-Witt deformations of smash product algebras from Hopf actions on Koszul algebras.
