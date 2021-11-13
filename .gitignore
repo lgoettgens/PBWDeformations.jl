@@ -8,4 +8,7 @@ Manifest.toml
 # code coverage reports
 *.cov
 
+# PProf artifacts
+*.pb.gz
+
 *.vscode
