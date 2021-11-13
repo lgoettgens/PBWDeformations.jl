@@ -1,6 +1,6 @@
 include("setup.jl")
 
 @testset ExtendedTestSet "All PBWDeformations tests" begin
-    include("Util-tets.jl")
+    include("Util-test.jl")
     include("QuadraticAlgebra-test.jl")
 end
