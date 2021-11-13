@@ -94,7 +94,7 @@ function isone(a::QuadraticQuoAlgebraElem) # TODO: fix with normal_form
 end
 
 function Base.deepcopy_internal(a::QuadraticQuoAlgebraElem{C}, dict::IdDict) where C <: RingElement
-    Rm = deepcopy_internal(a.monoms, dict)
+    Rm = deepcopy(a.monoms)
     Rc = Array{C}(undef, a.length)
     for i = 1:a.length
        Rc[i] = deepcopy(a.coeffs[i])
@@ -143,39 +143,34 @@ end
 #
 ###############################################################################
 
-function comm(a::AlgebraElem{C}, b::AlgebraElem{C}, force_normal_form=false) where C <: RingElement
+function comm(a::QuadraticQuoAlgebraElem{C}, b::QuadraticQuoAlgebraElem{C}, force_normal_form=false) where C <: RingElement
     r = a*b - b*a
     return force_normal_form ? normal_form(r) : r
 end
 
 function normal_form(a::QuadraticQuoAlgebraElem{C}) where C <: RingElement
-    # TODO
-    return a
+    todo = deepcopy(a)
+    result = zero(parent(todo))
+    rels = parent(a).rels
+    R = base_ring(a)
+    while todo.length > 0
+        c = coeff(todo, 1)
+        m = monomial(todo, 1)
+        exp = m.monoms[1]
+        t = c*m
+        todo -= t
+
+        changed = false
+        for i in 1:length(exp)-1
+            if exp[i] < exp[i+1] && haskey(rels, (exp[i], exp[i+1]))
+                changed = true
+                todo += c * parent(a)([one(R)], [exp[1:i-1]]) * rels[(exp[i], exp[i+1])] * parent(a)([one(R)], [exp[i+2:end]])
+                break
+            end
+        end
+        if !changed
+            result += t
+        end
+    end
+    return result
 end
-
-# function normal_form(alg::QuadraticAlgebra{C}, a::AlgebraElement{C}) :: AlgebraElement{C} where C <: ScalarTypes
-#     todo = copy(unpack(a))
-#     result = AlgebraElement{C}(0)
-
-#     while !isempty(todo)
-#         coeff, mon = pop!(todo)
-
-#         changed = false
-#         for i in 1:length(mon)-1
-#             if haskey(alg.relTable, (mon[i], mon[i+1]))
-#                 changed = true
-
-#                 # TODO: something like this: todo += coeff * (mon[1:i-1] * alg.relTable[(mon[i], mon[i+1])] * mon[i+2:end])
-#                 todo = unpack(AlgebraElement{C}(todo) + coeff * (Monomial{C}(mon[1:i-1]) * alg.relTable[(mon[i], mon[i+1])] * Monomial{C}(mon[i+2:end])))
-
-#                 break
-#             end
-#         end
-
-#         if !changed
-#             result += coeff * mon
-#         end
-#     end
-
-#     return result
-# end
