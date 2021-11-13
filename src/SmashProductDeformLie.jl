@@ -101,8 +101,6 @@ function pbwdeform_eqs(deform::SmashProductDeformLie{C}) where C <: RingElement
     x(i) = gen(deform.alg, i)
     v(i) = gen(deform.alg, dimL + i)
 
-    @debug "Equation generation, first phase"
-
     ## (a) κ is H-invariant
     iter_a = (comm(comm(h, v(i), true), v(j)) # κ([h⋅v_i,v_j])
             + comm(v(i), comm(h, v(j), true)) # κ([v_i,h⋅v_j])
@@ -112,8 +110,6 @@ function pbwdeform_eqs(deform::SmashProductDeformLie{C}) where C <: RingElement
 
     ## (b) trivial
     iter_b = []
-
-    @debug "Equation generation, second phase"
 
     ## (c) 0 = κ ⊗ id - id ⊗ κ on (I ⊗ V) ∩ (V ⊗ I)
     # (I ⊗ V) ∩ (V ⊗ I) has basis v_iv_jv_k + v_jv_kv_i + v_kv_iv_j - v_kv_jv_i - v_jv_iv_k - v_iv_kv_j for i<j<k
@@ -143,4 +139,181 @@ end
 
 function ispbwdeform(d::SmashProductDeformLie{C}) :: Bool where C <: RingElement
     return all(iszero, pbwdeform_eqs(d))
+end
+
+
+###############################################################################
+#
+#   Possible PBW deformations
+#
+###############################################################################
+
+function possible_pbwdeforms_nvars(dimL::Int64, dimV::Int64, maxdeg::Int64)
+    n_kappa_entries = div(dimV*(dimV-1), 2)
+    dim_free_alg = sum(binomial(dimL + k - 1, k) for k in 0:maxdeg)
+    
+    return n_kappa_entries * dim_free_alg, n_kappa_entries, dim_free_alg
+end
+
+function possible_pbwdeforms_vars(dimL::Int64, dimV::Int64, maxdeg::Int64)
+    # format: "c_{i,j,deg,[inds]}"
+    return ["c_{$i,$j,$deg,$(isempty(inds) ? "[]" : inds)}" for i in 1:dimV for j in i+1:dimV for deg in 0:maxdeg for inds=Combinatorics.with_replacement_combinations(1:dimL, deg)]
+end
+
+function possible_pbwdeforms_partition_vars(vars::Vector{T}, dimL::Int64, dimV::Int64, maxdeg::Int64) where T
+    _, n_kappa_entries, dim_free_alg = possible_pbwdeforms_nvars(dimL, dimV, maxdeg)
+    m = fill(Vector{T}[], dimV, dimV)
+    k = 0
+    for i in 1:dimV, j in i+1:dimV
+        offset = 0
+        m[i,j] = fill(T[], maxdeg+1)
+        for d in 0:maxdeg
+            curr = binomial(dimL + d - 1, d)
+            m[i,j][d+1] = vars[k*dim_free_alg+1+offset : k*dim_free_alg+offset+curr]
+            offset += curr
+        end
+        k += 1
+    end
+    return m
+end
+
+function coefficient_comparison(eq::QuadraticQuoAlgebraElem{C}) where C <: RingElement
+    return eq.coeffs
+end
+
+@inline function linpoly_to_spvector(a::fmpq_mpoly, var_lookup::Dict{fmpq_mpoly, Int64}, nvars::Int64)
+    @assert total_degree(a) <= 1
+
+    return sparsevec(
+        Dict(var_lookup[monomial(a, i)] => coeff(a, i) for i in 1:length(a)),
+        nvars
+    )
+end
+
+function reduce_and_store!(lgs::Vector{Union{Nothing,SparseVector{T, Int64}}}, v::SparseVector{T, Int64}) where T <: Union{RingElement, Number}
+    while !iszero(v)
+        nz_inds, nz_vals = findnz(v)
+        v = inv(nz_vals[1]) .* v
+        if lgs[nz_inds[1]] === nothing
+            lgs[nz_inds[1]] = v
+            return
+        else
+            v -= lgs[nz_inds[1]]
+        end
+    end
+end
+
+function reduced_row_echelon!(lgs::Vector{Union{Nothing,SparseVector{T, Int64}}}) where T <: Union{RingElement, Number}
+    for i in length(lgs):-1:1
+        if lgs[i] === nothing
+            continue
+        end
+        nz_inds, nz_vals = findnz(lgs[i])
+        for (ind,j) in enumerate(nz_inds[2:end])
+            if lgs[j] !== nothing
+                lgs[i] -= nz_vals[ind+1] .* lgs[j]
+            end
+        end
+    end
+    return lgs
+end
+
+function lgs_to_mat(lgs::Vector{Union{Nothing,SparseVector{T, Int64}}}) where T <: Union{RingElement, Number}
+    n = length(lgs)
+    mat = spzeros(T, n, n)
+    for i in 1:n
+        if lgs[i] !== nothing
+            mat[i,:] = lgs[i]
+        end
+    end
+    return mat
+end
+
+function indices_of_freedom(mat::SparseArrays.SparseMatrixCSC{T, Int64}) where T <: Union{RingElement, Number}
+    size(mat)[1] == size(mat)[2] || throw(ArgumentError("Matrix needs to be square."))
+    return filter(i -> iszero(mat[i,i]), 1:size(mat)[1])
+end
+
+
+function possible_pbwdeforms(sp::SmashProductLie{C}, maxdeg::Int64; special_return::Type{T} = Nothing) where {C <: RingElement, T <: Union{Nothing, SparseMatrixCSC}}
+    dimL = sp.dimL
+    dimV = sp.dimV
+
+    @info "Constructing MPolyRing..."
+    R, vars = PolynomialRing(sp.coeff_ring, possible_pbwdeforms_vars(dimL, dimV, maxdeg))
+    nvars = length(vars)
+    var_lookup = Dict(vars[i] => i for i in 1:nvars)
+    var_mat = possible_pbwdeforms_partition_vars(vars, dimL, dimV, maxdeg)
+
+
+    @info "Changing SmashProductLie coeffcient type..."
+    new_sp = change_base_ring(R, sp)
+
+    @info "Constructing kappa..."
+    kappa = fill(new_sp.alg(0), dimV, dimV)
+    for i in 1:dimV, j in i+1:dimV, d in 0:maxdeg, (k, ind) in enumerate(Combinatorics.with_replacement_combinations(1:dimL, d))
+        kappa[i,j] += QuadraticQuoAlgebraElem{elem_type(R)}(new_sp.alg, [var_mat[i,j][d+1][k]], [ind])
+        kappa[j,i] -= QuadraticQuoAlgebraElem{elem_type(R)}(new_sp.alg, [var_mat[i,j][d+1][k]], [ind])
+    end
+
+    @info "Constructing deformation..."
+    deform = smash_product_deform_lie(new_sp, kappa)[1]
+
+    @info "Generating equation iterator..."
+    neqs = pbwdeform_neqs(deform)
+    iter = Iterators.map(a -> linpoly_to_spvector(a, var_lookup, nvars),
+            Iterators.flatten(
+                Iterators.map(function(x)
+                    i = x[1]
+                    a = x[2]
+                    @debug "Equation $i/$(neqs), $(floor(Int, 100*i / neqs))%"
+                    coefficient_comparison(a)
+                end,
+                enumerate(pbwdeform_eqs(deform))
+            )
+        )
+    )
+ 
+
+    @info "Computing row-echelon form..."
+    lgs = Vector{Union{Nothing,SparseVector{fmpq, Int64}}}(nothing, nvars)
+    for v in iter
+        reduce_and_store!(lgs, v)
+    end
+
+    @info "Computing reduced row-echelon form..."
+    reduced_row_echelon!(lgs)
+
+    mat = lgs_to_mat(lgs)
+
+    if special_return === SparseMatrixCSC
+        return mat, vars
+    end
+
+    @info "Computing a basis..."
+    freedom_ind = indices_of_freedom(mat)
+    freedom_deg = length(freedom_ind)
+    kappas = Vector{Matrix{QuadraticQuoAlgebraElem{C}}}(undef, freedom_deg)
+    for l in 1:freedom_deg
+        kappas[l] = fill(sp.alg(0), dimV, dimV)
+    end
+    if freedom_deg > 0
+        for i in 1:dimV, j in i+1:dimV, d in 0:maxdeg, (k, ind) in enumerate(Combinatorics.with_replacement_combinations(1:dimL, d))
+            var_ind = var_lookup[var_mat[i,j][d+1][k]]
+            if iszero(mat[var_ind,var_ind])
+                l = findfirst(isequal(var_ind), freedom_ind)
+                kappas[l][i,j] += QuadraticQuoAlgebraElem{C}(sp.alg, [base_ring(sp.alg)(1)], [ind])
+                kappas[l][j,i] -= QuadraticQuoAlgebraElem{C}(sp.alg, [base_ring(sp.alg)(1)], [ind])
+            else
+                for col in var_ind+1:nvars
+                    if !iszero(mat[var_ind,col])
+                        l = findfirst(isequal(col), freedom_ind)
+                        kappas[l][i,j] += QuadraticQuoAlgebraElem{C}(sp.alg, [-mat[var_ind,col]], [ind])
+                        kappas[l][j,i] -= QuadraticQuoAlgebraElem{C}(sp.alg, [-mat[var_ind,col]], [ind])
+                    end
+                end
+            end
+        end
+    end
+    return kappas
 end

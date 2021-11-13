@@ -2,6 +2,7 @@ module PBWDeformations
 
 using Combinatorics
 using Oscar
+using SparseArrays
 
 import AbstractAlgebra: NCRing, NCRingElem, Ring, RingElement, base_ring, change_base_ring, check_parent, coeff, elem_type, gen, gens, isgen, ismonomial, monomial, ngens, parent_type, quo, symbols, vars
 import Oscar: comm
