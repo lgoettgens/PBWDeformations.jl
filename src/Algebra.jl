@@ -304,7 +304,9 @@ function Base.:^(a::AlgebraElem{C}, n::Int) where C <: RingElement
 end
 
 
-## TODO: continue
+function comm(a::AlgebraElem{C}, b::AlgebraElem{C}) where C <: RingElement
+    return a*b - b*a
+end
 
 ###############################################################################
 #

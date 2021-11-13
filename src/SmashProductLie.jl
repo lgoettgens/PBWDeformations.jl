@@ -75,6 +75,12 @@ function smash_product_lie(coeff_ring :: Ring, dynkin :: Char, n :: Int, lambda 
     return smash_product_lie(coeff_ring, symbL, symbV, struct_const_L, struct_const_V)
 end
 
+ngens(sp::SmashProductLie) = sp.dimL, sp.dimV
+
+function gens(sp::SmashProductLie{C}) where C <: RingElement
+    return [gen(sp.alg, i) for i in 1:sp.dimL], [gen(sp.alg, i+sp.dimL) for i in 1:sp.dimV]
+end
+
 
 function show(io::IO, sp::SmashProductLie)
     local max_gens = 4 # largest number of generators to print

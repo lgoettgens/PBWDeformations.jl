@@ -53,10 +53,18 @@ mutable struct QuadraticQuoAlgebraElem{C <: RingElement} <: AlgebraElem{C}
 
 end
 
-quadratic_quo_algebra(free_alg::FreeAlgebra{C}, rels::Dict{Tuple{Int,Int},FreeAlgebraElem{C}}) where C <: RingElement = QuadraticQuoAlgebra{C}(free_alg, rels)
-quadratic_quo_algebra(free_alg::QuadraticQuoAlgebra{C}, rels::Dict{Tuple{Int,Int}, QuadraticQuoAlgebraElem{C}}) where C <: RingElement = QuadraticQuoAlgebra{C}(free_alg, rels)
-quo(free_alg::FreeAlgebra{C}, rels::Dict{Tuple{Int,Int},FreeAlgebraElem{C}}) where C <: RingElement = QuadraticQuoAlgebra{C}(free_alg, rels)
-quo(free_alg::QuadraticQuoAlgebra{C}, rels::Dict{Tuple{Int,Int},FreeAlgebraElem{C}}) where C <: RingElement = QuadraticQuoAlgebra{C}(free_alg, rels)
+function quadratic_quo_algebra(free_alg::FreeAlgebra{C}, rels::Dict{Tuple{Int,Int},FreeAlgebraElem{C}}) where C <: RingElement
+    return QuadraticQuoAlgebra{C}(free_alg, rels)
+end
+function quadratic_quo_algebra(free_alg::QuadraticQuoAlgebra{C}, rels::Dict{Tuple{Int,Int}, QuadraticQuoAlgebraElem{C}}) where C <: RingElement
+    return QuadraticQuoAlgebra{C}(free_alg, rels)
+end
+function quo(free_alg::FreeAlgebra{C}, rels::Dict{Tuple{Int,Int},FreeAlgebraElem{C}}) where C <: RingElement
+    return QuadraticQuoAlgebra{C}(free_alg, rels)
+end
+function quo(free_alg::QuadraticQuoAlgebra{C}, rels::Dict{Tuple{Int,Int},FreeAlgebraElem{C}}) where C <: RingElement
+    return QuadraticQuoAlgebra{C}(free_alg, rels)
+end
 
 
 parent_type(::Type{QuadraticQuoAlgebraElem{C}}) where C <: RingElement = QuadraticQuoAlgebra{C}
@@ -114,6 +122,11 @@ end
 #   QuadraticQuoAlgebra specific functions
 #
 ###############################################################################
+
+function comm(a::AlgebraElem{C}, b::AlgebraElem{C}, force_normal_form=false) where C <: RingElement
+    r = a*b - b*a
+    return force_normal_form ? normal_form(r) : r
+end
 
 function normal_form(a::QuadraticQuoAlgebraElem{C}) where C <: RingElement
     # TODO
