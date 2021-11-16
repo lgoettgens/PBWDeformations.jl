@@ -162,7 +162,7 @@ function normal_form(a::QuadraticQuoAlgebraElem{C}) where C <: RingElement
 
         changed = false
         for i in 1:length(exp)-1
-            if exp[i] < exp[i+1] && haskey(rels, (exp[i], exp[i+1]))
+            if exp[i] > exp[i+1] && haskey(rels, (exp[i], exp[i+1]))
                 changed = true
                 todo += c * parent(a)([one(R)], [exp[1:i-1]]) * rels[(exp[i], exp[i+1])] * parent(a)([one(R)], [exp[i+2:end]])
                 break
