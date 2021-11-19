@@ -30,7 +30,7 @@ function smash_product_lie(coeff_ring :: Ring, symbL :: Vector{Symbol}, symbV ::
 
     for i in 1:dimL, j in 1:dimV
         rels[(i, dimL+j)] = free_baseV[j] * free_baseL[i] + sum(c * free_baseV[k] for (c, k) in struct_const_V[i,j]; init=0)
-        rels[(dimL+j, i)] = -rels[(i, dimL+j)]
+        rels[(dimL+j, i)] = free_baseL[i] * free_baseV[j] - sum(c * free_baseV[k] for (c, k) in struct_const_V[i,j]; init=0)
     end
 
     alg = quadratic_quo_algebra(free_alg, rels)
