@@ -59,16 +59,23 @@ mutable struct QuadraticQuoAlgebraElem{C <: RingElement} <: AlgebraElem{C}
 end
 
 function quadratic_quo_algebra(free_alg::FreeAlgebra{C}, rels::Dict{Tuple{Int,Int},FreeAlgebraElem{C}}) where C <: RingElement
-    return QuadraticQuoAlgebra{C}(free_alg, rels)
+    alg = QuadraticQuoAlgebra{C}(free_alg, rels)
+    return alg, gens(alg)
 end
+
 function quadratic_quo_algebra(free_alg::QuadraticQuoAlgebra{C}, rels::Dict{Tuple{Int,Int}, QuadraticQuoAlgebraElem{C}}) where C <: RingElement
-    return QuadraticQuoAlgebra{C}(free_alg, rels)
+    alg = QuadraticQuoAlgebra{C}(free_alg, rels)
+    return alg, gens(alg)
 end
+
 function quo(free_alg::FreeAlgebra{C}, rels::Dict{Tuple{Int,Int},FreeAlgebraElem{C}}) where C <: RingElement
-    return QuadraticQuoAlgebra{C}(free_alg, rels)
+    alg = QuadraticQuoAlgebra{C}(free_alg, rels)
+    return alg, gens(alg)
 end
+
 function quo(free_alg::QuadraticQuoAlgebra{C}, rels::Dict{Tuple{Int,Int},FreeAlgebraElem{C}}) where C <: RingElement
-    return QuadraticQuoAlgebra{C}(free_alg, rels)
+    alg = QuadraticQuoAlgebra{C}(free_alg, rels)
+    return alg, gens(alg)
 end
 
 
