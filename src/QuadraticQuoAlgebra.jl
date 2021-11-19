@@ -81,16 +81,44 @@ function isgen(a::QuadraticQuoAlgebraElem{C}) where C <: RingElement
     return length(a) == 1 && isone(a.coeffs[1]) && length(a.monoms[1]) == 1
 end
 
-function ismonomial(a::QuadraticQuoAlgebraElem{C}) where C <: RingElement # TODO: fix with normal_form
-    return length(a) == 1 && isone(a.coeffs[1])
+# function ismonomial(a::QuadraticQuoAlgebraElem{C}) where C <: RingElement # TODO: fix with normal_form
+#     return length(a) == 1 && isone(a.coeffs[1])
+# end
+
+Base.:(==)(a::QuadraticQuoAlgebraElem{C}, b::QuadraticQuoAlgebraElem{C}; strict::Bool=false) where C <: RingElement = isequal(a, b; strict)
+    
+function Base.isequal(a::QuadraticQuoAlgebraElem{C}, b::QuadraticQuoAlgebraElem{C}; strict::Bool=false) where C <: RingElement
+    check_parent(a, b, false) || return false
+    return iszero(a - b; strict)
 end
 
-function iszero(a::QuadraticQuoAlgebraElem)
-    return a.length == 0 || normal_form(a).length == 0
+Base.:(==)(n::Union{Integer, Rational, AbstractFloat}, a::QuadraticQuoAlgebraElem; strict::Bool=false) = isequal(a, n; strict)
+Base.isequal(n::Union{Integer, Rational, AbstractFloat}, a::QuadraticQuoAlgebraElem; strict::Bool=false) = isequal(a, n; strict)
+Base.:(==)(a::QuadraticQuoAlgebraElem, n::Union{Integer, Rational, AbstractFloat}; strict::Bool=false) = isequal(a, n; strict)
+
+function Base.isequal(a::QuadraticQuoAlgebraElem, n::Union{Integer, Rational, AbstractFloat}; strict::Bool=false)
+    return iszero(a - parent(a)(n); strict)
 end
 
-function isone(a::QuadraticQuoAlgebraElem) # TODO: fix with normal_form
-    return a.length == 1 && isempty(a.monoms[1]) && isone(a.coeffs[1])
+Base.:(==)(n::C, a::QuadraticQuoAlgebraElem{C}; strict::Bool=false) where C <: RingElem = isequal(a, n; strict)
+Base.:isequal(n::C, a::QuadraticQuoAlgebraElem{C}; strict::Bool=false) where C <: RingElem = isequal(a, n; strict)
+Base.:(==)(a::QuadraticQuoAlgebraElem{C}, n::C; strict::Bool=false) where C <: RingElem = isequal(a, n; strict)
+
+function Base.isequal(a::QuadraticQuoAlgebraElem{C}, n::C; strict::Bool=false) where C <: RingElem
+    return iszero(a - parent(a)(n); strict)
+end
+
+function iszero(a::QuadraticQuoAlgebraElem; strict::Bool=false)
+    return strict ? normal_form(a).length == 0 : a.length == 0
+end
+
+function isone(a::QuadraticQuoAlgebraElem; strict::Bool=false)
+    if strict
+        b = normal_form(a)
+    else
+        b = a
+    end
+    return b.length == 1 && isempty(b.monoms[1]) && isone(b.coeffs[1])
 end
 
 function Base.deepcopy_internal(a::QuadraticQuoAlgebraElem{C}, dict::IdDict) where C <: RingElement
@@ -143,9 +171,9 @@ end
 #
 ###############################################################################
 
-function comm(a::QuadraticQuoAlgebraElem{C}, b::QuadraticQuoAlgebraElem{C}, force_normal_form=false) where C <: RingElement
+function comm(a::QuadraticQuoAlgebraElem{C}, b::QuadraticQuoAlgebraElem{C}; strict=false) where C <: RingElement
     r = a*b - b*a
-    return force_normal_form ? normal_form(r) : r
+    return strict ? normal_form(r) : r
 end
 
 function normal_form(a::QuadraticQuoAlgebraElem{C}) where C <: RingElement
