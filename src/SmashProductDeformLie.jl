@@ -102,9 +102,9 @@ function pbwdeform_eqs(deform::SmashProductDeformLie{C}) where C <: RingElement
     v(i) = gen(deform.alg, dimL + i)
 
     ## (a) κ is H-invariant
-    iter_a = (comm(comm(h, v(i), true), v(j)) # κ([h⋅v_i,v_j])
-            + comm(v(i), comm(h, v(j), true)) # κ([v_i,h⋅v_j])
-            - comm(h, comm(v(i), v(j), true))  # h⋅κ([v_i,v_j])
+    iter_a = (comm(comm(h, v(i); strict=true), v(j)) # κ([h⋅v_i,v_j])
+            + comm(v(i), comm(h, v(j); strict=true)) # κ([v_i,h⋅v_j])
+            - comm(h, comm(v(i), v(j); strict=true)) # h⋅κ([v_i,v_j])
         for (h, (i,j)) in Iterators.product([x(i) for i in 1:dimL], Combinatorics.Combinations(dimV, 2)))
     # m[1][2] denotes the index of the only basis element in the monomial m
 
@@ -113,12 +113,12 @@ function pbwdeform_eqs(deform::SmashProductDeformLie{C}) where C <: RingElement
 
     ## (c) 0 = κ ⊗ id - id ⊗ κ on (I ⊗ V) ∩ (V ⊗ I)
     # (I ⊗ V) ∩ (V ⊗ I) has basis v_iv_jv_k + v_jv_kv_i + v_kv_iv_j - v_kv_jv_i - v_jv_iv_k - v_iv_kv_j for i<j<k
-    iter_c = (comm(v(i), v(j), true)*v(k) - v(i)*comm(v(j), v(k), true)
-            + comm(v(j), v(k), true)*v(i) - v(j)*comm(v(k), v(i), true)
-            + comm(v(k), v(i), true)*v(j) - v(k)*comm(v(i), v(j), true)
-            - comm(v(k), v(j), true)*v(i) + v(k)*comm(v(j), v(i), true)
-            - comm(v(j), v(i), true)*v(k) + v(j)*comm(v(i), v(k), true)
-            - comm(v(i), v(k), true)*v(j) + v(i)*comm(v(k), v(j), true)
+    iter_c = (comm(v(i), v(j); strict=true)*v(k) - v(i)*comm(v(j), v(k); strict=true)
+            + comm(v(j), v(k); strict=true)*v(i) - v(j)*comm(v(k), v(i); strict=true)
+            + comm(v(k), v(i); strict=true)*v(j) - v(k)*comm(v(i), v(j); strict=true)
+            - comm(v(k), v(j); strict=true)*v(i) + v(k)*comm(v(j), v(i); strict=true)
+            - comm(v(j), v(i); strict=true)*v(k) + v(j)*comm(v(i), v(k); strict=true)
+            - comm(v(i), v(k); strict=true)*v(j) + v(i)*comm(v(k), v(j); strict=true)
         for (i,j,k) in Combinatorics.Combinations(dimV, 3))
 
     ## (d) trivial

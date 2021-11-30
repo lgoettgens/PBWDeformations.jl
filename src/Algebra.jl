@@ -163,25 +163,29 @@ end
 #
 ###############################################################################
 
-function Base.:(==)(a::AlgebraElem{C}, b::AlgebraElem{C}) where C <: RingElement
+Base.:(==)(a::AlgebraElem{C}, b::AlgebraElem{C}) where C <: RingElement = isequal(a, b)
+    
+function Base.isequal(a::AlgebraElem{C}, b::AlgebraElem{C}) where C <: RingElement
     check_parent(a, b, false) || return false
     return iszero(a - b)
 end
 
+Base.:(==)(n::Union{Integer, Rational, AbstractFloat}, a::AlgebraElem) = isequal(a, n)
+Base.isequal(n::Union{Integer, Rational, AbstractFloat}, a::AlgebraElem) = isequal(a, n)
+Base.:(==)(a::AlgebraElem, n::Union{Integer, Rational, AbstractFloat}) = isequal(a, n)
 
-function Base.:(==)(a::AlgebraElem, n::Union{Integer, Rational, AbstractFloat})
+function Base.isequal(a::AlgebraElem, n::Union{Integer, Rational, AbstractFloat})
     return iszero(a - parent(a)(n))
 end
 
+Base.:(==)(n::C, a::AlgebraElem{C}) where C <: RingElem = isequal(a, n)
+Base.:isequal(n::C, a::AlgebraElem{C}) where C <: RingElem = isequal(a, n)
+Base.:(==)(a::AlgebraElem{C}, n::C) where C <: RingElem = isequal(a, n)
 
-Base.:(==)(n::Union{Integer, Rational, AbstractFloat}, a::AlgebraElem) = a == n
-
-function Base.:(==)(a::AlgebraElem{C}, n::C) where C <: RingElem
+function Base.isequal(a::AlgebraElem{C}, n::C) where C <: RingElem
     return iszero(a - parent(a)(n))
 end
  
-Base.:(==)(n::C, a::AlgebraElem{C}) where C <: RingElem = a == n
-
 
 ###############################################################################
 #
