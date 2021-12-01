@@ -246,8 +246,24 @@ function Base.:-(a::AlgebraElem{C}, b::AlgebraElem{C}) where C <: RingElement
 end
 
 
-function Base.:*(c::C, a::AlgebraElem{C}) where C <: RingElement
+function Base.:*(c::C, a::AlgebraElem{C}) where C <: RingElem
     parent(c) === base_ring(a) || throw(ArgumentError("Incompatible coefficient rings"))
+    r = zero(a)
+    if !iszero(c)
+        fit!(r, length(a))
+        for i in 1:length(a)
+            r.coeffs[i] = c*a.coeffs[i]
+            r.monoms = deepcopy(a.monoms)
+        end
+        zeroinds = findall(iszero, r.coeffs)
+        deleteat!(r.coeffs, zeroinds)
+        deleteat!(r.monoms, zeroinds)
+        r.length -= length(zeroinds)
+    end
+    return r
+end
+
+function Base.:*(c::C, a::AlgebraElem) where C <: RingElement
     r = zero(a)
     if !iszero(c)
         fit!(r, length(a))

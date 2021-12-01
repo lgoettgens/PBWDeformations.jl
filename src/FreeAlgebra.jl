@@ -88,5 +88,5 @@ end
 
 
 function change_base_ring(R::Ring, A::FreeAlgebra{C}) where C <: RingElement
-    return free_algebra(R, A.S)
+    return free_algebra(R, A.S)[1]
 end

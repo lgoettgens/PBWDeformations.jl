@@ -166,7 +166,7 @@ function change_base_ring(R::Ring, A::QuadraticQuoAlgebra{C1}) where C1 <: RingE
     C2 = elem_type(R)
     free_alg = change_base_ring(R, A.free_alg)
 
-    this = quadratic_quo_algebra(free_alg, Dict{Tuple{Int,Int}, FreeAlgebraElem{C2}}())
+    this, _ = quadratic_quo_algebra(free_alg, Dict{Tuple{Int,Int}, FreeAlgebraElem{C2}}())
     this.rels = Dict{Tuple{Int,Int}, QuadraticQuoAlgebraElem{C2}}(k => this(a) for (k, a) in A.rels)
 
     return this

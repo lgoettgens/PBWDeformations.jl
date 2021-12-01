@@ -18,22 +18,22 @@ function smash_product_lie(coeff_ring :: Ring, symbL :: Vector{Symbol}, symbV ::
     dimL = length(symbL)
     dimV = length(symbV)
 
-    free_alg = free_algebra(coeff_ring, [symbL; symbV])
+    free_alg, _ = free_algebra(coeff_ring, [symbL; symbV])
     free_baseL = [gen(free_alg, i) for i in 1:dimL]
     free_baseV = [gen(free_alg, dimL+i) for i in 1:dimV]
 
     rels = Dict{Tuple{Int,Int}, FreeAlgebraElem{C}}()
 
     for i in 1:dimL, j in 1:dimL
-        rels[(i, j)] = free_baseL[j] * free_baseL[i] + sum(c * free_baseL[k] for (c, k) in struct_const_L[i,j]; init=0)
+        rels[(i, j)] = free_baseL[j] * free_baseL[i] + sum(c * free_baseL[k] for (c, k) in struct_const_L[i,j]; init=zero(free_alg))
     end
 
     for i in 1:dimL, j in 1:dimV
-        rels[(i, dimL+j)] = free_baseV[j] * free_baseL[i] + sum(c * free_baseV[k] for (c, k) in struct_const_V[i,j]; init=0)
-        rels[(dimL+j, i)] = free_baseL[i] * free_baseV[j] - sum(c * free_baseV[k] for (c, k) in struct_const_V[i,j]; init=0)
+        rels[(i, dimL+j)] = free_baseV[j] * free_baseL[i] + sum(c * free_baseV[k] for (c, k) in struct_const_V[i,j]; init=zero(free_alg))
+        rels[(dimL+j, i)] = free_baseL[i] * free_baseV[j] - sum(c * free_baseV[k] for (c, k) in struct_const_V[i,j]; init=zero(free_alg))
     end
 
-    alg = quadratic_quo_algebra(free_alg, rels)
+    alg, _ = quadratic_quo_algebra(free_alg, rels)
     baseL = [gen(alg, i) for i in 1:dimL]
     baseV = [gen(alg, dimL+i) for i in 1:dimV]
 

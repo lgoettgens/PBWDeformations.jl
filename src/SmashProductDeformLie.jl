@@ -38,7 +38,7 @@ function smash_product_deform_lie(sp::SmashProductLie{C}, kappa::Matrix{Quadrati
         symmetric &= iszero(kappa[i,j])
     end
 
-    alg = quadratic_quo_algebra(sp.alg, rels)
+    alg, _ = quadratic_quo_algebra(sp.alg, rels)
     baseL = map(alg, baseL)
     baseV = map(alg, baseV)
 
