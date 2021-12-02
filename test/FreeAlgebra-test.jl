@@ -1,7 +1,6 @@
 @testset ExtendedTestSet "All FreeAlgebra.jl tests" begin
     @testset "deepcopy_internal" begin
-        F = PD.free_algebra(QQ, ["a"])
-        A, = gens(F)
+        F, (A,) = PD.free_algebra(QQ, ["a"])
 
         B = deepcopy(A)
 
@@ -13,7 +12,7 @@
     end
 
     @testset "change_base_ring" begin
-        F_Q = PD.free_algebra(QQ, ["a"])
+        F_Q, = PD.free_algebra(QQ, ["a"])
         F_Z = PD.change_base_ring(ZZ, F_Q)
 
         @test base_ring(F_Q) != base_ring(F_Z)
@@ -21,8 +20,7 @@
     end
 
     @testset "ismonomial" begin
-        F = PD.free_algebra(QQ, ["a"])
-        A, = gens(F)
+        F, (A,) = PD.free_algebra(QQ, ["a"])
 
         @test ismonomial(A)
         @test ismonomial(A^2)
@@ -32,24 +30,21 @@
     end
 
     @testset "iszero" begin
-        F = PD.free_algebra(QQ, ["a"])
-        A, = gens(F)
+        F, (A,) = PD.free_algebra(QQ, ["a"])
 
         @test iszero(0A)
         @test !iszero(A)
     end
 
     @testset "isone" begin
-        F = PD.free_algebra(QQ, ["a"])
-        A, = gens(F)
+        F, (A,) = PD.free_algebra(QQ, ["a"])
 
         @test isone(0A + 1)
         @test !isone(A)
     end
 
     @testset "isgen" begin
-        F = PD.free_algebra(QQ, ["a"])
-        A, = gens(F)
+        F, (A,) = PD.free_algebra(QQ, ["a"])
 
         @test isgen(A)
         
@@ -59,11 +54,16 @@
     end
 
     @testset "Base.:-" begin
-        F = PD.free_algebra(QQ, ["a", "b"])
-        A, B = gens(F)
+        F, (A, B) = PD.free_algebra(QQ, ["a", "b"])
 
-        @test -A !== -A
-        @test A - A == zero(F)
-        A - 1
+        @test -A !== -A && -A == -A
+        @test A - A == zero(F) == -A + A
+        @test A + 1 - A == 1
+    end
+
+    @testset "parent_type" begin
+        F, (A,) = PD.free_algebra(QQ, ["a"])
+
+        # @test parent_type(A) == PD.FreeAlgebra{fmpq}
     end
 end
