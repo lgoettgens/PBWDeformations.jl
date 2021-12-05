@@ -177,7 +177,7 @@ function possible_pbwdeforms_partition_vars(vars::Vector{T}, dimL::Int64, dimV::
     return m
 end
 
-function coefficient_comparison(eq::QuadraticQuoAlgebraElem{C}) where C <: RingElement
+function coefficient_comparison(eq::AlgebraElem{C}) where C <: RingElement
     return eq.coeffs
 end
 
