@@ -224,6 +224,27 @@ function Base.:+(a::AlgebraElem{C}, b::AlgebraElem{C}) where C <: RingElement
     return r
 end
 
+function Base.:+(a::AlgebraElem{C1}, b::C2) where {C1 <: RingElement, C2 <: RingElement}
+    r = deepcopy(a)
+    j = get_index(a, Int[])
+    if isnothing(j)
+        fit!(r, length(r)+1)
+        r.coeffs[end] = deepcopy(b)
+        r.monoms[end] = deepcopy(Int[])
+    else
+        r.coeffs[j] += b.coeffs[i]
+    end
+    zeroinds = findall(iszero, r.coeffs)
+    deleteat!(r.coeffs, zeroinds)
+    deleteat!(r.monoms, zeroinds)
+    r.length -= length(zeroinds)
+    return r
+end
+
+function Base.:+(a::C1, b::AlgebraElem{C2}) where {C1 <: RingElement, C2 <: RingElement}
+    return b + a
+end
+
 
 function Base.:-(a::AlgebraElem{C}, b::AlgebraElem{C}) where C <: RingElement
     check_parent(a, b)
