@@ -1,15 +1,59 @@
 @testset ExtendedTestSet "All SmashProductDeformLie.jl tests" begin
     
-    @testset "smash_product_symm_deform_lie constructor" begin
-        @testset "$(dynkin)_$n with hw $lambda" for (dynkin, n, lambda) in [('A', 2, [1,1]), ('B', 2, [1,0])]
-            sp, _ = PD.smash_product_lie(QQ, dynkin, n, lambda)
+    @testset "smash_product_deform_lie constructor" begin
+        @testset "$(dynkin)_$n with hw $lambda; R = $R" for (dynkin, n, lambda) in [('A', 2, [1,1]), ('B', 2, [1,0])], R in [QQ, PolynomialRing(QQ, ["x","y","z"])[1]]
+            sp, (sp_baseL, sp_baseV) = PD.smash_product_lie(R, dynkin, n, lambda)
+            kappa = fill(zero(sp.alg), sp.dimV, sp.dimV)
+            kappa[1,2] = sp_baseL[1]
+            kappa[2,1] = -kappa[1,2]
+            kappa[3,4] = sp_baseL[2]
+            kappa[4,3] = -kappa[3,4]
+            deform, (baseL, baseV) = PD.smash_product_deform_lie(sp, kappa)
+
+            @test deform.dimL == sp.dimL == length(deform.baseL)
+            @test deform.dimV == sp.dimV == length(deform.baseV)
+            @test deform.baseL == baseL
+            @test deform.baseV == baseV
+            @test deform.coeff_ring == R
+            @test deform.symmetric == false
+            @test deform.kappa == kappa
+
+            # Test the module basis relations
+            for i in 1:length(baseV), j in 1:length(baseV)
+                if i == 1 && j == 2
+                    @test comm(baseV[i], baseV[j]; strict=true) == baseL[1]
+                elseif i == 2 && j == 1
+                    @test comm(baseV[i], baseV[j]; strict=true) == -baseL[1]
+                elseif i == 3 && j == 4
+                    @test comm(baseV[i], baseV[j]; strict=true) == baseL[2]
+                elseif i == 4 && j == 3
+                    @test comm(baseV[i], baseV[j]; strict=true) == -baseL[2]
+                else
+                    @test iszero(comm(baseV[i], baseV[j]; strict=true))
+                end
+            end
+
+            showOutput = @test_nowarn sprint(show, deform)
+            @test occursin("smash product", lowercase(showOutput))
+            @test occursin("lie algebra", lowercase(showOutput))
+            # @test_broken occursin(string(dynkin), showOutput)
+            # @test_broken occursin(string(lambda), showOutput)
+            @test !occursin("symmetric", lowercase(showOutput))
+            @test occursin("deformation", lowercase(showOutput))
+        end
+
+    end
+
+    @testset "smash_product_symmdeform_lie constructor" begin
+        @testset "$(dynkin)_$n with hw $lambda; R = $R" for (dynkin, n, lambda) in [('A', 2, [1,1]), ('B', 2, [1,0])], R in [QQ, PolynomialRing(QQ, ["x","y","z"])[1]]
+            sp, _ = PD.smash_product_lie(R, dynkin, n, lambda)
             deform, (baseL, baseV) = PD.smash_product_symmdeform_lie(sp)
 
             @test deform.dimL == sp.dimL == length(deform.baseL)
             @test deform.dimV == sp.dimV == length(deform.baseV)
             @test deform.baseL == baseL
             @test deform.baseV == baseV
-            @test deform.coeff_ring == QQ
+            @test deform.coeff_ring == R
             @test deform.symmetric == true
             @test deform.kappa == fill(zero(sp.alg), sp.dimV, sp.dimV)
 
@@ -28,9 +72,9 @@
 
     end
 
-    @testset "smash_product_deform_lie sanitize checks" begin
+    @testset "smash_product_deform_lie sanitize checks; R = $R" for R in [QQ, PolynomialRing(QQ, ["x","y","z"])[1]]
         @testset "check dimensions of kappa" begin
-            sp, _ = PD.smash_product_lie(QQ, 'B', 2, [1,0])
+            sp, _ = PD.smash_product_lie(R, 'B', 2, [1,0])
 
             for eps in [-1,1]
                 kappa = fill(zero(sp.alg), sp.dimV+eps, sp.dimV)
@@ -45,7 +89,7 @@
         end
 
         @testset "check entries of kappa contained in Hopf algebra of smash product" begin
-            sp, (baseL, baseV) = PD.smash_product_lie(QQ, 'B', 2, [1,0])
+            sp, (baseL, baseV) = PD.smash_product_lie(R, 'B', 2, [1,0])
 
             kappa = fill(zero(sp.alg), sp.dimV, sp.dimV)
             kappa[1,2] = baseV[1]
@@ -64,7 +108,7 @@
         end
 
         @testset "check kappa is skew symmetric" begin
-            sp, (baseL, baseV) = PD.smash_product_lie(QQ, 'B', 2, [1,0])
+            sp, (baseL, baseV) = PD.smash_product_lie(R, 'B', 2, [1,0])
 
             kappa = fill(zero(sp.alg), sp.dimV, sp.dimV)
             kappa[1,1] = baseL[1]
@@ -84,7 +128,7 @@
 
 
     @testset "ispbwdeform" begin
-        @testset "symmetric deformation of $(dynkin)_$n with hw $lambda" for (dynkin, n, lambda) in [('A', 2, [1,1]), ('B', 2, [1,0])]
+        @testset "symmetric deformation of $(dynkin)_$n with hw $lambda is PBW" for (dynkin, n, lambda) in [('A', 2, [1,1]), ('B', 2, [1,0])]
             sp, _ = PD.smash_product_lie(QQ, dynkin, n, lambda)
             d, _ = PD.smash_product_symmdeform_lie(sp)
             @test PD.ispbwdeform(d)
