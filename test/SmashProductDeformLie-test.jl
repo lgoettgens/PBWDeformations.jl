@@ -18,6 +18,9 @@
             @test deform.symmetric == false
             @test deform.kappa == kappa
 
+            @test ngens(deform) == (deform.dimL, deform.dimV)
+            @test gens(deform) == (deform.baseL, deform.baseV)
+
             # Test the module basis relations
             for i in 1:length(baseV), j in 1:length(baseV)
                 if i == 1 && j == 2
