@@ -45,6 +45,15 @@ function smash_product_lie(coeff_ring :: Ring, symbL :: Vector{String}, symbV ::
 end
 
 function smash_product_lie(coeff_ring :: Ring, dynkin :: Char, n :: Int, lambda :: Vector{Int})
+    dimL, dimV, struct_const_L, struct_const_V = smash_product_struct_const_from_gap(dynkin, n, lambda)
+
+    symbL = ["x_$i" for i in 1:dimL]
+    symbV = ["v_$i" for i in 1:dimV]
+
+    return smash_product_lie(coeff_ring, symbL, symbV, struct_const_L, struct_const_V)
+end
+
+function smash_product_struct_const_from_gap(dynkin :: Char, n :: Int, lambda :: Vector{Int})
     @assert n == length(lambda)
     sanitize_lie_input(dynkin, n)
 
@@ -69,11 +78,9 @@ function smash_product_lie(coeff_ring :: Ring, dynkin :: Char, n :: Int, lambda 
         struct_const_V[i,j] = [(c, k) for (k, c) in enumerate(GAP.gap_to_julia(GAPG.Coefficients(GAPG.Basis(V), basisL[i]^basisV[j]))) if !iszero(c)]
     end
 
-    symbL = ["x_$i" for i in 1:dimL]
-    symbV = ["v_$i" for i in 1:dimV]
-
-    return smash_product_lie(coeff_ring, symbL, symbV, struct_const_L, struct_const_V)
+    return dimL, dimV, struct_const_L, struct_const_V
 end
+
 
 ngens(sp::SmashProductLie) = sp.dimL, sp.dimV
 
@@ -102,6 +109,7 @@ function show(io::IO, sp::SmashProductLie)
     print(io, " over ")
     print(IOContext(io, :compact => true), sp.coeff_ring)
 end
+
 
 function change_base_ring(R::Ring, sp::SmashProductLie{C}) where C <: RingElement
     alg = change_base_ring(R, sp.alg)
