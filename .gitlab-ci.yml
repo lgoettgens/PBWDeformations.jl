@@ -28,7 +28,7 @@ stages:
     paths:
       - "**/*.cov"
 
-unittest-Julia 1.6:
+unittest-Julia 1.7:
   image: johannesflake/oscar
   stage: test
   extends:
