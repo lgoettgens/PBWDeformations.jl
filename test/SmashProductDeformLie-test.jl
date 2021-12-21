@@ -194,13 +194,13 @@
 
                 @test repr("text/plain", base[1][1,2]) == "1"
                 if length(base) >= 2
-                    @test repr("text/plain", base[2][1,2]) == "-2*x_3 + 4*x_1x_2 + x_3^2"
+                    @test repr("text/plain", base[2][1,2]) == "-2*x_3 + 4*x_1*x_2 + x_3^2"
                 end
                 if length(base) >= 3
-                    @test repr("text/plain", base[3][1,2]) == "8*x_3 + 16*x_1x_2 + -32*x_1x_2x_3 + -4*x_3^3 + 16*x_1^2x_2^2 + 8*x_1x_2x_3^2 + x_3^4"
+                    @test repr("text/plain", base[3][1,2]) == "8*x_3 + 16*x_1*x_2 + -32*x_1*x_2*x_3 + -4*x_3^3 + 16*x_1^2*x_2^2 + 8*x_1*x_2*x_3^2 + x_3^4"
                 end
                 if length(base) >= 4
-                        @test repr("text/plain", base[4][1,2]) == "-96*x_3 + 64*x_1x_2 + -64*x_1x_2x_3 + 40*x_3^3 + 320*x_1^2x_2^2 + 208*x_1x_2x_3^2 + -288*x_1^2x_2^2x_3 + -96*x_1x_2x_3^3 + -6*x_3^5 + 64*x_1^3x_2^3 + 48*x_1^2x_2^2x_3^2 + 12*x_1x_2x_3^4 + x_3^6"
+                        @test repr("text/plain", base[4][1,2]) == "-96*x_3 + 64*x_1*x_2 + -64*x_1*x_2*x_3 + 40*x_3^3 + 320*x_1^2*x_2^2 + 208*x_1*x_2*x_3^2 + -288*x_1^2*x_2^2*x_3 + -96*x_1*x_2*x_3^3 + -6*x_3^5 + 64*x_1^3*x_2^3 + 48*x_1^2*x_2^2*x_3^2 + 12*x_1*x_2*x_3^4 + x_3^6"
                 end
             end
 
