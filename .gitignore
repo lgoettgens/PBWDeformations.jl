@@ -1,6 +1,9 @@
 # doc artifacts
 docs/build
 
+# db artifacts
+db
+
 # julia project Manifests
 Manifest.toml
 */Manifest.toml
