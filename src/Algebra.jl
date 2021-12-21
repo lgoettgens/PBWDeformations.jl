@@ -144,7 +144,10 @@ function show(io::IO, a::AlgebraElem{C}) where C <: RingElement
                     print(io, "*")
                 end
                 g = groupBy(a.monoms[i])
-                for s in g
+                for (j, s) in enumerate(g)
+                    if j > 1
+                        print(io, "*")
+                    end
                     print(io, S[s[1]])
                     if length(s) > 1
                         print(io, "^")
