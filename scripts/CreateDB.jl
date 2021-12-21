@@ -36,12 +36,23 @@ append!(inputs, [('D', n, lambda, maxdeg)
     for lambda in lambdas(n, lambdasum)])
 
 @info "Computing $(length(inputs)) cases..." 
-
-pmap(inputs) do input
+runtimes = pmap(inputs) do input
     println(input)
     dynkin, n, lambda, maxdeg = input
     lambda_string = replace("$lambda", ' ' => "")
     command = Cmd(`timeout -s SIGKILL $(timeout) julia scripts/CreateDBEntry.jl $(dynkin) $(n) $(lambda_string) $(maxdeg)`)
     command = Cmd(command, ignorestatus=true)
-    run(command)
+    runtime = @elapsed run(command)
+    return round(Int, runtime)
+end
+
+@info "Writing runtimes to file..."
+path = "db"
+filename = "$(path)/_runtimes.txt"
+Base.Filesystem.mkpath(path)
+open(filename, "w") do io
+    for (input, runtime) in zip(inputs, runtimes)
+        println(io, "$(input) => $(runtime)s")
+    end
+    print(io, "EOF")
 end
