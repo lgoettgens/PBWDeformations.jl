@@ -1,6 +1,9 @@
 # doc artifacts
 docs/build
 
+# jupyter artifacts
+examples/.ipynb_checkpoints
+
 # julia project Manifests
 Manifest.toml
 */Manifest.toml
