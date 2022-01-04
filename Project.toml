@@ -1,7 +1,7 @@
 name = "PBWDeformations"
 uuid = "5e7992ee-18b2-4301-9ba0-4f17696dc75a"
 authors = ["Johannes Flake <flake@art.rwth-aachen.de>", "Lars Göttgens <lars.goettgens@rwth-aachen.de>", "Phil Pützstück <phil.puetzstueck@rwth-aachen.de>"]
-version = "0.1.0"
+version = "0.0.0"
 
 [deps]
 AbstractAlgebra = "c3fe647b-3220-5bb0-a1ea-a7954cac585d"
