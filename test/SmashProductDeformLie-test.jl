@@ -1,163 +1,236 @@
-@testset ExtendedTestSet "All PBWDeformations.SmashProductDeformLie tests" begin
-    @testset "smashProducDeformLie coincides with smashProductSymmDeformLie on symmetric kappa" begin
-        @testset "B_2 with hw [1,0]" begin
-            sp = PD.smashProductLie('B', 2, [1,0])
-            nV = sp.extraData.nV
+@testset ExtendedTestSet "All SmashProductDeformLie.jl tests" begin
+    
+    @testset "smash_product_deform_lie constructor" begin
+        @testset "$(dynkin)_$n with hw $lambda; R = $R" for (dynkin, n, lambda) in [('A', 2, [1,1]), ('B', 2, [1,0])], R in [QQ, PolynomialRing(QQ, ["x","y","z"])[1]]
+            sp, (sp_baseL, sp_baseV) = PD.smash_product_lie(R, dynkin, n, lambda)
+            kappa = fill(zero(sp.alg), sp.dimV, sp.dimV)
+            kappa[1,2] = sp_baseL[1]
+            kappa[2,1] = -kappa[1,2]
+            kappa[3,4] = sp_baseL[2]
+            kappa[4,3] = -kappa[3,4]
+            deform, (baseL, baseV) = PD.smash_product_deform_lie(sp, kappa)
 
-            kappa = fill(AlgebraElement{Rational{Int64}}(), nV, nV)
+            @test deform.dimL == sp.dimL == length(deform.baseL)
+            @test deform.dimV == sp.dimV == length(deform.baseV)
+            @test deform.baseL == baseL
+            @test deform.baseV == baseV
+            @test deform.coeff_ring == R
+            @test deform.symmetric == false
+            @test deform.kappa == kappa
 
-            deform1 = PD.smashProductSymmDeformLie(sp)
-            deform2 = PD.smashProductDeformLie(sp, kappa)
+            @test ngens(deform) == (deform.dimL, deform.dimV)
+            @test gens(deform) == (deform.baseL, deform.baseV)
 
-            @test deform1 == deform2
-        end
-    end
+            # Test the module basis relations
+            for i in 1:length(baseV), j in 1:length(baseV)
+                if i == 1 && j == 2
+                    @test comm(baseV[i], baseV[j]; strict=true) == baseL[1]
+                elseif i == 2 && j == 1
+                    @test comm(baseV[i], baseV[j]; strict=true) == -baseL[1]
+                elseif i == 3 && j == 4
+                    @test comm(baseV[i], baseV[j]; strict=true) == baseL[2]
+                elseif i == 4 && j == 3
+                    @test comm(baseV[i], baseV[j]; strict=true) == -baseL[2]
+                else
+                    @test iszero(comm(baseV[i], baseV[j]; strict=true))
+                end
+            end
 
-    @testset "smashProductSymmDeformLie constructor" begin
-        @testset "$(dynkin)_$n with hw $lambda" for (dynkin, n, lambda) in [('A', 2, [1,1]), ('B', 2, [1,0])]
-            sp = PD.smashProductLie(dynkin, n, lambda)
-            deform1 = PD.smashProductSymmDeformLie(sp)
-            deform2 = PD.smashProductSymmDeformLie(dynkin, n, lambda)
-
-            @test deform1.extraData.symmetric == deform2.extraData.symmetric == true
-            @test typeof(deform1.extraData.sp) == typeof(deform2.extraData.sp) == typeof(sp.extraData)
-            @test deform1.extraData.sp == deform2.extraData.sp == sp.extraData
-            @test deform1.basis == deform2.basis == sp.basis
-
-            # Test that the module basis commutes and the other commutators come from the smash product
-            @test deform1.relTable == deform2.relTable == Dict(union(sp.relTable, [(mod(i), mod(j)) => AlgebraElement{Rational{Int64}}([(1//1, mod(j,i))]) for i in 1:sp.extraData.nV for j in 1:i-1]))
-
-            @test sprint(show, deform1) == sprint(show, deform2)
-
-            showOutput = @test_nowarn sprint(show, deform1)
+            showOutput = @test_nowarn sprint(show, deform)
             @test occursin("smash product", lowercase(showOutput))
             @test occursin("lie algebra", lowercase(showOutput))
-            @test occursin(string(dynkin), showOutput)
-            @test occursin(string(lambda), showOutput)
+            # @test_broken occursin(string(dynkin), showOutput)
+            # @test_broken occursin(string(lambda), showOutput)
+            @test !occursin("symmetric", lowercase(showOutput))
+            @test occursin("deformation", lowercase(showOutput))
+        end
+
+    end
+
+    @testset "smash_product_symmdeform_lie constructor" begin
+        @testset "$(dynkin)_$n with hw $lambda; R = $R" for (dynkin, n, lambda) in [('A', 2, [1,1]), ('B', 2, [1,0])], R in [QQ, PolynomialRing(QQ, ["x","y","z"])[1]]
+            sp, _ = PD.smash_product_lie(R, dynkin, n, lambda)
+            deform, (baseL, baseV) = PD.smash_product_symmdeform_lie(sp)
+
+            @test deform.dimL == sp.dimL == length(deform.baseL)
+            @test deform.dimV == sp.dimV == length(deform.baseV)
+            @test deform.baseL == baseL
+            @test deform.baseV == baseV
+            @test deform.coeff_ring == R
+            @test deform.symmetric == true
+            @test deform.kappa == fill(zero(sp.alg), sp.dimV, sp.dimV)
+
+            # Test that the module basis commutes
+            for vi in baseV, vj in baseV
+                @test iszero(comm(vi, vj; strict=true))
+            end
+
+            showOutput = @test_nowarn sprint(show, deform)
+            @test occursin("smash product", lowercase(showOutput))
+            @test occursin("lie algebra", lowercase(showOutput))
+            # @test_broken occursin(string(dynkin), showOutput)
+            # @test_broken occursin(string(lambda), showOutput)
             @test occursin("symmetric deformation", lowercase(showOutput))
         end
 
     end
 
-    @testset "smashProductDeformLie assertions" begin
-        @testset "assert correct dimensions of kappa" begin
-            sp = PD.smashProductLie('B', 2, [1,0])
-            nV = sp.extraData.nV
+    @testset "smash_product_deform_lie sanitize checks; R = $R" for R in [QQ, PolynomialRing(QQ, ["x","y","z"])[1]]
+        @testset "check dimensions of kappa" begin
+            sp, _ = PD.smash_product_lie(R, 'B', 2, [1,0])
 
-            kappa = fill(AlgebraElement{Rational{Int64}}(), nV+1, nV)
-            @test_throws AssertionError("size of kappa matches module dimension") PD.smashProductDeformLie(sp, kappa)
+            for eps in [-1,1]
+                kappa = fill(zero(sp.alg), sp.dimV+eps, sp.dimV)
+                @test_throws ArgumentError("kappa has wrong dimensions.") PD.smash_product_deform_lie(sp, kappa)
 
-            kappa = fill(AlgebraElement{Rational{Int64}}(), nV, nV+1)
-            @test_throws AssertionError("size of kappa matches module dimension") PD.smashProductDeformLie(sp, kappa)
+                kappa = fill(zero(sp.alg), sp.dimV, sp.dimV+eps)
+                @test_throws ArgumentError("kappa has wrong dimensions.") PD.smash_product_deform_lie(sp, kappa)
 
-            kappa = fill(AlgebraElement{Rational{Int64}}(), nV+1, nV+1)
-            @test_throws AssertionError("size of kappa matches module dimension") PD.smashProductDeformLie(sp, kappa)
+                kappa = fill(zero(sp.alg), sp.dimV+eps, sp.dimV+eps)
+                @test_throws ArgumentError("kappa has wrong dimensions.") PD.smash_product_deform_lie(sp, kappa)
+            end
         end
 
-        @testset "assert entries of kappa contained in Hopf algebra of smash product" begin
-            sp = PD.smashProductLie('B', 2, [1,0])
-            nV = sp.extraData.nV
+        @testset "check entries of kappa contained in Hopf algebra of smash product" begin
+            sp, (baseL, baseV) = PD.smash_product_lie(R, 'B', 2, [1,0])
 
-            # basis of sp consists of (:mod, 1) to (:mod 5) and (:lie, 1) to (:lie, 10)
-
-            kappa = fill(AlgebraElement{Rational{Int64}}(), nV, nV)
-            kappa[1,2] = AlgebraElement{Rational{Int64}}(mod(1))
+            kappa = fill(zero(sp.alg), sp.dimV, sp.dimV)
+            kappa[1,2] = baseV[1]
             kappa[2,1] = -kappa[1,2]
-            @test_throws AssertionError("kappa only takes values in Hopf algebra") PD.smashProductDeformLie(sp, kappa)
+            @test_throws ArgumentError("kappa does not only take values in the hopf algebra") PD.smash_product_deform_lie(sp, kappa)
 
-            kappa = fill(AlgebraElement{Rational{Int64}}(), nV, nV)
-            kappa[1,2] = AlgebraElement{Rational{Int64}}(lie(0))
+            kappa = fill(zero(sp.alg), sp.dimV, sp.dimV)
+            kappa[1,2] = baseV[1]*baseL[1]
             kappa[2,1] = -kappa[1,2]
-            @test_throws AssertionError("kappa only takes values in Hopf algebra") PD.smashProductDeformLie(sp, kappa)
+            @test_throws ArgumentError("kappa does not only take values in the hopf algebra") PD.smash_product_deform_lie(sp, kappa)
 
-            kappa = fill(AlgebraElement{Rational{Int64}}(), nV, nV)
-            kappa[1,2] = AlgebraElement{Rational{Int64}}(lie(11))
+            kappa = fill(zero(sp.alg), sp.dimV, sp.dimV)
+            kappa[1,2] = sp.alg(2)
             kappa[2,1] = -kappa[1,2]
-            @test_throws AssertionError("kappa only takes values in Hopf algebra") PD.smashProductDeformLie(sp, kappa)
+            @test_nowarn PD.smash_product_deform_lie(sp, kappa)
         end
 
-        @testset "assert kappa is skew symmetric" begin
-            sp = PD.smashProductLie('B', 2, [1,0])
-            nV = sp.extraData.nV
+        @testset "check kappa is skew symmetric" begin
+            sp, (baseL, baseV) = PD.smash_product_lie(R, 'B', 2, [1,0])
 
-            kappa = fill(PD.AlgebraElement{Rational{Int64}}(), nV, nV)
-            kappa[1,1] = AlgebraElement{Rational{Int64}}(lie(1))
-            @test_throws AssertionError("kappa is skew-symmetric") PD.smashProductDeformLie(sp, kappa)
+            kappa = fill(zero(sp.alg), sp.dimV, sp.dimV)
+            kappa[1,1] = baseL[1]
+            @test_throws ArgumentError("kappa is not skew-symmetric.") PD.smash_product_deform_lie(sp, kappa)
 
-            kappa = fill(PD.AlgebraElement{Rational{Int64}}(), nV, nV)
-            kappa[1,2] = AlgebraElement{Rational{Int64}}(lie(1))
-            @test_throws AssertionError("kappa is skew-symmetric") PD.smashProductDeformLie(sp, kappa)
+            kappa = fill(zero(sp.alg), sp.dimV, sp.dimV)
+            kappa[1,2] = baseL[1]
+            @test_throws ArgumentError("kappa is not skew-symmetric.") PD.smash_product_deform_lie(sp, kappa)
+
+            kappa = fill(zero(sp.alg), sp.dimV, sp.dimV)
+            kappa[1,2] = baseL[1]
+            kappa[2,1] = -2*baseL[1]
+            @test_throws ArgumentError("kappa is not skew-symmetric.") PD.smash_product_deform_lie(sp, kappa)
         end
 
     end
 
-    @testset "isPBWDeform" begin
-        @testset "symmetric deformation of $(dynkin)_$n with hw $lambda" for (dynkin, n, lambda) in [('A', 2, [1,1]), ('B', 2, [1,0])]
-            d = PD.smashProductSymmDeformLie(dynkin, n, lambda)
-            @test PD.isPBWDeform(d)
+
+    @testset "ispbwdeform" begin
+        @testset "symmetric deformation of $(dynkin)_$n with hw $lambda is PBW" for (dynkin, n, lambda) in [('A', 2, [1,1]), ('B', 2, [1,0])]
+            sp, _ = PD.smash_product_lie(QQ, dynkin, n, lambda)
+            d, _ = PD.smash_product_symmdeform_lie(sp)
+            @test PD.ispbwdeform(d)
         end
 
         @testset "non-PBW deformations" begin
-            sp = PD.smashProductLie('A', 2, [1,0])
-            kappa = fill(AlgebraElement{Rational{Int64}}(0), 3, 3)
+            sp, (baseL, baseV) = PD.smash_product_lie(QQ, 'A', 2, [1,0])
+            kappa = fill(zero(sp.alg), 3, 3)
             # some made-up skew-symmetric entries
-            kappa[1,2] = 1*lie(3)
-            kappa[2,1] = -lie(3)
-            d = PD.smashProductDeformLie(sp, kappa)
-            @test !PD.isPBWDeform(d)
+            kappa[1,2] = baseL[2]
+            kappa[2,1] = -baseL[2]
+            d, _ = PD.smash_product_deform_lie(sp, kappa)
+            @test !PD.ispbwdeform(d)
         end
 
     end
 
-    @testset "possible_pbw_deforms construction stuff" begin
-        @testset "paramDeformNumberVars tests" begin
-            for _ in 1:numRandomTests
-                a, b, c = PD.paramDeformNumberVars(rand(1:10), rand(1:10), rand(0:5))
+    @testset "possible_pbwdeforms construction stuff" begin
+        @testset "possible_pbwdeforms_nvars tests" begin
+            for _ in 1:num_random_tests
+                a, b, c = PD.possible_pbwdeforms_nvars(rand(1:10), rand(1:10), rand(0:5))
                 @test a == b * c
             end
 
             for i in 1:10
-                @test PD.paramDeformNumberVars(1, i, 0) == (div(i*(i-1), 2), div(i*(i-1), 2), 1)
-                @test PD.paramDeformNumberVars(1, i, 1) == (2*div(i*(i-1), 2), div(i*(i-1), 2), 2)
-                @test PD.paramDeformNumberVars(5, i, 1) == (6*div(i*(i-1), 2), div(i*(i-1), 2), 6)
-                @test PD.paramDeformNumberVars(1, i, 2) == (3*div(i*(i-1), 2), div(i*(i-1), 2), 3)
-                @test PD.paramDeformNumberVars(3, i, 2) == (10*div(i*(i-1), 2), div(i*(i-1), 2), 10)
+                @test PD.possible_pbwdeforms_nvars(1, i, 0) == (div(i*(i-1), 2), div(i*(i-1), 2), 1)
+                @test PD.possible_pbwdeforms_nvars(1, i, 1) == (2*div(i*(i-1), 2), div(i*(i-1), 2), 2)
+                @test PD.possible_pbwdeforms_nvars(5, i, 1) == (6*div(i*(i-1), 2), div(i*(i-1), 2), 6)
+                @test PD.possible_pbwdeforms_nvars(1, i, 2) == (3*div(i*(i-1), 2), div(i*(i-1), 2), 3)
+                @test PD.possible_pbwdeforms_nvars(3, i, 2) == (10*div(i*(i-1), 2), div(i*(i-1), 2), 10)
             end
         end
 
-        @testset "paramDeformVars tests" begin
-            for _ in 1:numRandomTests
+        @testset "possible_pbwdeforms_vars tests" begin
+            for _ in 1:num_random_tests
                 nL, nV, maxdeg = rand(1:10), rand(1:10), rand(0:5)
-                l, _, _ = PD.paramDeformNumberVars(nL, nV, maxdeg)
-                @test l == length(PD.paramDeformVars(nL, nV, maxdeg))
+                l, _, _ = PD.possible_pbwdeforms_nvars(nL, nV, maxdeg)
+                @test l == length(PD.possible_pbwdeforms_vars(nL, nV, maxdeg))
             end
         end
 
-        @testset "sortVars tests" begin
-            #TODO
+        @testset "coefficient_comparison tests" begin
+            A, (x,y,z) = PD.free_algebra(QQ, ["x", "y", "z"])
+            eq = QQ(2//3)*x + 88*y*z - 12*x*z + 3*y + 0*z^4 - 2*y + 12*x*z
+            @test issetequal(PD.coefficient_comparison(eq), elem_type(QQ)[2//3, 88, 1])
         end
 
-        @testset "coefficientComparison tests" begin
-            eq = 2//3*test(1) + 88*test(3,4) - 12*test(1,5) + 3*test(2) + 0*test(4) - 2*test(2) + 12*test(1,5)
-            @test issetequal(PD.coefficientComparison(eq), [2//3, 88, 1])
-        end
+        @testset "possible_pbwdeforms tests" begin
+            sp, _ = PD.smash_product_lie(QQ, 'A', 1, [1])
+            @testset "A_1 with hw [1], maxdeg = $maxdeg" for maxdeg in 0:8
+                base = PD.possible_pbwdeforms(sp, maxdeg)
 
-        @testset "simplifyGen tests" begin
-            #TODO (maybe using Singular)
-        end
+                @test length(base) == 1 + div(maxdeg, 2)
 
-        @testset "both implementations return the same" begin
-            sp = PD.smashProductLie('A',2,[1,1])
-            @test PD.possible_pbw_deforms(sp, 1, use_iterators=false) == PD.possible_pbw_deforms(sp, 1, use_iterators=true)
-        end
+                for b in base
+                    for i in 1:sp.dimV, j in 1:sp.dimV
+                        @test iszero(b[i,j] + b[j,i])
+                    end
+                end
 
-        @testset "everything still works with use_iterators=$use_iterators with special_return=$special_return" for use_iterators in [false, true], special_return in [Nothing, SparseArrays.SparseMatrixCSC]
-            @test_nowarn PD.possible_pbw_deforms(PD.smashProductLie('A',2,[1,0]), 1; use_iterators, special_return)
-            @test_nowarn PD.possible_pbw_deforms(PD.smashProductLie('A',2,[1,0]), 2; use_iterators, special_return)
-            @test_nowarn PD.possible_pbw_deforms(PD.smashProductLie('A',2,[1,1]), 1; use_iterators, special_return)
-            @test_nowarn PD.possible_pbw_deforms(PD.smashProductLie('B',2,[1,0]), 1; use_iterators, special_return)
+                @test repr("text/plain", base[1][1,2]) == "1"
+                if length(base) >= 2
+                    @test repr("text/plain", base[2][1,2]) == "-2*x_3 + 4*x_1*x_2 + x_3^2"
+                end
+                if length(base) >= 3
+                    @test repr("text/plain", base[3][1,2]) == "8*x_3 + 16*x_1*x_2 + -32*x_1*x_2*x_3 + -4*x_3^3 + 16*x_1^2*x_2^2 + 8*x_1*x_2*x_3^2 + x_3^4"
+                end
+                if length(base) >= 4
+                        @test repr("text/plain", base[4][1,2]) == "-96*x_3 + 64*x_1*x_2 + -64*x_1*x_2*x_3 + 40*x_3^3 + 320*x_1^2*x_2^2 + 208*x_1*x_2*x_3^2 + -288*x_1^2*x_2^2*x_3 + -96*x_1*x_2*x_3^3 + -6*x_3^5 + 64*x_1^3*x_2^3 + 48*x_1^2*x_2^2*x_3^2 + 12*x_1*x_2*x_3^4 + x_3^6"
+                end
+            end
+
+            sp, _ = PD.smash_product_lie(QQ, 'B', 2, [1,0])
+            @testset "B_2 with hw [1,0], maxdeg = $maxdeg" for maxdeg in 0:2
+                base = PD.possible_pbwdeforms(sp, maxdeg)
+
+                @test length(base) == div(maxdeg+1, 2)
+
+                for b in base
+                    for i in 1:sp.dimV, j in 1:sp.dimV
+                        @test iszero(b[i,j] + b[j,i])
+                    end
+                end
+
+                if length(base) >= 1
+                    @test repr("text/plain", base[1]) == """
+                        5×5 Matrix{PBWDeformations.QuadraticQuoAlgebraElem{fmpq}}:
+                         0                    -1*x_4     x_3     -1*x_1      x_9 + 1//2*x_10
+                         x_4                  0          x_2     -1//2*x_10  x_5
+                         -1*x_3               -1*x_2     0       -1*x_6      x_7
+                         x_1                  1//2*x_10  x_6     0           x_8
+                         -1*x_9 + -1//2*x_10  -1*x_5     -1*x_7  -1*x_8      0"""
+                end
+                
+            end
+
         end
 
     end
 
+       
 end
