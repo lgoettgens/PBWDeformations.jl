@@ -1,6 +1,9 @@
 # doc artifacts
 docs/build
 
+# db artifacts
+db
+
 # jupyter artifacts
 examples/.ipynb_checkpoints
 
