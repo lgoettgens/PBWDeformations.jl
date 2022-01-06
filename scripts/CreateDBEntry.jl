@@ -40,7 +40,7 @@ end
 for deg in 0:maxdeg
     @info "Computing PBWDeformations... (degree=$deg)"
     sp, _ = PBWDeformations.smash_product_lie(QQ, dynkin, n, lambda)
-    kappas = PBWDeformations.possible_pbwdeforms(sp, deg)
+    kappas = PBWDeformations.pbwdeforms_all(sp, deg)
 
     @info "Writing Output... (degree=$deg)"
     path = "db"
