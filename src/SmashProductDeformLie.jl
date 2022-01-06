@@ -144,24 +144,24 @@ end
 
 ###############################################################################
 #
-#   Possible PBW deformations
+#   All PBW deformations
 #
 ###############################################################################
 
-function possible_pbwdeforms_nvars(dimL::Int64, dimV::Int64, maxdeg::Int64)
+function pbwdeformsall_nvars(dimL::Int64, dimV::Int64, maxdeg::Int64)
     n_kappa_entries = div(dimV*(dimV-1), 2)
     dim_free_alg = sum(binomial(dimL + k - 1, k) for k in 0:maxdeg)
     
     return n_kappa_entries * dim_free_alg, n_kappa_entries, dim_free_alg
 end
 
-function possible_pbwdeforms_vars(dimL::Int64, dimV::Int64, maxdeg::Int64)
+function pbwdeformsall_vars(dimL::Int64, dimV::Int64, maxdeg::Int64)
     # format: "c_{i,j,deg,[inds]}"
     return ["c_{$i,$j,$deg,$(isempty(inds) ? "[]" : inds)}" for i in 1:dimV for j in i+1:dimV for deg in 0:maxdeg for inds=Combinatorics.with_replacement_combinations(1:dimL, deg)]
 end
 
-function possible_pbwdeforms_partition_vars(vars::Vector{T}, dimL::Int64, dimV::Int64, maxdeg::Int64) where T
-    _, n_kappa_entries, dim_free_alg = possible_pbwdeforms_nvars(dimL, dimV, maxdeg)
+function pbwdeformsall_partition_vars(vars::Vector{T}, dimL::Int64, dimV::Int64, maxdeg::Int64) where T
+    _, n_kappa_entries, dim_free_alg = pbwdeformsall_nvars(dimL, dimV, maxdeg)
     m = fill(Vector{T}[], dimV, dimV)
     k = 0
     for i in 1:dimV, j in i+1:dimV
@@ -235,15 +235,15 @@ function indices_of_freedom(mat::SparseArrays.SparseMatrixCSC{T, Int64}) where T
 end
 
 
-function possible_pbwdeforms(sp::SmashProductLie{C}, maxdeg::Int64; special_return::Type{T} = Nothing) where {C <: RingElement, T <: Union{Nothing, SparseMatrixCSC}}
+function pbwdeforms_all(sp::SmashProductLie{C}, maxdeg::Int64; special_return::Type{T} = Nothing) where {C <: RingElement, T <: Union{Nothing, SparseMatrixCSC}}
     dimL = sp.dimL
     dimV = sp.dimV
 
     @info "Constructing MPolyRing..."
-    R, vars = PolynomialRing(sp.coeff_ring, possible_pbwdeforms_vars(dimL, dimV, maxdeg))
+    R, vars = PolynomialRing(sp.coeff_ring, pbwdeformsall_vars(dimL, dimV, maxdeg))
     nvars = length(vars)
     var_lookup = Dict(vars[i] => i for i in 1:nvars)
-    var_mat = possible_pbwdeforms_partition_vars(vars, dimL, dimV, maxdeg)
+    var_mat = pbwdeformsall_partition_vars(vars, dimL, dimV, maxdeg)
 
 
     @info "Changing SmashProductLie coeffcient type..."
