@@ -1,11 +1,17 @@
 # doc artifacts
 docs/build
 
+# jupyter artifacts
+examples/.ipynb_checkpoints
+
 # julia project Manifests
 Manifest.toml
 */Manifest.toml
 
 # code coverage reports
 *.cov
+
+# PProf artifacts
+*.pb.gz
 
 *.vscode

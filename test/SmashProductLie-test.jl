@@ -1,273 +1,190 @@
-C = DefaultScalarType
+@testset ExtendedTestSet "All SmashProductLie.jl tests" begin
+    
+    @testset "smash_product_lie constructor using GAP; R = $R" for R in [QQ, PolynomialRing(QQ, ["x","y","z"])[1]]
+        @testset "consistency for $(dynkin)_$n with hw $lambda" for (dynkin, n, lambda) in [('A', 1, [1]), ('A', 2, [1,1]), ('B', 2, [1,0])]
+            sp, (baseL, baseV) = PD.smash_product_lie(R, dynkin, n, lambda)
+            
+            @test sp.dimL == length(sp.baseL)
+            @test sp.dimV == length(sp.baseV)
+            @test sp.baseL == baseL
+            @test sp.baseV == baseV
+            @test sp.coeff_ring == R
 
-@testset ExtendedTestSet "All PBWDeformations.SmashProductLie tests" begin
-    @testset "smash_product_lie constructor" begin
-        @testset "A_2 with hw [1,1]" begin
-            sp = PD.smash_product_lie('A', 2, [1,1])
-            @test sp.extraData.dynkin == 'A'
-            @test sp.extraData.n == 2
-            @test sp.extraData.lambda == [1,1]
-            @test sp.extraData.nL == 8
-            @test sp.extraData.nV == 8
-            @test length(sp.basis) == sp.extraData.nL + sp.extraData.nV
-            @test sp.extraData.matrixRepL == PD.get_matrix_rep('A', 2)
-
-            showOutput = @test_nowarn sprint(show, sp)
-            @test occursin("smash product", lowercase(showOutput))
-            @test occursin("lie algebra", lowercase(showOutput))
-            @test occursin("A", showOutput)
-            @test occursin("[1,1]", showOutput) || occursin("[1, 1]", showOutput)
-
-            @test sp.relTable == Dict(
-                (lie(2), lie(1)) => AlgebraElement{C}([(C(1), lie(1, 2)), (C(1),    lie([3]))]),
-                (lie(3), lie(1)) => AlgebraElement{C}([(C(1), lie(1, 3))]),
-                (lie(3), lie(2)) => AlgebraElement{C}([(C(1), lie(2, 3))]),
-                (lie(4), lie(1)) => AlgebraElement{C}([(C(1), lie(1, 4)), (C(-1),   lie([7]))]),
-                (lie(4), lie(2)) => AlgebraElement{C}([(C(1), lie(2, 4))]),
-                (lie(4), lie(3)) => AlgebraElement{C}([(C(1), lie(3, 4)), (C(-1),   lie([2]))]),
-                (lie(5), lie(1)) => AlgebraElement{C}([(C(1), lie(1, 5))]),
-                (lie(5), lie(2)) => AlgebraElement{C}([(C(1), lie(2, 5)), (C(-1),   lie([8]))]),
-                (lie(5), lie(3)) => AlgebraElement{C}([(C(1), lie(3, 5)), (C(1),    lie([1]))]),
-                (lie(5), lie(4)) => AlgebraElement{C}([(C(1), lie(4, 5)), (C(-1),   lie([6]))]),
-                (lie(6), lie(1)) => AlgebraElement{C}([(C(1), lie(1, 6)), (C(-1),   lie([5]))]),
-                (lie(6), lie(2)) => AlgebraElement{C}([(C(1), lie(2, 6)), (C(1),    lie([4]))]),
-                (lie(6), lie(3)) => AlgebraElement{C}([(C(1), lie(3, 6)), (C(-1),   lie([7])), (C(-1), lie([8]))]),
-                (lie(6), lie(4)) => AlgebraElement{C}([(C(1), lie(4, 6))]),
-                (lie(6), lie(5)) => AlgebraElement{C}([(C(1), lie(5, 6))]),
-                (lie(7), lie(1)) => AlgebraElement{C}([(C(1), lie(1, 7)), (C(2),    lie([1]))]),
-                (lie(7), lie(2)) => AlgebraElement{C}([(C(1), lie(2, 7)), (C(-1),   lie([2]))]),
-                (lie(7), lie(3)) => AlgebraElement{C}([(C(1), lie(3, 7)), (C(1),    lie([3]))]),
-                (lie(7), lie(4)) => AlgebraElement{C}([(C(1), lie(4, 7)), (C(-2),   lie([4]))]),
-                (lie(7), lie(5)) => AlgebraElement{C}([(C(1), lie(5, 7)), (C(1),    lie([5]))]),
-                (lie(7), lie(6)) => AlgebraElement{C}([(C(1), lie(6, 7)), (C(-1),   lie([6]))]),
-                (lie(8), lie(1)) => AlgebraElement{C}([(C(1), lie(1, 8)), (C(-1),   lie([1]))]),
-                (lie(8), lie(2)) => AlgebraElement{C}([(C(1), lie(2, 8)), (C(2),    lie([2]))]),
-                (lie(8), lie(3)) => AlgebraElement{C}([(C(1), lie(3, 8)), (C(1),    lie([3]))]),
-                (lie(8), lie(4)) => AlgebraElement{C}([(C(1), lie(4, 8)), (C(1),    lie([4]))]),
-                (lie(8), lie(5)) => AlgebraElement{C}([(C(1), lie(5, 8)), (C(-2),   lie([5]))]),
-                (lie(8), lie(6)) => AlgebraElement{C}([(C(1), lie(6, 8)), (C(-1),   lie([6]))]),
-                (lie(8), lie(7)) => AlgebraElement{C}([(C(1), lie(7, 8))]),
-                (lie(1), mod(1)) => AlgebraElement{C}([(C(1), mod(1) * lie(1))]),
-                (lie(2), mod(1)) => AlgebraElement{C}([(C(1), mod(1) * lie(2))]),
-                (lie(3), mod(1)) => AlgebraElement{C}([(C(1), mod(1) * lie(3))]),
-                (lie(4), mod(1)) => AlgebraElement{C}([(C(1), mod(1) * lie(4)), (C(1),    mod([2]))]),
-                (lie(5), mod(1)) => AlgebraElement{C}([(C(1), mod(1) * lie(5)), (C(1),    mod([3]))]),
-                (lie(6), mod(1)) => AlgebraElement{C}([(C(1), mod(1) * lie(6)), (C(1),    mod([5]))]),
-                (lie(7), mod(1)) => AlgebraElement{C}([(C(1), mod(1) * lie(7)), (C(1),    mod([1]))]),
-                (lie(8), mod(1)) => AlgebraElement{C}([(C(1), mod(1) * lie(8)), (C(1),    mod([1]))]),
-                (lie(1), mod(2)) => AlgebraElement{C}([(C(1), mod(2) * lie(1)), (C(1),    mod([1]))]),
-                (lie(2), mod(2)) => AlgebraElement{C}([(C(1), mod(2) * lie(2))]),
-                (lie(3), mod(2)) => AlgebraElement{C}([(C(1), mod(2) * lie(3))]),
-                (lie(4), mod(2)) => AlgebraElement{C}([(C(1), mod(2) * lie(4))]),
-                (lie(5), mod(2)) => AlgebraElement{C}([(C(1), mod(2) * lie(5)), (C(1),    mod([4])), (C(-1), mod([5]))]),
-                (lie(6), mod(2)) => AlgebraElement{C}([(C(1), mod(2) * lie(6)), (C(1),    mod([6]))]),
-                (lie(7), mod(2)) => AlgebraElement{C}([(C(1), mod(2) * lie(7)), (C(-1),   mod([2]))]),
-                (lie(8), mod(2)) => AlgebraElement{C}([(C(1), mod(2) * lie(8)), (C(2),    mod([2]))]),
-                (lie(1), mod(3)) => AlgebraElement{C}([(C(1), mod(3) * lie(1))]),
-                (lie(2), mod(3)) => AlgebraElement{C}([(C(1), mod(3) * lie(2)), (C(1),    mod([1]))]),
-                (lie(3), mod(3)) => AlgebraElement{C}([(C(1), mod(3) * lie(3))]),
-                (lie(4), mod(3)) => AlgebraElement{C}([(C(1), mod(3) * lie(4)), (C(1),    mod([4]))]),
-                (lie(5), mod(3)) => AlgebraElement{C}([(C(1), mod(3) * lie(5))]),
-                (lie(6), mod(3)) => AlgebraElement{C}([(C(1), mod(3) * lie(6)), (C(1),    mod([7]))]),
-                (lie(7), mod(3)) => AlgebraElement{C}([(C(1), mod(3) * lie(7)), (C(2),    mod([3]))]),
-                (lie(8), mod(3)) => AlgebraElement{C}([(C(1), mod(3) * lie(8)), (C(-1),   mod([3]))]),
-                (lie(1), mod(4)) => AlgebraElement{C}([(C(1), mod(4) * lie(1)), (C(2),    mod([3]))]),
-                (lie(2), mod(4)) => AlgebraElement{C}([(C(1), mod(4) * lie(2)), (C(1),    mod([2]))]),
-                (lie(3), mod(4)) => AlgebraElement{C}([(C(1), mod(4) * lie(3)), (C(1),    mod([1]))]),
-                (lie(4), mod(4)) => AlgebraElement{C}([(C(1), mod(4) * lie(4)), (C(2),    mod([6]))]),
-                (lie(5), mod(4)) => AlgebraElement{C}([(C(1), mod(4) * lie(5)), (C(-1),   mod([7]))]),
-                (lie(6), mod(4)) => AlgebraElement{C}([(C(1), mod(4) * lie(6)), (C(1),    mod([8]))]),
-                (lie(7), mod(4)) => AlgebraElement{C}([(C(1), mod(4) * lie(7))]),
-                (lie(8), mod(4)) => AlgebraElement{C}([(C(1), mod(4) * lie(8))]),
-                (lie(1), mod(5)) => AlgebraElement{C}([(C(1), mod(5) * lie(1)), (C(1),    mod([3]))]),
-                (lie(2), mod(5)) => AlgebraElement{C}([(C(1), mod(5) * lie(2)), (C(-1),   mod([2]))]),
-                (lie(3), mod(5)) => AlgebraElement{C}([(C(1), mod(5) * lie(3)), (C(2),    mod([1]))]),
-                (lie(4), mod(5)) => AlgebraElement{C}([(C(1), mod(5) * lie(4)), (C(1),    mod([6]))]),
-                (lie(5), mod(5)) => AlgebraElement{C}([(C(1), mod(5) * lie(5)), (C(1),    mod([7]))]),
-                (lie(6), mod(5)) => AlgebraElement{C}([(C(1), mod(5) * lie(6)), (C(2),    mod([8]))]),
-                (lie(7), mod(5)) => AlgebraElement{C}([(C(1), mod(5) * lie(7))]),
-                (lie(8), mod(5)) => AlgebraElement{C}([(C(1), mod(5) * lie(8))]),
-                (lie(1), mod(6)) => AlgebraElement{C}([(C(1), mod(6) * lie(1)), (C(1),    mod([4]))]),
-                (lie(2), mod(6)) => AlgebraElement{C}([(C(1), mod(6) * lie(2))]),
-                (lie(3), mod(6)) => AlgebraElement{C}([(C(1), mod(6) * lie(3)), (C(1),    mod([2]))]),
-                (lie(4), mod(6)) => AlgebraElement{C}([(C(1), mod(6) * lie(4))]),
-                (lie(5), mod(6)) => AlgebraElement{C}([(C(1), mod(6) * lie(5)), (C(-1),   mod([8]))]),
-                (lie(6), mod(6)) => AlgebraElement{C}([(C(1), mod(6) * lie(6))]),
-                (lie(7), mod(6)) => AlgebraElement{C}([(C(1), mod(6) * lie(7)), (C(-2),   mod([6]))]),
-                (lie(8), mod(6)) => AlgebraElement{C}([(C(1), mod(6) * lie(8)), (C(1),    mod([6]))]),
-                (lie(1), mod(7)) => AlgebraElement{C}([(C(1), mod(7) * lie(1))]),
-                (lie(2), mod(7)) => AlgebraElement{C}([(C(1), mod(7) * lie(2)), (C(-1),   mod([4])), (C(1), mod([5]))]),
-                (lie(3), mod(7)) => AlgebraElement{C}([(C(1), mod(7) * lie(3)), (C(1),    mod([3]))]),
-                (lie(4), mod(7)) => AlgebraElement{C}([(C(1), mod(7) * lie(4)), (C(1),    mod([8]))]),
-                (lie(5), mod(7)) => AlgebraElement{C}([(C(1), mod(7) * lie(5))]),
-                (lie(6), mod(7)) => AlgebraElement{C}([(C(1), mod(7) * lie(6))]),
-                (lie(7), mod(7)) => AlgebraElement{C}([(C(1), mod(7) * lie(7)), (C(1),    mod([7]))]),
-                (lie(8), mod(7)) => AlgebraElement{C}([(C(1), mod(7) * lie(8)), (C(-2),   mod([7]))]),
-                (lie(1), mod(8)) => AlgebraElement{C}([(C(1), mod(8) * lie(1)), (C(1),    mod([7]))]),
-                (lie(2), mod(8)) => AlgebraElement{C}([(C(1), mod(8) * lie(2)), (C(-1),   mod([6]))]),
-                (lie(3), mod(8)) => AlgebraElement{C}([(C(1), mod(8) * lie(3)), (C(1),    mod([5]))]),
-                (lie(4), mod(8)) => AlgebraElement{C}([(C(1), mod(8) * lie(4))]),
-                (lie(5), mod(8)) => AlgebraElement{C}([(C(1), mod(8) * lie(5))]),
-                (lie(6), mod(8)) => AlgebraElement{C}([(C(1), mod(8) * lie(6))]),
-                (lie(7), mod(8)) => AlgebraElement{C}([(C(1), mod(8) * lie(7)), (C(-1),   mod([8]))]),
-                (lie(8), mod(8)) => AlgebraElement{C}([(C(1), mod(8) * lie(8)), (C(-1),   mod([8]))]),
-            )
-        end
-
-        @testset "B_2 with hw [1,0]" begin
-            sp = PD.smash_product_lie('B', 2, [1,0])
-            @test sp.extraData.dynkin == 'B'
-            @test sp.extraData.n == 2
-            @test sp.extraData.lambda == [1,0]
-            @test sp.extraData.nL == 10
-            @test sp.extraData.nV == 5
-            @test length(sp.basis) == sp.extraData.nL + sp.extraData.nV
-            @test sp.extraData.matrixRepL == PD.get_matrix_rep('B', 2)
+            @test ngens(sp) == (sp.dimL, sp.dimV)
+            @test gens(sp) == (sp.baseL, sp.baseV)
 
             showOutput = @test_nowarn sprint(show, sp)
             @test occursin("smash product", lowercase(showOutput))
             @test occursin("lie algebra", lowercase(showOutput))
-            @test occursin("B", showOutput)
-            @test occursin("[1,0]", showOutput) || occursin("[1, 0]", showOutput)
-
-            @test sp.relTable == Dict(
-                (lie(2),  lie(1)) => AlgebraElement{C}([(C(1), lie(1, 2)),  (C(-1),  lie([3]))]),
-                (lie(3),  lie(1)) => AlgebraElement{C}([(C(1), lie(1, 3))]),
-                (lie(3),  lie(2)) => AlgebraElement{C}([(C(1), lie(2, 3)),  (C(2),   lie([4]))]),
-                (lie(4),  lie(1)) => AlgebraElement{C}([(C(1), lie(1, 4))]),
-                (lie(4),  lie(2)) => AlgebraElement{C}([(C(1), lie(2, 4))]),
-                (lie(4),  lie(3)) => AlgebraElement{C}([(C(1), lie(3, 4))]),
-                (lie(5),  lie(1)) => AlgebraElement{C}([(C(1), lie(1, 5)),  (C(-1),  lie([9]))]),
-                (lie(5),  lie(2)) => AlgebraElement{C}([(C(1), lie(2, 5))]),
-                (lie(5),  lie(3)) => AlgebraElement{C}([(C(1), lie(3, 5)),  (C(1),   lie([2]))]),
-                (lie(5),  lie(4)) => AlgebraElement{C}([(C(1), lie(4, 5))]),
-                (lie(6),  lie(1)) => AlgebraElement{C}([(C(1), lie(1, 6))]),
-                (lie(6),  lie(2)) => AlgebraElement{C}([(C(1), lie(2, 6)),  (C(-1),  lie([10]))]),
-                (lie(6),  lie(3)) => AlgebraElement{C}([(C(1), lie(3, 6)),  (C(-2),  lie([1]))]),
-                (lie(6),  lie(4)) => AlgebraElement{C}([(C(1), lie(4, 6)),  (C(-1),  lie([3]))]),
-                (lie(6),  lie(5)) => AlgebraElement{C}([(C(1), lie(5, 6)),  (C(1),   lie([7]))]),
-                (lie(7),  lie(1)) => AlgebraElement{C}([(C(1), lie(1, 7)),  (C(1),   lie([6]))]),
-                (lie(7),  lie(2)) => AlgebraElement{C}([(C(1), lie(2, 7)),  (C(-2),  lie([5]))]),
-                (lie(7),  lie(3)) => AlgebraElement{C}([(C(1), lie(3, 7)),  (C(-2),  lie([9])), (C(-1), lie([10]))]),
-                (lie(7),  lie(4)) => AlgebraElement{C}([(C(1), lie(4, 7)),  (C(1),   lie([2]))]),
-                (lie(7),  lie(5)) => AlgebraElement{C}([(C(1), lie(5, 7))]),
-                (lie(7),  lie(6)) => AlgebraElement{C}([(C(1), lie(6, 7)),  (C(-2),  lie([8]))]),
-                (lie(8),  lie(1)) => AlgebraElement{C}([(C(1), lie(1, 8))]),
-                (lie(8),  lie(2)) => AlgebraElement{C}([(C(1), lie(2, 8)),  (C(-1),  lie([7]))]),
-                (lie(8),  lie(3)) => AlgebraElement{C}([(C(1), lie(3, 8)),  (C(1),   lie([6]))]),
-                (lie(8),  lie(4)) => AlgebraElement{C}([(C(1), lie(4, 8)),  (C(-1),  lie([9])), (C(-1), lie([10]))]),
-                (lie(8),  lie(5)) => AlgebraElement{C}([(C(1), lie(5, 8))]),
-                (lie(8),  lie(6)) => AlgebraElement{C}([(C(1), lie(6, 8))]),
-                (lie(8),  lie(7)) => AlgebraElement{C}([(C(1), lie(7, 8))]),
-                (lie(9),  lie(1)) => AlgebraElement{C}([(C(1), lie(1, 9)),  (C(2),   lie([1]))]),
-                (lie(9),  lie(2)) => AlgebraElement{C}([(C(1), lie(2, 9)),  (C(-1),  lie([2]))]),
-                (lie(9),  lie(3)) => AlgebraElement{C}([(C(1), lie(3, 9)),  (C(1),   lie([3]))]),
-                (lie(9),  lie(4)) => AlgebraElement{C}([(C(1), lie(4, 9))]),
-                (lie(9),  lie(5)) => AlgebraElement{C}([(C(1), lie(5, 9)),  (C(-2),  lie([5]))]),
-                (lie(9),  lie(6)) => AlgebraElement{C}([(C(1), lie(6, 9)),  (C(1),   lie([6]))]),
-                (lie(9),  lie(7)) => AlgebraElement{C}([(C(1), lie(7, 9)),  (C(-1),  lie([7]))]),
-                (lie(9),  lie(8)) => AlgebraElement{C}([(C(1), lie(8, 9))]),
-                (lie(10), lie(1)) => AlgebraElement{C}([(C(1), lie(1, 10)), (C(-2),  lie([1]))]),
-                (lie(10), lie(2)) => AlgebraElement{C}([(C(1), lie(2, 10)), (C(2),   lie([2]))]),
-                (lie(10), lie(3)) => AlgebraElement{C}([(C(1), lie(3, 10))]),
-                (lie(10), lie(4)) => AlgebraElement{C}([(C(1), lie(4, 10)), (C(2),   lie([4]))]),
-                (lie(10), lie(5)) => AlgebraElement{C}([(C(1), lie(5, 10)), (C(2),   lie([5]))]),
-                (lie(10), lie(6)) => AlgebraElement{C}([(C(1), lie(6, 10)), (C(-2),  lie([6]))]),
-                (lie(10), lie(7)) => AlgebraElement{C}([(C(1), lie(7, 10))]),
-                (lie(10), lie(8)) => AlgebraElement{C}([(C(1), lie(8, 10)), (C(-2),  lie([8]))]),
-                (lie(10), lie(9)) => AlgebraElement{C}([(C(1), lie(9, 10))]),
-                (lie(1),  mod(1)) => AlgebraElement{C}([(C(1), mod(1) * lie(1))]),
-                (lie(2),  mod(1)) => AlgebraElement{C}([(C(1), mod(1) * lie(2))]),
-                (lie(3),  mod(1)) => AlgebraElement{C}([(C(1), mod(1) * lie(3))]),
-                (lie(4),  mod(1)) => AlgebraElement{C}([(C(1), mod(1) * lie(4))]),
-                (lie(5),  mod(1)) => AlgebraElement{C}([(C(1), mod(1) * lie(5)),  (C(1),   mod([2]))]),
-                (lie(6),  mod(1)) => AlgebraElement{C}([(C(1), mod(1) * lie(6))]),
-                (lie(7),  mod(1)) => AlgebraElement{C}([(C(1), mod(1) * lie(7)),  (C(1),   mod([3]))]),
-                (lie(8),  mod(1)) => AlgebraElement{C}([(C(1), mod(1) * lie(8)),  (C(1),   mod([4]))]),
-                (lie(9),  mod(1)) => AlgebraElement{C}([(C(1), mod(1) * lie(9)),  (C(1),   mod([1]))]),
-                (lie(10), mod(1)) => AlgebraElement{C}([(C(1), mod(1) * lie(10))]),
-                (lie(1),  mod(2)) => AlgebraElement{C}([(C(1), mod(2) * lie(1)),  (C(1),   mod([1]))]),
-                (lie(2),  mod(2)) => AlgebraElement{C}([(C(1), mod(2) * lie(2))]),
-                (lie(3),  mod(2)) => AlgebraElement{C}([(C(1), mod(2) * lie(3))]),
-                (lie(4),  mod(2)) => AlgebraElement{C}([(C(1), mod(2) * lie(4))]),
-                (lie(5),  mod(2)) => AlgebraElement{C}([(C(1), mod(2) * lie(5))]),
-                (lie(6),  mod(2)) => AlgebraElement{C}([(C(1), mod(2) * lie(6)),  (C(1),   mod([3]))]),
-                (lie(7),  mod(2)) => AlgebraElement{C}([(C(1), mod(2) * lie(7))]),
-                (lie(8),  mod(2)) => AlgebraElement{C}([(C(1), mod(2) * lie(8)),  (C(1),   mod([5]))]),
-                (lie(9),  mod(2)) => AlgebraElement{C}([(C(1), mod(2) * lie(9)),  (C(-1),  mod([2]))]),
-                (lie(10), mod(2)) => AlgebraElement{C}([(C(1), mod(2) * lie(10)),  (C(2),   mod([2]))]),
-                (lie(1),  mod(3)) => AlgebraElement{C}([(C(1), mod(3) * lie(1))]),
-                (lie(2),  mod(3)) => AlgebraElement{C}([(C(1), mod(3) * lie(2)),  (C(2),   mod([2]))]),
-                (lie(3),  mod(3)) => AlgebraElement{C}([(C(1), mod(3) * lie(3)),  (C(2),   mod([1]))]),
-                (lie(4),  mod(3)) => AlgebraElement{C}([(C(1), mod(3) * lie(4))]),
-                (lie(5),  mod(3)) => AlgebraElement{C}([(C(1), mod(3) * lie(5))]),
-                (lie(6),  mod(3)) => AlgebraElement{C}([(C(1), mod(3) * lie(6)),  (C(2),   mod([4]))]),
-                (lie(7),  mod(3)) => AlgebraElement{C}([(C(1), mod(3) * lie(7)),  (C(-2),  mod([5]))]),
-                (lie(8),  mod(3)) => AlgebraElement{C}([(C(1), mod(3) * lie(8))]),
-                (lie(9),  mod(3)) => AlgebraElement{C}([(C(1), mod(3) * lie(9))]),
-                (lie(10), mod(3)) => AlgebraElement{C}([(C(1), mod(3) * lie(10))]),
-                (lie(1),  mod(4)) => AlgebraElement{C}([(C(1), mod(4) * lie(1))]),
-                (lie(2),  mod(4)) => AlgebraElement{C}([(C(1), mod(4) * lie(2)),  (C(1),   mod([3]))]),
-                (lie(3),  mod(4)) => AlgebraElement{C}([(C(1), mod(4) * lie(3))]),
-                (lie(4),  mod(4)) => AlgebraElement{C}([(C(1), mod(4) * lie(4)),  (C(1),   mod([1]))]),
-                (lie(5),  mod(4)) => AlgebraElement{C}([(C(1), mod(4) * lie(5)),  (C(1),   mod([5]))]),
-                (lie(6),  mod(4)) => AlgebraElement{C}([(C(1), mod(4) * lie(6))]),
-                (lie(7),  mod(4)) => AlgebraElement{C}([(C(1), mod(4) * lie(7))]),
-                (lie(8),  mod(4)) => AlgebraElement{C}([(C(1), mod(4) * lie(8))]),
-                (lie(9),  mod(4)) => AlgebraElement{C}([(C(1), mod(4) * lie(9)),  (C(1),   mod([4]))]),
-                (lie(10), mod(4)) => AlgebraElement{C}([(C(1), mod(4) * lie(10)), (C(-2),  mod([4]))]),
-                (lie(1),  mod(5)) => AlgebraElement{C}([(C(1), mod(5) * lie(1)),  (C(1),   mod([4]))]),
-                (lie(2),  mod(5)) => AlgebraElement{C}([(C(1), mod(5) * lie(2))]),
-                (lie(3),  mod(5)) => AlgebraElement{C}([(C(1), mod(5) * lie(3)),  (C(-1),  mod([3]))]),
-                (lie(4),  mod(5)) => AlgebraElement{C}([(C(1), mod(5) * lie(4)),  (C(1),   mod([2]))]),
-                (lie(5),  mod(5)) => AlgebraElement{C}([(C(1), mod(5) * lie(5))]),
-                (lie(6),  mod(5)) => AlgebraElement{C}([(C(1), mod(5) * lie(6))]),
-                (lie(7),  mod(5)) => AlgebraElement{C}([(C(1), mod(5) * lie(7))]),
-                (lie(8),  mod(5)) => AlgebraElement{C}([(C(1), mod(5) * lie(8))]),
-                (lie(9),  mod(5)) => AlgebraElement{C}([(C(1), mod(5) * lie(9)),  (C(-1),  mod([5]))]),
-                (lie(10), mod(5)) => AlgebraElement{C}([(C(1), mod(5) * lie(10))]),
-            )
-        end
-    end
-
-    @testset "get_matrix_rep" begin
-        @testset "A_$n" for n in 1:6
-            matrixRep = PD.get_matrix_rep('A', n)
-            @test length(matrixRep) == (n+1)^2-1
-            @test all(mat -> size(mat) == (n+1, n+1), matrixRep)
-
-            if n == 1
-                @test matrixRep[1] in [c*[0 1; 0 0] for c in [-1, 1]]
-                @test matrixRep[2] in [c*[0 0; 1 0] for c in [-1, 1]]
-                @test matrixRep[3] in [c*[1 0; 0 -1] for c in [-1, 1]]
-            elseif n == 2
-                for i in 1:6
-                    @test length([x for x in vcat(matrixRep[i]...) if x != 0]) == 1
-                end
-                @test matrixRep[7] in [c*[1 0 0; 0 -1 0; 0 0 0] for c in [-1, 1]]
-                @test matrixRep[8] in [c*[0 0 0; 0 1 0; 0 0 -1] for c in [-1, 1]]
-            end
-
+            # @test_broken occursin(string(dynkin), showOutput)
+            # @test_broken occursin(string(lambda), showOutput)
         end
 
-        @testset "B_$n" for n in 2:6
-            matrixRep = PD.get_matrix_rep('B', n)
-            @test length(matrixRep) == 2*n^2+n
-            @test all(mat -> size(mat) == (2n+1, 2n+1), matrixRep)
+        @testset "commutators for A_1 with hw [1]" begin
+            sp, (baseL, baseV) = PD.smash_product_lie(R, 'A', 1, [1])
+            
+            @test sp.dimL == 3
+            @test sp.dimV == 2
+
+            x = baseL[1]
+            y = baseL[2]
+            h = baseL[3]
+            v1 = baseV[1]
+            v2 = baseV[2]
+
+            # sl_2 relations
+            @test comm(x, x; strict=true) == 0
+            @test comm(x, y; strict=true) == h
+            @test comm(x, h; strict=true) == -2*x
+            @test comm(y, x; strict=true) == -h
+            @test comm(y, y; strict=true) == 0
+            @test comm(y, h; strict=true) == 2*y
+            @test comm(h, x; strict=true) == 2*x
+            @test comm(h, y; strict=true) == -2*y
+            @test comm(h, h; strict=true) == 0
+
+            # natural representation relations
+            @test comm(x, v1; strict=true) == 0
+            @test comm(x, v2; strict=true) == v1
+            @test comm(y, v1; strict=true) == v2
+            @test comm(y, v2; strict=true) == 0
+            @test comm(h, v1; strict=true) == v1
+            @test comm(h, v2; strict=true) == -v2
         end
 
-        @testset "C_$n" for n in 2:6
-            matrixRep = PD.get_matrix_rep('C', n)
-            @test length(matrixRep) == 2*n^2+n
-            @test all(mat -> size(mat) == (2n, 2n), matrixRep)
-        end
+        @testset "commutators for A_2 with hw [1,1]" begin
+            sp, (baseL, baseV) = PD.smash_product_lie(R, 'A', 2, [1,0])
+            
+            @test sp.dimL == 8
+            @test sp.dimV == 3
 
-        @testset "D_$n" for n in 4:6
-            matrixRep = PD.get_matrix_rep('D', n)
-            @test length(matrixRep) == 2*n^2-n
-            @test all(mat -> size(mat) == (2n, 2n), matrixRep)
+            x12 = baseL[1]
+            x23 = -baseL[2] # minus due to representation in GAP 
+            x13 = baseL[3]
+            y12 = baseL[4]
+            y23 = -baseL[5] # minus due to representation in GAP 
+            y13 = baseL[6]
+            h1 = baseL[7]
+            h2 = baseL[8]
+            v1 = baseV[1]
+            v2 = baseV[2]
+            v3 = baseV[3]
+
+            # sl_3 relations
+            @test comm(x12, x23; strict=true) == x13
+            @test comm(x12, x13; strict=true) == 0
+            @test comm(x23, x13; strict=true) == 0
+            @test comm(y12, y23; strict=true) == -y13
+            @test comm(y12, y13; strict=true) == 0
+            @test comm(y23, y13; strict=true) == 0
+            @test comm(h1, h2; strict=true) == 0
+            @test comm(x12, y12; strict=true) == h1
+            @test comm(x23, y23; strict=true) == h2
+            @test comm(x13, y13; strict=true) == h1+h2
+            @test comm(h1, x12; strict=true) == 2*x12
+            @test comm(h1, x23; strict=true) == -x23
+            @test comm(h1, x13; strict=true) == x13
+            @test comm(h1, y12; strict=true) == -2*y12
+            @test comm(h1, y23; strict=true) == y23
+            @test comm(h1, y13; strict=true) == -y13
+            @test comm(h2, x12; strict=true) == -x12
+            @test comm(h2, x23; strict=true) == 2*x23
+            @test comm(h2, x13; strict=true) == x13
+            @test comm(h2, y12; strict=true) == y12
+            @test comm(h2, y23; strict=true) == -2*y23
+            @test comm(h2, y13; strict=true) == -y13
+
+
+            # natural representation relations
+            @test comm(x12, v1; strict=true) == 0
+            @test comm(x23, v1; strict=true) == 0
+            @test comm(x13, v1; strict=true) == 0
+            @test comm(x12, v2; strict=true) == v1
+            @test comm(x23, v2; strict=true) == 0
+            @test comm(x13, v2; strict=true) == 0
+            @test comm(x12, v3; strict=true) == 0
+            @test comm(x23, v3; strict=true) == v2
+            @test comm(x13, v3; strict=true) == v1
+            @test comm(y12, v1; strict=true) == v2
+            @test comm(y23, v1; strict=true) == 0
+            @test comm(y13, v1; strict=true) == v3
+            @test comm(y12, v2; strict=true) == 0
+            @test comm(y23, v2; strict=true) == v3
+            @test comm(y13, v2; strict=true) == 0
+            @test comm(y12, v3; strict=true) == 0
+            @test comm(y23, v3; strict=true) == 0
+            @test comm(y13, v3; strict=true) == 0
+            @test comm(h1, v1; strict=true) == v1
+            @test comm(h2, v1; strict=true) == 0
+            @test comm(h1, v2; strict=true) == -v2
+            @test comm(h2, v2; strict=true) == v2
+            @test comm(h1, v3; strict=true) == 0
+            @test comm(h2, v3; strict=true) == -v3
         end
 
     end
 
+    @testset "smash_product_lie constructor without GAP; R = $R" for R in [QQ, PolynomialRing(QQ, ["x","y","z"])[1]]
+        @testset "A_1 with hw [1]" begin
+            dimL = 3
+            dimV = 2
+            symbL = ["a$i" for i in 1:dimL] # different to standard implementation
+            symbV = ["b$i" for i in 1:dimV]
+            struct_const_L = permutedims(reshape(Vector{Tuple{Int, Int}}[
+                [],         [(1, 3)],   [(-2, 1)],
+                [(-1, 3)],  [],         [(2, 2)],
+                [(2, 1)],   [(-2, 2)],  [],
+            ], 3, 3), (2, 1))
+            struct_const_V = permutedims(reshape(Vector{Tuple{Int, Int}}[
+                [],        [(1, 1)],
+                [(1, 2)],  [],
+                [(1, 1)],  [(-1, 2)],
+            ], 2, 3), (2, 1))
+            
+            sp, (baseL, baseV) = PD.smash_product_lie(R, symbL, symbV, struct_const_L, struct_const_V)
+            
+            @test dimL == sp.dimL == length(sp.baseL)
+            @test dimV == sp.dimV == length(sp.baseV)
+            @test sp.baseL == baseL
+            @test sp.baseV == baseV
+            @test sp.coeff_ring == R
+            @test issetequal(sp.alg.S, map(Symbol, [symbL; symbV]))
+
+            @test ngens(sp) == (sp.dimL, sp.dimV)
+            @test gens(sp) == (sp.baseL, sp.baseV)
+
+            showOutput = @test_nowarn sprint(show, sp)
+            @test occursin("smash product", lowercase(showOutput))
+            @test occursin("lie algebra", lowercase(showOutput))
+
+            x = baseL[1]
+            y = baseL[2]
+            h = baseL[3]
+            v1 = baseV[1]
+            v2 = baseV[2]
+
+            # sl_2 relations
+            @test comm(x, x; strict=true) == 0
+            @test comm(x, y; strict=true) == h
+            @test comm(x, h; strict=true) == -2x
+            @test comm(y, x; strict=true) == -h
+            @test comm(y, y; strict=true) == 0
+            @test comm(y, h; strict=true) == 2y
+            @test comm(h, x; strict=true) == 2x
+            @test comm(h, y; strict=true) == -2y
+            @test comm(h, h; strict=true) == 0
+
+            # natural representation relations
+            @test comm(x, v1; strict=true) == 0
+            @test comm(x, v2; strict=true) == v1
+            @test comm(y, v1; strict=true) == v2
+            @test comm(y, v2; strict=true) == 0
+            @test comm(h, v1; strict=true) == v1
+            @test comm(h, v2; strict=true) == -v2
+        end
+
+
+    end
+
+       
 end

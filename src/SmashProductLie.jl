@@ -1,86 +1,120 @@
-struct SmashProductLie
-    dynkin :: Char
-    n :: Int64
-    lambda :: Vector{Int64}
-    nL :: Int64
-    nV :: Int64
-    matrixRepL :: Vector{Matrix{Int64}}
-end
-
-function Base.:(==)(sp1::SmashProductLie, sp2::SmashProductLie) :: Bool
-    (sp1.dynkin, sp1.n, sp1.lambda, sp1.nL, sp1.nV, sp1.matrixRepL) ==
-    (sp2.dynkin, sp2.n, sp2.lambda, sp2.nL, sp2.nV, sp2.matrixRepL)
-end
-
-function Base.show(io::IO, sp::SmashProductLie) :: Nothing
-    println(io, "Smash product of lie algebra with highest weight module")
-    println(io, "Lie algebra: type ", sp.dynkin, sp.n, ", dimension ", sp.nL)
-    println(io, "Module: highest weight ", sp.lambda, ", dimension ", sp.nV)
+mutable struct SmashProductLie{C <: RingElement}
+    dimL :: Int64
+    dimV :: Int64
+    baseL :: Vector{QuadraticQuoAlgebraElem{C}}
+    baseV :: Vector{QuadraticQuoAlgebraElem{C}}
+    coeff_ring :: Ring
+    alg :: QuadraticQuoAlgebra{C}
+    # dynkin :: Char
+    # n :: Int64
+    # lambda :: Vector{Int64}
+    # matrixRepL :: Vector{Matrix{Int64}}
 end
 
 
-function smash_product_lie(dynkin::Char, n::Int64, lambda::Vector{Int64}; C::Type{<:ScalarTypes} = DefaultScalarType) :: QuadraticAlgebra{C, SmashProductLie}
+function smash_product_lie(coeff_ring :: Ring, symbL :: Vector{Symbol}, symbV :: Vector{Symbol}, struct_const_L :: Matrix{Vector{Tuple{Int, Int}}}, struct_const_V :: Matrix{Vector{Tuple{Int, Int}}})
+    C = elem_type(coeff_ring)
+    
+    dimL = length(symbL)
+    dimV = length(symbV)
+
+    free_alg, _ = free_algebra(coeff_ring, [symbL; symbV])
+    free_baseL = [gen(free_alg, i) for i in 1:dimL]
+    free_baseV = [gen(free_alg, dimL+i) for i in 1:dimV]
+
+    rels = Dict{Tuple{Int,Int}, FreeAlgebraElem{C}}()
+
+    for i in 1:dimL, j in 1:dimL
+        rels[(i, j)] = free_baseL[j] * free_baseL[i] + sum(c * free_baseL[k] for (c, k) in struct_const_L[i,j]; init=zero(free_alg))
+    end
+
+    for i in 1:dimL, j in 1:dimV
+        rels[(i, dimL+j)] = free_baseV[j] * free_baseL[i] + sum(c * free_baseV[k] for (c, k) in struct_const_V[i,j]; init=zero(free_alg))
+        rels[(dimL+j, i)] = free_baseL[i] * free_baseV[j] - sum(c * free_baseV[k] for (c, k) in struct_const_V[i,j]; init=zero(free_alg))
+    end
+
+    alg, _ = quadratic_quo_algebra(free_alg, rels)
+    baseL = [gen(alg, i) for i in 1:dimL]
+    baseV = [gen(alg, dimL+i) for i in 1:dimV]
+
+    return SmashProductLie{C}(dimL, dimV, baseL, baseV, coeff_ring, alg), (baseL, baseV)
+end
+
+function smash_product_lie(coeff_ring :: Ring, symbL :: Vector{String}, symbV :: Vector{String}, struct_const_L :: Matrix{Vector{Tuple{Int, Int}}}, struct_const_V :: Matrix{Vector{Tuple{Int, Int}}})
+    return smash_product_lie(coeff_ring, map(Symbol, symbL), map(Symbol, symbV), struct_const_L, struct_const_V)
+end
+
+function smash_product_lie(coeff_ring :: Ring, dynkin :: Char, n :: Int, lambda :: Vector{Int})
+    dimL, dimV, struct_const_L, struct_const_V = smash_product_struct_const_from_gap(dynkin, n, lambda)
+
+    symbL = ["x_$i" for i in 1:dimL]
+    symbV = ["v_$i" for i in 1:dimV]
+
+    return smash_product_lie(coeff_ring, symbL, symbV, struct_const_L, struct_const_V)
+end
+
+function smash_product_struct_const_from_gap(dynkin :: Char, n :: Int, lambda :: Vector{Int})
     @assert n == length(lambda)
     sanitize_lie_input(dynkin, n)
 
-    relTable = Dict{Tuple{BasisElement{C}, BasisElement{C}}, AlgebraElement{C}}()
-        # (lie(i), lie(j)) => [(c, [lie(k)])]
-        # (lie(i), mod(j)) => [(c, [mod(k)])]
+    GAPG = GAP.Globals
 
-    L = GAP.SimpleLieAlgebra(toGAP(string(dynkin)), n, GAP.Rationals)
-    nL = GAP.Dimension(L)
-    bL = GAP.BasisVectors(GAP.Basis(L))
-    commTableL = fromGAP(GAP.StructureConstantsTable(GAP.Basis(L)))[1:nL]
-    matrixRepL = get_matrix_rep(L, [i == 1 ? 1 : 0 for i in 1:n])
+    L = GAPG.SimpleLieAlgebra(GAP.julia_to_gap(string(dynkin)), n, GAPG.Rationals)
+    dimL = GAPG.Dimension(L)
+    basisL = GAPG.BasisVectors(GAPG.Basis(L))
+    comm_table_L = GAP.gap_to_julia(GAPG.StructureConstantsTable(GAPG.Basis(L)))[1:dimL]
 
-    for i in 1:nL, j in 1:i-1
-        relTable[(lie(i; C), lie(j; C))] = AlgebraElement{C}([
-            (C(1), lie(j; C)*lie(i; C));
-            Vector{Tuple{C, Monomial{C}}}([(C(c), Monomial{C}(lie(k; C))) for (k, c) in zip(commTableL[i][j]...)]);
-        ])
+    struct_const_L = Matrix{Vector{Tuple{Int, Int}}}(undef, dimL, dimL)
+    for i in 1:dimL, j in 1:dimL
+        struct_const_L[i,j] = [(c, k) for (k, c) in zip(comm_table_L[i][j]...)]
     end
 
-    V = GAP.HighestWeightModule(L, toGAP(lambda))
-    nV = GAP.Dimension(V)
-    bV = GAP.BasisVectors(GAP.Basis(V))
-
-    for i in 1:nL, j in 1:nV
-        relTable[(lie(i; C), mod(j; C))] = AlgebraElement{C}([
-            (C(1), mod(j; C)*lie(i; C));
-            Vector{Tuple{C, Monomial{C}}}([(C(c), Monomial{C}(mod(k; C))) for (k, c) in enumerate(fromGAP(GAP.Coefficients(GAP.Basis(V), bL[i]^bV[j]))) if !iszero(c)]);
-        ])
-    end
-
-    extraData = SmashProductLie(dynkin, n, lambda, nL, nV, matrixRepL)
-    basis = [[mod(i; C) for i in 1:nV]; [lie(i; C) for i in 1:nL]] :: Vector{BasisElement{C}}
-
-    return QuadraticAlgebra{C, SmashProductLie}(basis, relTable, extraData)
-end
-
-
-function get_matrix_rep(dynkin::Char, n::Int64) :: Vector{Matrix{Int64}}
-    sanitize_lie_input(dynkin, n)
+    V = GAPG.HighestWeightModule(L, GAP.julia_to_gap(lambda))
+    dimV = GAPG.Dimension(V)
+    basisV = GAPG.BasisVectors(GAPG.Basis(V))
     
-    L = GAP.SimpleLieAlgebra(toGAP(string(dynkin)), n, GAP.Rationals)
-    lambda = [i == 1 ? 1 : 0 for i in 1:n]
-
-    return get_matrix_rep(L, lambda)
-end
-
-function get_matrix_rep(L #= :: Gap.LieAlgebra =#, lambda::Vector{Int64}) :: Vector{Matrix{Int64}}
-    @assert GAP.IsLieAlgebra(L)
-
-    nL = GAP.Dimension(L)
-    bL = GAP.BasisVectors(GAP.Basis(L))
-
-    V = GAP.HighestWeightModule(L, toGAP(lambda))
-    nV = GAP.Dimension(V)
-    bV = GAP.BasisVectors(GAP.Basis(V))
-
-    matrixRep = [zeros(Int64, nV,nV) for _ in 1:nL]
-    for i in 1:nL, j in 1:nV
-        matrixRep[i][:,j] = fromGAP(GAP.Coefficients(GAP.Basis(V), bL[i]^bV[j]))
+    struct_const_V = Matrix{Vector{Tuple{Int, Int}}}(undef, dimL, dimV)
+    for i in 1:dimL, j in 1:dimV
+        struct_const_V[i,j] = [(c, k) for (k, c) in enumerate(GAP.gap_to_julia(GAPG.Coefficients(GAPG.Basis(V), basisL[i]^basisV[j]))) if !iszero(c)]
     end
 
-    return matrixRep
+    return dimL, dimV, struct_const_L, struct_const_V
+end
+
+
+ngens(sp::SmashProductLie) = sp.dimL, sp.dimV
+
+function gens(sp::SmashProductLie{C}) where C <: RingElement
+    return [gen(sp.alg, i) for i in 1:sp.dimL], [gen(sp.alg, i+sp.dimL) for i in 1:sp.dimV]
+end
+
+
+function show(io::IO, sp::SmashProductLie)
+    local max_gens = 4 # largest number of generators to print
+    print(io, "Lie Algebra Smash Product with basis ")
+    for i = 1:min(sp.dimL - 1, max_gens - 1)
+       print(io, string(sp.alg.S[i]), ", ")
+    end
+    if sp.dimL > max_gens
+       print(io, "..., ")
+    end
+    print(io, string(sp.alg.S[sp.dimL]) * ", ")
+    for i = 1:min(sp.dimV - 1, max_gens - 1)
+        print(io, string(sp.alg.S[sp.dimL+i]), ", ")
+     end
+     if sp.dimV > max_gens
+        print(io, "..., ")
+     end
+     print(io, string(sp.alg.S[sp.dimL+sp.dimV]))
+    print(io, " over ")
+    print(IOContext(io, :compact => true), sp.coeff_ring)
+end
+
+
+function change_base_ring(R::Ring, sp::SmashProductLie{C}) where C <: RingElement
+    alg = change_base_ring(R, sp.alg)
+    baseL = [gen(alg, i) for i in 1:sp.dimL]
+    baseV = [gen(alg, sp.dimL+i) for i in 1:sp.dimV]
+
+    return SmashProductLie{elem_type(R)}(sp.dimL, sp.dimV, baseL, baseV, R, alg)
 end
