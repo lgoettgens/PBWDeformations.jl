@@ -149,27 +149,27 @@
 
     end
 
-    @testset "possible_pbwdeforms construction stuff" begin
-        @testset "possible_pbwdeforms_nvars tests" begin
+    @testset "pbwdeforms_all construction stuff" begin
+        @testset "pbwdeformsall_nvars tests" begin
             for _ in 1:num_random_tests
-                a, b, c = PD.possible_pbwdeforms_nvars(rand(1:10), rand(1:10), rand(0:5))
+                a, b, c = PD.pbwdeformsall_nvars(rand(1:10), rand(1:10), rand(0:5))
                 @test a == b * c
             end
 
             for i in 1:10
-                @test PD.possible_pbwdeforms_nvars(1, i, 0) == (div(i*(i-1), 2), div(i*(i-1), 2), 1)
-                @test PD.possible_pbwdeforms_nvars(1, i, 1) == (2*div(i*(i-1), 2), div(i*(i-1), 2), 2)
-                @test PD.possible_pbwdeforms_nvars(5, i, 1) == (6*div(i*(i-1), 2), div(i*(i-1), 2), 6)
-                @test PD.possible_pbwdeforms_nvars(1, i, 2) == (3*div(i*(i-1), 2), div(i*(i-1), 2), 3)
-                @test PD.possible_pbwdeforms_nvars(3, i, 2) == (10*div(i*(i-1), 2), div(i*(i-1), 2), 10)
+                @test PD.pbwdeformsall_nvars(1, i, 0) == (div(i*(i-1), 2), div(i*(i-1), 2), 1)
+                @test PD.pbwdeformsall_nvars(1, i, 1) == (2*div(i*(i-1), 2), div(i*(i-1), 2), 2)
+                @test PD.pbwdeformsall_nvars(5, i, 1) == (6*div(i*(i-1), 2), div(i*(i-1), 2), 6)
+                @test PD.pbwdeformsall_nvars(1, i, 2) == (3*div(i*(i-1), 2), div(i*(i-1), 2), 3)
+                @test PD.pbwdeformsall_nvars(3, i, 2) == (10*div(i*(i-1), 2), div(i*(i-1), 2), 10)
             end
         end
 
-        @testset "possible_pbwdeforms_vars tests" begin
+        @testset "pbwdeformsall_vars tests" begin
             for _ in 1:num_random_tests
                 nL, nV, maxdeg = rand(1:10), rand(1:10), rand(0:5)
-                l, _, _ = PD.possible_pbwdeforms_nvars(nL, nV, maxdeg)
-                @test l == length(PD.possible_pbwdeforms_vars(nL, nV, maxdeg))
+                l, _, _ = PD.pbwdeformsall_nvars(nL, nV, maxdeg)
+                @test l == length(PD.pbwdeformsall_vars(nL, nV, maxdeg))
             end
         end
 
@@ -179,10 +179,10 @@
             @test issetequal(PD.coefficient_comparison(eq), elem_type(QQ)[2//3, 88, 1])
         end
 
-        @testset "possible_pbwdeforms tests" begin
+        @testset "pbwdeforms_all tests" begin
             sp, _ = PD.smash_product_lie(QQ, 'A', 1, [1])
             @testset "A_1 with hw [1], maxdeg = $maxdeg" for maxdeg in 0:8
-                base = PD.possible_pbwdeforms(sp, maxdeg)
+                base = PD.pbwdeforms_all(sp, maxdeg)
 
                 @test length(base) == 1 + div(maxdeg, 2)
 
@@ -206,7 +206,7 @@
 
             sp, _ = PD.smash_product_lie(QQ, 'B', 2, [1,0])
             @testset "B_2 with hw [1,0], maxdeg = $maxdeg" for maxdeg in 0:2
-                base = PD.possible_pbwdeforms(sp, maxdeg)
+                base = PD.pbwdeforms_all(sp, maxdeg)
 
                 @test length(base) == div(maxdeg+1, 2)
 
