@@ -2,7 +2,19 @@ stages:
   - test
   - deploy
 
-.script:
+workflow:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_COMMIT_TAG
+
+default:
+  image: johannesflake/oscar:latest
+
+
+.unittest:
+  stage: test
+  interruptible: true
   script:
     - |
       julia --project=@. -e '
@@ -10,7 +22,7 @@ stages:
         Pkg.build()
         Pkg.test(coverage=true)'
 
-.coverage:
+.unittest-coverage:
   coverage: /Test coverage (\d+\.\d+%)/
   after_script:
     - |
@@ -27,17 +39,22 @@ stages:
   artifacts:
     paths:
       - "**/*.cov"
+    when: always
+
+unittest-Julia 1.6 (LTS):
+  image: johannesflake/oscar:julia-1.6
+  extends:
+    - .unittest
 
 unittest-Julia 1.7:
-  image: johannesflake/oscar
-  stage: test
+  image: johannesflake/oscar:julia-1.7
   extends:
-    - .script
-    - .coverage
+    - .unittest
+    - .unittest-coverage
 
-doctest:
-  image: johannesflake/oscar
-  stage: test
+
+pages:
+  stage: deploy
   script:
     - |
       julia --project=docs -e '
@@ -47,21 +64,9 @@ doctest:
         using Documenter: doctest
         using PBWDeformations
         include("docs/make.jl")'
-  artifacts:
-    paths:
-      - docs/build
-  only:
-    - master
-
-pages:
-  stage: deploy
-  dependencies:
-    - doctest
-  script:
-    - mkdir -p public
     - mv docs/build public
   artifacts:
     paths:
       - public
-  only:
-    - master
+  rules:
+      - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
