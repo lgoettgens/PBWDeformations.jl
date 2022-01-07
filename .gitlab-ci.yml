@@ -2,12 +2,12 @@ stages:
   - test
   - deploy
 
+# only allow piplines on merge requests, master commits and tags
 workflow:
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
     - if: $CI_COMMIT_TAG
-    - if: $CI_COMMIT_REF_NAME == "pages"
 
 default:
   image: johannesflake/oscar:latest
@@ -69,6 +69,8 @@ documenter:
       - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
       - if: $CI_COMMIT_TAG
 
+
+# this does not have any effect. the working one is in the branach "pages"
 pages:
   stage: deploy
   image: alpine:latest

@@ -25,5 +25,6 @@ deploydocs(
     repo = "gitlab.com/johannesflake/pbwdeformations.jl.git",
     deploy_config = Documenter.GitLab(),
     branch = "pages",
+    dirname = "public",
     devbranch = "master",
 )
