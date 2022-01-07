@@ -4,7 +4,7 @@ CurrentModule = PBWDeformations
 
 # PBWDeformations
 
-Documentation for [PBWDeformations](https://gitlab.com/a-rt/PBWDeformations.jl).
+Documentation for [PBWDeformations](https://gitlab.com/johannesflake/PBWDeformations.jl).
 
 ```@index
 ```

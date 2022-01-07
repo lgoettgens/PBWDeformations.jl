@@ -15,8 +15,8 @@ using Pkg; Pkg.add("PBWDeformations")
 
 ## Basic usage
 
-Please consult the [example jupyter notebook](https://nbviewer.org/urls/gitlab.com/johannesflake/pbwdeformations.jl/-/raw/master/examples/PBWDeformationsNotebook.ipynb).
-
+Please consult the [example jupyter notebook](https://nbviewer.org/urls/gitlab.com/johannesflake/pbwdeformations.jl/-/raw/master/examples/PBWDeformationsNotebook.ipynb).  
+We expect documentation to be found at some point in future at [https://johannesflake.gitlab.io/pbwdeformations.jl/](https://johannesflake.gitlab.io/pbwdeformations.jl/).
 
 ## General Disclaimer
 
