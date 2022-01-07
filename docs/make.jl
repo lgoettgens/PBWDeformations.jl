@@ -8,7 +8,7 @@ DocMeta.setdocmeta!(
     recursive = true,
 )
 
-makedocs(;
+makedocs(
     modules = [PBWDeformations],
     repo = "https://gitlab.com/user/project/blob/{commit}{path}#{line}",
     sitename = "PBWDeformations.jl",
@@ -19,4 +19,11 @@ makedocs(;
         canonical = "https://johannesflake.gitlab.io/PBWDeformations.jl",
     ),
     pages = ["Home" => "index.md"],
+)
+
+deploydocs(
+    repo = "gitlab.com/johannesflake/pbwdeformations.jl.git",
+    deploy_config = Documenter.GitLab(),
+    branch = "pages",
+    devbranch = "master",
 )
