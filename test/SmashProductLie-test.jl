@@ -2,7 +2,7 @@
     
     @testset "smash_product_lie constructor using GAP; R = $R" for R in [QQ, PolynomialRing(QQ, ["x","y","z"])[1]]
         @testset "consistency for $(dynkin)_$n with hw $lambda" for (dynkin, n, lambda) in [('A', 1, [1]), ('A', 2, [1,1]), ('B', 2, [1,0])]
-            sp, (baseL, baseV) = PD.smash_product_lie(R, dynkin, n, lambda)
+            sp, (baseL, baseV) = smash_product_lie(R, dynkin, n, lambda)
             
             @test sp.dimL == length(sp.baseL)
             @test sp.dimV == length(sp.baseV)
@@ -21,7 +21,7 @@
         end
 
         @testset "commutators for A_1 with hw [1]" begin
-            sp, (baseL, baseV) = PD.smash_product_lie(R, 'A', 1, [1])
+            sp, (baseL, baseV) = smash_product_lie(R, 'A', 1, [1])
             
             @test sp.dimL == 3
             @test sp.dimV == 2
@@ -53,7 +53,7 @@
         end
 
         @testset "commutators for A_2 with hw [1,1]" begin
-            sp, (baseL, baseV) = PD.smash_product_lie(R, 'A', 2, [1,0])
+            sp, (baseL, baseV) = smash_product_lie(R, 'A', 2, [1,0])
             
             @test sp.dimL == 8
             @test sp.dimV == 3
@@ -141,7 +141,7 @@
                 [(1, 1)],  [(-1, 2)],
             ], 2, 3), (2, 1))
             
-            sp, (baseL, baseV) = PD.smash_product_lie(R, symbL, symbV, struct_const_L, struct_const_V)
+            sp, (baseL, baseV) = smash_product_lie(R, symbL, symbV, struct_const_L, struct_const_V)
             
             @test dimL == sp.dimL == length(sp.baseL)
             @test dimV == sp.dimV == length(sp.baseV)
