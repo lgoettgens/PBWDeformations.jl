@@ -17,7 +17,7 @@ maxdeg = parse(Int, ARGS[4])
 using Oscar
 using PBWDeformations
 
-function kappa_to_string(kappa::Matrix{PBWDeformations.QuadraticQuoAlgebraElem{fmpq}})
+function kappa_to_string(kappa::Matrix{QuadraticQuoAlgebraElem{fmpq}})
     dim = size(kappa, 1)
     string = "["
     for i in 1:dim
@@ -39,8 +39,8 @@ end
 
 for deg in 0:maxdeg
     @info "Computing PBWDeformations... (degree=$deg)"
-    sp, _ = PBWDeformations.smash_product_lie(QQ, dynkin, n, lambda)
-    kappas = PBWDeformations.pbwdeforms_all(sp, deg)
+    sp, _ = smash_product_lie(QQ, dynkin, n, lambda)
+    kappas = pbwdeforms_all(sp, deg)
 
     @info "Writing Output... (degree=$deg)"
     path = "db"
