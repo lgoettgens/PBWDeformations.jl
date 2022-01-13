@@ -15,6 +15,15 @@ import Base: Array, deepcopy, deepcopy_internal,
              hash, isequal, isone, iszero, length,
              one, parent, show, xor, zero, +, -, *, ^, ==
 
+export FreeAlgebra, FreeAlgebraElem,
+       QuadraticQuoAlgebra, QuadraticQuoAlgebraElem,
+       SmashProductLie, SmashProductDeformLie
+
+export free_algebra, ispbwdeform, quadratic_quo_algebra,
+       pbwdeforms_all, pbwdeform_eqs,
+       smash_product_lie, smash_product_struct_const_from_gap,
+       smash_product_deform_lie, smash_product_symmdeform_lie
+
 GAP = Oscar.GAP
 
 include("Util.jl")
