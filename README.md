@@ -1,8 +1,8 @@
 # PBWDeformations
 
-[![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://johannesflake.gitlab.io/PBWDeformations.jl/dev)
-[![Build Status](https://gitlab.com/a-rt/PBWDeformations.jl/badges/master/pipeline.svg)](https://gitlab.com/johannesflake/PBWDeformations.jl/pipelines)
-[![Coverage](https://gitlab.com/a-rt/PBWDeformations.jl/badges/master/coverage.svg)](https://gitlab.com/johannesflake/PBWDeformations.jl/commits/master)
+[![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://johannesflake.gitlab.io/pbwdeformations.jl/dev)
+[![Build Status](https://gitlab.com/johannesflake/pbwdeformations.jl/badges/master/pipeline.svg)](https://gitlab.com/johannesflake/pbwdeformations.jl/pipelines)
+[![Coverage](https://gitlab.com/johannesflake/pbwdeformations.jl/badges/master/coverage.svg)](https://gitlab.com/johannesflake/pbwdeformations.jl/commits/master)
 
 # PBWDeformations.jl Julia package
 
