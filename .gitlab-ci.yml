@@ -41,6 +41,10 @@ default:
     paths:
       - "**/*.cov"
     when: always
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+      when: never
+    - when: on_success
 
 unittest-Julia 1.6 (LTS):
   image: johannesflake/oscar:julia-1.6
@@ -52,6 +56,27 @@ unittest-Julia 1.7:
   extends:
     - .unittest
     - .unittest-coverage
+
+
+CompatHelper:
+  image: julia:1.6
+  stage: test
+  before_script:
+    - apt-get update -qq && apt-get install -y git
+    - |
+      julia --color=yes -e "
+        import Pkg;
+        name = \"CompatHelper\";
+        uuid = \"aa819f21-2bde-4658-8897-bab36330d9b7\";
+        version = \"3\";
+        Pkg.add(; name, uuid, version)"
+  script:
+    - |
+      julia --color=yes -e "
+        import CompatHelper;
+        CompatHelper.main()"
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
 
 
 documenter:
@@ -66,8 +91,10 @@ documenter:
         using PBWDeformations
         include("docs/make.jl")'
   rules:
-      - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-      - if: $CI_COMMIT_TAG
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+      when: never
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_COMMIT_TAG
 
 
 # this does not have any effect. the working one is in the branach "pages"
