@@ -22,6 +22,10 @@ default:
         using Pkg
         Pkg.build()
         Pkg.test(coverage=true)'
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+      when: never
+    - when: on_success
 
 .unittest-coverage:
   coverage: /Test coverage (\d+\.\d+%)/
@@ -41,10 +45,6 @@ default:
     paths:
       - "**/*.cov"
     when: always
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "schedule"
-      when: never
-    - when: on_success
 
 unittest-Julia 1.6 (LTS):
   image: johannesflake/oscar:julia-1.6
