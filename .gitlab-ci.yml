@@ -57,27 +57,7 @@ unittest-Julia 1.7:
     - .unittest
     - .unittest-coverage
 
-
-CompatHelper:
-  image: julia:1.6
-  stage: test
-  before_script:
-    - apt-get update -qq && apt-get install -y git
-    - |
-      julia --color=yes -e "
-        import Pkg;
-        name = \"CompatHelper\";
-        uuid = \"aa819f21-2bde-4658-8897-bab36330d9b7\";
-        version = \"3\";
-        Pkg.add(; name, uuid, version)"
-  script:
-    - |
-      julia --color=yes -e "
-        import CompatHelper;
-        CompatHelper.main()"
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "schedule"
-
+# the compathelper job is only present in the branch "compathelper"
 
 documenter:
   stage: deploy
@@ -97,7 +77,7 @@ documenter:
     - if: $CI_COMMIT_TAG
 
 
-# this does not have any effect. the working one is in the branach "pages"
+# this does not have any effect. the working one is in the branch "pages"
 pages:
   stage: deploy
   image: alpine:latest
