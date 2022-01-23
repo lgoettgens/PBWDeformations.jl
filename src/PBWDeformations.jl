@@ -25,34 +25,14 @@ export free_algebra, ispbwdeform, quadratic_quo_algebra,
        smash_product_struct_const_from_gap, smash_product_struct_const_so,
        smash_product_deform_lie, smash_product_symmdeform_lie
 
+
 GAP = Oscar.GAP
+
 
 include("Util.jl")
 include("Algebra.jl")
 include("FreeAlgebra.jl")
 include("QuadraticQuoAlgebra.jl")
-
-
-function isvalidlie_for_gap(dynkin::Char, n::Int64)
-    if dynkin == 'A'
-        return n >= 1
-    elseif dynkin == 'B'
-        return n >= 2
-    elseif dynkin == 'C'
-        return n >= 2
-    elseif dynkin == 'D'
-        return n >= 4
-    elseif dynkin == 'E'
-        return 6 <= n <= 8
-    elseif dynkin == 'F'
-        return n == 4
-    elseif dynkin == 'G'
-        return n == 2
-    else
-        return false
-    end
-end
-
 include("SmashProductLie.jl")
 include("SmashProductDeformLie.jl")
 

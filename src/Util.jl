@@ -52,3 +52,23 @@ function groupBy(a::Vector{T}; eq=(==)) where T
     end
     return r
 end
+
+function isvalidlie_for_gap(dynkin::Char, n::Int64)
+    if dynkin == 'A'
+        return n >= 1
+    elseif dynkin == 'B'
+        return n >= 2
+    elseif dynkin == 'C'
+        return n >= 2
+    elseif dynkin == 'D'
+        return n >= 4
+    elseif dynkin == 'E'
+        return 6 <= n <= 8
+    elseif dynkin == 'F'
+        return n == 4
+    elseif dynkin == 'G'
+        return n == 2
+    else
+        return false
+    end
+end
