@@ -33,14 +33,23 @@ include("FreeAlgebra.jl")
 include("QuadraticQuoAlgebra.jl")
 
 
-function sanitize_lie_input(dynkin::Char, n::Int64) :: Nothing
-    @assert dynkin in ['A', 'B', 'C', 'D']
+function isvalidlie_for_gap(dynkin::Char, n::Int64)
     if dynkin == 'A'
-        @assert n >= 1
-    elseif dynkin == 'B' || dynkin == 'C'
-        @assert n >= 2
+        return n >= 1
+    elseif dynkin == 'B'
+        return n >= 2
+    elseif dynkin == 'C'
+        return n >= 2
     elseif dynkin == 'D'
-        @assert n >= 4
+        return n >= 4
+    elseif dynkin == 'E'
+        return 6 <= n <= 8
+    elseif dynkin == 'F'
+        return n == 4
+    elseif dynkin == 'G'
+        return n == 2
+    else
+        return false
     end
 end
 

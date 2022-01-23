@@ -1,21 +1,19 @@
 @testset ExtendedTestSet "All PBWDeformations.jl tests" begin
-    @testset "sanitize_lie_input" begin
-        @test_throws AssertionError PD.sanitize_lie_input('A', 0)
-        @test_throws AssertionError PD.sanitize_lie_input('B', 0)
-        @test_throws AssertionError PD.sanitize_lie_input('C', 0)
-        @test_throws AssertionError PD.sanitize_lie_input('D', 0)
+    @testset "isvalidlie_for_gap" begin
 
-        @test_throws AssertionError PD.sanitize_lie_input('B', 1)
-        @test_throws AssertionError PD.sanitize_lie_input('C', 1)
-        @test_throws AssertionError PD.sanitize_lie_input('D', 1)
+        function testit(dynkin, pred, until=10)
+            for i in 0:until
+                @test PD.isvalidlie_for_gap(dynkin, i) == pred(i)
+            end
+        end
 
-        @test_throws AssertionError PD.sanitize_lie_input('D', 2)
-        @test_throws AssertionError PD.sanitize_lie_input('D', 3)
-
-        @test_nowarn PD.sanitize_lie_input('A',1)
-        @test_nowarn PD.sanitize_lie_input('B',2)
-        @test_nowarn PD.sanitize_lie_input('C',2)
-        @test_nowarn PD.sanitize_lie_input('D',4)
+        testit('A', >=(1))
+        testit('B', >=(2))
+        testit('C', >=(2))
+        testit('D', >=(4))
+        testit('E', in([6,7,8]))
+        testit('F', ==(4))
+        testit('G', ==(2))
     end
        
 end

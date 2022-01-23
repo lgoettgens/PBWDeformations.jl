@@ -54,8 +54,8 @@ function smash_product_lie(coeff_ring :: Ring, dynkin :: Char, n :: Int, lambda 
 end
 
 function smash_product_struct_const_from_gap(dynkin :: Char, n :: Int, lambda :: Vector{Int})
-    @assert n == length(lambda)
-    sanitize_lie_input(dynkin, n)
+    n == length(lambda) || throw(ArgumentError("length(lambda) and n have to coincide."))
+    isvalidlie_for_gap(dynkin, n) || throw(ArgumentError("Input not allowed by GAP."))
 
     GAPG = GAP.Globals
 
