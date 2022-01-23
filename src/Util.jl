@@ -2,7 +2,10 @@ export flatten, groupBy
 
 """
     flatten(a::Vector{Vector{T}}) where T
+
 Returns a vector of all elements of elements of `a`.
+
+# Example
 ```jldoctest; setup = :(flatten = PBWDeformations.flatten)
 julia> flatten([[1],[],[2,3,4],[5],[]])
 5-element Vector{Any}:
@@ -19,7 +22,10 @@ end
 
 """
     groupBy(a::Vector{T}; eq=(==)) where T
+
 Returns a vector containing the elements of `a` grouped into subvectors of consecutive equal elements.
+
+# Examples
 ```jldoctest; setup = :(groupBy = PBWDeformations.groupBy)
 julia> groupBy([1,1,2,2,2,2,3,1,4,4])
 5-element Vector{Vector{Int64}}:
@@ -56,6 +62,7 @@ end
 
 """
     isvaliddynkin(dynkin::Char, n::Int)
+
 Returns true, if there given parameters uniquely define a dynkin diagram,
 i.e. are of one of the forms
   * ``A_n`` for ``n \\geq 1``,
@@ -65,6 +72,8 @@ i.e. are of one of the forms
   * ``E_5``, ``E_6``, ``E_7``,
   * ``F_4``,
   * ``G_2``.
+
+# Examples
 ```jldoctest; setup = :(isvaliddynkin = PBWDeformations.isvaliddynkin)
 julia> isvaliddynkin('A', 2)
 true

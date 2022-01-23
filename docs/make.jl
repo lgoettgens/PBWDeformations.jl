@@ -4,7 +4,7 @@ using PBWDeformations
 DocMeta.setdocmeta!(
     PBWDeformations,
     :DocTestSetup,
-    :(using PBWDeformations);
+    :(using PBWDeformations; using Oscar);
     recursive = true,
 )
 
@@ -19,6 +19,7 @@ makedocs(
         canonical = "https://johannesflake.gitlab.io/PBWDeformations.jl",
     ),
     pages = ["Home" => "index.md"],
+    doctestfilters = [r"(Nemo\.)?fmpq"],
 )
 
 deploydocs(
