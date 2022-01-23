@@ -55,7 +55,7 @@ end
 
 function smash_product_struct_const_from_gap(dynkin :: Char, n :: Int, lambda :: Vector{Int})
     n == length(lambda) || throw(ArgumentError("length(lambda) and n have to coincide."))
-    isvalidlie_for_gap(dynkin, n) || throw(ArgumentError("Input not allowed by GAP."))
+    isvaliddynkin(dynkin, n) || throw(ArgumentError("Input not allowed by GAP."))
 
     GAPG = GAP.Globals
 

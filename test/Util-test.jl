@@ -23,10 +23,10 @@
         @test groupBy([i for i in -5:5]; eq=((x, y) -> sign(x) == sign(y))) == [[i for i in -5:-1],[0],[i for i in 1:5]]
     end
     
-    @testset "isvalidlie_for_gap" begin
+    @testset "isvaliddynkin" begin
         function testit(dynkin, pred, until=10)
             for i in 0:until
-                @test PD.isvalidlie_for_gap(dynkin, i) == pred(i)
+                @test PD.isvaliddynkin(dynkin, i) == pred(i)
             end
         end
 
@@ -37,5 +37,6 @@
         testit('E', in([6,7,8]))
         testit('F', ==(4))
         testit('G', ==(2))
+        testit('X', _ -> false)
     end
 end

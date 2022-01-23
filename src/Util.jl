@@ -53,7 +53,30 @@ function groupBy(a::Vector{T}; eq=(==)) where T
     return r
 end
 
-function isvalidlie_for_gap(dynkin::Char, n::Int64)
+
+"""
+    isvaliddynkin(dynkin::Char, n::Int)
+Returns true, if there given parameters uniquely define a dynkin diagram,
+i.e. are of one of the forms
+  * ``A_n`` for ``n \\geq 1``,
+  * ``B_n`` for ``n \\geq 2``,
+  * ``C_n`` for ``n \\geq 2``,
+  * ``D_n`` for ``n \\geq 4``,
+  * ``E_5``, ``E_6``, ``E_7``,
+  * ``F_4``,
+  * ``G_2``.
+```jldoctest; setup = :(isvaliddynkin = PBWDeformations.isvaliddynkin)
+julia> isvaliddynkin('A', 2)
+true
+
+julia> isvaliddynkin('F', 4)
+true
+
+julia> isvaliddynkin('D', 3)
+false
+```
+"""
+function isvaliddynkin(dynkin::Char, n::Int)
     if dynkin == 'A'
         return n >= 1
     elseif dynkin == 'B'
