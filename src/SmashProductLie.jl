@@ -81,6 +81,57 @@ function smash_product_struct_const_from_gap(dynkin :: Char, n :: Int, lambda ::
     return dimL, dimV, struct_const_L, struct_const_V
 end
 
+function smash_product_struct_const_so(n :: Int, lambda :: Vector{Int}) # for odd n this is a B type highest weight, for even n D type
+    @assert div(n,2) == length(lambda)
+    lenghtlambda = div(n,2)
+
+    ur_triag(M) = vcat([M[i, i+1:end] for i in 1:size(M,1)]...)
+    std_basis(i,n) = [i == j ? 1 : 0 for j in 1:n]
+
+    dimL = div(n*(n-1), 2)
+    basisL = [(b = zeros(Int,n,n); b[i,j] = 1; b[j,i] = -1; b) for i in 1:n for j in i+1:n]
+    symbL = ["x_$(i)_$(j)" for i in 1:n for j in i+1:n]
+
+    struct_const_L = Matrix{Vector{Tuple{Int, Int}}}(undef, dimL, dimL)
+    for i in 1:dimL, j in 1:dimL
+        struct_const_L[i,j] = [(c, k) for (k, c) in enumerate(ur_triag(basisL[i]*basisL[j] - basisL[j]*basisL[i])) if !iszero(c)]
+    end
+
+    if in(lambda, [std_basis(i,lenghtlambda) for i in 1:lenghtlambda])
+        lambda_std_i = findfirst(==(lambda), [std_basis(i,lenghtlambda) for i in 1:lenghtlambda])
+
+        if (n % 2 == 1 && lambda_std_i <= lenghtlambda-1) || (n % 2 == 0 && lambda_std_i <= lenghtlambda-2) # exterior product of defining representation
+            if lambda_std_i == 1
+                dimV = n
+                symbV = ["v_$(i)" for i in 1:dimV]
+                struct_const_V = Matrix{Vector{Tuple{Int, Int}}}(undef, dimL, dimV)
+                for i in 1:dimL, j in 1:dimV
+                    struct_const_V[i,j] = [(c, k) for (k, c) in enumerate(basisL[i] * std_basis(j,n)) if !iszero(c)]
+                end
+            elseif lambda_std_i == 2
+                dimV = binomial(n,2)
+                symbV = ["v_$(i)_$(j)" for i in 1:n for j in i+1:n]
+                struct_const_V = Matrix{Vector{Tuple{Int, Int}}}(undef, dimL, dimV)
+                for i in 1:dimL, j1 in 1:dimV, j2 in j1+1:n
+                    baseIndex(j1,j2) = binomial(n,2) - binomial(n-j1+1,2) + j2 - j1
+                    struct_const_V[i,baseIndex(j1,j2)] = [
+                        collect(k1 < j2 ? (c, baseIndex(k1,j2)) : (-c, baseIndex(j2,k1)) for (k1, c) in enumerate(basisL[i] * std_basis(j1,n)) if !iszero(c) && k1 != j2);
+                        collect(j1 < k2 ? (c, baseIndex(j1,k2)) : (-c, baseIndex(k2,j1)) for (k2, c) in enumerate(basisL[i] * std_basis(j2,n)) if !iszero(c) && j1 != k2)
+                    ]
+                end
+            else
+                error("Not implemented yet.")
+            end
+        else
+            error("Spin representations are not implemented yet.")
+        end
+    else
+        error("Non-fundamental representations are not implemented yet.")
+    end
+
+    return dimL, dimV, struct_const_L, struct_const_V, symbL, symbV
+end
+
 
 ngens(sp::SmashProductLie) = sp.dimL, sp.dimV
 
