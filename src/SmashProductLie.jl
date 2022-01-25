@@ -81,6 +81,12 @@ function smash_product_struct_const_from_gap(dynkin :: Char, n :: Int, lambda ::
     return dimL, dimV, struct_const_L, struct_const_V
 end
 
+function smash_product_lie_so(coeff_ring :: Ring, n :: Int, lambda :: Vector{Int}) # for odd n this is a B type highest weight, for even n D type
+    _, _, struct_const_L, struct_const_V, symbL, symbV = smash_product_struct_const_so(n, lambda)
+
+    return smash_product_lie(coeff_ring, symbL, symbV, struct_const_L, struct_const_V)
+end
+
 function smash_product_struct_const_so(n :: Int, lambda :: Vector{Int}) # for odd n this is a B type highest weight, for even n D type
     @assert div(n,2) == length(lambda)
     lenghtlambda = div(n,2)
@@ -108,19 +114,22 @@ function smash_product_struct_const_so(n :: Int, lambda :: Vector{Int}) # for od
                 for i in 1:dimL, j in 1:dimV
                     struct_const_V[i,j] = [(c, k) for (k, c) in enumerate(basisL[i] * std_basis(j,n)) if !iszero(c)]
                 end
-            elseif lambda_std_i == 2
-                dimV = binomial(n,2)
-                symbV = ["v_$(i)_$(j)" for i in 1:n for j in i+1:n]
+            else
+                dimV = binomial(n,lambda_std_i)
+                symbV = ["v_$(js)" for js in Combinatorics.combinations(1:n,lambda_std_i)] # TODO
                 struct_const_V = Matrix{Vector{Tuple{Int, Int}}}(undef, dimL, dimV)
-                for i in 1:dimL, j1 in 1:dimV, j2 in j1+1:n
-                    baseIndex(j1,j2) = binomial(n,2) - binomial(n-j1+1,2) + j2 - j1
-                    struct_const_V[i,baseIndex(j1,j2)] = [
-                        collect(k1 < j2 ? (c, baseIndex(k1,j2)) : (-c, baseIndex(j2,k1)) for (k1, c) in enumerate(basisL[i] * std_basis(j1,n)) if !iszero(c) && k1 != j2);
-                        collect(j1 < k2 ? (c, baseIndex(j1,k2)) : (-c, baseIndex(k2,j1)) for (k2, c) in enumerate(basisL[i] * std_basis(j2,n)) if !iszero(c) && j1 != k2)
+                index = Dict{Vector{Int}, Int}()
+                for (j, js) in enumerate(Combinatorics.combinations(1:n,lambda_std_i))
+                    index[js] = j
+                end
+                for i in 1:dimL, js in Combinatorics.combinations(1:n,lambda_std_i)
+                    struct_const_V[i,index[js]] = [
+                        (levicivita(sortperm([js[1:l-1];k;js[l+1:end]])) * c, index[sort([js[1:l-1];k;js[l+1:end]])])
+                        for l in 1:lambda_std_i
+                        for (k, c) in enumerate(basisL[i] * std_basis(js[l],n))
+                        if !iszero(c) && allunique([js[1:l-1];k;js[l+1:end]])
                     ]
                 end
-            else
-                error("Not implemented yet.")
             end
         else
             error("Spin representations are not implemented yet.")
