@@ -21,7 +21,8 @@ export FreeAlgebra, FreeAlgebraElem,
 
 export free_algebra, ispbwdeform, quadratic_quo_algebra,
        pbwdeforms_all, pbwdeform_eqs,
-       smash_product_lie, smash_product_struct_const_from_gap,
+       smash_product_lie, smash_product_lie_so,
+       smash_product_struct_const_from_gap, smash_product_struct_const_so,
        smash_product_deform_lie, smash_product_symmdeform_lie
 
 GAP = Oscar.GAP

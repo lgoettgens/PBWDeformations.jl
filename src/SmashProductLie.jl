@@ -81,6 +81,66 @@ function smash_product_struct_const_from_gap(dynkin :: Char, n :: Int, lambda ::
     return dimL, dimV, struct_const_L, struct_const_V
 end
 
+function smash_product_lie_so(coeff_ring :: Ring, n :: Int, lambda :: Vector{Int}) # for odd n this is a B type highest weight, for even n D type
+    _, _, struct_const_L, struct_const_V, symbL, symbV = smash_product_struct_const_so(n, lambda)
+
+    return smash_product_lie(coeff_ring, symbL, symbV, struct_const_L, struct_const_V)
+end
+
+function smash_product_struct_const_so(n :: Int, lambda :: Vector{Int}) # for odd n this is a B type highest weight, for even n D type
+    @assert div(n,2) == length(lambda)
+    lenghtlambda = div(n,2)
+
+    ur_triag(M) = vcat([M[i, i+1:end] for i in 1:size(M,1)]...)
+    std_basis(i,n) = [i == j ? 1 : 0 for j in 1:n]
+
+    dimL = div(n*(n-1), 2)
+    basisL = [(b = zeros(Int,n,n); b[i,j] = 1; b[j,i] = -1; b) for i in 1:n for j in i+1:n]
+    symbL = ["x_$(i)_$(j)" for i in 1:n for j in i+1:n]
+
+    struct_const_L = Matrix{Vector{Tuple{Int, Int}}}(undef, dimL, dimL)
+    for i in 1:dimL, j in 1:dimL
+        struct_const_L[i,j] = [(c, k) for (k, c) in enumerate(ur_triag(basisL[i]*basisL[j] - basisL[j]*basisL[i])) if !iszero(c)]
+    end
+
+    if in(lambda, [std_basis(i,lenghtlambda) for i in 1:lenghtlambda])
+        lambda_std_i = findfirst(==(lambda), [std_basis(i,lenghtlambda) for i in 1:lenghtlambda])
+
+        if (n % 2 == 1 && lambda_std_i <= lenghtlambda-1) || (n % 2 == 0 && lambda_std_i <= lenghtlambda-2) # exterior product of defining representation
+            if lambda_std_i == 1
+                dimV = n
+                symbV = ["v_$(i)" for i in 1:dimV]
+                struct_const_V = Matrix{Vector{Tuple{Int, Int}}}(undef, dimL, dimV)
+                for i in 1:dimL, j in 1:dimV
+                    struct_const_V[i,j] = [(c, k) for (k, c) in enumerate(basisL[i] * std_basis(j,n)) if !iszero(c)]
+                end
+            else
+                dimV = binomial(n,lambda_std_i)
+                symbV = ["v_$(js)" for js in Combinatorics.combinations(1:n,lambda_std_i)] # TODO
+                struct_const_V = Matrix{Vector{Tuple{Int, Int}}}(undef, dimL, dimV)
+                index = Dict{Vector{Int}, Int}()
+                for (j, js) in enumerate(Combinatorics.combinations(1:n,lambda_std_i))
+                    index[js] = j
+                end
+                for i in 1:dimL, js in Combinatorics.combinations(1:n,lambda_std_i)
+                    struct_const_V[i,index[js]] = [
+                        (levicivita(sortperm([js[1:l-1];k;js[l+1:end]])) * c, index[sort([js[1:l-1];k;js[l+1:end]])])
+                        for l in 1:lambda_std_i
+                        for (k, c) in enumerate(basisL[i] * std_basis(js[l],n))
+                        if !iszero(c) && allunique([js[1:l-1];k;js[l+1:end]])
+                    ]
+                end
+            end
+        else
+            error("Spin representations are not implemented yet.")
+        end
+    else
+        error("Non-fundamental representations are not implemented yet.")
+    end
+
+    return dimL, dimV, struct_const_L, struct_const_V, symbL, symbV
+end
+
 
 ngens(sp::SmashProductLie) = sp.dimL, sp.dimV
 
