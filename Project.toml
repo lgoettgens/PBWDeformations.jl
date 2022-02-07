@@ -10,7 +10,7 @@ Oscar = "f1435218-dba5-11e9-1e4d-f1a5fab5fc13"
 SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
 
 [compat]
-AbstractAlgebra = "0.22.0, 0.23.0"
+AbstractAlgebra = "0.22, 0.23, 0.24"
 Combinatorics = "1.0.0"
 Oscar = "~0.7.0"
 julia = "1.6"
