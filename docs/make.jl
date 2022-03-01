@@ -10,7 +10,7 @@ DocMeta.setdocmeta!(
 
 makedocs(
     modules = [PBWDeformations],
-    repo = "https://gitlab.com/user/project/blob/{commit}{path}#{line}",
+    repo = "https://gitlab.com/johannesflake/pbwdeformations.jl/blob/{commit}{path}#{line}",
     sitename = "PBWDeformations.jl",
     checkdocs = :none,
     strict = true,
