@@ -28,6 +28,7 @@ export free_algebra, ispbwdeform, quadratic_quo_algebra,
 GAP = Oscar.GAP
 
 include("Util.jl")
+include("MPolyRingSparse.jl")
 include("Algebra.jl")
 include("FreeAlgebra.jl")
 include("QuadraticQuoAlgebra.jl")
