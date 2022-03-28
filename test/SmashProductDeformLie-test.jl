@@ -1,7 +1,7 @@
 @testset ExtendedTestSet "All SmashProductDeformLie.jl tests" begin
     
     @testset "smash_product_deform_lie constructor" begin
-        @testset "$(dynkin)_$n with hw $lambda; R = $R" for (dynkin, n, lambda) in [('A', 2, [1,1]), ('B', 2, [1,0])], R in [QQ, PolynomialRing(QQ, ["x","y","z"])[1]]
+        @testset "$(dynkin)_$n with hw $lambda; R = $R" for (dynkin, n, lambda) in [('A', 2, [1,1]), ('B', 2, [1,0])], R in [QQ, PolynomialRing(QQ, ["x","y","z"])[1], PolynomialRingSparse(QQ, ["x","y","z"])[1]]
             sp, (sp_baseL, sp_baseV) = smash_product_lie(R, dynkin, n, lambda)
             kappa = fill(zero(sp.alg), sp.dimV, sp.dimV)
             kappa[1,2] = sp_baseL[1]
@@ -48,7 +48,7 @@
     end
 
     @testset "smash_product_symmdeform_lie constructor" begin
-        @testset "$(dynkin)_$n with hw $lambda; R = $R" for (dynkin, n, lambda) in [('A', 2, [1,1]), ('B', 2, [1,0])], R in [QQ, PolynomialRing(QQ, ["x","y","z"])[1]]
+        @testset "$(dynkin)_$n with hw $lambda; R = $R" for (dynkin, n, lambda) in [('A', 2, [1,1]), ('B', 2, [1,0])], R in [QQ, PolynomialRing(QQ, ["x","y","z"])[1], PolynomialRingSparse(QQ, ["x","y","z"])[1]]
             sp, _ = smash_product_lie(R, dynkin, n, lambda)
             deform, (baseL, baseV) = smash_product_symmdeform_lie(sp)
 
@@ -75,7 +75,7 @@
 
     end
 
-    @testset "smash_product_deform_lie sanitize checks; R = $R" for R in [QQ, PolynomialRing(QQ, ["x","y","z"])[1]]
+    @testset "smash_product_deform_lie sanitize checks; R = $R" for R in [QQ, PolynomialRing(QQ, ["x","y","z"])[1], PolynomialRingSparse(QQ, ["x","y","z"])[1]]
         @testset "check dimensions of kappa" begin
             sp, _ = smash_product_lie(R, 'B', 2, [1,0])
 

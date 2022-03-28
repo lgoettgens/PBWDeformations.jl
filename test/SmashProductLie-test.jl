@@ -1,6 +1,6 @@
 @testset ExtendedTestSet "All SmashProductLie.jl tests" begin
     
-    @testset "smash_product_lie constructor using GAP; R = $R" for R in [QQ, PolynomialRing(QQ, ["x","y","z"])[1]]
+    @testset "smash_product_lie constructor using GAP; R = $R" for R in [QQ, PolynomialRing(QQ, ["x","y","z"])[1], PolynomialRingSparse(QQ, ["x","y","z"])[1]]
         @testset "consistency for $(dynkin)_$n with hw $lambda" for (dynkin, n, lambda) in [('A', 1, [1]), ('A', 2, [1,1]), ('B', 2, [1,0])]
             sp, (baseL, baseV) = smash_product_lie(R, dynkin, n, lambda)
             
@@ -124,7 +124,7 @@
 
     end
 
-    @testset "smash_product_lie constructor without GAP; R = $R" for R in [QQ, PolynomialRing(QQ, ["x","y","z"])[1]]
+    @testset "smash_product_lie constructor without GAP; R = $R" for R in [QQ, PolynomialRing(QQ, ["x","y","z"])[1], PolynomialRingSparse(QQ, ["x","y","z"])[1]]
         @testset "A_1 with hw [1]" begin
             dimL = 3
             dimV = 2

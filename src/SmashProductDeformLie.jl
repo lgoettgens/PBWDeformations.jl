@@ -152,7 +152,7 @@ end
     return eq.coeffs
 end
 
-@inline function linpoly_to_spvector(a::fmpq_mpoly, var_lookup::Dict{fmpq_mpoly, Int64}, nvars::Int64)
+@inline function linpoly_to_spvector(a::P, var_lookup::Dict{P, Int64}, nvars::Int64) where P <: MPolyElem{fmpq}
     @assert total_degree(a) <= 1
 
     return sparsevec(
@@ -244,7 +244,7 @@ function pbwdeforms_all(sp::SmashProductLie{C}, maxdeg::Int, DeformBaseType::Typ
     nvars = length(deform_base)
 
     @info "Constructing MPolyRing..."
-    R, vars = PolynomialRing(sp.coeff_ring, nvars)
+    R, vars = PolynomialRingSparse(sp.coeff_ring, nvars)
     var_lookup = Dict(vars[i] => i for i in 1:nvars)
 
     @info "Changing SmashProductLie coeffcient type..."
