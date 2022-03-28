@@ -1,8 +1,11 @@
 @info "Parsing ARGS..."
 
-@assert length(ARGS[1]) == 1
-dynkin = ARGS[1][1]
-
+@assert length(ARGS[1]) == 1 || ARGS[1] == "SO"
+if length(ARGS[1]) == 1
+    dynkin = ARGS[1][1]
+else
+    dynkin = "SO"
+end
 n = parse(Int, ARGS[2])
 
 regex = r"([0-9])"
@@ -11,7 +14,13 @@ lambda_string = replace("$lambda", ' ' => "")
 
 maxdeg = parse(Int, ARGS[4])
 
-@assert n == length(lambda)
+if isa(dynkin, Char)
+    @assert n == length(lambda)
+elseif dynkin == "SO"
+    @assert div(n,2) == length(lambda)
+else
+    @assert false
+end
 
 @info "Loading Dependencies..."
 using Oscar
@@ -39,7 +48,13 @@ end
 
 for deg in 0:maxdeg
     @info "Computing PBWDeformations... (degree=$deg)"
-    sp, _ = smash_product_lie(QQ, dynkin, n, lambda)
+    if isa(dynkin, Char)
+        sp, _ = smash_product_lie(QQ, dynkin, n, lambda)
+    elseif dynkin == "SO"
+        sp, _ = smash_product_lie_so(QQ, n, lambda)
+    else
+        @assert false
+    end
     kappas = pbwdeforms_all(sp, deg)
 
     @info "Writing Output... (degree=$deg)"

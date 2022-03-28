@@ -6,7 +6,7 @@ timeout = "60s"
 max_n = 5
 max_lambdasum = 3
 maxdeg = 3
-inputs = Tuple{Char, Int64, Vector{Int64}, Int64}[]
+inputs = Tuple{Union{Char, String}, Int64, Vector{Int64}, Int64}[]
 
 function lambdas(n, lambdasum)
     multisets(n, k) = map(A -> [sum(A .== i) for i in 1:n], with_replacement_combinations(1:n, k))
@@ -34,6 +34,12 @@ append!(inputs, [('D', n, lambda, maxdeg)
     for n in 4:max_n
     for lambdasum in 1:max_lambdasum
     for lambda in lambdas(n, lambdasum)])
+
+# other SO version
+append!(inputs, [("SO", n, lambda, maxdeg)
+    for n in 1:max_n
+    for lambdasum in 1:max_lambdasum
+    for lambda in lambdas(div(n,2), lambdasum)])
 
 @info "Computing $(length(inputs)) cases..." 
 runtimes = pmap(inputs) do input
