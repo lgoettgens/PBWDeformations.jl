@@ -3,12 +3,16 @@ using CSV
 using DataFrames
 
 function summarizeDB(path, delim)
-    inputs = unique(split(filename, '_')[1:3] for filename in readdir(path) if filename[2] == '_')
+    inputs = unique(split(filename, '_')[1:3] for filename in readdir(path) if filename[2] == '_' || filename[3] == '_')
 
-    rows = Tuple{Char, Int, Vector{Int}, Int, Vector{Int}}[]
+    rows = Tuple{Union{Char,String}, Int, Vector{Int}, Int, Vector{Int}}[]
 
     for input in inputs
-        dynkin = input[1][1]
+        if length(input[1]) == 1
+            dynkin = input[1][1]
+        else
+            dynkin = String(input[1])
+        end
 
         n = parse(Int, input[2])
 
