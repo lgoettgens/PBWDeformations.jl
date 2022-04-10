@@ -6,7 +6,7 @@ export flatten, groupBy
 Returns a vector of all elements of elements of `a`.
 
 # Example
-```jldoctest; setup = :(flatten = PBWDeformations.flatten)
+```jldoctest
 julia> flatten([[1],[],[2,3,4],[5],[]])
 5-element Vector{Any}:
  1
@@ -26,7 +26,7 @@ end
 Returns a vector containing the elements of `a` grouped into subvectors of consecutive equal elements.
 
 # Examples
-```jldoctest; setup = :(groupBy = PBWDeformations.groupBy)
+```jldoctest
 julia> groupBy([1,1,2,2,2,2,3,1,4,4])
 5-element Vector{Vector{Int64}}:
  [1, 1]
@@ -74,7 +74,7 @@ i.e. are of one of the forms
   * ``G_2``.
 
 # Examples
-```jldoctest; setup = :(isvaliddynkin = PBWDeformations.isvaliddynkin)
+```jldoctest
 julia> isvaliddynkin('A', 2)
 true
 
