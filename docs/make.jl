@@ -18,7 +18,11 @@ makedocs(
         prettyurls = get(ENV, "CI", nothing) == "true",
         canonical = "https://johannesflake.gitlab.io/PBWDeformations.jl",
     ),
-    pages = ["Home" => "index.md"],
+    pages = [
+        "PBWDeformations.jl" => "index.md",
+        "Smash products" => "smash_product_lie.md",
+        "Util functions" => "util.md",
+    ],
     doctestfilters = [r"(Nemo\.)?fmpq"],
 )
 

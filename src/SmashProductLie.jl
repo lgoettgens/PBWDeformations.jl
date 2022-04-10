@@ -1,3 +1,7 @@
+"""
+The struct representing a lie algebra smash product.
+It consists of the underlying QuadraticQuoAlgebra and some metadata.
+"""
 mutable struct SmashProductLie{C <: RingElement}
     dimL :: Int64
     dimV :: Int64
@@ -108,6 +112,21 @@ function smash_product_struct_const_from_gap(dynkin::Char, n::Int, lambda::Vecto
     return dimL, dimV, struct_const_L, struct_const_V
 end
 
+"""
+    smash_product_lie_so(coeff_ring :: Ring, n :: Int, lambda :: Vector{Int})
+
+Constructs the smash product of the semisimple lie algebra `so_n` and the highest weight module with weight `lambda` over the
+coefficient ring `coeff_ring`. For `n` odd, `lambda` is a B-type highest weight; for `n` even, `lambda` is a D-type highest weight.
+
+# Example
+```jldoctest
+julia> smash_product_lie_so(QQ, 5, [1,0])
+(Lie Algebra Smash Product with basis x_1_2, x_1_3, x_1_4, ..., x_4_5, v_1, v_2, v_3, ..., v_5 over Rational Field, (QuadraticQuoAlgebraElem{fmpq}[x_1_2, x_1_3, x_1_4, x_1_5, x_2_3, x_2_4, x_2_5, x_3_4, x_3_5, x_4_5], QuadraticQuoAlgebraElem{fmpq}[v_1, v_2, v_3, v_4, v_5]))
+```
+
+!!! warning
+    Only fundamental non-spin representations are currently supported.
+"""
 function smash_product_lie_so(coeff_ring :: Ring, n :: Int, lambda :: Vector{Int}) # for odd n this is a B type highest weight, for even n D type
     _, _, struct_const_L, struct_const_V, symbL, symbV = smash_product_struct_const_so(n, lambda)
 

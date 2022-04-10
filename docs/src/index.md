@@ -1,18 +1,21 @@
-```@meta
-CurrentModule = PBWDeformations
-```
-
 # PBWDeformations
+
+## Introduction
 
 Documentation for [PBWDeformations](https://gitlab.com/johannesflake/PBWDeformations.jl).
 
-```@docs
-smash_product_lie
+## Features
+todo
+
+## Installation
+todo
+
+## Outline
+
+```@contents
 ```
+
+### [Index](@id main-index)
 
 ```@index
-```
-
-```@autodocs
-Modules = [PBWDeformations]
 ```

@@ -1,4 +1,4 @@
-export flatten, groupBy
+export flatten, groupBy, isvaliddynkin
 
 """
     flatten(a::Vector{Vector{T}}) where T
