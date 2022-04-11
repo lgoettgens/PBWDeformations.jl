@@ -239,7 +239,7 @@ function Base.:+(a::AlgebraElem{C1}, b::C2) where {C1 <: RingElement, C2 <: Ring
         r.coeffs[end] = deepcopy(b)
         r.monoms[end] = deepcopy(Int[])
     else
-        r.coeffs[j] += b.coeffs[i]
+        r.coeffs[j] += b
     end
     zeroinds = findall(iszero, r.coeffs)
     deleteat!(r.coeffs, zeroinds)
