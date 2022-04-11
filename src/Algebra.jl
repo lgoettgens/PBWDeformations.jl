@@ -11,6 +11,10 @@ coefficient_ring(A::Algebra{C}) where C <: RingElement = A.base_ring::parent_typ
 
 coefficient_ring(a::AlgebraElem{C}) where C <: RingElement = coefficient_ring(parent(a))
 
+parent_type(a::AlgebraElem{C}) where C <: RingElement = parent_type(typeof(a))
+
+elem_type(A::Algebra{C}) where C <: RingElement = elem_type(typeof(A))
+
 symbols(A::Algebra) = A.S
 
 ngens(A::Algebra) = A.num_gens

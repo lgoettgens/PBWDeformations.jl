@@ -234,8 +234,19 @@ function indices_of_freedom(mat::SparseArrays.SparseMatrixCSC{T, Int64}) where T
     return filter(i -> iszero(mat[i,i]), 1:size(mat)[1])
 end
 
+function deform_std_base_gen(sp::SmashProductLie{C}, maxdeg::Int, R) where C <: RingElement
+    [
+        begin
+            kappa = fill(sp.alg(0), sp.dimV, sp.dimV)
+            kappa[i,j] += QuadraticQuoAlgebraElem{elem_type(R)}(sp.alg, [R(1)], [ind])
+            kappa[j,i] -= QuadraticQuoAlgebraElem{elem_type(R)}(sp.alg, [R(1)], [ind])
+            kappa
+        end
+        for i in 1:sp.dimV for j in i+1:sp.dimV for d in 0:maxdeg for (k, ind) in enumerate(Combinatorics.with_replacement_combinations(1:sp.dimL, d))
+    ]
+end
 
-function pbwdeforms_all(sp::SmashProductLie{C}, maxdeg::Int64; special_return::Type{T} = Nothing) where {C <: RingElement, T <: Union{Nothing, SparseMatrixCSC}}
+function pbwdeforms_all(sp::SmashProductLie{C}, maxdeg::Int; deform_base_gen::Any = deform_std_base_gen, special_return::Type{T} = Nothing) where {C <: RingElement, T <: Union{Nothing, SparseMatrixCSC}}
     dimL = sp.dimL
     dimV = sp.dimV
 
@@ -251,9 +262,8 @@ function pbwdeforms_all(sp::SmashProductLie{C}, maxdeg::Int64; special_return::T
 
     @info "Constructing kappa..."
     kappa = fill(new_sp.alg(0), dimV, dimV)
-    for i in 1:dimV, j in i+1:dimV, d in 0:maxdeg, (k, ind) in enumerate(Combinatorics.with_replacement_combinations(1:dimL, d))
-        kappa[i,j] += QuadraticQuoAlgebraElem{elem_type(R)}(new_sp.alg, [var_mat[i,j][d+1][k]], [ind])
-        kappa[j,i] -= QuadraticQuoAlgebraElem{elem_type(R)}(new_sp.alg, [var_mat[i,j][d+1][k]], [ind])
+    for (i, m) in enumerate(deform_base_gen(new_sp, maxdeg, R))
+        kappa += vars[i] .* m
     end
 
     @info "Constructing deformation..."
