@@ -148,36 +148,7 @@ end
 #
 ###############################################################################
 
-function pbwdeformsall_nvars(dimL::Int64, dimV::Int64, maxdeg::Int64)
-    n_kappa_entries = div(dimV*(dimV-1), 2)
-    dim_free_alg = sum(binomial(dimL + k - 1, k) for k in 0:maxdeg)
-    
-    return n_kappa_entries * dim_free_alg, n_kappa_entries, dim_free_alg
-end
-
-function pbwdeformsall_vars(dimL::Int64, dimV::Int64, maxdeg::Int64)
-    # format: "c_{i,j,deg,[inds]}"
-    return ["c_{$i,$j,$deg,$(isempty(inds) ? "[]" : inds)}" for i in 1:dimV for j in i+1:dimV for deg in 0:maxdeg for inds=Combinatorics.with_replacement_combinations(1:dimL, deg)]
-end
-
-function pbwdeformsall_partition_vars(vars::Vector{T}, dimL::Int64, dimV::Int64, maxdeg::Int64) where T
-    _, n_kappa_entries, dim_free_alg = pbwdeformsall_nvars(dimL, dimV, maxdeg)
-    m = fill(Vector{T}[], dimV, dimV)
-    k = 0
-    for i in 1:dimV, j in i+1:dimV
-        offset = 0
-        m[i,j] = fill(T[], maxdeg+1)
-        for d in 0:maxdeg
-            curr = binomial(dimL + d - 1, d)
-            m[i,j][d+1] = vars[k*dim_free_alg+1+offset : k*dim_free_alg+offset+curr]
-            offset += curr
-        end
-        k += 1
-    end
-    return m
-end
-
-function coefficient_comparison(eq::AlgebraElem{C}) where C <: RingElement
+@inline function coefficient_comparison(eq::AlgebraElem{C}) where C <: RingElement
     return eq.coeffs
 end
 
@@ -234,36 +205,54 @@ function indices_of_freedom(mat::SparseArrays.SparseMatrixCSC{T, Int64}) where T
     return filter(i -> iszero(mat[i,i]), 1:size(mat)[1])
 end
 
-function deform_std_base_gen(sp::SmashProductLie{C}, maxdeg::Int, R) where C <: RingElement
-    [
-        begin
-            kappa = fill(sp.alg(0), sp.dimV, sp.dimV)
-            kappa[i,j] += QuadraticQuoAlgebraElem{elem_type(R)}(sp.alg, [R(1)], [ind])
-            kappa[j,i] -= QuadraticQuoAlgebraElem{elem_type(R)}(sp.alg, [R(1)], [ind])
-            kappa
-        end
-        for i in 1:sp.dimV for j in i+1:sp.dimV for d in 0:maxdeg for (k, ind) in enumerate(Combinatorics.with_replacement_combinations(1:sp.dimL, d))
-    ]
+
+abstract type DeformBase{C <: RingElement} end
+struct DeformStdBase{C <: RingElement} <: DeformBase{C}
+    length :: Int
+    generator
+
+    function DeformStdBase{C}(sp::SmashProductLie{C}, maxdeg::Int) where C <: RingElement
+        dimL = sp.dimL
+        dimV = sp.dimV
+        R = coefficient_ring(sp.alg)
+        generator = (
+            begin
+                kappa = fill(sp.alg(0), dimV, dimV)
+                kappa[i,j] += QuadraticQuoAlgebraElem{elem_type(R)}(sp.alg, [R(1)], [ind])
+                kappa[j,i] -= QuadraticQuoAlgebraElem{elem_type(R)}(sp.alg, [R(1)], [ind])
+                kappa
+            end
+            for i in 1:dimV for j in i+1:dimV for d in 0:maxdeg for (k, ind) in enumerate(Combinatorics.with_replacement_combinations(1:dimL, d))
+        )
+
+        length = div(dimV*(dimV-1), 2) * sum(binomial(dimL + k - 1, k) for k in 0:maxdeg)
+        return new{C}(length, generator)
+    end
 end
 
-function pbwdeforms_all(sp::SmashProductLie{C}, maxdeg::Int; deform_base_gen::Any = deform_std_base_gen, special_return::Type{T} = Nothing) where {C <: RingElement, T <: Union{Nothing, SparseMatrixCSC}}
+function Base.length(base::DeformStdBase)
+    return base.length
+end
+
+
+function pbwdeforms_all(sp::SmashProductLie{C}, maxdeg::Int; DeformBaseType::Type{<: DeformBase{C}} = DeformStdBase{C}, special_return::Type{T} = Nothing) where {C <: RingElement, T <: Union{Nothing, SparseMatrixCSC}}
     dimL = sp.dimL
     dimV = sp.dimV
 
-    @info "Constructing MPolyRing..."
-    R, vars = PolynomialRing(sp.coeff_ring, pbwdeformsall_vars(dimL, dimV, maxdeg))
-    nvars = length(vars)
-    var_lookup = Dict(vars[i] => i for i in 1:nvars)
-    var_mat = pbwdeformsall_partition_vars(vars, dimL, dimV, maxdeg)
+    deform_base = DeformBaseType(sp, maxdeg)
+    nvars = length(deform_base)
 
+    @info "Constructing MPolyRing..."
+    R, vars = PolynomialRing(sp.coeff_ring, nvars)
+    var_lookup = Dict(vars[i] => i for i in 1:nvars)
 
     @info "Changing SmashProductLie coeffcient type..."
     new_sp = change_base_ring(R, sp)
 
     @info "Constructing kappa..."
     kappa = fill(new_sp.alg(0), dimV, dimV)
-    for (i, m) in enumerate(deform_base_gen(new_sp, maxdeg, R))
-        kappa += vars[i] .* m
+    for (i, b) in enumerate(deform_base.generator)
+        kappa += vars[i] .* new_sp.alg.(b)
     end
 
     @info "Constructing deformation..."
@@ -284,7 +273,6 @@ function pbwdeforms_all(sp::SmashProductLie{C}, maxdeg::Int; deform_base_gen::An
         )
     )
  
-
     @info "Computing row-echelon form..."
     lgs = Vector{Union{Nothing,SparseVector{fmpq, Int64}}}(nothing, nvars)
     for v in iter
@@ -308,18 +296,15 @@ function pbwdeforms_all(sp::SmashProductLie{C}, maxdeg::Int; deform_base_gen::An
         kappas[l] = fill(sp.alg(0), dimV, dimV)
     end
     if freedom_deg > 0
-        for i in 1:dimV, j in i+1:dimV, d in 0:maxdeg, (k, ind) in enumerate(Combinatorics.with_replacement_combinations(1:dimL, d))
-            var_ind = var_lookup[var_mat[i,j][d+1][k]]
-            if iszero(mat[var_ind,var_ind])
-                l = findfirst(isequal(var_ind), freedom_ind)
-                kappas[l][i,j] += QuadraticQuoAlgebraElem{C}(sp.alg, [base_ring(sp.alg)(1)], [ind])
-                kappas[l][j,i] -= QuadraticQuoAlgebraElem{C}(sp.alg, [base_ring(sp.alg)(1)], [ind])
+        for (i, b) in enumerate(deform_base.generator)
+            if iszero(mat[i,i])
+                l = findfirst(isequal(i), freedom_ind)
+                kappas[l] += b
             else
-                for col in var_ind+1:nvars
-                    if !iszero(mat[var_ind,col])
-                        l = findfirst(isequal(col), freedom_ind)
-                        kappas[l][i,j] += QuadraticQuoAlgebraElem{C}(sp.alg, [-mat[var_ind,col]], [ind])
-                        kappas[l][j,i] -= QuadraticQuoAlgebraElem{C}(sp.alg, [-mat[var_ind,col]], [ind])
+                for j in i+1:nvars
+                    if !iszero(mat[i,j])
+                        l = findfirst(isequal(j), freedom_ind)
+                        kappas[l] += -mat[i,j] .* b
                     end
                 end
             end

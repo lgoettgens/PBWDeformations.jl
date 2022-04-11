@@ -150,29 +150,6 @@
     end
 
     @testset "pbwdeforms_all construction stuff" begin
-        @testset "pbwdeformsall_nvars tests" begin
-            for _ in 1:num_random_tests
-                a, b, c = PD.pbwdeformsall_nvars(rand(1:10), rand(1:10), rand(0:5))
-                @test a == b * c
-            end
-
-            for i in 1:10
-                @test PD.pbwdeformsall_nvars(1, i, 0) == (div(i*(i-1), 2), div(i*(i-1), 2), 1)
-                @test PD.pbwdeformsall_nvars(1, i, 1) == (2*div(i*(i-1), 2), div(i*(i-1), 2), 2)
-                @test PD.pbwdeformsall_nvars(5, i, 1) == (6*div(i*(i-1), 2), div(i*(i-1), 2), 6)
-                @test PD.pbwdeformsall_nvars(1, i, 2) == (3*div(i*(i-1), 2), div(i*(i-1), 2), 3)
-                @test PD.pbwdeformsall_nvars(3, i, 2) == (10*div(i*(i-1), 2), div(i*(i-1), 2), 10)
-            end
-        end
-
-        @testset "pbwdeformsall_vars tests" begin
-            for _ in 1:num_random_tests
-                nL, nV, maxdeg = rand(1:10), rand(1:10), rand(0:5)
-                l, _, _ = PD.pbwdeformsall_nvars(nL, nV, maxdeg)
-                @test l == length(PD.pbwdeformsall_vars(nL, nV, maxdeg))
-            end
-        end
-
         @testset "coefficient_comparison tests" begin
             A, (x,y,z) = free_algebra(QQ, ["x", "y", "z"])
             eq = QQ(2//3)*x + 88*y*z - 12*x*z + 3*y + 0*z^4 - 2*y + 12*x*z
