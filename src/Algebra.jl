@@ -11,6 +11,10 @@ coefficient_ring(A::Algebra{C}) where C <: RingElement = A.base_ring::parent_typ
 
 coefficient_ring(a::AlgebraElem{C}) where C <: RingElement = coefficient_ring(parent(a))
 
+parent_type(a::AlgebraElem{C}) where C <: RingElement = parent_type(typeof(a))
+
+elem_type(A::Algebra{C}) where C <: RingElement = elem_type(typeof(A))
+
 symbols(A::Algebra) = A.S
 
 ngens(A::Algebra) = A.num_gens
@@ -235,7 +239,7 @@ function Base.:+(a::AlgebraElem{C1}, b::C2) where {C1 <: RingElement, C2 <: Ring
         r.coeffs[end] = deepcopy(b)
         r.monoms[end] = deepcopy(Int[])
     else
-        r.coeffs[j] += b.coeffs[i]
+        r.coeffs[j] += b
     end
     zeroinds = findall(iszero, r.coeffs)
     deleteat!(r.coeffs, zeroinds)
