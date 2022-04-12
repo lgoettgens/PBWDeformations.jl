@@ -218,11 +218,12 @@ struct DeformStdBase{C <: RingElement} <: DeformBase{C}
         generator = (
             begin
                 kappa = fill(sp.alg(0), dimV, dimV)
-                kappa[i,j] += QuadraticQuoAlgebraElem{elem_type(R)}(sp.alg, [R(1)], [ind])
-                kappa[j,i] -= QuadraticQuoAlgebraElem{elem_type(R)}(sp.alg, [R(1)], [ind])
+                entry = prod(map(k -> sp.baseL[k], ind); init=sp.alg(1))
+                kappa[i,j] += entry
+                kappa[j,i] -= entry
                 kappa
             end
-            for i in 1:dimV for j in i+1:dimV for d in 0:maxdeg for (k, ind) in enumerate(Combinatorics.with_replacement_combinations(1:dimL, d))
+            for i in 1:dimV for j in i+1:dimV for d in 0:maxdeg for ind in Combinatorics.with_replacement_combinations(1:dimL, d)
         )
 
         length = div(dimV*(dimV-1), 2) * sum(binomial(dimL + k - 1, k) for k in 0:maxdeg)
@@ -235,7 +236,7 @@ function Base.length(base::DeformStdBase)
 end
 
 
-function pbwdeforms_all(sp::SmashProductLie{C}, maxdeg::Int; DeformBaseType::Type{<: DeformBase{C}} = DeformStdBase{C}, special_return::Type{T} = Nothing) where {C <: RingElement, T <: Union{Nothing, SparseMatrixCSC}}
+function pbwdeforms_all(sp::SmashProductLie{C}, maxdeg::Int, DeformBaseType::Type{<: DeformBase{C}} = DeformStdBase{C}; special_return::Type{T} = Nothing) where {C <: RingElement, T <: Union{Nothing, SparseMatrixCSC}}
     dimL = sp.dimL
     dimV = sp.dimV
 
