@@ -1,3 +1,7 @@
+"""
+The struct representing a lie algebra smash product.
+It consists of the underlying QuadraticQuoAlgebra and some metadata.
+"""
 mutable struct SmashProductLie{C <: RingElement}
     dimL :: Int64
     dimV :: Int64
@@ -12,7 +16,15 @@ mutable struct SmashProductLie{C <: RingElement}
 end
 
 
-function smash_product_lie(coeff_ring :: Ring, symbL :: Vector{Symbol}, symbV :: Vector{Symbol}, struct_const_L :: Matrix{Vector{Tuple{Int, Int}}}, struct_const_V :: Matrix{Vector{Tuple{Int, Int}}})
+"""
+    smash_product_lie(coeff_ring::Ring, symbL::Vector{Symbol}, symbV::Vector{Symbol}, struct_const_L, struct_const_V)
+
+Constructs the smash product over the coefficient ring `coeff_ring` using the
+structure constants `struct_const_L` and `struct_const_V`, and using `symbL`
+and `symbV` as symbols for the respective generators of the lie algebra and
+the module.
+"""
+function smash_product_lie(coeff_ring::Ring, symbL::Vector{Symbol}, symbV::Vector{Symbol}, struct_const_L::Matrix{Vector{Tuple{Int, Int}}}, struct_const_V::Matrix{Vector{Tuple{Int, Int}}})
     C = elem_type(coeff_ring)
     
     dimL = length(symbL)
@@ -40,11 +52,30 @@ function smash_product_lie(coeff_ring :: Ring, symbL :: Vector{Symbol}, symbV ::
     return SmashProductLie{C}(dimL, dimV, baseL, baseV, coeff_ring, alg), (baseL, baseV)
 end
 
-function smash_product_lie(coeff_ring :: Ring, symbL :: Vector{String}, symbV :: Vector{String}, struct_const_L :: Matrix{Vector{Tuple{Int, Int}}}, struct_const_V :: Matrix{Vector{Tuple{Int, Int}}})
+"""
+    smash_product_lie(coeff_ring::Ring, symbL::Vector{String}, symbV::Vector{String}, struct_const_L, struct_const_V)
+
+The same as the other method with structure constants, but takes strings
+instead of symbols to name the generators.
+"""
+function smash_product_lie(coeff_ring::Ring, symbL::Vector{String}, symbV::Vector{String}, struct_const_L::Matrix{Vector{Tuple{Int, Int}}}, struct_const_V::Matrix{Vector{Tuple{Int, Int}}})
     return smash_product_lie(coeff_ring, map(Symbol, symbL), map(Symbol, symbV), struct_const_L, struct_const_V)
 end
 
-function smash_product_lie(coeff_ring :: Ring, dynkin :: Char, n :: Int, lambda :: Vector{Int})
+"""
+    smash_product_lie(coeff_ring::Ring, dynkin::Char, n::Int, lambda::Vector{Int})
+
+Constructs the smash product of the abstract semisimple lie algebra given by
+`dynkin` and `n` and the highest weight module with weight `lambda` over the
+coefficient ring `coeff_ring`.
+
+# Example
+```jldoctest
+julia> smash_product_lie(QQ, 'A', 1, [1])
+(Lie Algebra Smash Product with basis x_1, x_2, x_3, v_1, v_2 over Rational Field, (QuadraticQuoAlgebraElem{fmpq}[x_1, x_2, x_3], QuadraticQuoAlgebraElem{fmpq}[v_1, v_2]))
+```
+"""
+function smash_product_lie(coeff_ring::Ring, dynkin::Char, n::Int, lambda::Vector{Int})
     dimL, dimV, struct_const_L, struct_const_V = smash_product_struct_const_from_gap(dynkin, n, lambda)
 
     symbL = ["x_$i" for i in 1:dimL]
@@ -53,9 +84,9 @@ function smash_product_lie(coeff_ring :: Ring, dynkin :: Char, n :: Int, lambda 
     return smash_product_lie(coeff_ring, symbL, symbV, struct_const_L, struct_const_V)
 end
 
-function smash_product_struct_const_from_gap(dynkin :: Char, n :: Int, lambda :: Vector{Int})
-    @assert n == length(lambda)
-    sanitize_lie_input(dynkin, n)
+function smash_product_struct_const_from_gap(dynkin::Char, n::Int, lambda::Vector{Int})
+    n == length(lambda) || throw(ArgumentError("length(lambda) and n have to coincide."))
+    isvaliddynkin(dynkin, n) || throw(ArgumentError("Input not allowed by GAP."))
 
     GAPG = GAP.Globals
 
@@ -81,6 +112,21 @@ function smash_product_struct_const_from_gap(dynkin :: Char, n :: Int, lambda ::
     return dimL, dimV, struct_const_L, struct_const_V
 end
 
+"""
+    smash_product_lie_so(coeff_ring :: Ring, n :: Int, lambda :: Vector{Int})
+
+Constructs the smash product of the semisimple lie algebra `so_n` and the highest weight module with weight `lambda` over the
+coefficient ring `coeff_ring`. For `n` odd, `lambda` is a B-type highest weight; for `n` even, `lambda` is a D-type highest weight.
+
+# Example
+```jldoctest
+julia> smash_product_lie_so(QQ, 5, [1,0])
+(Lie Algebra Smash Product with basis x_1_2, x_1_3, x_1_4, ..., x_4_5, v_1, v_2, v_3, ..., v_5 over Rational Field, (QuadraticQuoAlgebraElem{fmpq}[x_1_2, x_1_3, x_1_4, x_1_5, x_2_3, x_2_4, x_2_5, x_3_4, x_3_5, x_4_5], QuadraticQuoAlgebraElem{fmpq}[v_1, v_2, v_3, v_4, v_5]))
+```
+
+!!! warning
+    Only fundamental non-spin representations are currently supported.
+"""
 function smash_product_lie_so(coeff_ring :: Ring, n :: Int, lambda :: Vector{Int}) # for odd n this is a B type highest weight, for even n D type
     _, _, struct_const_L, struct_const_V, symbL, symbV = smash_product_struct_const_so(n, lambda)
 
