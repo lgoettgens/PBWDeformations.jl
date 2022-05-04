@@ -1,9 +1,12 @@
-export flatten, groupBy
+export flatten, groupBy, isvaliddynkin
 
 """
     flatten(a::Vector{Vector{T}}) where T
+
 Returns a vector of all elements of elements of `a`.
-```jldoctest; setup = :(flatten = PBWDeformations.flatten)
+
+# Example
+```jldoctest
 julia> flatten([[1],[],[2,3,4],[5],[]])
 5-element Vector{Any}:
  1
@@ -19,8 +22,11 @@ end
 
 """
     groupBy(a::Vector{T}; eq=(==)) where T
+
 Returns a vector containing the elements of `a` grouped into subvectors of consecutive equal elements.
-```jldoctest; setup = :(groupBy = PBWDeformations.groupBy)
+
+# Examples
+```jldoctest
 julia> groupBy([1,1,2,2,2,2,3,1,4,4])
 5-element Vector{Vector{Int64}}:
  [1, 1]
@@ -51,4 +57,50 @@ function groupBy(a::Vector{T}; eq=(==)) where T
         v = x
     end
     return r
+end
+
+
+"""
+    isvaliddynkin(dynkin::Char, n::Int)
+
+Returns true, if there given parameters uniquely define a dynkin diagram,
+i.e. are of one of the forms
+  * ``A_n`` for ``n \\geq 1``,
+  * ``B_n`` for ``n \\geq 2``,
+  * ``C_n`` for ``n \\geq 2``,
+  * ``D_n`` for ``n \\geq 4``,
+  * ``E_5``, ``E_6``, ``E_7``,
+  * ``F_4``,
+  * ``G_2``.
+
+# Examples
+```jldoctest
+julia> isvaliddynkin('A', 2)
+true
+
+julia> isvaliddynkin('F', 4)
+true
+
+julia> isvaliddynkin('D', 3)
+false
+```
+"""
+function isvaliddynkin(dynkin::Char, n::Int)
+    if dynkin == 'A'
+        return n >= 1
+    elseif dynkin == 'B'
+        return n >= 2
+    elseif dynkin == 'C'
+        return n >= 2
+    elseif dynkin == 'D'
+        return n >= 4
+    elseif dynkin == 'E'
+        return 6 <= n <= 8
+    elseif dynkin == 'F'
+        return n == 4
+    elseif dynkin == 'G'
+        return n == 2
+    else
+        return false
+    end
 end
