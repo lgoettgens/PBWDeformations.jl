@@ -69,6 +69,7 @@ GAP = Oscar.GAP
 
 include("Util.jl")
 include("Algebra.jl")
+include("ArcDiagram.jl")
 include("FreeAlgebra.jl")
 include("QuadraticQuoAlgebra.jl")
 include("SmashProductLie.jl")
