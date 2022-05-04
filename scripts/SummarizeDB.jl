@@ -5,7 +5,7 @@ using DataFrames
 function summarizeDB(path, delim)
     inputs = unique(split(filename, '_')[1:3] for filename in readdir(path) if filename[2] == '_' || filename[3] == '_')
 
-    rows = Tuple{Union{Char,String}, Int, Vector{Int}, Int, Vector{Int}}[]
+    rows = Tuple{Union{Char, String}, Int, Vector{Int}, Int, Vector{Int}}[]
 
     for input in inputs
         if length(input[1]) == 1
@@ -22,7 +22,10 @@ function summarizeDB(path, delim)
 
         prefix = "$(path)/$(dynkin)_$(n)_$(lambda_string)_"
         suffix = ".txt"
-        degs = map(filename -> parse(Int, filename[length(prefix)+1:end-length(suffix)]), filter(startswith(prefix), readdir(path; join=true)))
+        degs = map(
+            filename -> parse(Int, filename[length(prefix)+1:end-length(suffix)]),
+            filter(startswith(prefix), readdir(path; join=true)),
+        )
         if isempty(degs)
             @warn "No valid file for ($(dynkin), $(n), $(lambda_string)) found."
             continue
