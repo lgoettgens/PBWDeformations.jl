@@ -17,7 +17,7 @@ maxdeg = parse(Int, ARGS[4])
 if isa(dynkin, Char)
     @assert n == length(lambda)
 elseif dynkin == "SO"
-    @assert div(n,2) == length(lambda)
+    @assert div(n, 2) == length(lambda)
 else
     @assert false
 end
@@ -32,7 +32,7 @@ function kappa_to_string(kappa::Matrix{QuadraticQuoAlgebraElem{fmpq}})
     for i in 1:dim
         for j in 1:dim
             string *= "("
-            string *= sprint(show, kappa[i,j]) 
+            string *= sprint(show, kappa[i, j])
             string *= ")"
             if j < dim
                 string *= "\t"

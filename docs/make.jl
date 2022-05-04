@@ -1,6 +1,8 @@
 using Documenter
 using PBWDeformations
 
+#! format: off
+
 DocMeta.setdocmeta!(
     PBWDeformations,
     :DocTestSetup,

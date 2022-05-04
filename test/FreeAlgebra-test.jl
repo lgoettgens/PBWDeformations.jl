@@ -47,7 +47,7 @@
         F, (A,) = free_algebra(QQ, ["a"])
 
         @test isgen(A)
-        
+
         @test !isgen(2A)
         @test !isgen(A^2)
         @test !isgen(A + 1)

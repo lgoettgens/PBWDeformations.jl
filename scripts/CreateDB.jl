@@ -13,6 +13,8 @@ function lambdas(n, lambdasum)
     return multisets(n, lambdasum)
 end
 
+#! format: off
+
 # dynkin A
 append!(inputs, [('A', n, lambda, maxdeg)
     for n in 1:max_n
@@ -41,12 +43,16 @@ append!(inputs, [("SO", n, lambda, maxdeg)
     for lambdasum in 1:max_lambdasum
     for lambda in lambdas(div(n,2), lambdasum)])
 
-@info "Computing $(length(inputs)) cases..." 
+#! format: on
+
+@info "Computing $(length(inputs)) cases..."
 runtimes = pmap(inputs) do input
     println(input)
     dynkin, n, lambda, maxdeg = input
     lambda_string = replace("$lambda", ' ' => "")
-    command = Cmd(`timeout -s SIGKILL $(timeout) julia scripts/CreateDBEntry.jl $(dynkin) $(n) $(lambda_string) $(maxdeg)`)
+    command = Cmd(
+        `timeout -s SIGKILL $(timeout) julia scripts/CreateDBEntry.jl $(dynkin) $(n) $(lambda_string) $(maxdeg)`,
+    )
     command = Cmd(command, ignorestatus=true)
     runtime = @elapsed run(command)
     return round(Int, runtime)
