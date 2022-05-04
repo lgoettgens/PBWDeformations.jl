@@ -1,7 +1,7 @@
 export flatten, groupBy, isvaliddynkin
 
 """
-    flatten(a::Vector{Vector{T}}) where T
+    flatten(a::Vector{Vector{T}}) where {T}
 
 Returns a vector of all elements of elements of `a`.
 
@@ -16,12 +16,12 @@ julia> flatten([[1],[],[2,3,4],[5],[]])
  5
 ```
 """
-function flatten(a::Vector{Vector{T}}) where T
+function flatten(a::Vector{Vector{T}}) where {T}
     return vcat(a...)
 end
 
 """
-    groupBy(a::Vector{T}; eq=(==)) where T
+    groupBy(a::Vector{T}; eq=(==)) where {T}
 
 Returns a vector containing the elements of `a` grouped into subvectors of consecutive equal elements.
 
@@ -42,7 +42,7 @@ julia> groupBy([i for i in -5:5]; eq=((x, y) -> sign(x) == sign(y)))
  [1, 2, 3, 4, 5]
 ```
 """
-function groupBy(a::Vector{T}; eq=(==)) where T
+function groupBy(a::Vector{T}; eq=(==)) where {T}
     if isempty(a)
         return Vector{T}[]
     end

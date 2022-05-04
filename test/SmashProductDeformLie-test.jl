@@ -1,13 +1,15 @@
 @testset ExtendedTestSet "All SmashProductDeformLie.jl tests" begin
-    
+
     @testset "smash_product_deform_lie constructor" begin
-        @testset "$(dynkin)_$n with hw $lambda; R = $R" for (dynkin, n, lambda) in [('A', 2, [1,1]), ('B', 2, [1,0])], R in [QQ, PolynomialRing(QQ, ["x","y","z"])[1]]
+        @testset "$(dynkin)_$n with hw $lambda; R = $R" for (dynkin, n, lambda) in [('A', 2, [1, 1]), ('B', 2, [1, 0])],
+            R in [QQ, PolynomialRing(QQ, ["x", "y", "z"])[1]]
+
             sp, (sp_baseL, sp_baseV) = smash_product_lie(R, dynkin, n, lambda)
             kappa = fill(zero(sp.alg), sp.dimV, sp.dimV)
-            kappa[1,2] = sp_baseL[1]
-            kappa[2,1] = -kappa[1,2]
-            kappa[3,4] = sp_baseL[2]
-            kappa[4,3] = -kappa[3,4]
+            kappa[1, 2] = sp_baseL[1]
+            kappa[2, 1] = -kappa[1, 2]
+            kappa[3, 4] = sp_baseL[2]
+            kappa[4, 3] = -kappa[3, 4]
             deform, (baseL, baseV) = smash_product_deform_lie(sp, kappa)
 
             @test deform.dimL == sp.dimL == length(deform.baseL)
@@ -48,7 +50,9 @@
     end
 
     @testset "smash_product_symmdeform_lie constructor" begin
-        @testset "$(dynkin)_$n with hw $lambda; R = $R" for (dynkin, n, lambda) in [('A', 2, [1,1]), ('B', 2, [1,0])], R in [QQ, PolynomialRing(QQ, ["x","y","z"])[1]]
+        @testset "$(dynkin)_$n with hw $lambda; R = $R" for (dynkin, n, lambda) in [('A', 2, [1, 1]), ('B', 2, [1, 0])],
+            R in [QQ, PolynomialRing(QQ, ["x", "y", "z"])[1]]
+
             sp, _ = smash_product_lie(R, dynkin, n, lambda)
             deform, (baseL, baseV) = smash_product_symmdeform_lie(sp)
 
@@ -75,55 +79,61 @@
 
     end
 
-    @testset "smash_product_deform_lie sanitize checks; R = $R" for R in [QQ, PolynomialRing(QQ, ["x","y","z"])[1]]
+    @testset "smash_product_deform_lie sanitize checks; R = $R" for R in [QQ, PolynomialRing(QQ, ["x", "y", "z"])[1]]
         @testset "check dimensions of kappa" begin
-            sp, _ = smash_product_lie(R, 'B', 2, [1,0])
+            sp, _ = smash_product_lie(R, 'B', 2, [1, 0])
 
-            for eps in [-1,1]
-                kappa = fill(zero(sp.alg), sp.dimV+eps, sp.dimV)
+            for eps in [-1, 1]
+                kappa = fill(zero(sp.alg), sp.dimV + eps, sp.dimV)
                 @test_throws ArgumentError("kappa has wrong dimensions.") smash_product_deform_lie(sp, kappa)
 
-                kappa = fill(zero(sp.alg), sp.dimV, sp.dimV+eps)
+                kappa = fill(zero(sp.alg), sp.dimV, sp.dimV + eps)
                 @test_throws ArgumentError("kappa has wrong dimensions.") smash_product_deform_lie(sp, kappa)
 
-                kappa = fill(zero(sp.alg), sp.dimV+eps, sp.dimV+eps)
+                kappa = fill(zero(sp.alg), sp.dimV + eps, sp.dimV + eps)
                 @test_throws ArgumentError("kappa has wrong dimensions.") smash_product_deform_lie(sp, kappa)
             end
         end
 
         @testset "check entries of kappa contained in Hopf algebra of smash product" begin
-            sp, (baseL, baseV) = smash_product_lie(R, 'B', 2, [1,0])
+            sp, (baseL, baseV) = smash_product_lie(R, 'B', 2, [1, 0])
 
             kappa = fill(zero(sp.alg), sp.dimV, sp.dimV)
-            kappa[1,2] = baseV[1]
-            kappa[2,1] = -kappa[1,2]
-            @test_throws ArgumentError("kappa does not only take values in the hopf algebra") smash_product_deform_lie(sp, kappa)
+            kappa[1, 2] = baseV[1]
+            kappa[2, 1] = -kappa[1, 2]
+            @test_throws ArgumentError("kappa does not only take values in the hopf algebra") smash_product_deform_lie(
+                sp,
+                kappa,
+            )
 
             kappa = fill(zero(sp.alg), sp.dimV, sp.dimV)
-            kappa[1,2] = baseV[1]*baseL[1]
-            kappa[2,1] = -kappa[1,2]
-            @test_throws ArgumentError("kappa does not only take values in the hopf algebra") smash_product_deform_lie(sp, kappa)
+            kappa[1, 2] = baseV[1] * baseL[1]
+            kappa[2, 1] = -kappa[1, 2]
+            @test_throws ArgumentError("kappa does not only take values in the hopf algebra") smash_product_deform_lie(
+                sp,
+                kappa,
+            )
 
             kappa = fill(zero(sp.alg), sp.dimV, sp.dimV)
-            kappa[1,2] = sp.alg(2)
-            kappa[2,1] = -kappa[1,2]
+            kappa[1, 2] = sp.alg(2)
+            kappa[2, 1] = -kappa[1, 2]
             @test_nowarn smash_product_deform_lie(sp, kappa)
         end
 
         @testset "check kappa is skew symmetric" begin
-            sp, (baseL, baseV) = smash_product_lie(R, 'B', 2, [1,0])
+            sp, (baseL, baseV) = smash_product_lie(R, 'B', 2, [1, 0])
 
             kappa = fill(zero(sp.alg), sp.dimV, sp.dimV)
-            kappa[1,1] = baseL[1]
+            kappa[1, 1] = baseL[1]
             @test_throws ArgumentError("kappa is not skew-symmetric.") smash_product_deform_lie(sp, kappa)
 
             kappa = fill(zero(sp.alg), sp.dimV, sp.dimV)
-            kappa[1,2] = baseL[1]
+            kappa[1, 2] = baseL[1]
             @test_throws ArgumentError("kappa is not skew-symmetric.") smash_product_deform_lie(sp, kappa)
 
             kappa = fill(zero(sp.alg), sp.dimV, sp.dimV)
-            kappa[1,2] = baseL[1]
-            kappa[2,1] = -2*baseL[1]
+            kappa[1, 2] = baseL[1]
+            kappa[2, 1] = -2 * baseL[1]
             @test_throws ArgumentError("kappa is not skew-symmetric.") smash_product_deform_lie(sp, kappa)
         end
 
@@ -131,18 +141,19 @@
 
 
     @testset "ispbwdeform" begin
-        @testset "symmetric deformation of $(dynkin)_$n with hw $lambda is PBW" for (dynkin, n, lambda) in [('A', 2, [1,1]), ('B', 2, [1,0])]
+        @testset "symmetric deformation of $(dynkin)_$n with hw $lambda is PBW" for (dynkin, n, lambda) in
+                                                                                    [('A', 2, [1, 1]), ('B', 2, [1, 0])]
             sp, _ = smash_product_lie(QQ, dynkin, n, lambda)
             d, _ = smash_product_symmdeform_lie(sp)
             @test ispbwdeform(d)
         end
 
         @testset "non-PBW deformations" begin
-            sp, (baseL, baseV) = smash_product_lie(QQ, 'A', 2, [1,0])
+            sp, (baseL, baseV) = smash_product_lie(QQ, 'A', 2, [1, 0])
             kappa = fill(zero(sp.alg), 3, 3)
             # some made-up skew-symmetric entries
-            kappa[1,2] = baseL[2]
-            kappa[2,1] = -baseL[2]
+            kappa[1, 2] = baseL[2]
+            kappa[2, 1] = -baseL[2]
             d, _ = smash_product_deform_lie(sp, kappa)
             @test !ispbwdeform(d)
         end
@@ -151,8 +162,8 @@
 
     @testset "pbwdeforms_all construction stuff" begin
         @testset "coefficient_comparison tests" begin
-            A, (x,y,z) = free_algebra(QQ, ["x", "y", "z"])
-            eq = QQ(2//3)*x + 88*y*z - 12*x*z + 3*y + 0*z^4 - 2*y + 12*x*z
+            A, (x, y, z) = free_algebra(QQ, ["x", "y", "z"])
+            eq = QQ(2 // 3) * x + 88 * y * z - 12 * x * z + 3 * y + 0 * z^4 - 2 * y + 12 * x * z
             @test issetequal(PD.coefficient_comparison(eq), elem_type(QQ)[2//3, 88, 1])
         end
 
@@ -165,31 +176,33 @@
 
                 for b in base
                     for i in 1:sp.dimV, j in 1:sp.dimV
-                        @test iszero(b[i,j] + b[j,i])
+                        @test iszero(b[i, j] + b[j, i])
                     end
                 end
 
-                @test repr("text/plain", base[1][1,2]) == "1"
+                @test repr("text/plain", base[1][1, 2]) == "1"
                 if length(base) >= 2
-                    @test repr("text/plain", base[2][1,2]) == "-2*x_3 + 4*x_1*x_2 + x_3^2"
+                    @test repr("text/plain", base[2][1, 2]) == "-2*x_3 + 4*x_1*x_2 + x_3^2"
                 end
                 if length(base) >= 3
-                    @test repr("text/plain", base[3][1,2]) == "8*x_3 + 16*x_1*x_2 + -32*x_1*x_2*x_3 + -4*x_3^3 + 16*x_1^2*x_2^2 + 8*x_1*x_2*x_3^2 + x_3^4"
+                    @test repr("text/plain", base[3][1, 2]) ==
+                          "8*x_3 + 16*x_1*x_2 + -32*x_1*x_2*x_3 + -4*x_3^3 + 16*x_1^2*x_2^2 + 8*x_1*x_2*x_3^2 + x_3^4"
                 end
                 if length(base) >= 4
-                    @test repr("text/plain", base[4][1,2]) == "-96*x_3 + 64*x_1*x_2 + -64*x_1*x_2*x_3 + 40*x_3^3 + 320*x_1^2*x_2^2 + 208*x_1*x_2*x_3^2 + -288*x_1^2*x_2^2*x_3 + -96*x_1*x_2*x_3^3 + -6*x_3^5 + 64*x_1^3*x_2^3 + 48*x_1^2*x_2^2*x_3^2 + 12*x_1*x_2*x_3^4 + x_3^6"
+                    @test repr("text/plain", base[4][1, 2]) ==
+                          "-96*x_3 + 64*x_1*x_2 + -64*x_1*x_2*x_3 + 40*x_3^3 + 320*x_1^2*x_2^2 + 208*x_1*x_2*x_3^2 + -288*x_1^2*x_2^2*x_3 + -96*x_1*x_2*x_3^3 + -6*x_3^5 + 64*x_1^3*x_2^3 + 48*x_1^2*x_2^2*x_3^2 + 12*x_1*x_2*x_3^4 + x_3^6"
                 end
             end
 
-            sp, _ = smash_product_lie(QQ, 'B', 2, [1,0])
+            sp, _ = smash_product_lie(QQ, 'B', 2, [1, 0])
             @testset "B_2 with hw [1,0], maxdeg = $maxdeg" for maxdeg in 0:2
                 base = pbwdeforms_all(sp, maxdeg)
 
-                @test length(base) == div(maxdeg+1, 2)
+                @test length(base) == div(maxdeg + 1, 2)
 
                 for b in base
                     for i in 1:sp.dimV, j in 1:sp.dimV
-                        @test iszero(b[i,j] + b[j,i])
+                        @test iszero(b[i, j] + b[j, i])
                     end
                 end
 
@@ -202,12 +215,12 @@
                          x_1                  1//2*x_10  x_6     0           x_8
                          -1*x_9 + -1//2*x_10  -1*x_5     -1*x_7  -1*x_8      0"""
                 end
-                
+
             end
 
         end
 
     end
 
-       
+
 end
