@@ -19,10 +19,31 @@ function Base.:(==)(a1::ArcDiagram, a2::ArcDiagram)
     return (a1.nUpper, a1.nLower, a1.adjacency) == (a2.nUpper, a2.nLower, a2.adjacency)
 end
 
+function Base.show(io::IO, a::ArcDiagram)
+    show(IOContext(io, (:compact => true)), MIME"text/plain"(), a)
+end
+
+function Base.show(io::IO, ::MIME"text/plain", a::ArcDiagram)
+    pair_ids = map(i -> min(i, a.adjacency[i]), 1:a.nUpper+a.nLower)
+    symbols = join(vcat('0':'9', 'A':'Z', 'a':'z'))
+    max_id = maximum(pair_ids)
+    if max_id > length(symbols)
+        print(io, "too large to print")
+        return
+    end
+    print(io, symbols[pair_ids[1:a.nUpper]])
+    if get(io, :compact, false)
+        print(io, ",")
+    else
+        print(io, "\n")
+    end
+    print(io, symbols[pair_ids[a.nUpper+1:a.nUpper+a.nLower]])
+end
+
 function all_arc_diagrams(nUpper::Int, nLower::Int; indep_sets::AbstractVector{<:AbstractVector{Int}}=Vector{Int}[])
     n = nUpper + nLower
     iter, len = iter_possible_adjacencies(nUpper, nLower, indep_sets, [0 for i in 1:n])
-    return iter, len
+    return iter
 end
 
 function iter_possible_adjacencies(
