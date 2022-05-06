@@ -25,7 +25,7 @@ end
 
 function Base.show(io::IO, ::MIME"text/plain", a::ArcDiagram)
     pair_ids = map(i -> min(i, a.adjacency[i]), 1:a.nUpper+a.nLower)
-    symbols = join(vcat('0':'9', 'A':'Z', 'a':'z'))
+    symbols = join(vcat('A':'Z', 'a':'z', '0':'9'))
     max_id = maximum(pair_ids)
     if max_id > length(symbols)
         print(io, "too large to print")
@@ -55,12 +55,10 @@ function iter_possible_adjacencies(
     n = nUpper + nLower
     i = findfirst(==(0), partial)
     if i === nothing
-        return [ArcDiagram(nUpper, nLower, partial)], 1
+        return [ArcDiagram(nUpper, nLower, partial; skipchecks=true)], 1
     end
     rel_indep_sets = filter(is -> in(i, is), indep_sets)
     poss_adjs = setdiff(setdiff(findall(==(0), partial), i), rel_indep_sets...)
-    total_iter = []
-    total_len = 0
     choices = Iterators.map(poss_adjs) do j
         partial2 = deepcopy(partial)
         partial2[i] = j
