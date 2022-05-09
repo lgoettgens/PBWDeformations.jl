@@ -40,10 +40,29 @@ function Base.show(io::IO, ::MIME"text/plain", a::ArcDiagram)
     print(io, symbols[pair_ids[a.nUpper+1:a.nUpper+a.nLower]])
 end
 
+
+struct ArcDiagramIterator
+    iter
+    len::Int
+end
+
+function Base.iterate(i::ArcDiagramIterator)
+    return iterate(i.iter)
+end
+
+function Base.iterate(i::ArcDiagramIterator, s)
+    return iterate(i.iter, s)
+end
+
+Base.length(i::ArcDiagramIterator) = i.len
+
+Base.eltype(::Type{ArcDiagramIterator}) = ArcDiagram
+
+
 function all_arc_diagrams(nUpper::Int, nLower::Int; indep_sets::AbstractVector{<:AbstractVector{Int}}=Vector{Int}[])
     n = nUpper + nLower
     iter, len = iter_possible_adjacencies(nUpper, nLower, indep_sets, [0 for i in 1:n])
-    return iter
+    return ArcDiagramIterator(iter, len)
 end
 
 function iter_possible_adjacencies(
