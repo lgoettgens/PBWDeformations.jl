@@ -222,15 +222,19 @@ end
 
 
 abstract type DeformBase{C <: RingElement} end
+
+Base.eltype(::Type{DeformBase{C}}) where {C <: RingElement} = Matrix{QuadraticQuoAlgebra{C}}
+
+
 struct DeformStdBase{C <: RingElement} <: DeformBase{C}
     length::Int
-    generator
+    iter
 
     function DeformStdBase{C}(sp::SmashProductLie{C}, maxdeg::Int) where {C <: RingElement}
         dimL = sp.dimL
         dimV = sp.dimV
         R = coefficient_ring(sp.alg)
-        generator = (
+        iter = (
             begin
                 kappa = fill(sp.alg(0), dimV, dimV)
                 entry = prod(map(k -> sp.baseL[k], ind); init=sp.alg(1))
@@ -242,13 +246,19 @@ struct DeformStdBase{C <: RingElement} <: DeformBase{C}
         )
 
         length = div(dimV * (dimV - 1), 2) * sum(binomial(dimL + k - 1, k) for k in 0:maxdeg)
-        return new{C}(length, generator)
+        return new{C}(length, iter)
     end
 end
 
-function Base.length(base::DeformStdBase)
-    return base.length
+function Base.iterate(i::DeformStdBase)
+    return iterate(i.iter)
 end
+
+function Base.iterate(i::DeformStdBase, s)
+    return iterate(i.iter, s)
+end
+
+Base.length(base::DeformStdBase) = base.length
 
 
 function pbwdeforms_all(
@@ -272,7 +282,7 @@ function pbwdeforms_all(
 
     @info "Constructing kappa..."
     kappa = fill(new_sp.alg(0), dimV, dimV)
-    for (i, b) in enumerate(deform_base.generator)
+    for (i, b) in enumerate(deform_base)
         kappa += vars[i] .* new_sp.alg.(b)
     end
 
@@ -319,7 +329,7 @@ function pbwdeforms_all(
         kappas[l] = fill(sp.alg(0), dimV, dimV)
     end
     if freedom_deg > 0
-        for (i, b) in enumerate(deform_base.generator)
+        for (i, b) in enumerate(deform_base)
             if iszero(mat[i, i])
                 l = findfirst(isequal(i), freedom_ind)
                 kappas[l] += b
