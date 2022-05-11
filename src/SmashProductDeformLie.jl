@@ -227,7 +227,7 @@ Base.eltype(::Type{DeformBase{C}}) where {C <: RingElement} = Matrix{QuadraticQu
 
 
 struct DeformStdBase{C <: RingElement} <: DeformBase{C}
-    length::Int
+    len::Int
     iter
 
     function DeformStdBase{C}(sp::SmashProductLie{C}, maxdeg::Int) where {C <: RingElement}
@@ -245,8 +245,8 @@ struct DeformStdBase{C <: RingElement} <: DeformBase{C}
             ind in Combinatorics.with_replacement_combinations(1:dimL, d)
         )
 
-        length = div(dimV * (dimV - 1), 2) * sum(binomial(dimL + k - 1, k) for k in 0:maxdeg)
-        return new{C}(length, iter)
+        len = div(dimV * (dimV - 1), 2) * sum(binomial(dimL + k - 1, k) for k in 0:maxdeg)
+        return new{C}(len, iter)
     end
 end
 
@@ -258,7 +258,7 @@ function Base.iterate(i::DeformStdBase, s)
     return iterate(i.iter, s)
 end
 
-Base.length(base::DeformStdBase) = base.length
+Base.length(base::DeformStdBase) = base.len
 
 
 function pbwdeforms_all(
