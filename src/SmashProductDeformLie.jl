@@ -271,19 +271,24 @@ function pbwdeforms_all(
     dimV = sp.dimV
 
     deform_base = DeformBaseType(sp, maxdeg)
-    nvars = length(deform_base)
+    nvars_max = length(deform_base)
 
     @info "Constructing MPolyRing..."
-    R, vars = PolynomialRing(sp.coeff_ring, nvars)
-    var_lookup = Dict(vars[i] => i for i in 1:nvars)
+    R, vars = PolynomialRing(sp.coeff_ring, nvars_max)
+    var_lookup = Dict(vars[i] => i for i in 1:nvars_max)
 
     @info "Changing SmashProductLie coeffcient type..."
     new_sp = change_base_ring(R, sp)
 
     @info "Constructing kappa..."
     kappa = fill(new_sp.alg(0), dimV, dimV)
-    for (i, b) in enumerate(deform_base)
+
+    nvars_used = 0
+    for (i, b) in enumerate(b for b in deform_base if !isnothing(b))
+        nvars_used += 1
+        @assert i == nvars_used
         kappa += vars[i] .* new_sp.alg.(b)
+        @debug "Dimension $i/$(nvars_max), $(floor(Int, 100*i / nvars_max))%"
     end
 
     @info "Constructing deformation..."
@@ -292,7 +297,7 @@ function pbwdeforms_all(
     @info "Generating equation iterator..."
     neqs = pbwdeform_neqs(deform)
     iter = Iterators.map(
-        a -> linpoly_to_spvector(a, var_lookup, nvars),
+        a -> linpoly_to_spvector(a, var_lookup, nvars_used),
         Iterators.flatten(
             Iterators.map(
                 function (x)
@@ -307,7 +312,7 @@ function pbwdeforms_all(
     )
 
     @info "Computing row-echelon form..."
-    lgs = Vector{Union{Nothing, SparseVector{fmpq, Int64}}}(nothing, nvars)
+    lgs = Vector{Union{Nothing, SparseVector{fmpq, Int64}}}(nothing, nvars_used)
     for v in iter
         reduce_and_store!(lgs, v)
     end
@@ -329,12 +334,12 @@ function pbwdeforms_all(
         kappas[l] = fill(sp.alg(0), dimV, dimV)
     end
     if freedom_deg > 0
-        for (i, b) in enumerate(deform_base)
+        for (i, b) in enumerate(b for b in deform_base if !isnothing(b))
             if iszero(mat[i, i])
                 l = findfirst(isequal(i), freedom_ind)
                 kappas[l] += b
             else
-                for j in i+1:nvars
+                for j in i+1:nvars_used
                     if !iszero(mat[i, j])
                         l = findfirst(isequal(j), freedom_ind)
                         kappas[l] += -mat[i, j] .* b

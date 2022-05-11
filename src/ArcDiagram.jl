@@ -178,7 +178,7 @@ struct SoDeformArcBase{C <: RingElement} <: DeformBase{C}
                     kappa[i, j] += entry
                     kappa[j, i] -= entry
                 end
-                kappa
+                iszero(kappa) ? nothing : kappa
             end for diag in diag_iter
         )
         return new{C}(len, iter)
