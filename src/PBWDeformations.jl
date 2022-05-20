@@ -10,6 +10,7 @@ import AbstractAlgebra:
     Ring,
     RingElement,
     base_ring,
+    canonical_unit,
     change_base_ring,
     check_parent,
     coeff,
