@@ -113,7 +113,11 @@ function one(a::AlgebraElem)
 end
 
 function canonical_unit(a::AlgebraElem{C}) where {C <: RingElement}
-    return iszero(a) ? one(parent(a)) : canonical_unit(a.coeffs[1])
+    if iszero(a)
+        return one(parent(a))
+    end
+    ind = argmax(a.monoms[1:length(a)])
+    return canonical_unit(a.coeffs[ind])
 end
 
 function show(io::IO, A::Algebra)
