@@ -112,6 +112,14 @@ function one(a::AlgebraElem)
     return one(parent(a))
 end
 
+function canonical_unit(a::AlgebraElem{C}) where {C <: RingElement}
+    if iszero(a)
+        return one(parent(a))
+    end
+    ind = argmax(a.monoms[1:length(a)])
+    return canonical_unit(a.coeffs[ind])
+end
+
 function show(io::IO, A::Algebra)
     local max_gens = 5 # largest number of generators to print
     n = A.num_gens
