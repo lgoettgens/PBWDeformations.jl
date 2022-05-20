@@ -261,6 +261,20 @@ end
 Base.length(base::DeformStdBase) = base.len
 
 
+function normalize_base(baseelems)
+    unique((
+        begin
+            first_nz = begin
+                ind = findfirst(x -> !iszero(x), b)
+                CartesianIndex(ind[2], ind[1])
+            end
+            cu = canonical_unit(b[first_nz])
+            b = map(e -> divexact(e, cu), b)
+        end
+    ) for b in baseelems if !iszero(b))
+end
+
+
 function pbwdeforms_all(
     sp::SmashProductLie{C},
     maxdeg::Int,
@@ -271,11 +285,11 @@ function pbwdeforms_all(
     dimV = sp.dimV
 
     deform_base = DeformBaseType(sp, maxdeg)
-    nvars_max = length(deform_base)
+    nvars = length(deform_base)
 
     @info "Constructing MPolyRing..."
-    R, vars = PolynomialRing(sp.coeff_ring, nvars_max)
-    var_lookup = Dict(vars[i] => i for i in 1:nvars_max)
+    R, vars = PolynomialRing(sp.coeff_ring, max(nvars, 1))
+    var_lookup = Dict(vars[i] => i for i in 1:nvars)
 
     @info "Changing SmashProductLie coeffcient type..."
     new_sp = change_base_ring(R, sp)
@@ -283,12 +297,8 @@ function pbwdeforms_all(
     @info "Constructing kappa..."
     kappa = fill(new_sp.alg(0), dimV, dimV)
 
-    nvars_used = 0
-    for (i, b) in enumerate(b for b in deform_base if !isnothing(b))
-        nvars_used += 1
-        @assert i == nvars_used
+    for (i, b) in enumerate(deform_base)
         kappa += vars[i] .* new_sp.alg.(b)
-        @debug "Dimension $i/$(nvars_max), $(floor(Int, 100*i / nvars_max))%"
     end
 
     @info "Constructing deformation..."
@@ -297,7 +307,7 @@ function pbwdeforms_all(
     @info "Generating equation iterator..."
     neqs = pbwdeform_neqs(deform)
     iter = Iterators.map(
-        a -> linpoly_to_spvector(a, var_lookup, nvars_used),
+        a -> linpoly_to_spvector(a, var_lookup, nvars),
         Iterators.flatten(
             Iterators.map(
                 function (x)
@@ -312,7 +322,7 @@ function pbwdeforms_all(
     )
 
     @info "Computing row-echelon form..."
-    lgs = Vector{Union{Nothing, SparseVector{fmpq, Int64}}}(nothing, nvars_used)
+    lgs = Vector{Union{Nothing, SparseVector{fmpq, Int64}}}(nothing, nvars)
     for v in iter
         reduce_and_store!(lgs, v)
     end
@@ -334,12 +344,12 @@ function pbwdeforms_all(
         kappas[l] = fill(sp.alg(0), dimV, dimV)
     end
     if freedom_deg > 0
-        for (i, b) in enumerate(b for b in deform_base if !isnothing(b))
+        for (i, b) in enumerate(deform_base)
             if iszero(mat[i, i])
                 l = findfirst(isequal(i), freedom_ind)
                 kappas[l] += b
             else
-                for j in i+1:nvars_used
+                for j in i+1:nvars
                     if !iszero(mat[i, j])
                         l = findfirst(isequal(j), freedom_ind)
                         kappas[l] += -mat[i, j] .* b

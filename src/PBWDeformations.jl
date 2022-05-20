@@ -14,6 +14,7 @@ import AbstractAlgebra:
     change_base_ring,
     check_parent,
     coeff,
+    divexact,
     elem_type,
     gen,
     gens,

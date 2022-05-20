@@ -96,7 +96,7 @@ struct SoDeformArcBase{C <: RingElement} <: DeformBase{C}
     len::Int
     iter
 
-    function SoDeformArcBase{C}(sp::SmashProductLie{C}, maxdeg::Int) where {C <: RingElement}
+    function SoDeformArcBase{C}(sp::SmashProductLie{C}, maxdeg::Int; no_normalize::Bool=false) where {C <: RingElement}
         dimV = div(isqrt(8 * sp.dimL + 1) + 1, 2) # inverse of gaussian sum
         l = first(l for l in 1:dimV if binomial(dimV, l) >= sp.dimV)
 
@@ -112,8 +112,10 @@ struct SoDeformArcBase{C <: RingElement} <: DeformBase{C}
 
         diag_iter = pbw_arc_diagrams(l, d)
         len = length(diag_iter)
+        debug_counter = 0
         iter = (
             begin
+                @debug "Basis generation $(debug_counter = (debug_counter % len) + 1)/$(len), $(floor(Int, 100*debug_counter / len))%"
                 kappa = fill(sp.alg(0), sp.dimV, sp.dimV)
                 for is in Combinatorics.combinations(1:dimV, l), js in Combinatorics.combinations(1:dimV, l)
                     i = index[is]
@@ -178,9 +180,13 @@ struct SoDeformArcBase{C <: RingElement} <: DeformBase{C}
                     kappa[i, j] += entry
                     kappa[j, i] -= entry
                 end
-                iszero(kappa) ? nothing : kappa
+                kappa
             end for diag in diag_iter
         )
+        if !no_normalize
+            iter = normalize_base(iter)
+            len = length(iter)
+        end
         return new{C}(len, iter)
     end
 end
