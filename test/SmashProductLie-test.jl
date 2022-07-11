@@ -3,16 +3,16 @@
     @testset "smash_product_lie constructor using GAP; R = $R" for R in [QQ, PolynomialRing(QQ, ["x", "y", "z"])[1]]
         @testset "consistency for $(dynkin)_$n with hw $lambda" for (dynkin, n, lambda) in
                                                                     [('A', 1, [1]), ('A', 2, [1, 1]), ('B', 2, [1, 0])]
-            sp, (baseL, baseV) = smash_product_lie(R, dynkin, n, lambda)
+            sp, (basisL, basisV) = smash_product_lie(R, dynkin, n, lambda)
 
-            @test sp.dimL == length(sp.baseL)
-            @test sp.dimV == length(sp.baseV)
-            @test sp.baseL == baseL
-            @test sp.baseV == baseV
+            @test sp.dimL == length(sp.basisL)
+            @test sp.dimV == length(sp.basisV)
+            @test sp.basisL == basisL
+            @test sp.basisV == basisV
             @test sp.coeff_ring == R
 
             @test ngens(sp) == (sp.dimL, sp.dimV)
-            @test gens(sp) == (sp.baseL, sp.baseV)
+            @test gens(sp) == (sp.basisL, sp.basisV)
 
             showOutput = @test_nowarn sprint(show, sp)
             @test occursin("smash product", lowercase(showOutput))
@@ -22,16 +22,16 @@
         end
 
         @testset "commutators for A_1 with hw [1]" begin
-            sp, (baseL, baseV) = smash_product_lie(R, 'A', 1, [1])
+            sp, (basisL, basisV) = smash_product_lie(R, 'A', 1, [1])
 
             @test sp.dimL == 3
             @test sp.dimV == 2
 
-            x = baseL[1]
-            y = baseL[2]
-            h = baseL[3]
-            v1 = baseV[1]
-            v2 = baseV[2]
+            x = basisL[1]
+            y = basisL[2]
+            h = basisL[3]
+            v1 = basisV[1]
+            v2 = basisV[2]
 
             # sl_2 relations
             @test comm(x, x; strict=true) == 0
@@ -54,22 +54,22 @@
         end
 
         @testset "commutators for A_2 with hw [1,1]" begin
-            sp, (baseL, baseV) = smash_product_lie(R, 'A', 2, [1, 0])
+            sp, (basisL, basisV) = smash_product_lie(R, 'A', 2, [1, 0])
 
             @test sp.dimL == 8
             @test sp.dimV == 3
 
-            x12 = baseL[1]
-            x23 = -baseL[2] # minus due to representation in GAP
-            x13 = baseL[3]
-            y12 = baseL[4]
-            y23 = -baseL[5] # minus due to representation in GAP
-            y13 = baseL[6]
-            h1 = baseL[7]
-            h2 = baseL[8]
-            v1 = baseV[1]
-            v2 = baseV[2]
-            v3 = baseV[3]
+            x12 = basisL[1]
+            x23 = -basisL[2] # minus due to representation in GAP
+            x13 = basisL[3]
+            y12 = basisL[4]
+            y23 = -basisL[5] # minus due to representation in GAP
+            y13 = basisL[6]
+            h1 = basisL[7]
+            h2 = basisL[8]
+            v1 = basisV[1]
+            v2 = basisV[2]
+            v3 = basisV[3]
 
             # sl_3 relations
             @test comm(x12, x23; strict=true) == x13
@@ -144,27 +144,27 @@
                 (2, 1),
             )
 
-            sp, (baseL, baseV) = smash_product_lie(R, symbL, symbV, struct_const_L, struct_const_V)
+            sp, (basisL, basisV) = smash_product_lie(R, symbL, symbV, struct_const_L, struct_const_V)
 
-            @test dimL == sp.dimL == length(sp.baseL)
-            @test dimV == sp.dimV == length(sp.baseV)
-            @test sp.baseL == baseL
-            @test sp.baseV == baseV
+            @test dimL == sp.dimL == length(sp.basisL)
+            @test dimV == sp.dimV == length(sp.basisV)
+            @test sp.basisL == basisL
+            @test sp.basisV == basisV
             @test sp.coeff_ring == R
             @test issetequal(sp.alg.S, map(Symbol, [symbL; symbV]))
 
             @test ngens(sp) == (sp.dimL, sp.dimV)
-            @test gens(sp) == (sp.baseL, sp.baseV)
+            @test gens(sp) == (sp.basisL, sp.basisV)
 
             showOutput = @test_nowarn sprint(show, sp)
             @test occursin("smash product", lowercase(showOutput))
             @test occursin("lie algebra", lowercase(showOutput))
 
-            x = baseL[1]
-            y = baseL[2]
-            h = baseL[3]
-            v1 = baseV[1]
-            v2 = baseV[2]
+            x = basisL[1]
+            y = basisL[2]
+            h = basisL[3]
+            v1 = basisV[1]
+            v2 = basisV[2]
 
             # sl_2 relations
             @test comm(x, x; strict=true) == 0

@@ -1,2 +1,9 @@
 # Initial use of JuliaFormatter.jl
 4dcc0b18d2f40eea85cd982e60cdb9800931b372
+
+# Oscar naming convention change isfoo->is_foo
+8a07a06088a6a870ad950f3a7a1eff7869293f9f
+56962c21404c1dd9c636ba76e388776875ecbe1f
+
+# fix typo base->basis
+43e0c6b436d1d09d17da11dc48be98e0771e5cd0
