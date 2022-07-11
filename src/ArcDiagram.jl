@@ -40,6 +40,38 @@ function Base.show(io::IO, ::MIME"text/plain", a::ArcDiagram)
     print(io, symbols[pair_ids[a.nUpper+1:a.nUpper+a.nLower]])
 end
 
+function is_crossing_free(a::ArcDiagram)
+    for i in 1:a.nUpper+a.nLower, j in 1:a.nUpper+a.nLower
+        if i == j
+            continue
+        elseif i >= a.adjacency[i]
+            continue
+        elseif j >= a.adjacency[j]
+            continue
+        end
+        i, j = min(i, j), max(i, j)
+        # now i < j
+        if a.adjacency[i] <= a.nUpper
+            if (j < a.adjacency[i]) != (a.adjacency[j] < a.adjacency[i])
+                return false
+            end
+        elseif i > a.nUpper
+            if (j < a.adjacency[i]) != (a.adjacency[j] < a.adjacency[i])
+                return false
+            end
+        elseif a.adjacency[j] <= a.nUpper
+            continue
+        elseif a.nUpper < j
+            if j < a.adjacency[i] < a.adjacency[j]
+                return false
+            end
+        elseif a.adjacency[i] > a.adjacency[j]
+            return false
+        end
+    end
+    return true
+end
+
 
 struct ArcDiagramIterator
     iter
@@ -181,7 +213,7 @@ struct SoDeformArcBasis{C <: RingElement} <: DeformBasis{C}
                     kappa[j, i] -= entry
                 end
                 kappa
-            end for diag in diag_iter
+            end for diag in diag_iter if is_crossing_free(diag)
         )
         if !no_normalize
             iter = normalize_basis(iter)
