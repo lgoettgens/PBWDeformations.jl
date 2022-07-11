@@ -1,8 +1,8 @@
 mutable struct SmashProductDeformLie{C <: RingElement}
     dimL::Int64
     dimV::Int64
-    baseL::Vector{QuadraticQuoAlgebraElem{C}}
-    baseV::Vector{QuadraticQuoAlgebraElem{C}}
+    basisL::Vector{QuadraticQuoAlgebraElem{C}}
+    basisV::Vector{QuadraticQuoAlgebraElem{C}}
     coeff_ring::Ring
     alg::QuadraticQuoAlgebra{C}
     # dynkin::Char
@@ -23,8 +23,8 @@ function smash_product_deform_lie(
     dimL = sp.dimL
     dimV = sp.dimV
     coeff_ring = sp.coeff_ring
-    baseL = sp.baseL
-    baseV = sp.baseV
+    basisL = sp.basisL
+    basisV = sp.basisV
 
     for i in 1:dimV, j in 1:i
         kappa[i, j] == -kappa[j, i] || throw(ArgumentError("kappa is not skew-symmetric."))
@@ -39,15 +39,15 @@ function smash_product_deform_lie(
     for i in 1:dimV, j in 1:dimV
         # We have the commutator relation [v_i, v_j] = kappa[i,j]
         # which is equivalent to v_i*v_j = v_j*v_i + kappa[i,j]
-        rels[(dimL + i, dimL + j)] = baseV[j] * baseV[i] + kappa[i, j]
+        rels[(dimL + i, dimL + j)] = basisV[j] * basisV[i] + kappa[i, j]
         symmetric &= iszero(kappa[i, j])
     end
 
     alg, _ = quadratic_quo_algebra(sp.alg, rels)
-    baseL = map(alg, baseL)
-    baseV = map(alg, baseV)
+    basisL = map(alg, basisL)
+    basisV = map(alg, basisV)
 
-    return SmashProductDeformLie{C}(dimL, dimV, baseL, baseV, coeff_ring, alg, symmetric, kappa), (baseL, baseV)
+    return SmashProductDeformLie{C}(dimL, dimV, basisL, basisV, coeff_ring, alg, symmetric, kappa), (basisL, basisV)
 end
 
 function smash_product_symmdeform_lie(sp::SmashProductLie{C}) where {C <: RingElement}
@@ -89,11 +89,11 @@ end
 
 function change_base_ring(R::Ring, d::SmashProductDeformLie{C}) where {C <: RingElement}
     alg = change_base_ring(R, d.alg)
-    baseL = [gen(alg, i) for i in 1:d.dimL]
-    baseV = [gen(alg, d.dimL + i) for i in 1:d.dimV]
+    basisL = [gen(alg, i) for i in 1:d.dimL]
+    basisV = [gen(alg, d.dimL + i) for i in 1:d.dimV]
     kappa = map(alg, d.kappa)
 
-    return SmashProductDeformLie{elem_type(R)}(d.dimL, d.dimV, baseL, baseV, R, alg, d.symmetric, kappa)
+    return SmashProductDeformLie{elem_type(R)}(d.dimL, d.dimV, basisL, basisV, R, alg, d.symmetric, kappa)
 end
 
 
@@ -221,19 +221,19 @@ function indices_of_freedom(mat::SparseArrays.SparseMatrixCSC{T, Int64}) where {
 end
 
 
-abstract type DeformBase{C <: RingElement} end
-struct DeformStdBase{C <: RingElement} <: DeformBase{C}
+abstract type DeformBasis{C <: RingElement} end
+struct DeformStdBasis{C <: RingElement} <: DeformBasis{C}
     length::Int
     generator
 
-    function DeformStdBase{C}(sp::SmashProductLie{C}, maxdeg::Int) where {C <: RingElement}
+    function DeformStdBasis{C}(sp::SmashProductLie{C}, maxdeg::Int) where {C <: RingElement}
         dimL = sp.dimL
         dimV = sp.dimV
         R = coefficient_ring(sp.alg)
         generator = (
             begin
                 kappa = fill(sp.alg(0), dimV, dimV)
-                entry = prod(map(k -> sp.baseL[k], ind); init=sp.alg(1))
+                entry = prod(map(k -> sp.basisL[k], ind); init=sp.alg(1))
                 kappa[i, j] += entry
                 kappa[j, i] -= entry
                 kappa
@@ -246,22 +246,22 @@ struct DeformStdBase{C <: RingElement} <: DeformBase{C}
     end
 end
 
-function Base.length(base::DeformStdBase)
-    return base.length
+function Base.length(basis::DeformStdBasis)
+    return basis.length
 end
 
 
 function pbwdeforms_all(
     sp::SmashProductLie{C},
     maxdeg::Int,
-    DeformBaseType::Type{<:DeformBase{C}}=DeformStdBase{C};
+    DeformBasisType::Type{<:DeformBasis{C}}=DeformStdBasis{C};
     special_return::Type{T}=Nothing,
 ) where {C <: RingElement, T <: Union{Nothing, SparseMatrixCSC}}
     dimL = sp.dimL
     dimV = sp.dimV
 
-    deform_base = DeformBaseType(sp, maxdeg)
-    nvars = length(deform_base)
+    deform_basis = DeformBasisType(sp, maxdeg)
+    nvars = length(deform_basis)
 
     @info "Constructing MPolyRing..."
     R, vars = PolynomialRing(sp.coeff_ring, nvars)
@@ -272,7 +272,7 @@ function pbwdeforms_all(
 
     @info "Constructing kappa..."
     kappa = fill(new_sp.alg(0), dimV, dimV)
-    for (i, b) in enumerate(deform_base.generator)
+    for (i, b) in enumerate(deform_basis.generator)
         kappa += vars[i] .* new_sp.alg.(b)
     end
 
@@ -319,7 +319,7 @@ function pbwdeforms_all(
         kappas[l] = fill(sp.alg(0), dimV, dimV)
     end
     if freedom_deg > 0
-        for (i, b) in enumerate(deform_base.generator)
+        for (i, b) in enumerate(deform_basis.generator)
             if iszero(mat[i, i])
                 l = findfirst(isequal(i), freedom_ind)
                 kappas[l] += b

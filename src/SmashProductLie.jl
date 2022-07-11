@@ -5,8 +5,8 @@ It consists of the underlying QuadraticQuoAlgebra and some metadata.
 mutable struct SmashProductLie{C <: RingElement}
     dimL::Int64
     dimV::Int64
-    baseL::Vector{QuadraticQuoAlgebraElem{C}}
-    baseV::Vector{QuadraticQuoAlgebraElem{C}}
+    basisL::Vector{QuadraticQuoAlgebraElem{C}}
+    basisV::Vector{QuadraticQuoAlgebraElem{C}}
     coeff_ring::Ring
     alg::QuadraticQuoAlgebra{C}
     # dynkin :: Char
@@ -37,31 +37,31 @@ function smash_product_lie(
     dimV = length(symbV)
 
     free_alg, _ = free_algebra(coeff_ring, [symbL; symbV])
-    free_baseL = [gen(free_alg, i) for i in 1:dimL]
-    free_baseV = [gen(free_alg, dimL + i) for i in 1:dimV]
+    free_basisL = [gen(free_alg, i) for i in 1:dimL]
+    free_basisV = [gen(free_alg, dimL + i) for i in 1:dimV]
 
     rels = Dict{Tuple{Int, Int}, FreeAlgebraElem{C}}()
 
     for i in 1:dimL, j in 1:dimL
         rels[(i, j)] =
-            free_baseL[j] * free_baseL[i] +
-            sum(c * free_baseL[k] for (c, k) in struct_const_L[i, j]; init=zero(free_alg))
+            free_basisL[j] * free_basisL[i] +
+            sum(c * free_basisL[k] for (c, k) in struct_const_L[i, j]; init=zero(free_alg))
     end
 
     for i in 1:dimL, j in 1:dimV
         rels[(i, dimL + j)] =
-            free_baseV[j] * free_baseL[i] +
-            sum(c * free_baseV[k] for (c, k) in struct_const_V[i, j]; init=zero(free_alg))
+            free_basisV[j] * free_basisL[i] +
+            sum(c * free_basisV[k] for (c, k) in struct_const_V[i, j]; init=zero(free_alg))
         rels[(dimL + j, i)] =
-            free_baseL[i] * free_baseV[j] -
-            sum(c * free_baseV[k] for (c, k) in struct_const_V[i, j]; init=zero(free_alg))
+            free_basisL[i] * free_basisV[j] -
+            sum(c * free_basisV[k] for (c, k) in struct_const_V[i, j]; init=zero(free_alg))
     end
 
     alg, _ = quadratic_quo_algebra(free_alg, rels)
-    baseL = [gen(alg, i) for i in 1:dimL]
-    baseV = [gen(alg, dimL + i) for i in 1:dimV]
+    basisL = [gen(alg, i) for i in 1:dimL]
+    basisV = [gen(alg, dimL + i) for i in 1:dimV]
 
-    return SmashProductLie{C}(dimL, dimV, baseL, baseV, coeff_ring, alg), (baseL, baseV)
+    return SmashProductLie{C}(dimL, dimV, basisL, basisV, coeff_ring, alg), (basisL, basisV)
 end
 
 """
@@ -242,8 +242,8 @@ end
 
 function change_base_ring(R::Ring, sp::SmashProductLie{C}) where {C <: RingElement}
     alg = change_base_ring(R, sp.alg)
-    baseL = [gen(alg, i) for i in 1:sp.dimL]
-    baseV = [gen(alg, sp.dimL + i) for i in 1:sp.dimV]
+    basisL = [gen(alg, i) for i in 1:sp.dimL]
+    basisV = [gen(alg, sp.dimL + i) for i in 1:sp.dimV]
 
-    return SmashProductLie{elem_type(R)}(sp.dimL, sp.dimV, baseL, baseV, R, alg)
+    return SmashProductLie{elem_type(R)}(sp.dimL, sp.dimV, basisL, basisV, R, alg)
 end
