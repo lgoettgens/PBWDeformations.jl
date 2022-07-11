@@ -19,14 +19,14 @@
         @test F_Q.S === F_Z.S
     end
 
-    @testset "ismonomial" begin
+    @testset "is_monomial" begin
         F, (A,) = free_algebra(QQ, ["a"])
 
-        @test ismonomial(A)
-        @test ismonomial(A^2)
+        @test is_monomial(A)
+        @test is_monomial(A^2)
 
-        @test !ismonomial(2A)
-        @test !ismonomial(A + 1)
+        @test !is_monomial(2A)
+        @test !is_monomial(A + 1)
     end
 
     @testset "iszero" begin
@@ -43,14 +43,14 @@
         @test !isone(A)
     end
 
-    @testset "isgen" begin
+    @testset "is_gen" begin
         F, (A,) = free_algebra(QQ, ["a"])
 
-        @test isgen(A)
+        @test is_gen(A)
 
-        @test !isgen(2A)
-        @test !isgen(A^2)
-        @test !isgen(A + 1)
+        @test !is_gen(2A)
+        @test !is_gen(A^2)
+        @test !is_gen(A + 1)
     end
 
     @testset "Base.:-" begin

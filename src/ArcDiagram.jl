@@ -92,11 +92,11 @@ function pbw_arc_diagrams(l::Int, d::Int)
     return all_arc_diagrams(2 * l, 2 * d; indep_sets)
 end
 
-struct SoDeformArcBase{C <: RingElement} <: DeformBase{C}
+struct SoDeformArcBasis{C <: RingElement} <: DeformBasis{C}
     len::Int
     iter
 
-    function SoDeformArcBase{C}(sp::SmashProductLie{C}, maxdeg::Int; no_normalize::Bool=false) where {C <: RingElement}
+    function SoDeformArcBasis{C}(sp::SmashProductLie{C}, maxdeg::Int; no_normalize::Bool=false) where {C <: RingElement}
         dimV = div(isqrt(8 * sp.dimL + 1) + 1, 2) # inverse of gaussian sum
         l = first(l for l in 1:dimV if binomial(dimV, l) >= sp.dimV)
 
@@ -174,7 +174,7 @@ struct SoDeformArcBase{C <: RingElement} <: DeformBase{C}
                         end
                         symm_basiselem =
                             1 // factorial(length(basiselem)) *
-                            sum(prod(sp.baseL[ind]) for ind in Combinatorics.permutations(basiselem))
+                            sum(prod(sp.basisL[ind]) for ind in Combinatorics.permutations(basiselem))
                         entry += (sign_pos ? 1 : (-1)) * normal_form(symm_basiselem)
                     end
                     kappa[i, j] += entry
@@ -184,19 +184,19 @@ struct SoDeformArcBase{C <: RingElement} <: DeformBase{C}
             end for diag in diag_iter
         )
         if !no_normalize
-            iter = normalize_base(iter)
+            iter = normalize_basis(iter)
             len = length(iter)
         end
         return new{C}(len, iter)
     end
 end
 
-function Base.iterate(i::SoDeformArcBase)
+function Base.iterate(i::SoDeformArcBasis)
     return iterate(i.iter)
 end
 
-function Base.iterate(i::SoDeformArcBase, s)
+function Base.iterate(i::SoDeformArcBasis, s)
     return iterate(i.iter, s)
 end
 
-Base.length(base::SoDeformArcBase) = base.len
+Base.length(basis::SoDeformArcBasis) = basis.len

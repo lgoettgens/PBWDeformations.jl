@@ -55,7 +55,7 @@ function coeff(a::AlgebraElem{C}, m::Vector{Int}) where {C <: RingElement}
 end
 
 function coeff(a::AlgebraElem{C}, m::AlgebraElem{C}) where {C <: RingElement}
-    ismonomial(m) || throw(ArgumentError("`m` needs to be a monomial"))
+    is_monomial(m) || throw(ArgumentError("`m` needs to be a monomial"))
     return coeff(a, m.monoms[1])
 end
 
@@ -79,7 +79,7 @@ function Base.hash(a::AlgebraElem{C}, h::UInt) where {C <: RingElement}
     return xor(h1, h2)
 end
 
-# TODO function isunit(a::AlgebraElem{C}) where C <: RingElement
+# TODO function is_unit(a::AlgebraElem{C}) where C <: RingElement
 
 function monomial(a::AlgebraElem, i::Int)
     R = base_ring(a)
