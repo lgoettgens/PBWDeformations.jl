@@ -1,4 +1,4 @@
-export flatten, groupBy, isvaliddynkin
+export flatten, groupBy, is_valid_dynkin
 
 """
     flatten(a::Vector{Vector{T}}) where {T}
@@ -61,7 +61,7 @@ end
 
 
 """
-    isvaliddynkin(dynkin::Char, n::Int)
+    is_valid_dynkin(dynkin::Char, n::Int)
 
 Returns true, if there given parameters uniquely define a dynkin diagram,
 i.e. are of one of the forms
@@ -75,17 +75,17 @@ i.e. are of one of the forms
 
 # Examples
 ```jldoctest
-julia> isvaliddynkin('A', 2)
+julia> is_valid_dynkin('A', 2)
 true
 
-julia> isvaliddynkin('F', 4)
+julia> is_valid_dynkin('F', 4)
 true
 
-julia> isvaliddynkin('D', 3)
+julia> is_valid_dynkin('D', 3)
 false
 ```
 """
-function isvaliddynkin(dynkin::Char, n::Int)
+function is_valid_dynkin(dynkin::Char, n::Int)
     if dynkin == 'A'
         return n >= 1
     elseif dynkin == 'B'

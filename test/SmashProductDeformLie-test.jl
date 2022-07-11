@@ -140,12 +140,12 @@
     end
 
 
-    @testset "ispbwdeform" begin
+    @testset "is_pbwdeform" begin
         @testset "symmetric deformation of $(dynkin)_$n with hw $lambda is PBW" for (dynkin, n, lambda) in
                                                                                     [('A', 2, [1, 1]), ('B', 2, [1, 0])]
             sp, _ = smash_product_lie(QQ, dynkin, n, lambda)
             d, _ = smash_product_symmdeform_lie(sp)
-            @test ispbwdeform(d)
+            @test is_pbwdeform(d)
         end
 
         @testset "non-PBW deformations" begin
@@ -155,7 +155,7 @@
             kappa[1, 2] = baseL[2]
             kappa[2, 1] = -baseL[2]
             d, _ = smash_product_deform_lie(sp, kappa)
-            @test !ispbwdeform(d)
+            @test !is_pbwdeform(d)
         end
 
     end

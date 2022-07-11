@@ -23,10 +23,10 @@
         @test groupBy([i for i in -5:5]; eq=((x, y) -> sign(x) == sign(y))) == [[i for i in -5:-1], [0], [i for i in 1:5]]
     end
 
-    @testset "isvaliddynkin" begin
+    @testset "is_valid_dynkin" begin
         function testit(dynkin, pred, until=10)
             for i in 0:until
-                @test PD.isvaliddynkin(dynkin, i) == pred(i)
+                @test PD.is_valid_dynkin(dynkin, i) == pred(i)
             end
         end
 

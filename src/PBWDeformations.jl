@@ -52,7 +52,7 @@ export FreeAlgebra,
     FreeAlgebraElem, QuadraticQuoAlgebra, QuadraticQuoAlgebraElem, SmashProductLie, SmashProductDeformLie
 
 export free_algebra,
-    ispbwdeform,
+    is_pbwdeform,
     quadratic_quo_algebra,
     pbwdeforms_all,
     pbwdeform_eqs,

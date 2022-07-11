@@ -150,7 +150,7 @@ function pbwdeform_neqs(deform::SmashProductDeformLie{C}) where {C <: RingElemen
     return num_a + num_b + num_c + num_d
 end
 
-function ispbwdeform(d::SmashProductDeformLie{C})::Bool where {C <: RingElement}
+function is_pbwdeform(d::SmashProductDeformLie{C})::Bool where {C <: RingElement}
     return all(iszero, pbwdeform_eqs(d))
 end
 
