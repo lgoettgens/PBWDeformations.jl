@@ -117,11 +117,11 @@ parent_type(::Type{QuadraticQuoAlgebraElem{C}}) where {C <: RingElement} = Quadr
 elem_type(::Type{QuadraticQuoAlgebra{C}}) where {C <: RingElement} = QuadraticQuoAlgebraElem{C}
 
 
-function isgen(a::QuadraticQuoAlgebraElem{C}) where {C <: RingElement}
+function is_gen(a::QuadraticQuoAlgebraElem{C}) where {C <: RingElement}
     return length(a) == 1 && isone(a.coeffs[1]) && length(a.monoms[1]) == 1
 end
 
-# function ismonomial(a::QuadraticQuoAlgebraElem{C}) where C <: RingElement # TODO: fix with normal_form
+# function is_monomial(a::QuadraticQuoAlgebraElem{C}) where C <: RingElement # TODO: fix with normal_form
 #     return length(a) == 1 && isone(a.coeffs[1])
 # end
 

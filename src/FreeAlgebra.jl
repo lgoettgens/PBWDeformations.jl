@@ -52,11 +52,11 @@ parent_type(::Type{FreeAlgebraElem{C}}) where {C <: RingElement} = FreeAlgebra{C
 elem_type(::Type{FreeAlgebra{C}}) where {C <: RingElement} = FreeAlgebraElem{C}
 
 
-function isgen(a::FreeAlgebraElem{C}) where {C <: RingElement}
+function is_gen(a::FreeAlgebraElem{C}) where {C <: RingElement}
     return length(a) == 1 && isone(a.coeffs[1]) && length(a.monoms[1]) == 1
 end
 
-function ismonomial(a::FreeAlgebraElem{C}) where {C <: RingElement}
+function is_monomial(a::FreeAlgebraElem{C}) where {C <: RingElement}
     return length(a) == 1 && isone(a.coeffs[1])
 end
 
