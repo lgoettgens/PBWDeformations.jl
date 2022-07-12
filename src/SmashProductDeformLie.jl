@@ -227,7 +227,7 @@ struct DeformStdBasis{C <: RingElement} <: DeformBasis{C}
     len::Int
     iter
 
-    function DeformStdBasis{C}(sp::SmashProductLie{C}, maxdeg::Int) where {C <: RingElement}
+    function DeformStdBasis{C}(sp::SmashProductLie{C}, degs::AbstractVector{Int}) where {C <: RingElement}
         dimL = sp.dimL
         dimV = sp.dimV
         R = coefficient_ring(sp.alg)
@@ -238,11 +238,11 @@ struct DeformStdBasis{C <: RingElement} <: DeformBasis{C}
                 kappa[i, j] += entry
                 kappa[j, i] -= entry
                 kappa
-            end for i in 1:dimV for j in i+1:dimV for d in 0:maxdeg for
+            end for i in 1:dimV for j in i+1:dimV for d in degs for
             ind in Combinatorics.with_replacement_combinations(1:dimL, d)
         )
 
-        len = div(dimV * (dimV - 1), 2) * sum(binomial(dimL + k - 1, k) for k in 0:maxdeg)
+        len = div(dimV * (dimV - 1), 2) * sum(binomial(dimL + k - 1, k) for k in degs)
         return new{C}(len, iter)
     end
 end
@@ -271,17 +271,25 @@ function normalize_basis(basiselems)
     ) for b in basiselems if !iszero(b))
 end
 
+function pbwdeforms_all(
+    sp::SmashProductLie{C},
+    deg::Int,
+    DeformBasisType::Type{<:DeformBasis{C}}=DeformStdBasis{C};
+    special_return::Type{T}=Nothing,
+) where {C <: RingElement, T <: Union{Nothing, SparseMatrixCSC}}
+    return pbwdeforms_all(sp, [deg], DeformBasisType; special_return)
+end
 
 function pbwdeforms_all(
     sp::SmashProductLie{C},
-    maxdeg::Int,
+    degs::AbstractVector{Int},
     DeformBasisType::Type{<:DeformBasis{C}}=DeformStdBasis{C};
     special_return::Type{T}=Nothing,
 ) where {C <: RingElement, T <: Union{Nothing, SparseMatrixCSC}}
     dimL = sp.dimL
     dimV = sp.dimV
 
-    deform_basis = DeformBasisType(sp, maxdeg)
+    deform_basis = DeformBasisType(sp, degs)
     nvars = length(deform_basis)
 
     @info "Constructing MPolyRing..."

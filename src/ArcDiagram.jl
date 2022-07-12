@@ -128,11 +128,14 @@ struct SoDeformArcBasis{C <: RingElement} <: DeformBasis{C}
     len::Int
     iter
 
-    function SoDeformArcBasis{C}(sp::SmashProductLie{C}, maxdeg::Int; no_normalize::Bool=false) where {C <: RingElement}
+    function SoDeformArcBasis{C}(
+        sp::SmashProductLie{C},
+        degs::AbstractVector{Int};
+        no_normalize::Bool=false,
+    ) where {C <: RingElement}
         dimV = div(isqrt(8 * sp.dimL + 1) + 1, 2) # inverse of gaussian sum
         l = first(l for l in 1:dimV if binomial(dimV, l) >= sp.dimV)
 
-        d = maxdeg
         iso_wedge2V_g = Dict{Vector{Int}, Int}()
         for (i, bs) in enumerate(Combinatorics.combinations(1:dimV, 2))
             iso_wedge2V_g[bs] = i
@@ -142,79 +145,89 @@ struct SoDeformArcBasis{C <: RingElement} <: DeformBasis{C}
             index[is] = i
         end
 
-        diag_iter = pbw_arc_diagrams(l, d)
-        len = length(diag_iter)
-        debug_counter = 0
-        iter = (
-            begin
-                @debug "Basis generation $(debug_counter = (debug_counter % len) + 1)/$(len), $(floor(Int, 100*debug_counter / len))%"
-                kappa = fill(sp.alg(0), sp.dimV, sp.dimV)
-                for is in Combinatorics.combinations(1:dimV, l), js in Combinatorics.combinations(1:dimV, l)
-                    i = index[is]
-                    j = index[js]
-                    if i >= j
-                        continue
-                    end
-                    zeroprod = false
-                    labeled_diag = [is..., js..., [0 for _ in 1:2d]...]
-                    frees = Int[]
-                    for k in 1:length(labeled_diag)
-                        if labeled_diag[k] != 0
-                            if labeled_diag[diag.adjacency[k]] == 0
-                                labeled_diag[diag.adjacency[k]] = labeled_diag[k]
-                            else
-                                if labeled_diag[k] != labeled_diag[diag.adjacency[k]]
-                                    zeroprod = true
-                                    break
-                                end
-                            end
-                        else
-                            if labeled_diag[diag.adjacency[k]] == 0
-                                append!(frees, min(k, diag.adjacency[k]))
-                            end
-                        end
-                    end
-                    if zeroprod
-                        continue
-                    end
-                    unique!(sort!(frees))
-                    free_index = Dict{Int, Int}()
-                    for (k, f) in enumerate(frees)
-                        free_index[f] = k
-                    end
-                    entry = zero(sp.alg)
-                    for labeling in (isempty(frees) ? [Int[]] : AbstractAlgebra.ProductIterator(1:dimV, length(frees)))
-                        lower_labeled = [
-                            labeled_diag[k] != 0 ? labeled_diag[k] : labeling[free_index[min(k, diag.adjacency[k])]] for k in 2*l+1:2*l+2*d
-                        ]
-                        zeroelem = false
-                        sign_pos = true
-                        basiselem = Int[]
-                        for k in 1:2:length(lower_labeled)
-                            if lower_labeled[k] == lower_labeled[k+1]
-                                zeroelem = true
-                                break
-                            elseif lower_labeled[k] > lower_labeled[k+1]
-                                sign_pos = !sign_pos
-                                append!(basiselem, iso_wedge2V_g[[lower_labeled[k+1], lower_labeled[k]]])
-                            else
-                                append!(basiselem, iso_wedge2V_g[[lower_labeled[k], lower_labeled[k+1]]])
-                            end
-                        end
-                        if zeroelem
+        lens = []
+        iters = []
+        for d in degs
+            diag_iter = pbw_arc_diagrams(l, d)
+            len = length(diag_iter)
+            debug_counter = 0
+            iter = (
+                begin
+                    @debug "Basis generation deg $(d), $(debug_counter = (debug_counter % len) + 1)/$(len), $(floor(Int, 100*debug_counter / len))%"
+                    kappa = fill(sp.alg(0), sp.dimV, sp.dimV)
+                    for is in Combinatorics.combinations(1:dimV, l), js in Combinatorics.combinations(1:dimV, l)
+                        i = index[is]
+                        j = index[js]
+                        if i >= j
                             continue
                         end
-                        symm_basiselem =
-                            1 // factorial(length(basiselem)) *
-                            sum(prod(sp.basisL[ind]) for ind in Combinatorics.permutations(basiselem))
-                        entry += (sign_pos ? 1 : (-1)) * normal_form(symm_basiselem)
+                        zeroprod = false
+                        labeled_diag = [is..., js..., [0 for _ in 1:2d]...]
+                        frees = Int[]
+                        for k in 1:length(labeled_diag)
+                            if labeled_diag[k] != 0
+                                if labeled_diag[diag.adjacency[k]] == 0
+                                    labeled_diag[diag.adjacency[k]] = labeled_diag[k]
+                                else
+                                    if labeled_diag[k] != labeled_diag[diag.adjacency[k]]
+                                        zeroprod = true
+                                        break
+                                    end
+                                end
+                            else
+                                if labeled_diag[diag.adjacency[k]] == 0
+                                    append!(frees, min(k, diag.adjacency[k]))
+                                end
+                            end
+                        end
+                        if zeroprod
+                            continue
+                        end
+                        unique!(sort!(frees))
+                        free_index = Dict{Int, Int}()
+                        for (k, f) in enumerate(frees)
+                            free_index[f] = k
+                        end
+                        entry = zero(sp.alg)
+                        for labeling in
+                            (isempty(frees) ? [Int[]] : AbstractAlgebra.ProductIterator(1:dimV, length(frees)))
+                            lower_labeled = [
+                                labeled_diag[k] != 0 ? labeled_diag[k] :
+                                labeling[free_index[min(k, diag.adjacency[k])]] for k in 2*l+1:2*l+2*d
+                            ]
+                            zeroelem = false
+                            sign_pos = true
+                            basiselem = Int[]
+                            for k in 1:2:length(lower_labeled)
+                                if lower_labeled[k] == lower_labeled[k+1]
+                                    zeroelem = true
+                                    break
+                                elseif lower_labeled[k] > lower_labeled[k+1]
+                                    sign_pos = !sign_pos
+                                    append!(basiselem, iso_wedge2V_g[[lower_labeled[k+1], lower_labeled[k]]])
+                                else
+                                    append!(basiselem, iso_wedge2V_g[[lower_labeled[k], lower_labeled[k+1]]])
+                                end
+                            end
+                            if zeroelem
+                                continue
+                            end
+                            symm_basiselem =
+                                1 // factorial(length(basiselem)) *
+                                sum(prod(sp.basisL[ind]) for ind in Combinatorics.permutations(basiselem))
+                            entry += (sign_pos ? 1 : (-1)) * normal_form(symm_basiselem)
+                        end
+                        kappa[i, j] += entry
+                        kappa[j, i] -= entry
                     end
-                    kappa[i, j] += entry
-                    kappa[j, i] -= entry
-                end
-                kappa
-            end for diag in diag_iter if is_crossing_free(diag)
-        )
+                    kappa
+                end for diag in diag_iter if is_crossing_free(diag)
+            )
+            push!(lens, len)
+            push!(iters, iter)
+        end
+        len = sum(lens)
+        iter = Iterators.flatten(iters)
         if !no_normalize
             iter = normalize_basis(iter)
             len = length(iter)
