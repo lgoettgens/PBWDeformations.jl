@@ -104,3 +104,14 @@ function is_valid_dynkin(dynkin::Char, n::Int)
         return false
     end
 end
+
+std_basis(i::Int, n::Int) = std_basis(Int, i, n)
+std_basis(::Type{T}, i::Int, n::Int) where {T <: Number} = [i == j ? T(1) : T(0) for j in 1:n]
+
+function ur_proper_triag_entries(M)
+    vcat([M[i, i+1:end] for i in eachindex(M, 1)]...)
+end
+
+function ur_triag_entries(M)
+    vcat([M[i, i:end] for i in eachindex(M, 1)]...)
+end
