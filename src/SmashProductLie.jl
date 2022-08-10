@@ -158,7 +158,7 @@ function smash_product_struct_const_so(n::Int, lambda::Vector{Int}) # for odd n 
     @assert div(n, 2) == length(lambda)
     lenghtlambda = div(n, 2)
 
-    ur_triag(M) = vcat([M[i, i+1:end] for i in 1:size(M, 1)]...)
+    ur_triag(M) = vcat([M[i, i+1:end] for i in eachindex(M, 1)]...)
     std_basis(i, n) = [i == j ? 1 : 0 for j in 1:n]
 
     dimL = div(n * (n - 1), 2)
