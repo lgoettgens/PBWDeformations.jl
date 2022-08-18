@@ -105,13 +105,68 @@ function is_valid_dynkin(dynkin::Char, n::Int)
     end
 end
 
+"""
+    std_basis(i::Int, n::Int)
+    std_basis(::Type{T}, i::Int, n::Int) where {T <: Number}
+
+Returns the `i`-th standard basis vector of dimension `n`.
+If supplied with a type, the vector is of that type, otherwise it is of type `Int`.
+
+# Examples
+```jldoctest
+julia> std_basis(1, 3)
+3-element Vector{Int64}:
+ 1
+ 0
+ 0
+
+julia> std_basis(Float64,2,4)
+4-element Vector{Float64}:
+ 0.0
+ 1.0
+ 0.0
+ 0.0
+```
+"""
 std_basis(i::Int, n::Int) = std_basis(Int, i, n)
 std_basis(::Type{T}, i::Int, n::Int) where {T <: Number} = [i == j ? T(1) : T(0) for j in 1:n]
 
-function ur_proper_triag_entries(M)
-    vcat([M[i, i+1:end] for i in axes(M, 1)]...)
+
+"""
+    ur_triag_entries(M::Matrix{T}) where {T}
+
+Returns the entries of the upper triangular part of `M` in row-major order.
+
+# Examples
+```jldoctest
+julia> ur_triag_entries([1 2 3;4 5 6;7 8 9])
+6-element Vector{Int64}:
+ 1
+ 2
+ 3
+ 5
+ 6
+ 9
+```
+"""
+function ur_triag_entries(M::Matrix{T}) where {T}
+    vcat([M[i, i:end] for i in axes(M, 1)]...)
 end
 
-function ur_triag_entries(M)
-    vcat([M[i, i:end] for i in axes(M, 1)]...)
+"""
+    ur_proper_triag_entries(M::Matrix{T}) where {T}
+
+Returns the entries of the proper upper triangular part of `M` in row-major order.
+
+# Examples
+```jldoctest
+julia> ur_proper_triag_entries([1 2 3;4 5 6;7 8 9])
+3-element Vector{Int64}:
+ 2
+ 3
+ 6
+```
+"""
+function ur_proper_triag_entries(M::Matrix{T}) where {T}
+    vcat([M[i, i+1:end] for i in axes(M, 1)]...)
 end
