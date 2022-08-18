@@ -94,120 +94,55 @@ julia> smash_product_lie(QQ, 'A', 1, [1])
 ```
 """
 function smash_product_lie(coeff_ring::Ring, dynkin::Char, n::Int, lambda::Vector{Int})
-    dimL, dimV, struct_const_L, struct_const_V = smash_product_struct_const_from_gap(dynkin, n, lambda)
+    symbL, symbV, scL, scV = liealgebra_gap_hightest_weight_module(dynkin, n, lambda)
 
-    symbL = ["x_$i" for i in 1:dimL]
-    symbV = ["v_$i" for i in 1:dimV]
-
-    return smash_product_lie(coeff_ring, symbL, symbV, struct_const_L, struct_const_V)
+    return smash_product_lie(coeff_ring, symbL, symbV, scL, scV)
 end
 
-function smash_product_struct_const_from_gap(dynkin::Char, n::Int, lambda::Vector{Int})
-    n == length(lambda) || throw(ArgumentError("length(lambda) and n have to coincide."))
-    is_valid_dynkin(dynkin, n) || throw(ArgumentError("Input not allowed by GAP."))
 
-    GAPG = GAP.Globals
+function smash_product_lie_so_fundamental_module(coeff_ring::Ring, n::Int, e::Int) # so_n, e-th fundamental module (spin reps not implemented)
+    symbL = liealgebra_so_symbols(n)
+    scL = liealgebra_so_struct_const(n)
+    symbV = liealgebra_so_fundamental_module_symbols(n, e)
+    scV = liealgebra_so_fundamental_module_struct_const(n, e)
 
-    L = GAPG.SimpleLieAlgebra(GAP.julia_to_gap(string(dynkin)), n, GAPG.Rationals)
-    dimL = GAPG.Dimension(L)
-    basisL = GAPG.BasisVectors(GAPG.Basis(L))
-    comm_table_L = GAP.gap_to_julia(GAPG.StructureConstantsTable(GAPG.Basis(L)))[1:dimL]
-
-    struct_const_L = Matrix{Vector{Tuple{Int, Int}}}(undef, dimL, dimL)
-    for i in 1:dimL, j in 1:dimL
-        struct_const_L[i, j] = [(c, k) for (k, c) in zip(comm_table_L[i][j]...)]
-    end
-
-    V = GAPG.HighestWeightModule(L, GAP.julia_to_gap(lambda))
-    dimV = GAPG.Dimension(V)
-    basisV = GAPG.BasisVectors(GAPG.Basis(V))
-
-    struct_const_V = Matrix{Vector{Tuple{Int, Int}}}(undef, dimL, dimV)
-    for i in 1:dimL, j in 1:dimV
-        struct_const_V[i, j] = [
-            (c, k) for
-            (k, c) in enumerate(GAP.gap_to_julia(GAPG.Coefficients(GAPG.Basis(V), basisL[i]^basisV[j]))) if !iszero(c)
-        ]
-    end
-
-    return dimL, dimV, struct_const_L, struct_const_V
+    return smash_product_lie(coeff_ring, symbL, symbV, scL, scV)
 end
 
-"""
-    smash_product_lie_so(coeff_ring :: Ring, n :: Int, lambda :: Vector{Int})
+function smash_product_lie_so_symmpowers_standard_module(coeff_ring::Ring, n::Int, e::Int) # so_n, e-th symm power of standard module
+    symbL = liealgebra_so_symbols(n)
+    scL = liealgebra_so_struct_const(n)
+    symbV = liealgebra_so_symmpowers_standard_module_symbols(n, e)
+    scV = liealgebra_so_symmpowers_standard_module_struct_const(n, e)
 
-Constructs the smash product of the semisimple lie algebra `so_n` and the highest weight module with weight `lambda` over the
-coefficient ring `coeff_ring`. For `n` odd, `lambda` is a B-type highest weight; for `n` even, `lambda` is a D-type highest weight.
-
-# Example
-```jldoctest
-julia> smash_product_lie_so(QQ, 5, [1,0])
-(Lie Algebra Smash Product with basis x_1_2, x_1_3, x_1_4, ..., x_4_5, v_1, v_2, v_3, ..., v_5 over Rational Field, (QuadraticQuoAlgebraElem{fmpq}[x_1_2, x_1_3, x_1_4, x_1_5, x_2_3, x_2_4, x_2_5, x_3_4, x_3_5, x_4_5], QuadraticQuoAlgebraElem{fmpq}[v_1, v_2, v_3, v_4, v_5]))
-```
-
-!!! warning
-    Only fundamental non-spin representations are currently supported.
-"""
-function smash_product_lie_so(coeff_ring::Ring, n::Int, lambda::Vector{Int}) # for odd n this is a B type highest weight, for even n D type
-    _, _, struct_const_L, struct_const_V, symbL, symbV = smash_product_struct_const_so(n, lambda)
-
-    return smash_product_lie(coeff_ring, symbL, symbV, struct_const_L, struct_const_V)
+    return smash_product_lie(coeff_ring, symbL, symbV, scL, scV)
 end
 
-function smash_product_struct_const_so(n::Int, lambda::Vector{Int}) # for odd n this is a B type highest weight, for even n D type
-    @assert div(n, 2) == length(lambda)
-    lenghtlambda = div(n, 2)
+function smash_product_lie_so_outpowers_standard_module(coeff_ring::Ring, n::Int, e::Int) # so_n, e-th outer power of standard module
+    symbL = liealgebra_so_symbols(n)
+    scL = liealgebra_so_struct_const(n)
+    symbV = liealgebra_so_outpowers_standard_module_symbols(n, e)
+    scV = liealgebra_so_outpowers_standard_module_struct_const(n, e)
 
-    ur_triag(M) = vcat([M[i, i+1:end] for i in eachindex(M, 1)]...)
-    std_basis(i, n) = [i == j ? 1 : 0 for j in 1:n]
+    return smash_product_lie(coeff_ring, symbL, symbV, scL, scV)
+end
 
-    dimL = div(n * (n - 1), 2)
-    basisL = [(b = zeros(Int, n, n); b[i, j] = 1; b[j, i] = -1; b) for i in 1:n for j in i+1:n]
-    symbL = ["x_$(i)_$(j)" for i in 1:n for j in i+1:n]
+function smash_product_lie_sp_symmpowers_standard_module(coeff_ring::Ring, n::Int, e::Int) # sp_2n, e-th symm power of standard module
+    symbL = liealgebra_sp_symbols(n)
+    scL = liealgebra_sp_struct_const(n)
+    symbV = liealgebra_sp_symmpowers_standard_module_symbols(n, e)
+    scV = liealgebra_sp_symmpowers_standard_module_struct_const(n, e)
 
-    struct_const_L = Matrix{Vector{Tuple{Int, Int}}}(undef, dimL, dimL)
-    for i in 1:dimL, j in 1:dimL
-        struct_const_L[i, j] =
-            [(c, k) for (k, c) in enumerate(ur_triag(basisL[i] * basisL[j] - basisL[j] * basisL[i])) if !iszero(c)]
-    end
+    return smash_product_lie(coeff_ring, symbL, symbV, scL, scV)
+end
 
-    if in(lambda, [std_basis(i, lenghtlambda) for i in 1:lenghtlambda])
-        lambda_std_i = findfirst(==(lambda), [std_basis(i, lenghtlambda) for i in 1:lenghtlambda])
+function smash_product_lie_sp_outpowers_standard_module(coeff_ring::Ring, n::Int, e::Int) # sp_2n, e-th outer power of standard module
+    symbL = liealgebra_sp_symbols(n)
+    scL = liealgebra_sp_struct_const(n)
+    symbV = liealgebra_sp_outpowers_standard_module_symbols(n, e)
+    scV = liealgebra_sp_outpowers_standard_module_struct_const(n, e)
 
-        if (n % 2 == 1 && lambda_std_i <= lenghtlambda - 1) || (n % 2 == 0 && lambda_std_i <= lenghtlambda - 2) # exterior product of defining representation
-            if lambda_std_i == 1
-                dimV = n
-                symbV = ["v_$(i)" for i in 1:dimV]
-                struct_const_V = Matrix{Vector{Tuple{Int, Int}}}(undef, dimL, dimV)
-                for i in 1:dimL, j in 1:dimV
-                    struct_const_V[i, j] = [(c, k) for (k, c) in enumerate(basisL[i] * std_basis(j, n)) if !iszero(c)]
-                end
-            else
-                dimV = binomial(n, lambda_std_i)
-                symbV = ["v_$(js)" for js in Combinatorics.combinations(1:n, lambda_std_i)] # TODO
-                struct_const_V = Matrix{Vector{Tuple{Int, Int}}}(undef, dimL, dimV)
-                index = Dict{Vector{Int}, Int}()
-                for (j, js) in enumerate(Combinatorics.combinations(1:n, lambda_std_i))
-                    index[js] = j
-                end
-                for i in 1:dimL, js in Combinatorics.combinations(1:n, lambda_std_i)
-                    struct_const_V[i, index[js]] = [
-                        (
-                            levicivita(sortperm([js[1:l-1]; k; js[l+1:end]])) * c,
-                            index[sort([js[1:l-1]; k; js[l+1:end]])],
-                        ) for l in 1:lambda_std_i for (k, c) in enumerate(basisL[i] * std_basis(js[l], n)) if
-                        !iszero(c) && allunique([js[1:l-1]; k; js[l+1:end]])
-                    ]
-                end
-            end
-        else
-            error("Spin representations are not implemented yet.")
-        end
-    else
-        error("Non-fundamental representations are not implemented yet.")
-    end
-
-    return dimL, dimV, struct_const_L, struct_const_V, symbL, symbV
+    return smash_product_lie(coeff_ring, symbL, symbV, scL, scV)
 end
 
 
