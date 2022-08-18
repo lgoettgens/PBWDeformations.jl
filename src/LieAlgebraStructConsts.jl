@@ -27,26 +27,26 @@ function liealgebra_so_struct_const(n::Int) # so_n
     return dimL, struct_const_L
 end
 
-function liealgebra_standard_module_so_basis(n::Int)
+function liealgebra_so_standard_module_basis(n::Int)
     return [std_basis(i, n) for i in 1:n]
 end
 
-function liealgebra_fundamental_module_so_symbols(n::Int, e::Int)
-    return liealgebra_outpowers_standard_module_so_symbols(n, e)
+function liealgebra_so_fundamental_module_symbols(n::Int, e::Int)
+    return liealgebra_so_outpowers_standard_module_symbols(n, e)
 end
 
-function liealgebra_fundamental_module_so_struct_const(n::Int, e::Int)
-    return liealgebra_outpowers_standard_module_so_struct_const(n, e)
+function liealgebra_so_fundamental_module_struct_const(n::Int, e::Int)
+    return liealgebra_so_outpowers_standard_module_struct_const(n, e)
 end
 
-function liealgebra_symmpowers_standard_module_so_symbols(n::Int, e::Int)
+function liealgebra_so_symmpowers_standard_module_symbols(n::Int, e::Int)
     return e == 1 ? ["v_$(i)" for i in 1:2n] :
            ["v_$(js)" for js in Combinatorics.with_replacement_combinations(1:2n, e)]
 end
 
-function liealgebra_symmpowers_standard_module_so_struct_const(n::Int, e::Int) # so_n, e-th symm power of the standard rep
+function liealgebra_so_symmpowers_standard_module_struct_const(n::Int, e::Int) # so_n, e-th symm power of the standard rep
     basisL = liealgebra_sp_basis(n)
-    basis_standardV = liealgebra_standard_module_sp_basis(n)
+    basis_standardV = liealgebra_sp_standard_module_basis(n)
     dimL = length(basisL)
     if e == 1
         dimV = n
@@ -74,13 +74,13 @@ function liealgebra_symmpowers_standard_module_so_struct_const(n::Int, e::Int) #
     return dimV, struct_const_V
 end
 
-function liealgebra_outpowers_standard_module_so_symbols(n::Int, e::Int)
+function liealgebra_so_outpowers_standard_module_symbols(n::Int, e::Int)
     return e == 1 ? ["v_$(i)" for i in 1:n] : ["v_$(js)" for js in Combinatorics.combinations(1:n, e)]
 end
 
-function liealgebra_outpowers_standard_module_so_struct_const(n::Int, e::Int) # so_n, e-th outer power of the standard rep
+function liealgebra_so_outpowers_standard_module_struct_const(n::Int, e::Int) # so_n, e-th outer power of the standard rep
     basisL = liealgebra_so_basis(n)
-    basis_standardV = liealgebra_standard_module_so_basis(n)
+    basis_standardV = liealgebra_so_standard_module_basis(n)
     dimL = length(basisL)
     if e == 1
         dimV = n
@@ -160,18 +160,18 @@ function liealgebra_sp_struct_const(n::Int) # sp_2n
     return dimL, struct_const_L
 end
 
-function liealgebra_standard_module_sp_basis(n::Int)
+function liealgebra_sp_standard_module_basis(n::Int)
     return [std_basis(i, 2n) for i in 1:2n]
 end
 
-function liealgebra_symmpowers_standard_module_sp_symbols(n::Int, e::Int)
+function liealgebra_sp_symmpowers_standard_module_symbols(n::Int, e::Int)
     return e == 1 ? ["v_$(i)" for i in 1:2n] :
            ["v_$(js)" for js in Combinatorics.with_replacement_combinations(1:2n, e)]
 end
 
-function liealgebra_symmpowers_standard_module_sp_struct_const(n::Int, e::Int) # sp_2n, e-th symm power of the standard rep
+function liealgebra_sp_symmpowers_standard_module_struct_const(n::Int, e::Int) # sp_2n, e-th symm power of the standard rep
     basisL = liealgebra_sp_basis(n)
-    basis_standardV = liealgebra_standard_module_sp_basis(n)
+    basis_standardV = liealgebra_sp_standard_module_basis(n)
     dimL = length(basisL)
     if e == 1
         dimV = 2n
@@ -199,13 +199,13 @@ function liealgebra_symmpowers_standard_module_sp_struct_const(n::Int, e::Int) #
     return dimV, struct_const_V
 end
 
-function liealgebra_outpowers_standard_module_sp_symbols(n::Int, e::Int)
+function liealgebra_sp_outpowers_standard_module_symbols(n::Int, e::Int)
     return e == 1 ? ["v_$(i)" for i in 1:2n] : ["v_$(js)" for js in Combinatorics.combinations(1:2n, e)]
 end
 
-function liealgebra_outpowers_standard_module_sp_struct_const(n::Int, e::Int) # sp_2n, e-th outer power of the standard rep
+function liealgebra_sp_outpowers_standard_module_struct_const(n::Int, e::Int) # sp_2n, e-th outer power of the standard rep
     basisL = liealgebra_sp_basis(n)
-    basis_standardV = liealgebra_standard_module_sp_basis(n)
+    basis_standardV = liealgebra_sp_standard_module_basis(n)
     dimL = length(basisL)
     if e == 1
         dimV = 2n
