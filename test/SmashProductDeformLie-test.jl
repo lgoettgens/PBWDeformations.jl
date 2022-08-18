@@ -24,7 +24,7 @@
             @test gens(deform) == (deform.basisL, deform.basisV)
 
             # Test the module basis relations
-            for i in 1:length(basisV), j in 1:length(basisV)
+            for i in eachindex(basisV), j in eachindex(basisV)
                 if i == 1 && j == 2
                     @test comm(basisV[i], basisV[j]; strict=true) == basisL[1]
                 elseif i == 2 && j == 1
