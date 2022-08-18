@@ -220,51 +220,80 @@ function indices_of_freedom(mat::SparseArrays.SparseMatrixCSC{T, Int64}) where {
     return filter(i -> iszero(mat[i, i]), 1:size(mat)[1])
 end
 
-
 abstract type DeformBasis{C <: RingElement} end
-struct DeformStdBasis{C <: RingElement} <: DeformBasis{C}
-    length::Int
-    generator
 
-    function DeformStdBasis{C}(sp::SmashProductLie{C}, maxdeg::Int) where {C <: RingElement}
+Base.eltype(::Type{DeformBasis{C}}) where {C <: RingElement} = Matrix{QuadraticQuoAlgebra{C}}
+struct DeformStdBasis{C <: RingElement} <: DeformBasis{C}
+    len::Int
+    iter
+
+    function DeformStdBasis{C}(sp::SmashProductLie{C}, degs::AbstractVector{Int}) where {C <: RingElement}
         dimL = sp.dimL
         dimV = sp.dimV
         R = coefficient_ring(sp.alg)
-        generator = (
+        iter = (
             begin
                 kappa = fill(sp.alg(0), dimV, dimV)
                 entry = prod(map(k -> sp.basisL[k], ind); init=sp.alg(1))
                 kappa[i, j] += entry
                 kappa[j, i] -= entry
                 kappa
-            end for i in 1:dimV for j in i+1:dimV for d in 0:maxdeg for
+            end for i in 1:dimV for j in i+1:dimV for d in degs for
             ind in Combinatorics.with_replacement_combinations(1:dimL, d)
         )
 
-        length = div(dimV * (dimV - 1), 2) * sum(binomial(dimL + k - 1, k) for k in 0:maxdeg)
-        return new{C}(length, generator)
+        len = div(dimV * (dimV - 1), 2) * sum(binomial(dimL + k - 1, k) for k in degs)
+        return new{C}(len, iter)
     end
 end
 
-function Base.length(basis::DeformStdBasis)
-    return basis.length
+function Base.iterate(i::DeformStdBasis)
+    return iterate(i.iter)
 end
 
+function Base.iterate(i::DeformStdBasis, s)
+    return iterate(i.iter, s)
+end
+
+Base.length(base::DeformStdBasis) = base.len
+
+
+function normalize_basis(basiselems)
+    unique((
+        begin
+            first_nz = begin
+                ind = findfirst(x -> !iszero(x), b)
+                CartesianIndex(ind[2], ind[1])
+            end
+            cu = canonical_unit(b[first_nz])
+            b = map(e -> divexact(e, cu), b)
+        end
+    ) for b in basiselems if !iszero(b))
+end
 
 function pbwdeforms_all(
     sp::SmashProductLie{C},
-    maxdeg::Int,
+    deg::Int,
+    DeformBasisType::Type{<:DeformBasis{C}}=DeformStdBasis{C};
+    special_return::Type{T}=Nothing,
+) where {C <: RingElement, T <: Union{Nothing, SparseMatrixCSC}}
+    return pbwdeforms_all(sp, [deg], DeformBasisType; special_return)
+end
+
+function pbwdeforms_all(
+    sp::SmashProductLie{C},
+    degs::AbstractVector{Int},
     DeformBasisType::Type{<:DeformBasis{C}}=DeformStdBasis{C};
     special_return::Type{T}=Nothing,
 ) where {C <: RingElement, T <: Union{Nothing, SparseMatrixCSC}}
     dimL = sp.dimL
     dimV = sp.dimV
 
-    deform_basis = DeformBasisType(sp, maxdeg)
+    deform_basis = DeformBasisType(sp, degs)
     nvars = length(deform_basis)
 
     @info "Constructing MPolyRing..."
-    R, vars = PolynomialRing(sp.coeff_ring, nvars)
+    R, vars = PolynomialRing(sp.coeff_ring, max(nvars, 1))
     var_lookup = Dict(vars[i] => i for i in 1:nvars)
 
     @info "Changing SmashProductLie coeffcient type..."
@@ -272,7 +301,7 @@ function pbwdeforms_all(
 
     @info "Constructing kappa..."
     kappa = fill(new_sp.alg(0), dimV, dimV)
-    for (i, b) in enumerate(deform_basis.generator)
+    for (i, b) in enumerate(deform_basis)
         kappa += vars[i] .* new_sp.alg.(b)
     end
 
@@ -319,7 +348,7 @@ function pbwdeforms_all(
         kappas[l] = fill(sp.alg(0), dimV, dimV)
     end
     if freedom_deg > 0
-        for (i, b) in enumerate(deform_basis.generator)
+        for (i, b) in enumerate(deform_basis)
             if iszero(mat[i, i])
                 l = findfirst(isequal(i), freedom_ind)
                 kappas[l] += b
