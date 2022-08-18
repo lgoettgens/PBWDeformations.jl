@@ -58,8 +58,11 @@ export free_algebra,
     pbwdeforms_all,
     pbwdeform_eqs,
     smash_product_lie,
-    smash_product_lie_so,
-    smash_product_struct_const_from_gap,
+    smash_product_lie_so_fundamental_module,
+    smash_product_lie_so_symmpowers_standard_module,
+    smash_product_lie_so_outpowers_standard_module,
+    smash_product_lie_sp_symmpowers_standard_module,
+    smash_product_lie_sp_outpowers_standard_module,
     smash_product_struct_const_so,
     smash_product_deform_lie,
     smash_product_symmdeform_lie
@@ -69,6 +72,7 @@ GAP = Oscar.GAP
 
 
 include("Util.jl")
+include("LieAlgebraStructConsts.jl")
 include("Algebra.jl")
 include("FreeAlgebra.jl")
 include("QuadraticQuoAlgebra.jl")
