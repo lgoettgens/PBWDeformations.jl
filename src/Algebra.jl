@@ -364,6 +364,14 @@ function comm(a::AlgebraElem{C}, b::AlgebraElem{C}) where {C <: RingElement}
     return a * b - b * a
 end
 
+function divexact(a::AlgebraElem{C}, c::C) where {C <: RingElement}
+    a = deepcopy(a)
+    for i in 1:length(a)
+        a.coeffs[i] = divexact(a.coeffs[i], c)
+    end
+    a
+end
+
 ###############################################################################
 #
 #   Unsafe functions

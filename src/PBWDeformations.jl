@@ -14,6 +14,7 @@ import AbstractAlgebra:
     change_base_ring,
     check_parent,
     coeff,
+    divexact,
     elem_type,
     gen,
     gens,
@@ -73,6 +74,7 @@ include("FreeAlgebra.jl")
 include("QuadraticQuoAlgebra.jl")
 include("SmashProductLie.jl")
 include("SmashProductDeformLie.jl")
+include("ArcDiagram.jl")
 
 
 end

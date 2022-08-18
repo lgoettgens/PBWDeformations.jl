@@ -170,7 +170,7 @@
         @testset "pbwdeforms_all tests" begin
             sp, _ = smash_product_lie(QQ, 'A', 1, [1])
             @testset "A_1 with hw [1], maxdeg = $maxdeg" for maxdeg in 0:8
-                basis = pbwdeforms_all(sp, maxdeg)
+                basis = pbwdeforms_all(sp, 0:maxdeg)
 
                 @test length(basis) == 1 + div(maxdeg, 2)
 
@@ -196,7 +196,7 @@
 
             sp, _ = smash_product_lie(QQ, 'B', 2, [1, 0])
             @testset "B_2 with hw [1,0], maxdeg = $maxdeg" for maxdeg in 0:2
-                basis = pbwdeforms_all(sp, maxdeg)
+                basis = pbwdeforms_all(sp, 0:maxdeg)
 
                 @test length(basis) == div(maxdeg + 1, 2)
 
