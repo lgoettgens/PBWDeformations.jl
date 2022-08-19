@@ -113,7 +113,7 @@ Returns the `i`-th standard basis vector of dimension `n`.
 If supplied with a type, the vector is of that type, otherwise it is of type `Int`.
 
 # Examples
-```jldoctest
+```jldoctest; setup = :(std_basis = PBWDeformations.std_basis)
 julia> std_basis(1, 3)
 3-element Vector{Int64}:
  1
@@ -138,7 +138,7 @@ std_basis(::Type{T}, i::Int, n::Int) where {T <: Number} = [i == j ? T(1) : T(0)
 Returns the entries of the upper triangular part of `M` in row-major order.
 
 # Examples
-```jldoctest
+```jldoctest; setup = :(ur_triag_entries = PBWDeformations.ur_triag_entries)
 julia> ur_triag_entries([1 2 3;4 5 6;7 8 9])
 6-element Vector{Int64}:
  1
@@ -159,7 +159,7 @@ end
 Returns the entries of the proper upper triangular part of `M` in row-major order.
 
 # Examples
-```jldoctest
+```jldoctest; setup = :(ur_proper_triag_entries = PBWDeformations.ur_proper_triag_entries)
 julia> ur_proper_triag_entries([1 2 3;4 5 6;7 8 9])
 3-element Vector{Int64}:
  2
