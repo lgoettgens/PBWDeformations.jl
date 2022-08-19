@@ -16,13 +16,12 @@ end
 smash_product_lie
 ```
 
-### SO case
+<!-- ### SO case
 
 For the orthogonal lie algebras `so_n` there is a different constructor, that results in the well-known basis of `so_n` given by `x_i_j` ``= E_{i,j} - E_{j,i}`` for ``1 \leq i < j \leq n``.
 
 ```@docs
-smash_product_lie_so
-```
+``` -->
 
 ## SmashProductLie struct
 ```@docs
