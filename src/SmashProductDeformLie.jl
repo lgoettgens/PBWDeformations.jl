@@ -175,9 +175,13 @@ function reduce_and_store!(
     lgs::Vector{Union{Nothing, SparseVector{T, Int64}}},
     v::SparseVector{T, Int64},
 ) where {T <: Union{RingElement, Number}}
-    while !iszero(v)
+    while count(!iszero, v) > 0
         nz_inds, nz_vals = findnz(v)
-        v = inv(nz_vals[1]) .* v
+
+        if !isone(nz_vals[1])
+            v = inv(nz_vals[1]) .* v
+        end
+
         if lgs[nz_inds[1]] === nothing
             lgs[nz_inds[1]] = v
             return
