@@ -50,7 +50,7 @@ function lgs_to_mat(lgs::Matrix{T}) where {T <: Union{RingElement, Number}}
     return sparse(lgs)
 end
 
-function indices_of_freedom(mat::SparseArrays.SparseMatrixCSC{T, Int64}) where {T <: Union{RingElement, Number}}
+function indices_of_freedom(mat::SparseArrays.SparseMatrixCSC{T, Int}) where {T <: Union{RingElement, Number}}
     size(mat)[1] == size(mat)[2] || throw(ArgumentError("Matrix needs to be square."))
     return filter(i -> iszero(mat[i, i]), 1:size(mat)[1])
 end
@@ -132,7 +132,7 @@ function lgs_to_mat(lgs::Vector{Union{Nothing, Vector{T}}}) where {T <: Union{Ri
     return mat
 end
 
-function indices_of_freedom(mat::SparseArrays.SparseMatrixCSC{T, Int64}) where {T <: Union{RingElement, Number}}
+function indices_of_freedom(mat::SparseArrays.SparseMatrixCSC{T, Int}) where {T <: Union{RingElement, Number}}
     size(mat)[1] == size(mat)[2] || throw(ArgumentError("Matrix needs to be square."))
     return filter(i -> iszero(mat[i, i]), 1:size(mat)[1])
 end
@@ -165,8 +165,8 @@ using Oscar
 import ..RingElement
 
 function reduce_and_store!(
-    lgs::Vector{Union{Nothing, SparseVector{T, Int64}}},
-    v::SparseVector{T, Int64},
+    lgs::Vector{Union{Nothing, SparseVector{T, Int}}},
+    v::SparseVector{T, Int},
 ) where {T <: Union{RingElement, Number}}
     while !iszero(v)
         nz_inds, nz_vals = findnz(v)
@@ -180,9 +180,7 @@ function reduce_and_store!(
     end
 end
 
-function reduced_row_echelon!(
-    lgs::Vector{Union{Nothing, SparseVector{T, Int64}}},
-) where {T <: Union{RingElement, Number}}
+function reduced_row_echelon!(lgs::Vector{Union{Nothing, SparseVector{T, Int}}}) where {T <: Union{RingElement, Number}}
     for i in length(lgs):-1:1
         if lgs[i] === nothing
             continue
@@ -197,7 +195,7 @@ function reduced_row_echelon!(
     return lgs
 end
 
-function lgs_to_mat(lgs::Vector{Union{Nothing, SparseVector{T, Int64}}}) where {T <: Union{RingElement, Number}}
+function lgs_to_mat(lgs::Vector{Union{Nothing, SparseVector{T, Int}}}) where {T <: Union{RingElement, Number}}
     n = length(lgs)
     mat = spzeros(T, n, n)
     for i in 1:n
@@ -208,7 +206,7 @@ function lgs_to_mat(lgs::Vector{Union{Nothing, SparseVector{T, Int64}}}) where {
     return mat
 end
 
-function indices_of_freedom(mat::SparseArrays.SparseMatrixCSC{T, Int64}) where {T <: Union{RingElement, Number}}
+function indices_of_freedom(mat::SparseArrays.SparseMatrixCSC{T, Int}) where {T <: Union{RingElement, Number}}
     size(mat)[1] == size(mat)[2] || throw(ArgumentError("Matrix needs to be square."))
     return filter(i -> iszero(mat[i, i]), 1:size(mat)[1])
 end
@@ -216,7 +214,7 @@ end
 function solve_lgs(instance)
     iter = Iterators.map(sparse, instance)
 
-    lgs = Vector{Union{Nothing, SparseVector{fmpq, Int64}}}(nothing, length(instance[1]))
+    lgs = Vector{Union{Nothing, SparseVector{fmpq, Int}}}(nothing, length(instance[1]))
     for v in iter
         reduce_and_store!(lgs, v)
     end
@@ -241,8 +239,8 @@ using Oscar
 import ..RingElement
 
 function reduce_and_store!(
-    lgs::Vector{Union{Nothing, SparseVector{T, Int64}}},
-    v::SparseVector{T, Int64},
+    lgs::Vector{Union{Nothing, SparseVector{T, Int}}},
+    v::SparseVector{T, Int},
 ) where {T <: Union{RingElement, Number}}
     while count(!iszero, v) > 0
         nz_inds, nz_vals = findnz(v)
@@ -258,9 +256,7 @@ function reduce_and_store!(
     end
 end
 
-function reduced_row_echelon!(
-    lgs::Vector{Union{Nothing, SparseVector{T, Int64}}},
-) where {T <: Union{RingElement, Number}}
+function reduced_row_echelon!(lgs::Vector{Union{Nothing, SparseVector{T, Int}}}) where {T <: Union{RingElement, Number}}
     for i in length(lgs):-1:1
         if lgs[i] === nothing
             continue
@@ -275,7 +271,7 @@ function reduced_row_echelon!(
     return lgs
 end
 
-function lgs_to_mat(lgs::Vector{Union{Nothing, SparseVector{T, Int64}}}) where {T <: Union{RingElement, Number}}
+function lgs_to_mat(lgs::Vector{Union{Nothing, SparseVector{T, Int}}}) where {T <: Union{RingElement, Number}}
     n = length(lgs)
     mat = spzeros(T, n, n)
     for i in 1:n
@@ -286,7 +282,7 @@ function lgs_to_mat(lgs::Vector{Union{Nothing, SparseVector{T, Int64}}}) where {
     return mat
 end
 
-function indices_of_freedom(mat::SparseArrays.SparseMatrixCSC{T, Int64}) where {T <: Union{RingElement, Number}}
+function indices_of_freedom(mat::SparseArrays.SparseMatrixCSC{T, Int}) where {T <: Union{RingElement, Number}}
     size(mat)[1] == size(mat)[2] || throw(ArgumentError("Matrix needs to be square."))
     return filter(i -> iszero(mat[i, i]), 1:size(mat)[1])
 end
@@ -294,7 +290,7 @@ end
 function solve_lgs(instance)
     iter = Iterators.map(sparse, instance)
 
-    lgs = Vector{Union{Nothing, SparseVector{fmpq, Int64}}}(nothing, length(instance[1]))
+    lgs = Vector{Union{Nothing, SparseVector{fmpq, Int}}}(nothing, length(instance[1]))
     for v in iter
         reduce_and_store!(lgs, v)
     end

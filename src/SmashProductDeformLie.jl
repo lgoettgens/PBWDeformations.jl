@@ -1,14 +1,14 @@
 mutable struct SmashProductDeformLie{C <: RingElement}
-    dimL::Int64
-    dimV::Int64
+    dimL::Int
+    dimV::Int
     basisL::Vector{QuadraticQuoAlgebraElem{C}}
     basisV::Vector{QuadraticQuoAlgebraElem{C}}
     coeff_ring::Ring
     alg::QuadraticQuoAlgebra{C}
     # dynkin::Char
-    # n::Int64
-    # lambda::Vector{Int64}
-    # matrixRepL::Vector{Matrix{Int64}}
+    # n::Int
+    # lambda::Vector{Int}
+    # matrixRepL::Vector{Matrix{Int}}
     symmetric::Bool
     kappa::Matrix{QuadraticQuoAlgebraElem{C}}
 end
@@ -165,15 +165,15 @@ end
     return eq.coeffs
 end
 
-@inline function linpoly_to_spvector(a::fmpq_mpoly, var_lookup::Dict{fmpq_mpoly, Int64}, nvars::Int64)
+@inline function linpoly_to_spvector(a::fmpq_mpoly, var_lookup::Dict{fmpq_mpoly, Int}, nvars::Int)
     @assert total_degree(a) <= 1
 
     return sparsevec(Dict(var_lookup[monomial(a, i)] => coeff(a, i) for i in 1:length(a)), nvars)
 end
 
 function reduce_and_store!(
-    lgs::Vector{Union{Nothing, SparseVector{T, Int64}}},
-    v::SparseVector{T, Int64},
+    lgs::Vector{Union{Nothing, SparseVector{T, Int}}},
+    v::SparseVector{T, Int},
 ) where {T <: Union{RingElement, Number}}
     while count(!iszero, v) > 0
         nz_inds, nz_vals = findnz(v)
@@ -191,9 +191,7 @@ function reduce_and_store!(
     end
 end
 
-function reduced_row_echelon!(
-    lgs::Vector{Union{Nothing, SparseVector{T, Int64}}},
-) where {T <: Union{RingElement, Number}}
+function reduced_row_echelon!(lgs::Vector{Union{Nothing, SparseVector{T, Int}}}) where {T <: Union{RingElement, Number}}
     for i in length(lgs):-1:1
         if lgs[i] === nothing
             continue
@@ -208,7 +206,7 @@ function reduced_row_echelon!(
     return lgs
 end
 
-function lgs_to_mat(lgs::Vector{Union{Nothing, SparseVector{T, Int64}}}) where {T <: Union{RingElement, Number}}
+function lgs_to_mat(lgs::Vector{Union{Nothing, SparseVector{T, Int}}}) where {T <: Union{RingElement, Number}}
     n = length(lgs)
     mat = spzeros(T, n, n)
     for i in 1:n
@@ -219,7 +217,7 @@ function lgs_to_mat(lgs::Vector{Union{Nothing, SparseVector{T, Int64}}}) where {
     return mat
 end
 
-function indices_of_freedom(mat::SparseArrays.SparseMatrixCSC{T, Int64}) where {T <: Union{RingElement, Number}}
+function indices_of_freedom(mat::SparseArrays.SparseMatrixCSC{T, Int}) where {T <: Union{RingElement, Number}}
     size(mat)[1] == size(mat)[2] || throw(ArgumentError("Matrix needs to be square."))
     return filter(i -> iszero(mat[i, i]), 1:size(mat)[1])
 end
@@ -330,7 +328,7 @@ function pbwdeforms_all(
     )
 
     @info "Computing row-echelon form..."
-    lgs = Vector{Union{Nothing, SparseVector{fmpq, Int64}}}(nothing, nvars)
+    lgs = Vector{Union{Nothing, SparseVector{fmpq, Int}}}(nothing, nvars)
     for v in iter
         reduce_and_store!(lgs, v)
     end
