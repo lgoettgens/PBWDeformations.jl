@@ -253,7 +253,7 @@ struct SoDeformArcBasis{C <: RingElement} <: DeformBasis{C}
                 begin
                     @debug "Basis generation deg $(d), $(debug_counter = (debug_counter % len) + 1)/$(len), $(floor(Int, 100*debug_counter / len))%"
                     arcdiag_to_basiselem__so_outpowers_stdmod(diag, dimV, e, d, sp.alg(0), sp.basisL)
-                end for diag in diag_iter if is_crossing_free(diag)
+                end for diag in diag_iter # if is_crossing_free(diag), unsure if this is still correct
             )
             push!(lens, len)
             push!(iters, iter)
