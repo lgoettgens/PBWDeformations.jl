@@ -124,6 +124,92 @@ function pbw_arc_diagrams(l::Int, d::Int)
     return all_arc_diagrams(2 * l, 2 * d; indep_sets)
 end
 
+
+function arcdiag_to_basiselem__so_outpowers_stdmod(
+    diag::ArcDiagram,
+    dimV::Int,
+    e::Int,
+    d::Int,
+    zero::QuadraticQuoAlgebraElem{C},
+    basisL::Vector{QuadraticQuoAlgebraElem{C}},
+) where {C <: RingElement}
+    iso_wedge2V_g = Dict{Vector{Int}, Int}()
+    for (i, bs) in enumerate(Combinatorics.combinations(1:dimV, 2))
+        iso_wedge2V_g[bs] = i
+    end
+    index = Dict{Vector{Int}, Int}()
+    for (i, is) in enumerate(Combinatorics.combinations(1:dimV, e))
+        index[is] = i
+    end
+
+    kappa = fill(zero, binomial(dimV, e), binomial(dimV, e))
+    for is in Combinatorics.combinations(1:dimV, e), js in Combinatorics.combinations(1:dimV, e)
+        i = index[is]
+        j = index[js]
+        if i >= j
+            continue
+        end
+        zeroprod = false
+        labeled_diag = [is..., js..., [0 for _ in 1:2d]...]
+        frees = Int[]
+        for k in 1:length(labeled_diag)
+            if labeled_diag[k] != 0
+                if labeled_diag[diag.adjacency[k]] == 0
+                    labeled_diag[diag.adjacency[k]] = labeled_diag[k]
+                else
+                    if labeled_diag[k] != labeled_diag[diag.adjacency[k]]
+                        zeroprod = true
+                        break
+                    end
+                end
+            else
+                if labeled_diag[diag.adjacency[k]] == 0
+                    append!(frees, min(k, diag.adjacency[k]))
+                end
+            end
+        end
+        if zeroprod
+            continue
+        end
+        unique!(sort!(frees))
+        free_index = Dict{Int, Int}()
+        for (k, f) in enumerate(frees)
+            free_index[f] = k
+        end
+        entry = zero
+        for labeling in (isempty(frees) ? [Int[]] : AbstractAlgebra.ProductIterator(1:dimV, length(frees)))
+            lower_labeled = [
+                labeled_diag[k] != 0 ? labeled_diag[k] : labeling[free_index[min(k, diag.adjacency[k])]] for
+                k in 2*e+1:2*e+2*d
+            ]
+            zeroelem = false
+            sign_pos = true
+            basiselem = Int[]
+            for k in 1:2:length(lower_labeled)
+                if lower_labeled[k] == lower_labeled[k+1]
+                    zeroelem = true
+                    break
+                elseif lower_labeled[k] > lower_labeled[k+1]
+                    sign_pos = !sign_pos
+                    append!(basiselem, iso_wedge2V_g[[lower_labeled[k+1], lower_labeled[k]]])
+                else
+                    append!(basiselem, iso_wedge2V_g[[lower_labeled[k], lower_labeled[k+1]]])
+                end
+            end
+            if zeroelem
+                continue
+            end
+            symm_basiselem =
+                1 // factorial(length(basiselem)) *
+                sum(prod(basisL[ind]) for ind in Combinatorics.permutations(basiselem))
+            entry += (sign_pos ? 1 : (-1)) * normal_form(symm_basiselem)
+        end
+        kappa[i, j] += entry
+        kappa[j, i] -= entry
+    end
+    return kappa
+end
+
 struct SoDeformArcBasis{C <: RingElement} <: DeformBasis{C}
     len::Int
     iter
@@ -148,93 +234,18 @@ struct SoDeformArcBasis{C <: RingElement} <: DeformBasis{C}
         if isnothing(sp.info.power_of_std_mod) || !(sp.info.power_of_std_mod < 0)
             error("Module needs to be an exterior power of the standard module.")
         end
-        l = -sp.info.power_of_std_mod
-
-        iso_wedge2V_g = Dict{Vector{Int}, Int}()
-        for (i, bs) in enumerate(Combinatorics.combinations(1:dimV, 2))
-            iso_wedge2V_g[bs] = i
-        end
-        index = Dict{Vector{Int}, Int}()
-        for (i, is) in enumerate(Combinatorics.combinations(1:dimV, l))
-            index[is] = i
-        end
+        e = -sp.info.power_of_std_mod
 
         lens = []
         iters = []
         for d in degs
-            diag_iter = pbw_arc_diagrams(l, d)
+            diag_iter = pbw_arc_diagrams(e, d)
             len = length(diag_iter)
             debug_counter = 0
             iter = (
                 begin
                     @debug "Basis generation deg $(d), $(debug_counter = (debug_counter % len) + 1)/$(len), $(floor(Int, 100*debug_counter / len))%"
-                    kappa = fill(sp.alg(0), sp.dimV, sp.dimV)
-                    for is in Combinatorics.combinations(1:dimV, l), js in Combinatorics.combinations(1:dimV, l)
-                        i = index[is]
-                        j = index[js]
-                        if i >= j
-                            continue
-                        end
-                        zeroprod = false
-                        labeled_diag = [is..., js..., [0 for _ in 1:2d]...]
-                        frees = Int[]
-                        for k in 1:length(labeled_diag)
-                            if labeled_diag[k] != 0
-                                if labeled_diag[diag.adjacency[k]] == 0
-                                    labeled_diag[diag.adjacency[k]] = labeled_diag[k]
-                                else
-                                    if labeled_diag[k] != labeled_diag[diag.adjacency[k]]
-                                        zeroprod = true
-                                        break
-                                    end
-                                end
-                            else
-                                if labeled_diag[diag.adjacency[k]] == 0
-                                    append!(frees, min(k, diag.adjacency[k]))
-                                end
-                            end
-                        end
-                        if zeroprod
-                            continue
-                        end
-                        unique!(sort!(frees))
-                        free_index = Dict{Int, Int}()
-                        for (k, f) in enumerate(frees)
-                            free_index[f] = k
-                        end
-                        entry = zero(sp.alg)
-                        for labeling in
-                            (isempty(frees) ? [Int[]] : AbstractAlgebra.ProductIterator(1:dimV, length(frees)))
-                            lower_labeled = [
-                                labeled_diag[k] != 0 ? labeled_diag[k] :
-                                labeling[free_index[min(k, diag.adjacency[k])]] for k in 2*l+1:2*l+2*d
-                            ]
-                            zeroelem = false
-                            sign_pos = true
-                            basiselem = Int[]
-                            for k in 1:2:length(lower_labeled)
-                                if lower_labeled[k] == lower_labeled[k+1]
-                                    zeroelem = true
-                                    break
-                                elseif lower_labeled[k] > lower_labeled[k+1]
-                                    sign_pos = !sign_pos
-                                    append!(basiselem, iso_wedge2V_g[[lower_labeled[k+1], lower_labeled[k]]])
-                                else
-                                    append!(basiselem, iso_wedge2V_g[[lower_labeled[k], lower_labeled[k+1]]])
-                                end
-                            end
-                            if zeroelem
-                                continue
-                            end
-                            symm_basiselem =
-                                1 // factorial(length(basiselem)) *
-                                sum(prod(sp.basisL[ind]) for ind in Combinatorics.permutations(basiselem))
-                            entry += (sign_pos ? 1 : (-1)) * normal_form(symm_basiselem)
-                        end
-                        kappa[i, j] += entry
-                        kappa[j, i] -= entry
-                    end
-                    kappa
+                    arcdiag_to_basiselem__so_outpowers_stdmod(diag, dimV, e, d, sp.alg(0), sp.basisL)
                 end for diag in diag_iter if is_crossing_free(diag)
             )
             push!(lens, len)
