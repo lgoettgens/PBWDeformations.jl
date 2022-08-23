@@ -3,16 +3,16 @@ The struct representing a lie algebra smash product.
 It consists of the underlying QuadraticQuoAlgebra and some metadata.
 """
 mutable struct SmashProductLie{C <: RingElement}
-    dimL::Int64
-    dimV::Int64
+    dimL::Int
+    dimV::Int
     basisL::Vector{QuadraticQuoAlgebraElem{C}}
     basisV::Vector{QuadraticQuoAlgebraElem{C}}
     coeff_ring::Ring
     alg::QuadraticQuoAlgebra{C}
     # dynkin :: Char
-    # n :: Int64
-    # lambda :: Vector{Int64}
-    # matrixRepL :: Vector{Matrix{Int64}}
+    # n :: Int
+    # lambda :: Vector{Int}
+    # matrixRepL :: Vector{Matrix{Int}}
 end
 
 

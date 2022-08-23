@@ -6,7 +6,7 @@ timeout = "60s"
 max_n = 5
 max_lambdasum = 3
 maxdeg = 3
-inputs = Tuple{Union{Char, String}, Int64, Vector{Int64}, Int64}[]
+inputs = Tuple{Union{Char, String}, Int, Vector{Int}, Int}[]
 
 function lambdas(n, lambdasum)
     multisets(n, k) = map(A -> [sum(A .== i) for i in 1:n], with_replacement_combinations(1:n, k))
