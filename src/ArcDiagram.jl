@@ -149,63 +149,70 @@ function arcdiag_to_basiselem__so_outpowers_stdmod(
         if i >= j
             continue
         end
-        zeroprod = false
-        labeled_diag = [is..., js..., [0 for _ in 1:2d]...]
-        frees = Int[]
-        for k in 1:length(labeled_diag)
-            if labeled_diag[k] != 0
-                if labeled_diag[diag.adjacency[k]] == 0
-                    labeled_diag[diag.adjacency[k]] = labeled_diag[k]
+        for is in Combinatorics.permutations(is), js in Combinatorics.permutations(js)
+            sgn_upper_labels = levicivita(sortperm(is)) * levicivita(sortperm(js))
+
+            zeroprod = false
+            labeled_diag = [is..., js..., [0 for _ in 1:2d]...]
+            frees = Int[]
+            for k in 1:length(labeled_diag)
+                if labeled_diag[k] != 0
+                    if labeled_diag[diag.adjacency[k]] == 0
+                        labeled_diag[diag.adjacency[k]] = labeled_diag[k]
+                    else
+                        if labeled_diag[k] != labeled_diag[diag.adjacency[k]]
+                            zeroprod = true
+                            break
+                        end
+                    end
                 else
-                    if labeled_diag[k] != labeled_diag[diag.adjacency[k]]
-                        zeroprod = true
-                        break
+                    if labeled_diag[diag.adjacency[k]] == 0
+                        append!(frees, min(k, diag.adjacency[k]))
                     end
                 end
-            else
-                if labeled_diag[diag.adjacency[k]] == 0
-                    append!(frees, min(k, diag.adjacency[k]))
-                end
             end
-        end
-        if zeroprod
-            continue
-        end
-        unique!(sort!(frees))
-        free_index = Dict{Int, Int}()
-        for (k, f) in enumerate(frees)
-            free_index[f] = k
-        end
-        entry = zero
-        for labeling in (isempty(frees) ? [Int[]] : AbstractAlgebra.ProductIterator(1:dimV, length(frees)))
-            lower_labeled = [
-                labeled_diag[k] != 0 ? labeled_diag[k] : labeling[free_index[min(k, diag.adjacency[k])]] for
-                k in 2*e+1:2*e+2*d
-            ]
-            zeroelem = false
-            sign_pos = true
-            basiselem = Int[]
-            for k in 1:2:length(lower_labeled)
-                if lower_labeled[k] == lower_labeled[k+1]
-                    zeroelem = true
-                    break
-                elseif lower_labeled[k] > lower_labeled[k+1]
-                    sign_pos = !sign_pos
-                    append!(basiselem, iso_wedge2V_g[[lower_labeled[k+1], lower_labeled[k]]])
-                else
-                    append!(basiselem, iso_wedge2V_g[[lower_labeled[k], lower_labeled[k+1]]])
-                end
-            end
-            if zeroelem
+            if zeroprod
                 continue
             end
-            symm_basiselem =
-                1 // factorial(length(basiselem)) *
-                sum(prod(basisL[ind]) for ind in Combinatorics.permutations(basiselem))
-            entry += (sign_pos ? 1 : (-1)) * normal_form(symm_basiselem)
+            unique!(sort!(frees))
+            free_index = Dict{Int, Int}()
+            for (k, f) in enumerate(frees)
+                free_index[f] = k
+            end
+            entry = zero
+            for labeling in (isempty(frees) ? [Int[]] : AbstractAlgebra.ProductIterator(1:dimV, length(frees)))
+                lower_labeled = [
+                    labeled_diag[k] != 0 ? labeled_diag[k] : labeling[free_index[min(k, diag.adjacency[k])]] for
+                    k in 2*e+1:2*e+2*d
+                ]
+                zeroelem = false
+                sign_pos = true
+                basiselem = Int[]
+                for k in 1:2:length(lower_labeled)
+                    if lower_labeled[k] == lower_labeled[k+1]
+                        zeroelem = true
+                        break
+                    elseif lower_labeled[k] > lower_labeled[k+1]
+                        sign_pos = !sign_pos
+                        append!(basiselem, iso_wedge2V_g[[lower_labeled[k+1], lower_labeled[k]]])
+                    else
+                        append!(basiselem, iso_wedge2V_g[[lower_labeled[k], lower_labeled[k+1]]])
+                    end
+                end
+                if zeroelem
+                    continue
+                end
+                symm_basiselem =
+                    1 // factorial(length(basiselem)) *
+                    sum(prod(basisL[ind]) for ind in Combinatorics.permutations(basiselem))
+                entry += (sign_pos ? 1 : (-1)) * normal_form(symm_basiselem)
+            end
+
+            entry *= sgn_upper_labels
+
+            kappa[i, j] += entry
+            kappa[j, i] -= entry
         end
-        kappa[i, j] += entry
-        kappa[j, i] -= entry
     end
     return kappa
 end
