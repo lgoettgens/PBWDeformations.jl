@@ -245,10 +245,10 @@ struct SoDeformArcBasis{C <: RingElement} <: DeformBasis{C}
 
         lens = []
         iters = []
+        debug_counter = 0
         for d in degs
             diag_iter = pbw_arc_diagrams(e, d)
             len = length(diag_iter)
-            debug_counter = 0
             iter = (
                 begin
                     @debug "Basis generation deg $(d), $(debug_counter = (debug_counter % len) + 1)/$(len), $(floor(Int, 100*debug_counter / len))%"
