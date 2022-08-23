@@ -5,10 +5,6 @@ mutable struct SmashProductDeformLie{C <: RingElement}
     basisV::Vector{QuadraticQuoAlgebraElem{C}}
     coeff_ring::Ring
     alg::QuadraticQuoAlgebra{C}
-    # dynkin::Char
-    # n::Int
-    # lambda::Vector{Int}
-    # matrixRepL::Vector{Matrix{Int}}
     symmetric::Bool
     kappa::Matrix{QuadraticQuoAlgebraElem{C}}
 end
