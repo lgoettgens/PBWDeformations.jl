@@ -14,6 +14,11 @@
             @test ngens(sp) == (sp.dimL, sp.dimV)
             @test gens(sp) == (sp.basisL, sp.basisV)
 
+            @test sp.info.dynkin == dynkin
+            @test sp.info.n == n
+            @test sp.info.lambda == lambda
+            @test sp.info.constructive_basis == false
+
             showOutput = @test_nowarn sprint(show, sp)
             @test occursin("smash product", lowercase(showOutput))
             @test occursin("lie algebra", lowercase(showOutput))
