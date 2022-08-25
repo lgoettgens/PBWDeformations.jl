@@ -118,11 +118,11 @@ function smash_product_lie_so_symmpowers_standard_module(coeff_ring::Ring, n::In
     return smash_product_lie(coeff_ring, symbL, symbV, scL, scV)
 end
 
-function smash_product_lie_so_outpowers_standard_module(coeff_ring::Ring, n::Int, e::Int) # so_n, e-th outer power of standard module
+function smash_product_lie_so_extpowers_standard_module(coeff_ring::Ring, n::Int, e::Int) # so_n, e-th exterior power of standard module
     symbL = liealgebra_so_symbols(n)
     scL = liealgebra_so_struct_const(n)
-    symbV = liealgebra_so_outpowers_standard_module_symbols(n, e)
-    scV = liealgebra_so_outpowers_standard_module_struct_const(n, e)
+    symbV = liealgebra_so_extpowers_standard_module_symbols(n, e)
+    scV = liealgebra_so_extpowers_standard_module_struct_const(n, e)
 
     return smash_product_lie(coeff_ring, symbL, symbV, scL, scV)
 end
@@ -136,11 +136,11 @@ function smash_product_lie_sp_symmpowers_standard_module(coeff_ring::Ring, n::In
     return smash_product_lie(coeff_ring, symbL, symbV, scL, scV)
 end
 
-function smash_product_lie_sp_outpowers_standard_module(coeff_ring::Ring, n::Int, e::Int) # sp_2n, e-th outer power of standard module
+function smash_product_lie_sp_extpowers_standard_module(coeff_ring::Ring, n::Int, e::Int) # sp_2n, e-th exterior power of standard module
     symbL = liealgebra_sp_symbols(n)
     scL = liealgebra_sp_struct_const(n)
-    symbV = liealgebra_sp_outpowers_standard_module_symbols(n, e)
-    scV = liealgebra_sp_outpowers_standard_module_struct_const(n, e)
+    symbV = liealgebra_sp_extpowers_standard_module_symbols(n, e)
+    scV = liealgebra_sp_extpowers_standard_module_struct_const(n, e)
 
     return smash_product_lie(coeff_ring, symbL, symbV, scL, scV)
 end
