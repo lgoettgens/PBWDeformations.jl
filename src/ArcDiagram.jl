@@ -40,36 +40,78 @@ function Base.show(io::IO, ::MIME"text/plain", a::ArcDiagram)
     print(io, symbols[pair_ids[a.nUpper+1:a.nUpper+a.nLower]])
 end
 
-function is_crossing_free(a::ArcDiagram)
-    for i in 1:a.nUpper+a.nLower, j in 1:a.nUpper+a.nLower
-        if i == j
-            continue
-        elseif i >= a.adjacency[i]
-            continue
-        elseif j >= a.adjacency[j]
-            continue
+function is_crossing_free(a::ArcDiagram; part=:everything::Symbol)
+    if part == :everything
+        for i in 1:a.nUpper+a.nLower, j in 1:a.nUpper+a.nLower
+            if i == j
+                continue
+            elseif i >= a.adjacency[i]
+                continue
+            elseif j >= a.adjacency[j]
+                continue
+            end
+            i, j = min(i, j), max(i, j)
+            # now i < j
+            if a.adjacency[i] <= a.nUpper
+                if (j < a.adjacency[i]) != (a.adjacency[j] < a.adjacency[i])
+                    return false
+                end
+            elseif i > a.nUpper
+                if (j < a.adjacency[i]) != (a.adjacency[j] < a.adjacency[i])
+                    return false
+                end
+            elseif a.adjacency[j] <= a.nUpper
+                continue
+            elseif a.nUpper < j
+                if j < a.adjacency[i] < a.adjacency[j]
+                    return false
+                end
+            elseif a.adjacency[i] > a.adjacency[j]
+                return false
+            end
         end
-        i, j = min(i, j), max(i, j)
-        # now i < j
-        if a.adjacency[i] <= a.nUpper
+        return true
+    elseif part == :upper
+        for i in 1:a.nUpper, j in 1:a.nUpper
+            if i == j
+                continue
+            elseif i >= a.adjacency[i]
+                continue
+            elseif j >= a.adjacency[j]
+                continue
+            elseif a.adjacency[i] > a.nUpper
+                continue
+            elseif a.adjacency[j] > a.nUpper
+                continue
+            end
+            i, j = min(i, j), max(i, j)
+            # now i < j
             if (j < a.adjacency[i]) != (a.adjacency[j] < a.adjacency[i])
                 return false
             end
-        elseif i > a.nUpper
+        end
+        return true
+    elseif part == :lower
+        for i in 1:a.nLower, j in 1:a.nLower
+            i += a.nUpper
+            j += a.nUpper
+            if i == j
+                continue
+            elseif i >= a.adjacency[i]
+                continue
+            elseif j >= a.adjacency[j]
+                continue
+            end
+            i, j = min(i, j), max(i, j)
+            # now i < j
             if (j < a.adjacency[i]) != (a.adjacency[j] < a.adjacency[i])
                 return false
             end
-        elseif a.adjacency[j] <= a.nUpper
-            continue
-        elseif a.nUpper < j
-            if j < a.adjacency[i] < a.adjacency[j]
-                return false
-            end
-        elseif a.adjacency[i] > a.adjacency[j]
-            return false
         end
+        return true
+    else
+        error("Unknown part")
     end
-    return true
 end
 
 
@@ -119,9 +161,9 @@ function iter_possible_adjacencies(
     return Iterators.flatten(Iterators.map(c -> c[1], choices)), sum(c -> c[2], choices; init=0)
 end
 
-function pbw_arc_diagrams(l::Int, d::Int)
-    indep_sets = [1:l, l+1:2*l, [[2 * l + 2 * i - 1, 2 * l + 2 * i] for i in 1:d]...]
-    return all_arc_diagrams(2 * l, 2 * d; indep_sets)
+function pbw_arc_diagrams(e::Int, d::Int)
+    indep_sets = [1:e, e+1:2*e, [[2 * e + 2 * i - 1, 2 * e + 2 * i] for i in 1:d]...]
+    return all_arc_diagrams(2 * e, 2 * d; indep_sets)
 end
 
 
@@ -253,7 +295,7 @@ struct SoDeformArcBasis{C <: RingElement} <: DeformBasis{C}
                 begin
                     @debug "Basis generation deg $(d), $(debug_counter = (debug_counter % len) + 1)/$(len), $(floor(Int, 100*debug_counter / len))%"
                     arcdiag_to_basiselem__so_outpowers_stdmod(diag, dimV, e, d, sp.alg(0), sp.basisL)
-                end for diag in diag_iter # if is_crossing_free(diag), unsure if this is still correct
+                end for diag in diag_iter if is_crossing_free(diag, part=:upper)
             )
             push!(lens, len)
             push!(iters, iter)
