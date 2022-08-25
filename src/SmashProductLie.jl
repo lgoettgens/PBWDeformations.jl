@@ -1,10 +1,17 @@
 struct SmashProductLieInfo
     dynkin::Union{Nothing, Char}
     n::Union{Nothing, Int}
-    lambda::Union{Nothing, Vector{Int}}
+    lambda::Union{Nothing, Vector{Int}}     # highest weight vector
     constructive_basis::Bool
-    function SmashProductLieInfo(; dynkin=nothing, n=nothing, lambda=nothing, constructive_basis=false)
-        new(dynkin, n, lambda, constructive_basis)
+    power_of_std_mod::Union{Nothing, Int}   # positive = symmetric power, negative = exterior power
+    function SmashProductLieInfo(;
+        dynkin=nothing,
+        n=nothing,
+        lambda=nothing,
+        constructive_basis=false,
+        power_of_std_mod=nothing,
+    )
+        new(dynkin, n, lambda, constructive_basis, power_of_std_mod)
     end
 end
 
@@ -129,7 +136,8 @@ function smash_product_lie_so_symmpowers_standard_module(coeff_ring::Ring, n::In
     symbV = liealgebra_so_symmpowers_standard_module_symbols(n, e)
     scV = liealgebra_so_symmpowers_standard_module_struct_const(n, e)
 
-    info = SmashProductLieInfo(dynkin=(n % 2 == 1 ? 'B' : 'D'), n=div(n, 2), constructive_basis=true)
+    info =
+        SmashProductLieInfo(dynkin=(n % 2 == 1 ? 'B' : 'D'), n=div(n, 2), constructive_basis=true, power_of_std_mod=e)
 
     return smash_product_lie(coeff_ring, symbL, symbV, scL, scV, info)
 end
@@ -140,7 +148,8 @@ function smash_product_lie_so_extpowers_standard_module(coeff_ring::Ring, n::Int
     symbV = liealgebra_so_extpowers_standard_module_symbols(n, e)
     scV = liealgebra_so_extpowers_standard_module_struct_const(n, e)
 
-    info = SmashProductLieInfo(dynkin=(n % 2 == 1 ? 'B' : 'D'), n=div(n, 2), constructive_basis=true)
+    info =
+        SmashProductLieInfo(dynkin=(n % 2 == 1 ? 'B' : 'D'), n=div(n, 2), constructive_basis=true, power_of_std_mod=-e)
 
     return smash_product_lie(coeff_ring, symbL, symbV, scL, scV, info)
 end
@@ -151,7 +160,7 @@ function smash_product_lie_sp_symmpowers_standard_module(coeff_ring::Ring, n::In
     symbV = liealgebra_sp_symmpowers_standard_module_symbols(n, e)
     scV = liealgebra_sp_symmpowers_standard_module_struct_const(n, e)
 
-    info = SmashProductLieInfo(dynkin='C', n=n, constructive_basis=true)
+    info = SmashProductLieInfo(dynkin='C', n=n, constructive_basis=true, power_of_std_mod=e)
 
     return smash_product_lie(coeff_ring, symbL, symbV, scL, scV, info)
 end
@@ -162,7 +171,7 @@ function smash_product_lie_sp_extpowers_standard_module(coeff_ring::Ring, n::Int
     symbV = liealgebra_sp_extpowers_standard_module_symbols(n, e)
     scV = liealgebra_sp_extpowers_standard_module_struct_const(n, e)
 
-    info = SmashProductLieInfo(dynkin='C', n=n, constructive_basis=true)
+    info = SmashProductLieInfo(dynkin='C', n=n, constructive_basis=true, power_of_std_mod=-e)
 
     return smash_product_lie(coeff_ring, symbL, symbV, scL, scV, info)
 end
