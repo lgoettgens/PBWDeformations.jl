@@ -1,5 +1,5 @@
 """
-The struct representing a lie algebra smash product.
+The struct representing a Lie algebra smash product.
 It consists of the underlying QuadraticQuoAlgebra and some metadata.
 """
 mutable struct SmashProductLie{C <: RingElement}
@@ -21,7 +21,7 @@ end
 
 Constructs the smash product over the coefficient ring `coeff_ring` using the
 structure constants `struct_const_L` and `struct_const_V`, and using `symbL`
-and `symbV` as symbols for the respective generators of the lie algebra and
+and `symbV` as symbols for the respective generators of the Lie algebra and
 the module.
 """
 function smash_product_lie(
@@ -83,7 +83,7 @@ end
 """
     smash_product_lie(coeff_ring::Ring, dynkin::Char, n::Int, lambda::Vector{Int})
 
-Constructs the smash product of the abstract semisimple lie algebra given by
+Constructs the smash product of the abstract semisimple Lie algebra given by
 `dynkin` and `n` and the highest weight module with weight `lambda` over the
 coefficient ring `coeff_ring`.
 
