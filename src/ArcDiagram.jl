@@ -108,7 +108,7 @@ function iter_possible_adjacencies(
     if i === nothing
         return [ArcDiagram(nUpper, nLower, partial; skipchecks=true)], 1
     end
-    rel_indep_sets = filter(is -> in(i, is), indep_sets)
+    rel_indep_sets = filter(is -> i in is, indep_sets)
     poss_adjs = setdiff(setdiff(findall(==(0), partial), i), rel_indep_sets...)
     choices = Iterators.map(poss_adjs) do j
         partial2 = deepcopy(partial)
@@ -133,8 +133,22 @@ struct SoDeformArcBasis{C <: RingElement} <: DeformBasis{C}
         degs::AbstractVector{Int};
         no_normalize::Bool=false,
     ) where {C <: RingElement}
-        dimV = div(isqrt(8 * sp.dimL + 1) + 1, 2) # inverse of gaussian sum
-        l = first(l for l in 1:dimV if binomial(dimV, l) >= sp.dimV)
+        if isnothing(sp.info.dynkin) || isnothing(sp.info.n)
+            error("Dynkin type unknown, but needed.")
+        elseif !sp.info.constructive_basis
+            error("Constructive basis needed.")
+        elseif sp.info.dynkin == 'B'
+            dimV = 2 * sp.info.n + 1
+        elseif sp.info.dynkin == 'D'
+            dimV = 2 * sp.info.n
+        else
+            error("Dynkin type '$(sp.info.dynkin)' not supported.")
+        end
+
+        if isnothing(sp.info.power_of_std_mod) || !(sp.info.power_of_std_mod < 0)
+            error("Module needs to be an exterior power of the standard module.")
+        end
+        l = -sp.info.power_of_std_mod
 
         iso_wedge2V_g = Dict{Vector{Int}, Int}()
         for (i, bs) in enumerate(Combinatorics.combinations(1:dimV, 2))
