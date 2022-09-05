@@ -1,3 +1,5 @@
+DeformationMap{C} = Matrix{QuadraticQuoAlgebraElem{C}} where {C <: RingElement}
+
 mutable struct SmashProductDeformLie{C <: RingElement}
     dimL::Int
     dimV::Int
@@ -6,14 +8,11 @@ mutable struct SmashProductDeformLie{C <: RingElement}
     coeff_ring::Ring
     alg::QuadraticQuoAlgebra{C}
     symmetric::Bool
-    kappa::Matrix{QuadraticQuoAlgebraElem{C}}
+    kappa::DeformationMap{C}
 end
 
 
-function smash_product_deform_lie(
-    sp::SmashProductLie{C},
-    kappa::Matrix{QuadraticQuoAlgebraElem{C}},
-) where {C <: RingElement}
+function smash_product_deform_lie(sp::SmashProductLie{C}, kappa::DeformationMap{C}) where {C <: RingElement}
     size(kappa) == (sp.dimV, sp.dimV) || throw(ArgumentError("kappa has wrong dimensions."))
 
     dimL = sp.dimL
@@ -341,7 +340,7 @@ function pbwdeforms_all(
     @info "Computing a basis..."
     freedom_ind = indices_of_freedom(mat)
     freedom_deg = length(freedom_ind)
-    kappas = Vector{Matrix{QuadraticQuoAlgebraElem{C}}}(undef, freedom_deg)
+    kappas = Vector{DeformationMap{C}}(undef, freedom_deg)
     for l in 1:freedom_deg
         kappas[l] = fill(sp.alg(0), dimV, dimV)
     end
