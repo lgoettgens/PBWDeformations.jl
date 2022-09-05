@@ -55,6 +55,11 @@ unittest-Julia 1.7:
   image: johannesflake/oscar:julia-1.7
   extends:
     - .unittest
+
+unittest-Julia 1.8:
+  image: johannesflake/oscar:julia-1.8
+  extends:
+    - .unittest
     - .unittest-coverage
 
 # the compathelper job is only present in the branch "compathelper"
