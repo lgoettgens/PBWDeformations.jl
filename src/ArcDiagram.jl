@@ -293,7 +293,8 @@ function corresponding_arc_diagram(
     dimV, e = extract_sp_info__so_extpowers_stdmod(sp)
     for d in degs
         diag_iter = pbw_arc_diagrams(e, d)
-        for diag in [diag for diag in diag_iter if is_crossing_free(diag, part=:upper)]
+        for diag in
+            [diag for diag in diag_iter if is_crossing_free(diag, part=:upper) && is_crossing_free(diag, part=:lower)]
             m2 = arcdiag_to_basiselem__so_extpowers_stdmod(diag, dimV, e, d, sp.alg(0), sp.basisL)
             if normalize_basis([m]) == normalize_basis([m2])
                 return diag
@@ -316,7 +317,8 @@ function corresponding_arc_diagrams(
     diags = ArcDiagram[]
     for d in degs
         diag_iter = pbw_arc_diagrams(e, d)
-        for diag in [diag for diag in diag_iter if is_crossing_free(diag, part=:upper)]
+        for diag in
+            [diag for diag in diag_iter if is_crossing_free(diag, part=:upper) && is_crossing_free(diag, part=:lower)]
             m2 = arcdiag_to_basiselem__so_extpowers_stdmod(diag, dimV, e, d, sp.alg(0), sp.basisL)
             if normalize_basis([m]) == normalize_basis([m2])
                 push!(diags, diag)
@@ -347,7 +349,8 @@ struct SoDeformArcBasis{C <: RingElement} <: DeformBasis{C}
                 begin
                     @debug "Basis generation deg $(d), $(debug_counter = (debug_counter % len) + 1)/$(len), $(floor(Int, 100*debug_counter / len))%"
                     arcdiag_to_basiselem__so_extpowers_stdmod(diag, dimV, e, d, sp.alg(0), sp.basisL)
-                end for diag in diag_iter if is_crossing_free(diag, part=:upper)
+                end for
+                diag in diag_iter if is_crossing_free(diag, part=:upper) && is_crossing_free(diag, part=:lower)
             )
             push!(lens, len)
             push!(iters, iter)
