@@ -281,6 +281,58 @@ function extract_sp_info__so_extpowers_stdmod(sp::SmashProductLie{C}) where {C <
     return dimV, e
 end
 
+function corresponding_arc_diagram(
+    m::Matrix{QuadraticQuoAlgebraElem{C}},
+    sp::SmashProductLie{C},
+    deg::Int,
+) where {C <: RingElement}
+    return corresponding_arc_diagram(m, sp, [deg])
+end
+
+function corresponding_arc_diagram(
+    m::Matrix{QuadraticQuoAlgebraElem{C}},
+    sp::SmashProductLie{C},
+    degs::AbstractVector{Int},
+) where {C <: RingElement}
+    dimV, e = extract_sp_info__so_extpowers_stdmod(sp)
+    for d in degs
+        diag_iter = pbw_arc_diagrams(e, d)
+        for diag in [diag for diag in diag_iter if is_crossing_free(diag, part=:upper)]
+            m2 = arcdiag_to_basiselem__so_extpowers_stdmod(diag, dimV, e, d, sp.alg(0), sp.basisL)
+            if normalize_basis([m]) == normalize_basis([m2])
+                return diag
+            end
+        end
+    end
+    return nothing
+end
+
+function corresponding_arc_diagrams(
+    m::Matrix{QuadraticQuoAlgebraElem{C}},
+    sp::SmashProductLie{C},
+    deg::Int,
+) where {C <: RingElement}
+    return corresponding_arc_diagrams(m, sp, [deg])
+end
+
+function corresponding_arc_diagrams(
+    m::Matrix{QuadraticQuoAlgebraElem{C}},
+    sp::SmashProductLie{C},
+    degs::AbstractVector{Int},
+) where {C <: RingElement}
+    dimV, e = extract_sp_info__so_extpowers_stdmod(sp)
+    diags = ArcDiagram[]
+    for d in degs
+        diag_iter = pbw_arc_diagrams(e, d)
+        for diag in [diag for diag in diag_iter if is_crossing_free(diag, part=:upper)]
+            m2 = arcdiag_to_basiselem__so_extpowers_stdmod(diag, dimV, e, d, sp.alg(0), sp.basisL)
+            if normalize_basis([m]) == normalize_basis([m2])
+                push!(diags, diag)
+            end
+        end
+    end
+    return diags
+end
 
 struct SoDeformArcBasis{C <: RingElement} <: DeformBasis{C}
     len::Int
