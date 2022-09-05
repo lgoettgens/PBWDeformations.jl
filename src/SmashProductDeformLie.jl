@@ -1,5 +1,10 @@
 DeformationMap{C} = Matrix{QuadraticQuoAlgebraElem{C}} where {C <: RingElement}
 
+"""
+The struct representing a deformation of a Lie algebra smash product.
+It consists of the underlying QuadraticQuoAlgebra and some metadata.
+It gets created by calling [`smash_product_deform_lie`](@ref).
+"""
 mutable struct SmashProductDeformLie{C <: RingElement}
     dimL::Int
     dimV::Int
@@ -12,6 +17,13 @@ mutable struct SmashProductDeformLie{C <: RingElement}
 end
 
 
+"""
+    smash_product_deform_lie(sp::SmashProductLie{C}, kappa::DeformationMap{C}) where {C <: RingElement}
+
+Constructs the deformation of the smash product `sp` by the deformation map `kappa`.
+
+Returns a [`SmashProductDeformLie`](@ref) struct and a two-part basis.
+"""
 function smash_product_deform_lie(sp::SmashProductLie{C}, kappa::DeformationMap{C}) where {C <: RingElement}
     size(kappa) == (sp.dimV, sp.dimV) || throw(ArgumentError("kappa has wrong dimensions."))
 
@@ -45,6 +57,11 @@ function smash_product_deform_lie(sp::SmashProductLie{C}, kappa::DeformationMap{
     return SmashProductDeformLie{C}(dimL, dimV, basisL, basisV, coeff_ring, alg, symmetric, kappa), (basisL, basisV)
 end
 
+"""
+    smash_product_symmdeform_lie(sp::SmashProductLie{C}) where {C <: RingElement}
+
+Constructs the symmetric deformation of the smash product `sp`.
+"""
 function smash_product_symmdeform_lie(sp::SmashProductLie{C}) where {C <: RingElement}
     kappa = fill(zero(sp.alg), sp.dimV, sp.dimV)
     return smash_product_deform_lie(sp, kappa)

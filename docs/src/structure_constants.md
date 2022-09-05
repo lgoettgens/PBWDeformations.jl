@@ -2,7 +2,7 @@
 CurrentModule = PBWDeformations
 ```
 
-# Utility functions
+# Functions
 
 ```@autodocs
 Modules = [PBWDeformations]

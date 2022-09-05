@@ -51,6 +51,8 @@ Constructs the smash product over the coefficient ring `coeff_ring` using the
 structure constants `struct_const_L` and `struct_const_V`, and using `symbL`
 and `symbV` as symbols for the respective generators of the Lie algebra and
 the module.
+
+Returns a [`SmashProductLie`](@ref) struct and a two-part basis.
 """
 function smash_product_lie(
     coeff_ring::Ring,
