@@ -281,16 +281,12 @@ function extract_sp_info__so_extpowers_stdmod(sp::SmashProductLie{C}) where {C <
     return dimV, e
 end
 
-function corresponding_arc_diagram(
-    m::Matrix{QuadraticQuoAlgebraElem{C}},
-    sp::SmashProductLie{C},
-    deg::Int,
-) where {C <: RingElement}
+function corresponding_arc_diagram(m::DeformationMap{C}, sp::SmashProductLie{C}, deg::Int) where {C <: RingElement}
     return corresponding_arc_diagram(m, sp, [deg])
 end
 
 function corresponding_arc_diagram(
-    m::Matrix{QuadraticQuoAlgebraElem{C}},
+    m::DeformationMap{C},
     sp::SmashProductLie{C},
     degs::AbstractVector{Int},
 ) where {C <: RingElement}
@@ -307,16 +303,12 @@ function corresponding_arc_diagram(
     return nothing
 end
 
-function corresponding_arc_diagrams(
-    m::Matrix{QuadraticQuoAlgebraElem{C}},
-    sp::SmashProductLie{C},
-    deg::Int,
-) where {C <: RingElement}
+function corresponding_arc_diagrams(m::DeformationMap{C}, sp::SmashProductLie{C}, deg::Int) where {C <: RingElement}
     return corresponding_arc_diagrams(m, sp, [deg])
 end
 
 function corresponding_arc_diagrams(
-    m::Matrix{QuadraticQuoAlgebraElem{C}},
+    m::DeformationMap{C},
     sp::SmashProductLie{C},
     degs::AbstractVector{Int},
 ) where {C <: RingElement}
