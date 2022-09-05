@@ -167,7 +167,7 @@ function pbw_arc_diagrams(e::Int, d::Int)
 end
 
 
-function arcdiag_to_basiselem__so_outpowers_stdmod(
+function arcdiag_to_basiselem__so_extpowers_stdmod(
     diag::ArcDiagram,
     dimV::Int,
     e::Int,
@@ -259,6 +259,29 @@ function arcdiag_to_basiselem__so_outpowers_stdmod(
     return kappa
 end
 
+
+function extract_sp_info__so_extpowers_stdmod(sp::SmashProductLie{C}) where {C <: RingElement}
+    if isnothing(sp.info.dynkin) || isnothing(sp.info.n)
+        error("Dynkin type unknown, but needed.")
+    elseif !sp.info.constructive_basis
+        error("Constructive basis needed.")
+    elseif sp.info.dynkin == 'B'
+        dimV = 2 * sp.info.n + 1
+    elseif sp.info.dynkin == 'D'
+        dimV = 2 * sp.info.n
+    else
+        error("Dynkin type '$(sp.info.dynkin)' not supported.")
+    end
+
+    if isnothing(sp.info.power_of_std_mod) || !(sp.info.power_of_std_mod < 0)
+        error("Module needs to be an exterior power of the standard module.")
+    end
+    e = -sp.info.power_of_std_mod
+
+    return dimV, e
+end
+
+
 struct SoDeformArcBasis{C <: RingElement} <: DeformBasis{C}
     len::Int
     iter
@@ -268,22 +291,7 @@ struct SoDeformArcBasis{C <: RingElement} <: DeformBasis{C}
         degs::AbstractVector{Int};
         no_normalize::Bool=false,
     ) where {C <: RingElement}
-        if isnothing(sp.info.dynkin) || isnothing(sp.info.n)
-            error("Dynkin type unknown, but needed.")
-        elseif !sp.info.constructive_basis
-            error("Constructive basis needed.")
-        elseif sp.info.dynkin == 'B'
-            dimV = 2 * sp.info.n + 1
-        elseif sp.info.dynkin == 'D'
-            dimV = 2 * sp.info.n
-        else
-            error("Dynkin type '$(sp.info.dynkin)' not supported.")
-        end
-
-        if isnothing(sp.info.power_of_std_mod) || !(sp.info.power_of_std_mod < 0)
-            error("Module needs to be an exterior power of the standard module.")
-        end
-        e = -sp.info.power_of_std_mod
+        dimV, e = extract_sp_info__so_extpowers_stdmod(sp)
 
         lens = []
         iters = []
@@ -294,7 +302,7 @@ struct SoDeformArcBasis{C <: RingElement} <: DeformBasis{C}
             iter = (
                 begin
                     @debug "Basis generation deg $(d), $(debug_counter = (debug_counter % len) + 1)/$(len), $(floor(Int, 100*debug_counter / len))%"
-                    arcdiag_to_basiselem__so_outpowers_stdmod(diag, dimV, e, d, sp.alg(0), sp.basisL)
+                    arcdiag_to_basiselem__so_extpowers_stdmod(diag, dimV, e, d, sp.alg(0), sp.basisL)
                 end for diag in diag_iter if is_crossing_free(diag, part=:upper)
             )
             push!(lens, len)
