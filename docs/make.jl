@@ -1,4 +1,5 @@
 using Documenter
+using DocumenterCitations
 using PBWDeformations
 
 #! format: off
@@ -10,7 +11,10 @@ DocMeta.setdocmeta!(
     recursive = true,
 )
 
+bib = CitationBibliography("docs/references.bib", sorting = :nyt)
+
 makedocs(
+    bib,
     modules = [PBWDeformations],
     repo = "https://gitlab.com/johannesflake/pbwdeformations.jl/blob/{commit}{path}#{line}",
     sitename = "PBWDeformations.jl",
@@ -26,6 +30,7 @@ makedocs(
         "Smash product deformations" => "smash_product_deform_lie.md",
         "Structure constants" => "structure_constants.md",
         "Util functions" => "util.md",
+        "References" => "references.md",
     ],
     doctestfilters = [r"(Nemo\.)?fmpq"],
 )
