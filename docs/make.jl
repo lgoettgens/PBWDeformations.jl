@@ -23,6 +23,7 @@ makedocs(
     pages = [
         "PBWDeformations.jl" => "index.md",
         "Smash products" => "smash_product_lie.md",
+        "Structure constants" => "structure_constants.md",
         "Util functions" => "util.md",
     ],
     doctestfilters = [r"(Nemo\.)?fmpq"],

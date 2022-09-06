@@ -4,6 +4,13 @@
 #
 ###############################################################################
 
+"""
+    liealgebra_so_basis(n::Int)
+
+Returns a basis of the orthogonal Lie algebra of dimension `n` ``\\mathfrak{so}_n``.
+
+It consists of the matrices ``X_{ij} = E_{ij} - E_{ji}`` with ``i < j`` in row-major order.
+"""
 function liealgebra_so_basis(n::Int)
     return [(b = zeros(Int, n, n); b[i, j] = 1; b[j, i] = -1; b) for i in 1:n for j in i+1:n]
 end
@@ -124,6 +131,20 @@ end
 #
 ###############################################################################
 
+"""
+    liealgebra_sp_basis(n::Int)
+
+Returns a basis of the symplectic Lie algebra ``\\mathfrak{sp}_{2n}``.
+
+It consists of the following elements (where ``i < j``):
+- ``A_i = E_{i, i+n}``
+- ``B_i = E_{i+n, i}``
+- ``C_{ij} = E_{i, j} - E_{j+n, i+n}``
+- ``D_{ij} = E_{j, i} - E_{i+n, j+n}``
+- ``F_{ij} = E_{i, j+n} + E_{j, i+n}``
+- ``G_{ij} = E_{i+n, j} + E_{j+n, i}``
+- ``H_i = E_{i, i} - E_{i+n, i+n}``
+"""
 function liealgebra_sp_basis(n::Int)
     as = [(e = zeros(Int, 2n, 2n); e[i, i+n] = 1; e) for i in 1:n]
     bs = [(e = zeros(Int, 2n, 2n); e[i+n, i] = 1; e) for i in 1:n]
@@ -134,6 +155,9 @@ function liealgebra_sp_basis(n::Int)
     hs = [(e = zeros(Int, 2n, 2n); e[i, i] = 1; e[i+n, i+n] = -1; e) for i in 1:n]
     return [as..., bs..., cs..., ds..., fs..., gs..., hs...]
 end
+
+
+
 
 function liealgebra_sp_symbols(n::Int)
     ["x_$(i)_$(j)" for i in 1:n for j in i+1:n]

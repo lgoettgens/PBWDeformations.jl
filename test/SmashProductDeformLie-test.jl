@@ -4,7 +4,7 @@
         @testset "$(dynkin)_$n with hw $lambda; R = $R" for (dynkin, n, lambda) in [('A', 2, [1, 1]), ('B', 2, [1, 0])],
             R in [QQ, PolynomialRing(QQ, ["x", "y", "z"])[1]]
 
-            sp, (sp_basisL, sp_basisV) = smash_product_lie(R, dynkin, n, lambda)
+            sp, (sp_basisL, sp_basisV) = smash_product_lie_highest_weight(R, dynkin, n, lambda)
             kappa = fill(zero(sp.alg), sp.dimV, sp.dimV)
             kappa[1, 2] = sp_basisL[1]
             kappa[2, 1] = -kappa[1, 2]
@@ -53,7 +53,7 @@
         @testset "$(dynkin)_$n with hw $lambda; R = $R" for (dynkin, n, lambda) in [('A', 2, [1, 1]), ('B', 2, [1, 0])],
             R in [QQ, PolynomialRing(QQ, ["x", "y", "z"])[1]]
 
-            sp, _ = smash_product_lie(R, dynkin, n, lambda)
+            sp, _ = smash_product_lie_highest_weight(R, dynkin, n, lambda)
             deform, (basisL, basisV) = smash_product_symmdeform_lie(sp)
 
             @test deform.dimL == sp.dimL == length(deform.basisL)
@@ -81,7 +81,7 @@
 
     @testset "smash_product_deform_lie sanitize checks; R = $R" for R in [QQ, PolynomialRing(QQ, ["x", "y", "z"])[1]]
         @testset "check dimensions of kappa" begin
-            sp, _ = smash_product_lie(R, 'B', 2, [1, 0])
+            sp, _ = smash_product_lie_highest_weight(R, 'B', 2, [1, 0])
 
             for eps in [-1, 1]
                 kappa = fill(zero(sp.alg), sp.dimV + eps, sp.dimV)
@@ -96,7 +96,7 @@
         end
 
         @testset "check entries of kappa contained in Hopf algebra of smash product" begin
-            sp, (basisL, basisV) = smash_product_lie(R, 'B', 2, [1, 0])
+            sp, (basisL, basisV) = smash_product_lie_highest_weight(R, 'B', 2, [1, 0])
 
             kappa = fill(zero(sp.alg), sp.dimV, sp.dimV)
             kappa[1, 2] = basisV[1]
@@ -121,7 +121,7 @@
         end
 
         @testset "check kappa is skew symmetric" begin
-            sp, (basisL, basisV) = smash_product_lie(R, 'B', 2, [1, 0])
+            sp, (basisL, basisV) = smash_product_lie_highest_weight(R, 'B', 2, [1, 0])
 
             kappa = fill(zero(sp.alg), sp.dimV, sp.dimV)
             kappa[1, 1] = basisL[1]
@@ -143,13 +143,13 @@
     @testset "is_pbwdeform" begin
         @testset "symmetric deformation of $(dynkin)_$n with hw $lambda is PBW" for (dynkin, n, lambda) in
                                                                                     [('A', 2, [1, 1]), ('B', 2, [1, 0])]
-            sp, _ = smash_product_lie(QQ, dynkin, n, lambda)
+            sp, _ = smash_product_lie_highest_weight(QQ, dynkin, n, lambda)
             d, _ = smash_product_symmdeform_lie(sp)
             @test is_pbwdeform(d)
         end
 
         @testset "non-PBW deformations" begin
-            sp, (basisL, basisV) = smash_product_lie(QQ, 'A', 2, [1, 0])
+            sp, (basisL, basisV) = smash_product_lie_highest_weight(QQ, 'A', 2, [1, 0])
             kappa = fill(zero(sp.alg), 3, 3)
             # some made-up skew-symmetric entries
             kappa[1, 2] = basisL[2]
@@ -168,7 +168,7 @@
         end
 
         @testset "pbwdeforms_all tests" begin
-            sp, _ = smash_product_lie(QQ, 'A', 1, [1])
+            sp, _ = smash_product_lie_highest_weight(QQ, 'A', 1, [1])
             @testset "A_1 with hw [1], maxdeg = $maxdeg" for maxdeg in 0:8
                 basis = pbwdeforms_all(sp, 0:maxdeg)
 
@@ -194,7 +194,7 @@
                 end
             end
 
-            sp, _ = smash_product_lie(QQ, 'B', 2, [1, 0])
+            sp, _ = smash_product_lie_highest_weight(QQ, 'B', 2, [1, 0])
             @testset "B_2 with hw [1,0], maxdeg = $maxdeg" for maxdeg in 0:2
                 basis = pbwdeforms_all(sp, 0:maxdeg)
 
