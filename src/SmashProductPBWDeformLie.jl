@@ -25,7 +25,6 @@ function pbwdeform_eqs(deform::SmashProductDeformLie{C}; disabled::Vector{Symbol
             - comm(h, comm(v(i), v(j); strict=true)) # h⋅κ([v_i,v_j])
             for (h, (i, j)) in Iterators.product([x(i) for i in 1:dimL], Combinatorics.Combinations(dimV, 2))
         )
-    # m[1][2] denotes the index of the only basis element in the monomial m
 
     ## (b) trivial
     iter_b = :b in disabled ? [] : []
