@@ -78,6 +78,7 @@ include("FreeAlgebra.jl")
 include("QuadraticQuoAlgebra.jl")
 include("SmashProductLie.jl")
 include("SmashProductDeformLie.jl")
+include("SmashProductPBWDeformLie.jl")
 include("ArcDiagram.jl")
 
 
