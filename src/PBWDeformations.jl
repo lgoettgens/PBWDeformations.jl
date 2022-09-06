@@ -58,12 +58,12 @@ export free_algebra,
     pbwdeforms_all,
     pbwdeform_eqs,
     smash_product_lie,
+    smash_product_lie_highest_weight,
     smash_product_lie_so_fundamental_module,
     smash_product_lie_so_symmpowers_standard_module,
     smash_product_lie_so_extpowers_standard_module,
     smash_product_lie_sp_symmpowers_standard_module,
     smash_product_lie_sp_extpowers_standard_module,
-    smash_product_struct_const_so,
     smash_product_deform_lie,
     smash_product_symmdeform_lie
 
@@ -78,6 +78,7 @@ include("FreeAlgebra.jl")
 include("QuadraticQuoAlgebra.jl")
 include("SmashProductLie.jl")
 include("SmashProductDeformLie.jl")
+include("SmashProductPBWDeformLie.jl")
 include("ArcDiagram.jl")
 
 
