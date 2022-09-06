@@ -1,3 +1,12 @@
+"""
+    pbwdeform_eqs(deform::SmashProductDeformLie{C}; disabled::Vector{Symbol}=Symbol[]) where {C <: RingElement}
+
+Returns the equations for `deform` being a PBW deformation of a smash product as
+in Theorem 3.1 of [WW14](@cite).
+Subsets of the equations can be disabled by passing the corresponding symbols as
+keyword arguments, e.g. `disabled = [:c, :d]`.
+
+"""
 function pbwdeform_eqs(deform::SmashProductDeformLie{C}; disabled::Vector{Symbol}=Symbol[]) where {C <: RingElement}
     # Uses Theorem 3.1 of Walton, Witherspoon: Poincare-Birkhoff-Witt deformations of smash product algebras from Hopf actions on Koszul algebras.
     # DOI:	10.2140/ant.2014.8.1701. https://arxiv.org/abs/1308.6011
@@ -51,6 +60,12 @@ function pbwdeform_neqs(deform::SmashProductDeformLie{C}) where {C <: RingElemen
     return num_a + num_b + num_c + num_d
 end
 
+"""
+    is_pbwdeform(d::SmashProductDeformLie{C}) where {C <: RingElement}
+
+Check if `d` is a Poincare-Birkhoff-Witt deformation of a smash product.
+Uses Theorem 3.1 of [WW14](@cite).
+"""
 function is_pbwdeform(d::SmashProductDeformLie{C}) where {C <: RingElement}
     return all(iszero, pbwdeform_eqs(d))
 end
@@ -174,6 +189,11 @@ function normalize_basis(basiselems)
     ) for b in basiselems if !iszero(b))
 end
 
+"""
+    pbwdeforms_all(sp::SmashProductLie{C}, deg::Int, DeformBasisType::Type{<:DeformBasis{C}}=DeformStdBasis{C}; special_return=Nothing) where {C <: RingElement}
+
+The same as the other method, but only for a single degree `deg`.
+"""
 function pbwdeforms_all(
     sp::SmashProductLie{C},
     deg::Int,
@@ -183,6 +203,15 @@ function pbwdeforms_all(
     return pbwdeforms_all(sp, [deg], DeformBasisType; special_return)
 end
 
+"""
+    pbwdeforms_all(sp::SmashProductLie{C}, degs::AbstractVector{Int}, DeformBasisType::Type{<:DeformBasis{C}}=DeformStdBasis{C}; special_return=Nothing) where {C <: RingElement}
+
+Computes a basis of all Poincare-Birkhoff-Witt deformations of `sp` of degrees `degs`.
+`DeformBasisType` specifies the type of basis to use for the space of deformation maps.
+If `special_return` is `SparseArrays.SparseMatrixCSC`, the function returns intermediate results.
+
+Uses [`pbwdeform_eqs`](@ref) and thus Theorem 3.1 of [WW14](@cite).
+"""
 function pbwdeforms_all(
     sp::SmashProductLie{C},
     degs::AbstractVector{Int},
