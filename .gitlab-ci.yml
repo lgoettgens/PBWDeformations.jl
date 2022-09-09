@@ -72,7 +72,7 @@ documenter:
         using Pkg
         Pkg.develop(PackageSpec(path=pwd()))
         Pkg.instantiate()
-        using Documenter: doctest
+        using Documenter
         using PBWDeformations
         include("docs/make.jl")'
   rules:

@@ -1,3 +1,15 @@
+"""
+A struct containing additional information about a Lie algebra smash product.
+Every field can be set to nothing if it is unknown.
+
+| Name | Type | Description |
+|:---- |:---- |:------------|
+| `dynkin` | `Char?` | the family of the dynkin type of the Lie algebra |
+| `n` | `Int?`| the `n` of the dynkin type of the Lie algebra |
+| `lambda` | `Vector{Int}?`| highest weight vector of the module, only existing if the module is simple |
+| `constructive_basis` | `Bool`| true if the used basis for the structure constants is known in terms of matrices |
+| `power_of_std_mod` | `Int?`| if the module is a power of the standard module, positive = symmetric power, negative = exterior power |
+"""
 struct SmashProductLieInfo
     dynkin::Union{Nothing, Char}
     n::Union{Nothing, Int}
@@ -19,6 +31,7 @@ end
 """
 The struct representing a Lie algebra smash product.
 It consists of the underlying QuadraticQuoAlgebra and some metadata.
+It gets created by calling [`smash_product_lie`](@ref).
 """
 mutable struct SmashProductLie{C <: RingElement}
     dimL::Int
@@ -38,6 +51,8 @@ Constructs the smash product over the coefficient ring `coeff_ring` using the
 structure constants `struct_const_L` and `struct_const_V`, and using `symbL`
 and `symbV` as symbols for the respective generators of the Lie algebra and
 the module.
+
+Returns a [`SmashProductLie`](@ref) struct and a two-part basis.
 """
 function smash_product_lie(
     coeff_ring::Ring,
@@ -98,7 +113,7 @@ function smash_product_lie(
 end
 
 """
-    smash_product_lie(coeff_ring::Ring, dynkin::Char, n::Int, lambda::Vector{Int})
+    smash_product_lie_highest_weight(coeff_ring::Ring, dynkin::Char, n::Int, lambda::Vector{Int})
 
 Constructs the smash product of the abstract semisimple Lie algebra given by
 `dynkin` and `n` and the highest weight module with weight `lambda` over the
@@ -106,11 +121,11 @@ coefficient ring `coeff_ring`.
 
 # Example
 ```jldoctest
-julia> smash_product_lie(QQ, 'A', 1, [1])
+julia> smash_product_lie_highest_weight(QQ, 'A', 1, [1])
 (Lie Algebra Smash Product with basis x_1, x_2, x_3, v_1, v_2 over Rational Field, (QuadraticQuoAlgebraElem{fmpq}[x_1, x_2, x_3], QuadraticQuoAlgebraElem{fmpq}[v_1, v_2]))
 ```
 """
-function smash_product_lie(coeff_ring::Ring, dynkin::Char, n::Int, lambda::Vector{Int})
+function smash_product_lie_highest_weight(coeff_ring::Ring, dynkin::Char, n::Int, lambda::Vector{Int})
     symbL, symbV, scL, scV = liealgebra_gap_hightest_weight_module(dynkin, n, lambda)
 
     info = SmashProductLieInfo(dynkin=dynkin, n=n, lambda=lambda)
@@ -118,7 +133,12 @@ function smash_product_lie(coeff_ring::Ring, dynkin::Char, n::Int, lambda::Vecto
     return smash_product_lie(coeff_ring, symbL, symbV, scL, scV, info)
 end
 
+"""
+    smash_product_lie_so_fundamental_module(coeff_ring::Ring, n::Int, e::Int)
 
+Constructs the smash product of the Lie algebra ``\\mathfrak{so}_n`` and the
+e-th fundamental module over the coefficient ring `coeff_ring`.
+"""
 function smash_product_lie_so_fundamental_module(coeff_ring::Ring, n::Int, e::Int) # so_n, e-th fundamental module (spin reps not implemented)
     symbL = liealgebra_so_symbols(n)
     scL = liealgebra_so_struct_const(n)
@@ -130,6 +150,13 @@ function smash_product_lie_so_fundamental_module(coeff_ring::Ring, n::Int, e::In
     return smash_product_lie(coeff_ring, symbL, symbV, scL, scV, info)
 end
 
+"""
+    smash_product_lie_so_symmpowers_fundamental_module(coeff_ring::Ring, n::Int, e::Int)
+
+Constructs the smash product of the Lie algebra ``\\mathfrak{so}_n`` and the
+e-th symmetric power of the fundamental module over the
+coefficient ring `coeff_ring`.
+"""
 function smash_product_lie_so_symmpowers_standard_module(coeff_ring::Ring, n::Int, e::Int) # so_n, e-th symm power of standard module
     symbL = liealgebra_so_symbols(n)
     scL = liealgebra_so_struct_const(n)
@@ -142,6 +169,13 @@ function smash_product_lie_so_symmpowers_standard_module(coeff_ring::Ring, n::In
     return smash_product_lie(coeff_ring, symbL, symbV, scL, scV, info)
 end
 
+"""
+    smash_product_lie_so_extpowers_standard_module(coeff_ring::Ring, n::Int, e::Int)
+
+Constructs the smash product of the Lie algebra ``\\mathfrak{so}_n`` and the
+e-th exterior power of the fundamental module over the
+coefficient ring `coeff_ring`.
+"""
 function smash_product_lie_so_extpowers_standard_module(coeff_ring::Ring, n::Int, e::Int) # so_n, e-th exterior power of standard module
     symbL = liealgebra_so_symbols(n)
     scL = liealgebra_so_struct_const(n)
@@ -154,6 +188,13 @@ function smash_product_lie_so_extpowers_standard_module(coeff_ring::Ring, n::Int
     return smash_product_lie(coeff_ring, symbL, symbV, scL, scV, info)
 end
 
+"""
+    smash_product_lie_sp_symmpowers_standard_module(coeff_ring::Ring, n::Int, e::Int)
+
+Constructs the smash product of the Lie algebra ``\\mathfrak{sp}_{2n}`` and the
+e-th symmetric power of the standard module over the
+coefficient ring `coeff_ring`.
+"""
 function smash_product_lie_sp_symmpowers_standard_module(coeff_ring::Ring, n::Int, e::Int) # sp_2n, e-th symm power of standard module
     symbL = liealgebra_sp_symbols(n)
     scL = liealgebra_sp_struct_const(n)
@@ -165,6 +206,13 @@ function smash_product_lie_sp_symmpowers_standard_module(coeff_ring::Ring, n::In
     return smash_product_lie(coeff_ring, symbL, symbV, scL, scV, info)
 end
 
+"""
+    smash_product_lie_sp_extpowers_standard_module(coeff_ring::Ring, n::Int, e::Int)
+
+Constructs the smash product of the Lie algebra ``\\mathfrak{sp}_{2n}`` and the
+e-th exterior power of the fundamental module over the
+coefficient ring `coeff_ring`.
+"""
 function smash_product_lie_sp_extpowers_standard_module(coeff_ring::Ring, n::Int, e::Int) # sp_2n, e-th exterior power of standard module
     symbL = liealgebra_sp_symbols(n)
     scL = liealgebra_sp_struct_const(n)

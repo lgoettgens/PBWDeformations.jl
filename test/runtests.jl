@@ -6,6 +6,7 @@ include("setup.jl")
     include("FreeAlgebra-test.jl")
     include("SmashProductLie-test.jl")
     include("SmashProductDeformLie-test.jl")
+    include("SmashProductPBWDeformLie-test.jl")
 
     DocMeta.setdocmeta!(PBWDeformations, :DocTestSetup, :(using PBWDeformations; using Oscar); recursive=true)
     doctest(PBWDeformations)

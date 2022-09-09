@@ -1,9 +1,12 @@
 @testset ExtendedTestSet "All SmashProductLie.jl tests" begin
 
-    @testset "smash_product_lie constructor using GAP; R = $R" for R in [QQ, PolynomialRing(QQ, ["x", "y", "z"])[1]]
+    @testset "smash_product_lie_highest_weight constructor using GAP; R = $R" for R in [
+        QQ,
+        PolynomialRing(QQ, ["x", "y", "z"])[1],
+    ]
         @testset "consistency for $(dynkin)_$n with hw $lambda" for (dynkin, n, lambda) in
                                                                     [('A', 1, [1]), ('A', 2, [1, 1]), ('B', 2, [1, 0])]
-            sp, (basisL, basisV) = smash_product_lie(R, dynkin, n, lambda)
+            sp, (basisL, basisV) = smash_product_lie_highest_weight(R, dynkin, n, lambda)
 
             @test sp.dimL == length(sp.basisL)
             @test sp.dimV == length(sp.basisV)
@@ -27,7 +30,7 @@
         end
 
         @testset "commutators for A_1 with hw [1]" begin
-            sp, (basisL, basisV) = smash_product_lie(R, 'A', 1, [1])
+            sp, (basisL, basisV) = smash_product_lie_highest_weight(R, 'A', 1, [1])
 
             @test sp.dimL == 3
             @test sp.dimV == 2
@@ -59,7 +62,7 @@
         end
 
         @testset "commutators for A_2 with hw [1,1]" begin
-            sp, (basisL, basisV) = smash_product_lie(R, 'A', 2, [1, 0])
+            sp, (basisL, basisV) = smash_product_lie_highest_weight(R, 'A', 2, [1, 0])
 
             @test sp.dimL == 8
             @test sp.dimV == 3
