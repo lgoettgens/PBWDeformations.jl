@@ -22,6 +22,8 @@ As this package heavily relies on [Oscar](https://oscar.computeralgebra.de/), it
 Pages = [
     "smash_product_lie.md",
     "smash_product_deform_lie.md",
+    "smash_product_pbwdeform_lie.md",
+    "arc_diagrams.md",
     "structure_constants.md",
     "util.md",
 ]

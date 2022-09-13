@@ -5,7 +5,6 @@ Returns the equations for `deform` being a PBW deformation of a smash product as
 in Theorem 3.1 of [WW14](@cite).
 Subsets of the equations can be disabled by passing the corresponding symbols as
 keyword arguments, e.g. `disabled = [:c, :d]`.
-
 """
 function pbwdeform_eqs(deform::SmashProductDeformLie{C}; disabled::Vector{Symbol}=Symbol[]) where {C <: RingElement}
     # Uses Theorem 3.1 of Walton, Witherspoon: Poincare-Birkhoff-Witt deformations of smash product algebras from Hopf actions on Koszul algebras.
@@ -137,9 +136,26 @@ function indices_of_freedom(mat::SparseArrays.SparseMatrixCSC{T, Int}) where {T 
     return filter(i -> iszero(mat[i, i]), 1:size(mat)[1])
 end
 
+"""
+    abstract type DeformBasis{C <: RingElement} end
+
+A basis for a deformation map space of a Lie algebra smash product.
+The constructor of a subtype should accept a [`SmashProductLie`](@ref) and an `AbstractVector{Int}` of degrees.
+It is required that `Base.length` and `Base.iterate` are implemented for subtypes,
+where iterating yields objects of type `DeformationMap{C}`.
+
+For a reference implementation, we refer to [`DeformStdBasis`](@ref).
+"""
 abstract type DeformBasis{C <: RingElement} end
 
-Base.eltype(::Type{DeformBasis{C}}) where {C <: RingElement} = Matrix{QuadraticQuoAlgebra{C}}
+Base.eltype(::Type{DeformBasis{C}}) where {C <: RingElement} = DeformationMap{C}
+
+"""
+Concrete subtype of [`DeformBasis`](@ref) that implements the standard basis.
+Each element of the basis is a skew-symmetric matrix with 2 non-zero entries,
+where one entry is a pure tensor power of degree ∈ `degs` over the Lie algebra part
+of the smash product, and the other entry is its additive inverse.
+"""
 struct DeformStdBasis{C <: RingElement} <: DeformBasis{C}
     len::Int
     iter
@@ -188,19 +204,6 @@ function normalize_basis(basiselems)
     ) for b in basiselems if !iszero(b))
 end
 
-"""
-    pbwdeforms_all(sp::SmashProductLie{C}, deg::Int, DeformBasisType::Type{<:DeformBasis{C}}=DeformStdBasis{C}; special_return=Nothing) where {C <: RingElement}
-
-The same as the other method, but only for a single degree `deg`.
-"""
-function pbwdeforms_all(
-    sp::SmashProductLie{C},
-    deg::Int,
-    DeformBasisType::Type{<:DeformBasis{C}}=DeformStdBasis{C};
-    special_return::Type{T}=Nothing,
-) where {C <: RingElement, T <: Union{Nothing, SparseMatrixCSC}}
-    return pbwdeforms_all(sp, [deg], DeformBasisType; special_return)
-end
 
 """
     pbwdeforms_all(sp::SmashProductLie{C}, degs::AbstractVector{Int}, DeformBasisType::Type{<:DeformBasis{C}}=DeformStdBasis{C}; special_return=Nothing) where {C <: RingElement}
@@ -294,4 +297,18 @@ function pbwdeforms_all(
         end
     end
     return kappas
+end
+
+"""
+    pbwdeforms_all(sp::SmashProductLie{C}, deg::Int, DeformBasisType::Type{<:DeformBasis{C}}=DeformStdBasis{C}; special_return=Nothing) where {C <: RingElement}
+
+The same as the other method, but only for a single degree `deg`.
+"""
+function pbwdeforms_all(
+    sp::SmashProductLie{C},
+    deg::Int,
+    DeformBasisType::Type{<:DeformBasis{C}}=DeformStdBasis{C};
+    special_return::Type{T}=Nothing,
+) where {C <: RingElement, T <: Union{Nothing, SparseMatrixCSC}}
+    return pbwdeforms_all(sp, [deg], DeformBasisType; special_return)
 end
