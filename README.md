@@ -13,9 +13,18 @@ To install this package in Julia:
 using Pkg; Pkg.add("PBWDeformations")
 ```
 
+## Functionality
+
+The package will provide both a general framework and specialized functions in order to
+- classify PBW deformations of certain smash products and
+- study their representations.
+
+To solve classification problems efficiently, we use representation theoretic ideas.
+
+
 ## Basic usage
 
-Please consult the [example jupyter notebook](https://nbviewer.org/urls/gitlab.com/johannesflake/pbwdeformations.jl/-/raw/master/examples/PBWDeformationsNotebook.ipynb).  
+Please consult the [example jupyter notebook](https://nbviewer.org/urls/gitlab.com/johannesflake/pbwdeformations.jl/-/raw/master/examples/PBWDeformationsNotebook.ipynb).
 We expect documentation to be found at some point in future at [https://johannesflake.gitlab.io/pbwdeformations.jl/](https://johannesflake.gitlab.io/pbwdeformations.jl/).
 
 ## General Disclaimer
