@@ -103,8 +103,12 @@ function arcdiag_to_basiselem__so_extpowers_stdmod(
         if i >= j
             continue
         end
-        for is in Combinatorics.permutations(is), js in Combinatorics.permutations(js)
+        for is in Combinatorics.permutations(is), js in Combinatorics.permutations(js), swap in [false, true]
             sgn_upper_labels = levicivita(sortperm(is)) * levicivita(sortperm(js))
+            if swap
+                is, js = js, is
+                sgn_upper_labels *= -1
+            end
 
             zeroprod = false
             labeled_diag = [is..., js..., [0 for _ in 1:2d]...]
