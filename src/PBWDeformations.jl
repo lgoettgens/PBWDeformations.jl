@@ -50,6 +50,7 @@ import Base:
     ==
 
 export ArcDiagram,
+    ArcDiagDeformBasis,
     DeformationMap,
     DeformBasis,
     FreeAlgebra,
@@ -59,7 +60,6 @@ export ArcDiagram,
     SmashProductLie,
     SmashProductLieInfo,
     SmashProductDeformLie,
-    SoDeformArcBasis,
     StdDeformBasis
 
 export all_arc_diagrams,
@@ -95,6 +95,7 @@ include("SmashProductDeformLie.jl")
 include("SmashProductPBWDeformLie.jl")
 include("ArcDiagram.jl")
 
+include("DeformationBases/ArcDiagDeformBasis.jl")
 include("DeformationBases/StdDeformBasis.jl")
 
 
