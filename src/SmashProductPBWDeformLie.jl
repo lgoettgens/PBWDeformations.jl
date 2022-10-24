@@ -144,51 +144,12 @@ The constructor of a subtype should accept a [`SmashProductLie`](@ref) and an `A
 It is required that `Base.length` and `Base.iterate` are implemented for subtypes,
 where iterating yields objects of type `DeformationMap{C}`.
 
-For a reference implementation, we refer to [`DeformStdBasis`](@ref).
+For a reference implementation, we refer to [`StdDeformBasis`](@ref).
 """
 abstract type DeformBasis{C <: RingElement} end
 
 Base.eltype(::Type{DeformBasis{C}}) where {C <: RingElement} = DeformationMap{C}
 
-"""
-Concrete subtype of [`DeformBasis`](@ref) that implements the standard basis.
-Each element of the basis is a skew-symmetric matrix with 2 non-zero entries,
-where one entry is a pure tensor power of degree ∈ `degs` over the Lie algebra part
-of the smash product, and the other entry is its additive inverse.
-"""
-struct DeformStdBasis{C <: RingElement} <: DeformBasis{C}
-    len::Int
-    iter
-
-    function DeformStdBasis{C}(sp::SmashProductLie{C}, degs::AbstractVector{Int}) where {C <: RingElement}
-        dimL = sp.dimL
-        dimV = sp.dimV
-        R = coefficient_ring(sp.alg)
-        iter = (
-            begin
-                kappa = fill(sp.alg(0), dimV, dimV)
-                entry = prod(map(k -> sp.basisL[k], ind); init=sp.alg(1))
-                kappa[i, j] += entry
-                kappa[j, i] -= entry
-                kappa
-            end for i in 1:dimV for j in i+1:dimV for d in degs for
-            ind in Combinatorics.with_replacement_combinations(1:dimL, d)
-        )
-
-        len = div(dimV * (dimV - 1), 2) * sum(binomial(dimL + k - 1, k) for k in degs)
-        return new{C}(len, iter)
-    end
-end
-
-function Base.iterate(i::DeformStdBasis)
-    return iterate(i.iter)
-end
-
-function Base.iterate(i::DeformStdBasis, s)
-    return iterate(i.iter, s)
-end
-
-Base.length(base::DeformStdBasis) = base.len
 
 
 function normalize_basis(basiselems)
@@ -206,7 +167,7 @@ end
 
 
 """
-    pbwdeforms_all(sp::SmashProductLie{C}, degs::AbstractVector{Int}, DeformBasisType::Type{<:DeformBasis{C}}=DeformStdBasis{C}; special_return=Nothing) where {C <: RingElement}
+    pbwdeforms_all(sp::SmashProductLie{C}, degs::AbstractVector{Int}, DeformBasisType::Type{<:DeformBasis{C}}=StdDeformBasis{C}; special_return=Nothing) where {C <: RingElement}
 
 Computes a basis of all Poincare-Birkhoff-Witt deformations of `sp` of degrees `degs`.
 `DeformBasisType` specifies the type of basis to use for the space of deformation maps.
@@ -217,7 +178,7 @@ Uses [`pbwdeform_eqs`](@ref) and thus Theorem 3.1 of [WW14](@cite).
 function pbwdeforms_all(
     sp::SmashProductLie{C},
     degs::AbstractVector{Int},
-    DeformBasisType::Type{<:DeformBasis{C}}=DeformStdBasis{C};
+    DeformBasisType::Type{<:DeformBasis{C}}=StdDeformBasis{C};
     special_return::Type{T}=Nothing,
 ) where {C <: RingElement, T <: Union{Nothing, SparseMatrixCSC}}
     dimL = sp.dimL
@@ -300,14 +261,14 @@ function pbwdeforms_all(
 end
 
 """
-    pbwdeforms_all(sp::SmashProductLie{C}, deg::Int, DeformBasisType::Type{<:DeformBasis{C}}=DeformStdBasis{C}; special_return=Nothing) where {C <: RingElement}
+    pbwdeforms_all(sp::SmashProductLie{C}, deg::Int, DeformBasisType::Type{<:DeformBasis{C}}=StdDeformBasis{C}; special_return=Nothing) where {C <: RingElement}
 
 The same as the other method, but only for a single degree `deg`.
 """
 function pbwdeforms_all(
     sp::SmashProductLie{C},
     deg::Int,
-    DeformBasisType::Type{<:DeformBasis{C}}=DeformStdBasis{C};
+    DeformBasisType::Type{<:DeformBasis{C}}=StdDeformBasis{C};
     special_return::Type{T}=Nothing,
 ) where {C <: RingElement, T <: Union{Nothing, SparseMatrixCSC}}
     return pbwdeforms_all(sp, [deg], DeformBasisType; special_return)

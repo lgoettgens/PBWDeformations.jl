@@ -30,7 +30,7 @@ DeformBasis
 #### Standard basis
 
 ```@docs
-DeformStdBasis
+StdDeformBasis
 ```
 
 #### Other bases
