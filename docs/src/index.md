@@ -1,7 +1,11 @@
 # PBWDeformations
 
 ## Introduction
-Documentation for [PBWDeformations](https://gitlab.com/johannesflake/PBWDeformations.jl).
+The package [PBWDeformations](https://gitlab.com/johannesflake/PBWDeformations.jl) will provide both a general framework and specialized functions in order to
+- classify PBW deformations of certain smash products and
+- study their representations.
+
+To solve classification problems efficiently, we use representation theoretic ideas.
 
 ## Features
 - Construct smash products of Lie algebras and their modules, either for highest weight modules or (only for ``\mathfrak{so}_n`` and ``\mathfrak{sp}_{2n}``) for symmetric and exterior powers of the standard module.

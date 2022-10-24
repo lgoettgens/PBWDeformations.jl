@@ -1,3 +1,9 @@
+"""
+Concrete subtype of [`DeformBasis`](@ref).
+Each element of the basis is induced by an arc diagram of a suitable size,
+which gets symmetrized and specialised to the given smash product.
+This process is due to [FM22](@cite).
+"""
 struct ArcDiagDeformBasis{C <: RingElement} <: DeformBasis{C}
     len::Int
     iter
@@ -166,10 +172,22 @@ function arcdiag_to_basiselem__so_extpowers_stdmod(
 end
 
 
+"""
+    corresponding_arc_diagram(m::DeformationMap{C}, sp::SmashProductLie{C}, deg::Int) where {C <: RingElement}
+
+Returns the arc diagram inducing the deformation map `m` of the smash product `sp`, where `m` is of the degree `deg`.
+If there is no such arc diagram, returns `nothing`.
+"""
 function corresponding_arc_diagram(m::DeformationMap{C}, sp::SmashProductLie{C}, deg::Int) where {C <: RingElement}
     return corresponding_arc_diagram(m, sp, [deg])
 end
 
+"""
+    corresponding_arc_diagram(m::DeformationMap{C}, sp::SmashProductLie{C}, degs::AbstractVector{Int}) where {C <: RingElement}
+
+Returns the arc diagram inducing the deformation map `m` of the smash product `sp`, where `m` is of a degree in `degs`.
+If there is no such arc diagram, returns `nothing`.
+"""
 function corresponding_arc_diagram(
     m::DeformationMap{C},
     sp::SmashProductLie{C},
@@ -189,10 +207,24 @@ function corresponding_arc_diagram(
     return nothing
 end
 
+"""
+    corresponding_arc_diagrams(m::DeformationMap{C}, sp::SmashProductLie{C}, deg::Int) where {C <: RingElement}
+
+Returns all arc diagrams of a suitable size inducing the deformation map `m` of the smash product `sp`,
+where `m` is of the degree `deg`.
+If there is no such arc diagram, returns an empty vector.
+"""
 function corresponding_arc_diagrams(m::DeformationMap{C}, sp::SmashProductLie{C}, deg::Int) where {C <: RingElement}
     return corresponding_arc_diagrams(m, sp, [deg])
 end
 
+"""
+    corresponding_arc_diagrams(m::DeformationMap{C}, sp::SmashProductLie{C}, degs::AbstractVector{Int}) where {C <: RingElement}
+
+Returns all arc diagrams of a suitable size inducing the deformation map `m` of the smash product `sp`,
+where `m` is of a degree in `degs`.
+If there is no such arc diagram, returns an empty vector.
+"""
 function corresponding_arc_diagrams(
     m::DeformationMap{C},
     sp::SmashProductLie{C},
