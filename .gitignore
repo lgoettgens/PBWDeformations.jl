@@ -13,6 +13,7 @@ Manifest.toml
 
 # code coverage reports
 *.cov
+lcov.info
 
 # PProf artifacts
 *.pb.gz

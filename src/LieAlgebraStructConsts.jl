@@ -55,13 +55,12 @@ function liealgebra_so_fundamental_module_struct_const(n::Int, e::Int)
 end
 
 function liealgebra_so_symmpowers_standard_module_symbols(n::Int, e::Int)
-    return e == 1 ? ["v_$(i)" for i in 1:2n] :
-           ["v_$(js)" for js in Combinatorics.with_replacement_combinations(1:2n, e)]
+    return e == 1 ? ["v_$(i)" for i in 1:n] : ["v_$(js)" for js in Combinatorics.with_replacement_combinations(1:n, e)]
 end
 
 function liealgebra_so_symmpowers_standard_module_struct_const(n::Int, e::Int) # so_n, e-th symm power of the standard rep
-    basisL = liealgebra_sp_basis(n)
-    basis_standardV = liealgebra_sp_standard_module_basis(n)
+    basisL = liealgebra_so_basis(n)
+    basis_standardV = liealgebra_so_standard_module_basis(n)
     dimL = length(basisL)
     if e == 1
         dimV = n
@@ -155,8 +154,6 @@ function liealgebra_sp_basis(n::Int)
     hs = [(e = zeros(Int, 2n, 2n); e[i, i] = 1; e[i+n, i+n] = -1; e) for i in 1:n]
     return [as..., bs..., cs..., ds..., fs..., gs..., hs...]
 end
-
-
 
 
 function liealgebra_sp_symbols(n::Int)

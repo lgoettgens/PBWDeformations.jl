@@ -1,69 +1,78 @@
 @testset ExtendedTestSet "All FreeAlgebra.jl tests" begin
     @testset "deepcopy_internal" begin
-        F, (A,) = free_algebra(QQ, ["a"])
+        A, (x,) = free_algebra(QQ, ["x"])
 
-        B = deepcopy(A)
+        y = deepcopy(x)
 
-        @test parent(A) === parent(B)
-        @test A.length == B.length
-        @test A == B && A !== B
-        @test A.monoms == B.monoms && A.monoms !== B.monoms
-        @test A.coeffs == B.coeffs && A.coeffs !== B.coeffs
+        @test parent(x) === parent(y)
+        @test x.length == y.length
+        @test x == y && x !== y
+        @test x.monoms == y.monoms && x.monoms !== y.monoms
+        @test x.coeffs == y.coeffs && x.coeffs !== y.coeffs
     end
 
     @testset "change_base_ring" begin
-        F_Q, = free_algebra(QQ, ["a"])
-        F_Z = change_base_ring(ZZ, F_Q)
+        A_Q, _ = free_algebra(QQ, ["x"])
+        A_Z = change_base_ring(ZZ, A_Q)
 
-        @test base_ring(F_Q) != base_ring(F_Z)
-        @test F_Q.S === F_Z.S
+        @test base_ring(A_Q) != base_ring(A_Z)
+        @test A_Q.S === A_Z.S
     end
 
     @testset "is_monomial" begin
-        F, (A,) = free_algebra(QQ, ["a"])
+        A, (x,) = free_algebra(QQ, ["x"])
 
-        @test is_monomial(A)
-        @test is_monomial(A^2)
+        @test is_monomial(x)
+        @test is_monomial(x^2)
 
-        @test !is_monomial(2A)
-        @test !is_monomial(A + 1)
+        @test !is_monomial(2x)
+        @test !is_monomial(x + 1)
     end
 
     @testset "iszero" begin
-        F, (A,) = free_algebra(QQ, ["a"])
+        A, (x,) = free_algebra(QQ, ["x"])
 
-        @test iszero(0A)
-        @test !iszero(A)
+        @test iszero(0 * x)
+        @test iszero(x * 0)
+        @test !iszero(x)
     end
 
     @testset "isone" begin
-        F, (A,) = free_algebra(QQ, ["a"])
+        A, (x,) = free_algebra(QQ, ["x"])
 
-        @test isone(0A + 1)
-        @test !isone(A)
+        @test isone(0 * x + 1)
+        @test !isone(x)
     end
 
     @testset "is_gen" begin
-        F, (A,) = free_algebra(QQ, ["a"])
+        A, (x,) = free_algebra(QQ, ["x"])
 
-        @test is_gen(A)
+        @test is_gen(x)
 
-        @test !is_gen(2A)
-        @test !is_gen(A^2)
-        @test !is_gen(A + 1)
+        @test !is_gen(2x)
+        @test !is_gen(x^2)
+        @test !is_gen(x + 1)
     end
 
     @testset "Base.:-" begin
-        F, (A, B) = free_algebra(QQ, ["a", "b"])
+        A, (x, y) = free_algebra(QQ, ["x", "y"])
 
-        @test -A !== -A && -A == -A
-        @test A - A == zero(F) == -A + A
-        @test A + 1 - A == 1
+        @test -x !== -x && -x == -x
+        @test x - x == zero(A) == -x + x
+        @test x + 1 - x == 1
+        @test x - y == -y + x == x + (-1) * y == -1 * (y - x)
     end
 
     @testset "parent_type" begin
-        F, (A,) = free_algebra(QQ, ["a"])
+        A, (x,) = free_algebra(QQ, ["x"])
 
         # @test parent_type(A) == FreeAlgebra{fmpq}
+    end
+
+    @testset "show" begin
+        A, (x,) = free_algebra(QQ, ["x"])
+
+        showOutput = @test_nowarn sprint(show, A)
+        @test occursin("free algebra", lowercase(showOutput))
     end
 end

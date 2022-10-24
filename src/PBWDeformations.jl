@@ -49,10 +49,24 @@ import Base:
     ^,
     ==
 
-export FreeAlgebra,
-    FreeAlgebraElem, QuadraticQuoAlgebra, QuadraticQuoAlgebraElem, SmashProductLie, SmashProductDeformLie
+export ArcDiagram,
+    ArcDiagDeformBasis,
+    DeformationMap,
+    DeformBasis,
+    FreeAlgebra,
+    FreeAlgebraElem,
+    QuadraticQuoAlgebra,
+    QuadraticQuoAlgebraElem,
+    SmashProductLie,
+    SmashProductLieInfo,
+    SmashProductDeformLie,
+    StdDeformBasis
 
-export free_algebra,
+export all_arc_diagrams,
+    corresponding_arc_diagram,
+    corresponding_arc_diagrams,
+    free_algebra,
+    is_crossing_free,
     is_pbwdeform,
     quadratic_quo_algebra,
     pbwdeforms_all,
@@ -80,6 +94,9 @@ include("SmashProductLie.jl")
 include("SmashProductDeformLie.jl")
 include("SmashProductPBWDeformLie.jl")
 include("ArcDiagram.jl")
+
+include("DeformationBases/ArcDiagDeformBasis.jl")
+include("DeformationBases/StdDeformBasis.jl")
 
 
 end
