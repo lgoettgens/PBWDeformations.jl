@@ -5,8 +5,10 @@ using Oscar
 using SparseArrays
 
 import AbstractAlgebra:
+    AllParts,
     NCRing,
     NCRingElem,
+    Partition,
     Ring,
     RingElement,
     base_ring,
@@ -41,6 +43,7 @@ import Base:
     one,
     parent,
     show,
+    sum,
     xor,
     zero,
     +,
@@ -55,6 +58,7 @@ export ArcDiagram,
     DeformBasis,
     FreeAlgebra,
     FreeAlgebraElem,
+    Pseudograph2,
     QuadraticQuoAlgebra,
     QuadraticQuoAlgebraElem,
     SmashProductLie,
@@ -68,6 +72,7 @@ export all_arc_diagrams,
     free_algebra,
     is_crossing_free,
     is_pbwdeform,
+    nedges,
     quadratic_quo_algebra,
     pbwdeforms_all,
     pbwdeform_eqs,
@@ -94,8 +99,10 @@ include("SmashProductLie.jl")
 include("SmashProductDeformLie.jl")
 include("SmashProductPBWDeformLie.jl")
 include("ArcDiagram.jl")
+include("Pseudograph.jl")
 
 include("DeformationBases/ArcDiagDeformBasis.jl")
+include("DeformationBases/PseudographDeformBasis.jl")
 include("DeformationBases/StdDeformBasis.jl")
 
 
