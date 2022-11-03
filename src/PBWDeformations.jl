@@ -6,6 +6,7 @@ using SparseArrays
 
 import AbstractAlgebra:
     AllParts,
+    Generic,
     NCRing,
     NCRingElem,
     Partition,
@@ -59,6 +60,7 @@ export ArcDiagram,
     FreeAlgebra,
     FreeAlgebraElem,
     Pseudograph2,
+    PseudographDeformBasis,
     QuadraticQuoAlgebra,
     QuadraticQuoAlgebraElem,
     SmashProductLie,
@@ -84,7 +86,8 @@ export all_arc_diagrams,
     smash_product_lie_sp_symmpowers_standard_module,
     smash_product_lie_sp_extpowers_standard_module,
     smash_product_deform_lie,
-    smash_product_symmdeform_lie
+    smash_product_symmdeform_lie,
+    to_arcdiag
 
 
 GAP = Oscar.GAP

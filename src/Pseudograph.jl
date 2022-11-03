@@ -54,3 +54,94 @@ function all_pseudographs(reg::Int, sum::Int)
 
     return result
 end
+
+function to_arcdiag(pg::Pseudograph2, part::Generic.Partition=Partition(Int[]))
+    nUpper = 2 * nedges(pg)
+    nLower = 2 * (sum(pg) + part.n)
+
+    adj = zeros(Int, nUpper + nLower)
+    i = 1
+    j = div(nUpper, 2) + 1
+    k = nUpper + 1
+    for l1 in pg.loops1
+        if l1 == 0
+            adj[i] = i + 1
+            adj[i+1] = i
+            i += 2
+        else
+            adj[i] = k
+            adj[k] = i
+            i += 1
+            k += 1
+            for _ in 2:l1
+                adj[k] = k + 1
+                adj[k+1] = k
+                k += 2
+            end
+            adj[k] = i
+            adj[i] = k
+            i += 1
+            k += 1
+        end
+    end
+
+    for e in pg.edges
+        if e == 0
+            adj[i] = j
+            adj[j] = i
+            i += 1
+            j += 1
+        else
+            adj[i] = k
+            adj[k] = i
+            i += 1
+            k += 1
+            for _ in 2:e
+                adj[k] = k + 1
+                adj[k+1] = k
+                k += 2
+            end
+            adj[k] = j
+            adj[j] = k
+            j += 1
+            k += 1
+        end
+    end
+
+    for l2 in pg.loops2
+        if l2 == 0
+            adj[j] = j + 1
+            adj[j+1] = j
+            j += 2
+        else
+            adj[j] = k
+            adj[k] = j
+            j += 1
+            k += 1
+            for _ in 2:l2
+                adj[k] = k + 1
+                adj[k+1] = k
+                k += 2
+            end
+            adj[k] = j
+            adj[j] = k
+            j += 1
+            k += 1
+        end
+    end
+
+    for p in part.part
+        start = k
+        k += 1
+        for _ in 2:p
+            adj[k] = k + 1
+            adj[k+1] = k
+            k += 2
+        end
+        adj[k] = start
+        adj[start] = k
+        k += 1
+    end
+
+    return ArcDiagram(nUpper, nLower, adj)
+end
