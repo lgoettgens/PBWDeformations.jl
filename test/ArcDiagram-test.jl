@@ -1,5 +1,5 @@
 @testset ExtendedTestSet "All ArcDiagram.jl tests" begin
-    @testset "ArcDiagram constructor" begin
+    @testset "ArcDiagram numeric constructor" begin
         # wrong length
         @test_throws ArgumentError ArcDiagram(5, 5, [2, 1, 4, 3, 6, 5, 8, 7])
         @test_throws ArgumentError ArcDiagram(5, 5, [2, 1, 4, 3, 6, 5, 8, 7, 10])
@@ -16,6 +16,20 @@
         # correct
         @test ArcDiagram(5, 5, [2, 1, 4, 3, 6, 5, 8, 7, 10, 9]) !== nothing
 
+    end
+
+    @testset "ArcDiagram string constructor" begin
+        # not all symbols twice
+        @test_throws ArgumentError ArcDiagram("ABC,ABD")
+        @test_throws ArgumentError ArcDiagram("ABCD,ABDD")
+        @test_throws ArgumentError ArcDiagram("ABDD,ABDD")
+
+        # correct
+        @test ArcDiagram("AACCE,EGGII") ==
+              ArcDiagram("AACCE", "EGGII") ==
+              ArcDiagram(5, 5, [2, 1, 4, 3, 6, 5, 8, 7, 10, 9])
+        @test ArcDiagram("ABCD,ABCD") == ArcDiagram("ABCD", "ABCD") == ArcDiagram(4, 4, [5, 6, 7, 8, 1, 2, 3, 4])
+        @test ArcDiagram("ABBD,AD") == ArcDiagram("ABBD", "AD") == ArcDiagram(4, 2, [5, 3, 2, 6, 1, 4])
     end
 
     @testset "is_crossing_free" begin
