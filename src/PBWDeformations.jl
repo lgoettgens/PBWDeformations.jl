@@ -69,6 +69,7 @@ export ArcDiagram,
     StdDeformBasis
 
 export all_arc_diagrams,
+    all_pseudographs,
     corresponding_arc_diagram,
     corresponding_arc_diagrams,
     free_algebra,

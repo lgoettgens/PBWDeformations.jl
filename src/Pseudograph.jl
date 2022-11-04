@@ -10,10 +10,10 @@ struct Pseudograph2
         check::Bool=true,
     )
         if check
-            all(x -> x >= 0, loops1) || error("all labels in loops1 must be non-negative")
-            all(x -> x >= 0, loops2) || error("all labels in loops2 must be non-negative")
-            all(x -> x >= 0, edges) || error("all labels in edges must be non-negative")
-            length(loops1) == length(loops2) || error("both vertices must have the same degree")
+            all(x -> x >= 0, loops1) || throw(ArgumentError("all labels in loops1 must be non-negative"))
+            all(x -> x >= 0, loops2) || throw(ArgumentError("all labels in loops2 must be non-negative"))
+            all(x -> x >= 0, edges) || throw(ArgumentError("all labels in edges must be non-negative"))
+            length(loops1) == length(loops2) || throw(ArgumentError("both vertices must have the same degree"))
         end
         return new(loops1, loops2, edges)
     end
@@ -27,23 +27,26 @@ function Base.sum(pg::Pseudograph2)
     return sum(pg.loops1) + sum(pg.loops2) + sum(pg.edges)
 end
 
-function all_pseudographs(reg::Int, sum::Int)
+function all_pseudographs(reg::Int, sumtotal::Int; upto_iso::Bool=false)
     result = Pseudograph2[]
     for nloops in 0:div(reg, 2)
         ne = reg - 2 * nloops
-        for sume in 0:sum
+        for sume in 0:sumtotal
             if ne == 0 && sume > 0
                 continue
             end
-            if nloops == 0 && sume < sum
+            if nloops == 0 && sume < sumtotal
                 continue
             end
-            for sumloop1 in 0:sum-sume
-                sumloop2 = sum - sume - sumloop1
+            for sumloop2 in 0:sumtotal-sume
+                sumloop1 = sumtotal - sume - sumloop2
 
                 for edges in (ne > 0 ? Combinatorics.partitions(sume + ne, ne) : [Int[]])
                     for loops1 in (nloops > 0 ? Combinatorics.partitions(sumloop1 + nloops, nloops) : [Int[]])
                         for loops2 in (nloops > 0 ? Combinatorics.partitions(sumloop2 + nloops, nloops) : [Int[]])
+                            if upto_iso && !(loops1 >= loops2)
+                                continue
+                            end
                             push!(result, Pseudograph2(loops1 .- 1, loops2 .- 1, edges .- 1))
                         end
                     end
