@@ -103,8 +103,12 @@ function arcdiag_to_basiselem__so_extpowers_stdmod(
         if i >= j
             continue
         end
-        for is in Combinatorics.permutations(is), js in Combinatorics.permutations(js)
+        for is in Combinatorics.permutations(is), js in Combinatorics.permutations(js), swap in [false, true]
             sgn_upper_labels = levicivita(sortperm(is)) * levicivita(sortperm(js))
+            if swap
+                is, js = js, is
+                sgn_upper_labels *= -1
+            end
 
             zeroprod = false
             labeled_diag = [is..., js..., [0 for _ in 1:2d]...]
@@ -140,14 +144,14 @@ function arcdiag_to_basiselem__so_extpowers_stdmod(
                     k in 2*e+1:2*e+2*d
                 ]
                 zeroelem = false
-                sign_pos = true
+                sign_lower_labels = 1
                 basiselem = Int[]
                 for k in 1:2:length(lower_labeled)
                     if lower_labeled[k] == lower_labeled[k+1]
                         zeroelem = true
                         break
                     elseif lower_labeled[k] > lower_labeled[k+1]
-                        sign_pos = !sign_pos
+                        sign_lower_labels *= -1
                         append!(basiselem, iso_wedge2V_g[[lower_labeled[k+1], lower_labeled[k]]])
                     else
                         append!(basiselem, iso_wedge2V_g[[lower_labeled[k], lower_labeled[k+1]]])
@@ -159,7 +163,7 @@ function arcdiag_to_basiselem__so_extpowers_stdmod(
                 symm_basiselem =
                     1 // factorial(length(basiselem)) *
                     sum(prod(basisL[ind]) for ind in Combinatorics.permutations(basiselem))
-                entry += (sign_pos ? 1 : (-1)) * normal_form(symm_basiselem)
+                entry += sign_lower_labels * normal_form(symm_basiselem)
             end
 
             entry *= sgn_upper_labels
