@@ -99,6 +99,9 @@ include("LieAlgebraStructConsts.jl")
 include("Algebra.jl")
 include("FreeAlgebra.jl")
 include("QuadraticQuoAlgebra.jl")
+
+include("DeformationBases/DeformBasis.jl")
+
 include("SmashProductLie.jl")
 include("SmashProductDeformLie.jl")
 include("SmashProductPBWDeformLie.jl")
