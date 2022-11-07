@@ -1,10 +1,5 @@
-ArcDiagram = PD.ArcDiagram
-is_crossing_free = PD.is_crossing_free
-all_arc_diagrams = PD.all_arc_diagrams
-pbw_arc_diagrams__so_extpowers_stdmod = PD.pbw_arc_diagrams__so_extpowers_stdmod
-
 @testset ExtendedTestSet "All ArcDiagram.jl tests" begin
-    @testset "ArcDiagram constructor" begin
+    @testset "ArcDiagram numeric constructor" begin
         # wrong length
         @test_throws ArgumentError ArcDiagram(5, 5, [2, 1, 4, 3, 6, 5, 8, 7])
         @test_throws ArgumentError ArcDiagram(5, 5, [2, 1, 4, 3, 6, 5, 8, 7, 10])
@@ -20,7 +15,20 @@ pbw_arc_diagrams__so_extpowers_stdmod = PD.pbw_arc_diagrams__so_extpowers_stdmod
 
         # correct
         @test ArcDiagram(5, 5, [2, 1, 4, 3, 6, 5, 8, 7, 10, 9]) !== nothing
+    end
 
+    @testset "ArcDiagram string constructor" begin
+        # not all symbols twice
+        @test_throws ArgumentError ArcDiagram("ABC,ABD")
+        @test_throws ArgumentError ArcDiagram("ABCD,ABDD")
+        @test_throws ArgumentError ArcDiagram("ABDD,ABDD")
+
+        # correct
+        @test ArcDiagram("AACCE,EGGII") ==
+              ArcDiagram("AACCE", "EGGII") ==
+              ArcDiagram(5, 5, [2, 1, 4, 3, 6, 5, 8, 7, 10, 9])
+        @test ArcDiagram("ABCD,ABCD") == ArcDiagram("ABCD", "ABCD") == ArcDiagram(4, 4, [5, 6, 7, 8, 1, 2, 3, 4])
+        @test ArcDiagram("ABBD,AD") == ArcDiagram("ABBD", "AD") == ArcDiagram(4, 2, [5, 3, 2, 6, 1, 4])
     end
 
     @testset "is_crossing_free" begin
@@ -155,23 +163,6 @@ pbw_arc_diagrams__so_extpowers_stdmod = PD.pbw_arc_diagrams__so_extpowers_stdmod
         @test length(collect(all_arc_diagrams(6, 6, indep_sets=[[1, 2, 3], [4, 5, 6], [7, 8], [9, 10], [11, 12]]))) ==
               length(all_arc_diagrams(6, 6, indep_sets=[[1, 2, 3], [4, 5, 6], [7, 8], [9, 10], [11, 12]])) ==
               4440
-    end
-
-    @testset "arcdiag_to_basiselem__so_extpowers_stdmod" begin
-        sp, _ = smash_product_lie_so_extpowers_standard_module(QQ, 4, 2)
-        @testset "not all specialisations are zero" begin
-            diag = ArcDiagram(4, 2, [5, 3, 2, 6, 1, 4])
-            dm = PD.arcdiag_to_basiselem__so_extpowers_stdmod(diag, 4, 2, 1, sp.alg(0), sp.basisL)
-            @test !iszero(dm)
-        end
-
-        @testset "deformation is equivariant, d = $d" for d in 1:3
-            for diag in pbw_arc_diagrams__so_extpowers_stdmod(2, d)
-                dm = PD.arcdiag_to_basiselem__so_extpowers_stdmod(diag, 4, 2, d, sp.alg(0), sp.basisL)
-                deform, _ = smash_product_deform_lie(sp, dm)
-                @test all(iszero, pbwdeform_eqs(deform, disabled=[:b, :c, :d]))
-            end
-        end
     end
 
 end

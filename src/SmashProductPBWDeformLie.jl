@@ -184,6 +184,7 @@ function pbwdeforms_all(
     dimL = sp.dimL
     dimV = sp.dimV
 
+    @info "Computing Deform Basis"
     deform_basis = DeformBasisType(sp, degs)
     nvars = length(deform_basis)
 

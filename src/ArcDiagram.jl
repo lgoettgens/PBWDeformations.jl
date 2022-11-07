@@ -13,6 +13,53 @@ struct ArcDiagram
         end
         return new(nUpper, nLower, adjacency)
     end
+
+    if VERSION >= v"1.7"
+        function ArcDiagram(sUpper::AbstractString, sLower::AbstractString)
+            sUpper = strip(sUpper)
+            sLower = strip(sLower)
+            nUpper = length(sUpper)
+            nLower = length(sLower)
+
+            str = sUpper * sLower
+            adj = [0 for i in 1:nUpper+nLower]
+            symbols = unique(str)
+            for s in symbols
+                count(s, str) == 2 || throw(ArgumentError("Symbol $s does not appear exactly twice."))
+            end
+            for s in symbols
+                i, j = findall(s, str)
+                adj[i] = j
+                adj[j] = i
+            end
+            return new(nUpper, nLower, adj)
+        end
+    else
+        function ArcDiagram(sUpper::AbstractString, sLower::AbstractString)
+            sUpper = strip(sUpper)
+            sLower = strip(sLower)
+            nUpper = length(sUpper)
+            nLower = length(sLower)
+
+            str = sUpper * sLower
+            adj = [0 for i in 1:nUpper+nLower]
+            symbols = unique(str)
+            for s in symbols
+                count(string(s), str) == 2 || throw(ArgumentError("Symbol $s does not appear exactly twice."))
+            end
+            for s in symbols
+                i, j = findall(string(s), str)
+                adj[i] = j
+                adj[j] = i
+            end
+            return new(nUpper, nLower, adj)
+        end
+    end
+
+    function ArcDiagram(s::AbstractString)
+        sUpper, sLower = split(s, ",")
+        return ArcDiagram(sUpper, sLower)
+    end
 end
 
 function Base.:(==)(a1::ArcDiagram, a2::ArcDiagram)
