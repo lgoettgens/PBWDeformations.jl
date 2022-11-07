@@ -71,9 +71,11 @@ function Base.hash(a::AlgebraElem{C}, h::UInt) where {C <: RingElement}
     h1 = xor(h, b1)
     h2 = xor(h, b2)
 
+    p = sortperm(a.monoms)
+
     for i in 1:length(a)
-        h1 = hash(a.coeffs[i], h1)
-        h2 = hash(a.monoms[i], h2)
+        h1 = hash(a.coeffs[p[i]], h1)
+        h2 = hash(a.monoms[p[i]], h2)
     end
 
     return xor(h1, h2)
