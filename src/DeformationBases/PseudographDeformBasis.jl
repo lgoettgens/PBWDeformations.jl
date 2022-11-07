@@ -1,3 +1,10 @@
+"""
+Concrete subtype of [`DeformBasis`](@ref).
+Each element of the basis is induced by pseudograph with two vertices,
+which gets transformed to an arc diagram and then handled as
+in [`ArcDiagDeformBasis`](@ref).
+This process is due to [FM22](@cite).
+"""
 struct PseudographDeformBasis{C <: RingElement} <: DeformBasis{C}
     len::Int
     iter

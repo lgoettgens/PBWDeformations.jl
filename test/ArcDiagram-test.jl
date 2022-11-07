@@ -15,7 +15,6 @@
 
         # correct
         @test ArcDiagram(5, 5, [2, 1, 4, 3, 6, 5, 8, 7, 10, 9]) !== nothing
-
     end
 
     @testset "ArcDiagram string constructor" begin
