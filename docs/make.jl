@@ -16,13 +16,13 @@ bib = CitationBibliography("docs/references.bib", sorting = :nyt)
 makedocs(
     bib,
     modules = [PBWDeformations],
-    repo = "https://gitlab.com/johannesflake/pbwdeformations.jl/blob/{commit}{path}#{line}",
+    repo = "https://github.com/PBWDeformations/pbwdeformations.jl/blob/{commit}{path}#{line}",
     sitename = "PBWDeformations.jl",
     checkdocs = :none, #:all, :exports
     strict = true,
     format = Documenter.HTML(;
         prettyurls = get(ENV, "CI", nothing) == "true",
-        canonical = "https://johannesflake.gitlab.io/PBWDeformations.jl",
+        canonical = "https://pbwdeformations.github.io/pbwdeformations.jl/",
     ),
     pages = [
         "PBWDeformations.jl" => "index.md",
@@ -38,9 +38,7 @@ makedocs(
 )
 
 deploydocs(
-    repo = "gitlab.com/johannesflake/pbwdeformations.jl.git",
-    deploy_config = Documenter.GitLab(),
-    branch = "pages",
-    dirname = "public",
-    devbranch = "master",
+    repo = "github.com/PBWDeformations/pbwdeformations.jl.git",
+    deploy_config = Documenter.GitHubActions(),
+    branch = "gh-pages",
 )
