@@ -21,10 +21,12 @@ jobs:
       - uses: julia-actions/setup-julia@latest
         with:
           version: '1.6'
+      - name: Restore cache
+        uses: julia-actions/cache@v1
       - name: Build package
         uses: julia-actions/julia-buildpkg@latest
       - name: Install dependencies
-        run: julia --project=. --color=yes -e 'using Pkg; Pkg.develop(PackageSpec(path=pwd())); Pkg.instantiate(); using Documenter'
+        run: julia --project=. --color=yes -e 'using PBWDeformations; using Documenter'
       - name: Build and deploy
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # For authentication with GitHub Actions token
