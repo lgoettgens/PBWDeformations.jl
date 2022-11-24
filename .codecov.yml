@@ -9,3 +9,5 @@ coverage:
     changes:
       default:
         informational: true
+
+comment: false
