@@ -21,8 +21,7 @@ ArcDiagDeformBasis
 ```
 
 ## Reverse direction
-Given a basis element of an above basis, there are functions to find one/all arc diagrams that induce it (up to a scalar). This is currently done by recomputing the basis and keeping track of the used arc diagrams.
+Given a basis element of an above basis, one can lookup all arc diagrams that induce it (up to a scalar).
 ```@docs
-corresponding_arc_diagram
-corresponding_arc_diagrams
+lookup_data
 ```

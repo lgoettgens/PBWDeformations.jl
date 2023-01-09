@@ -7,6 +7,8 @@ This process is due to [FM22](@cite).
 struct ArcDiagDeformBasis{C <: RingElement} <: DeformBasis{C}
     len::Int
     iter
+    extra_data::Dict{DeformationMap{C}, Set{ArcDiagram}}
+    normalize
 
     function ArcDiagDeformBasis{C}(
         sp::SmashProductLie{C},
@@ -14,6 +16,8 @@ struct ArcDiagDeformBasis{C <: RingElement} <: DeformBasis{C}
         no_normalize::Bool=false,
     ) where {C <: RingElement}
         dimV, e = extract_sp_info__so_extpowers_stdmod(sp)
+        extra_data = Dict{DeformationMap{C}, Set{ArcDiagram}}()
+        normalize = no_normalize ? identity : normalize_default
 
         lens = []
         iters = []
@@ -24,7 +28,16 @@ struct ArcDiagDeformBasis{C <: RingElement} <: DeformBasis{C}
             iter = (
                 begin
                     @debug "Basis generation deg $(d), $(debug_counter = (debug_counter % len) + 1)/$(len), $(floor(Int, 100*debug_counter / len))%"
-                    arcdiag_to_basiselem__so_extpowers_stdmod(diag, dimV, e, d, sp.alg(0), sp.basisL)
+                    basis_elem = arcdiag_to_basiselem__so_extpowers_stdmod(diag, dimV, e, d, sp.alg(0), sp.basisL)
+                    if !no_normalize
+                        basis_elem = normalize(basis_elem)
+                    end
+                    if haskey(extra_data, basis_elem)
+                        push!(extra_data[basis_elem], diag)
+                    else
+                        extra_data[basis_elem] = Set([diag])
+                    end
+                    basis_elem
                 end for
                 diag in diag_iter if is_crossing_free(diag, part=:upper) && is_crossing_free(diag, part=:lower)
             )
@@ -34,10 +47,10 @@ struct ArcDiagDeformBasis{C <: RingElement} <: DeformBasis{C}
         len = sum(lens)
         iter = Iterators.flatten(iters)
         if !no_normalize
-            iter = normalize_basis(iter)
+            iter = unique(Iterators.filter(b -> !iszero(b), iter))
             len = length(iter)
         end
-        return new{C}(len, iter)
+        return new{C}(len, iter, extra_data, normalize)
     end
 end
 
@@ -173,78 +186,4 @@ function arcdiag_to_basiselem__so_extpowers_stdmod(
         end
     end
     return kappa
-end
-
-
-"""
-    corresponding_arc_diagram(m::DeformationMap{C}, sp::SmashProductLie{C}, deg::Int) where {C <: RingElement}
-
-Returns the arc diagram inducing the deformation map `m` of the smash product `sp`, where `m` is of the degree `deg`.
-If there is no such arc diagram, returns `nothing`.
-"""
-function corresponding_arc_diagram(m::DeformationMap{C}, sp::SmashProductLie{C}, deg::Int) where {C <: RingElement}
-    return corresponding_arc_diagram(m, sp, [deg])
-end
-
-"""
-    corresponding_arc_diagram(m::DeformationMap{C}, sp::SmashProductLie{C}, degs::AbstractVector{Int}) where {C <: RingElement}
-
-Returns the arc diagram inducing the deformation map `m` of the smash product `sp`, where `m` is of a degree in `degs`.
-If there is no such arc diagram, returns `nothing`.
-"""
-function corresponding_arc_diagram(
-    m::DeformationMap{C},
-    sp::SmashProductLie{C},
-    degs::AbstractVector{Int},
-) where {C <: RingElement}
-    dimV, e = extract_sp_info__so_extpowers_stdmod(sp)
-    for d in degs
-        diag_iter = pbw_arc_diagrams__so_extpowers_stdmod(e, d)
-        for diag in
-            [diag for diag in diag_iter if is_crossing_free(diag, part=:upper) && is_crossing_free(diag, part=:lower)]
-            m2 = arcdiag_to_basiselem__so_extpowers_stdmod(diag, dimV, e, d, sp.alg(0), sp.basisL)
-            if normalize_basis([m]) == normalize_basis([m2])
-                return diag
-            end
-        end
-    end
-    return nothing
-end
-
-"""
-    corresponding_arc_diagrams(m::DeformationMap{C}, sp::SmashProductLie{C}, deg::Int) where {C <: RingElement}
-
-Returns all arc diagrams of a suitable size inducing the deformation map `m` of the smash product `sp`,
-where `m` is of the degree `deg`.
-If there is no such arc diagram, returns an empty vector.
-"""
-function corresponding_arc_diagrams(m::DeformationMap{C}, sp::SmashProductLie{C}, deg::Int) where {C <: RingElement}
-    return corresponding_arc_diagrams(m, sp, [deg])
-end
-
-"""
-    corresponding_arc_diagrams(m::DeformationMap{C}, sp::SmashProductLie{C}, degs::AbstractVector{Int}) where {C <: RingElement}
-
-Returns all arc diagrams of a suitable size inducing the deformation map `m` of the smash product `sp`,
-where `m` is of a degree in `degs`.
-If there is no such arc diagram, returns an empty vector.
-"""
-function corresponding_arc_diagrams(
-    m::DeformationMap{C},
-    sp::SmashProductLie{C},
-    degs::AbstractVector{Int},
-) where {C <: RingElement}
-    dimV, e = extract_sp_info__so_extpowers_stdmod(sp)
-    diags = ArcDiagram[]
-    for d in degs
-        diag_iter = pbw_arc_diagrams__so_extpowers_stdmod(e, d)
-        for diag in
-            [diag for diag in diag_iter if is_crossing_free(diag, part=:upper) && is_crossing_free(diag, part=:lower)]
-            m2 = arcdiag_to_basiselem__so_extpowers_stdmod(diag, dimV, e, d, sp.alg(0), sp.basisL)
-            if normalize_basis([m]) == normalize_basis([m2])
-                push!(diags, diag)
-            end
-        end
-    end
-    return diags
 end

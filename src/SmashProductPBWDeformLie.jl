@@ -136,56 +136,24 @@ function indices_of_freedom(mat::SparseArrays.SparseMatrixCSC{T, Int}) where {T 
     return filter(i -> iszero(mat[i, i]), 1:size(mat)[1])
 end
 
-"""
-    abstract type DeformBasis{C <: RingElement} end
-
-A basis for a deformation map space of a Lie algebra smash product.
-The constructor of a subtype should accept a [`SmashProductLie`](@ref) and an `AbstractVector{Int}` of degrees.
-It is required that `Base.length` and `Base.iterate` are implemented for subtypes,
-where iterating yields objects of type `DeformationMap{C}`.
-
-For a reference implementation, we refer to [`StdDeformBasis`](@ref).
-"""
-abstract type DeformBasis{C <: RingElement} end
-
-Base.eltype(::Type{DeformBasis{C}}) where {C <: RingElement} = DeformationMap{C}
-
-
-
-function normalize_basis(basiselems)
-    unique((
-        begin
-            first_nz = begin
-                ind = findfirst(x -> !iszero(x), b)
-                CartesianIndex(ind[2], ind[1])
-            end
-            cu = canonical_unit(b[first_nz])
-            b = map(e -> divexact(e, cu), b)
-        end
-    ) for b in basiselems if !iszero(b))
-end
-
 
 """
-    pbwdeforms_all(sp::SmashProductLie{C}, degs::AbstractVector{Int}, DeformBasisType::Type{<:DeformBasis{C}}=StdDeformBasis{C}; special_return=Nothing) where {C <: RingElement}
+    pbwdeforms_all(sp::SmashProductLie{C}, deform_basis::DeformBasis{C}; special_return=Nothing) where {C <: RingElement}
 
-Computes a basis of all Poincare-Birkhoff-Witt deformations of `sp` of degrees `degs`.
-`DeformBasisType` specifies the type of basis to use for the space of deformation maps.
+Computes a basis of all Poincare-Birkhoff-Witt deformations of `sp`.
+`deform_basis` specifies the basis to use for the space of deformation maps.
 If `special_return` is `SparseArrays.SparseMatrixCSC`, the function returns intermediate results.
 
 Uses [`pbwdeform_eqs`](@ref) and thus Theorem 3.1 of [WW14](@cite).
 """
 function pbwdeforms_all(
     sp::SmashProductLie{C},
-    degs::AbstractVector{Int},
-    DeformBasisType::Type{<:DeformBasis{C}}=StdDeformBasis{C};
+    deform_basis::DeformBasis{C};
     special_return::Type{T}=Nothing,
 ) where {C <: RingElement, T <: Union{Nothing, SparseMatrixCSC}}
     dimL = sp.dimL
     dimV = sp.dimV
 
-    @info "Computing Deform Basis"
-    deform_basis = DeformBasisType(sp, degs)
     nvars = length(deform_basis)
 
     @info "Constructing MPolyRing..."
@@ -259,6 +227,26 @@ function pbwdeforms_all(
         end
     end
     return kappas
+end
+
+"""
+    pbwdeforms_all(sp::SmashProductLie{C}, degs::AbstractVector{Int}, DeformBasisType::Type{<:DeformBasis{C}}=StdDeformBasis{C}; special_return=Nothing) where {C <: RingElement}
+
+Computes a basis of all Poincare-Birkhoff-Witt deformations of `sp` of degrees `degs`.
+`DeformBasisType` specifies the type of basis to use for the space of deformation maps.
+If `special_return` is `SparseArrays.SparseMatrixCSC`, the function returns intermediate results.
+
+Uses [`pbwdeform_eqs`](@ref) and thus Theorem 3.1 of [WW14](@cite).
+"""
+function pbwdeforms_all(
+    sp::SmashProductLie{C},
+    degs::AbstractVector{Int},
+    DeformBasisType::Type{<:DeformBasis{C}}=StdDeformBasis{C};
+    special_return::Type{T}=Nothing,
+) where {C <: RingElement, T <: Union{Nothing, SparseMatrixCSC}}
+    @info "Computing Deform Basis"
+    deform_basis = DeformBasisType(sp, degs)
+    return pbwdeforms_all(sp, deform_basis; special_return)
 end
 
 """

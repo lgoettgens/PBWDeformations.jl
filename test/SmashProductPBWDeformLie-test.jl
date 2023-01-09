@@ -1,5 +1,3 @@
-normalize_basis = PD.normalize_basis
-
 @testset ExtendedTestSet "All SmashProductPBWDeformLie.jl tests" begin
 
     @testset "is_pbwdeform" begin
@@ -28,36 +26,6 @@ normalize_basis = PD.normalize_basis
             eq = QQ(2 // 3) * x + 88 * y * z - 12 * x * z + 3 * y + 0 * z^4 - 2 * y + 12 * x * z
             @test issetequal(PD.coefficient_comparison(eq), elem_type(QQ)[2//3, 88, 1])
         end
-
-        @testset "normalize_basis tests" begin
-            A, (x, y) = PolynomialRing(QQ, ["x", "y"])
-            b0 = [A(0) A(0); A(0) A(0)]
-            b1 = [A(0) A(1); A(-1) A(0)]
-            b2 = [A(0) x; -x A(0)]
-            b3 = [A(0) y; -y A(0)]
-
-            @test issetequal(normalize_basis([b0]), [])
-            @test length(normalize_basis([b0])) == 0
-
-            @test issetequal(normalize_basis([b1]), [b1])
-            @test length(normalize_basis([b1])) == 1
-
-            @test issetequal(normalize_basis([b2]), [b2])
-            @test length(normalize_basis([b2])) == 1
-
-            @test issetequal(normalize_basis([b1, b3]), [b1, b3])
-            @test length(normalize_basis([b1, b3])) == 2
-
-            @test issetequal(normalize_basis([b1, b0]), [b1])
-            @test length(normalize_basis([b1, b0])) == 1
-
-            @test issetequal(normalize_basis([b1, b1]), [b1])
-            @test length(normalize_basis([b1, b1])) == 1
-
-            @test issetequal(normalize_basis([b1, 2 * b1]), [b1])
-            @test length(normalize_basis([b1, 2 * b1])) == 1
-        end
-
 
         @testset "pbwdeforms_all tests" begin
             sp, _ = smash_product_lie_highest_weight(QQ, 'A', 1, [1])

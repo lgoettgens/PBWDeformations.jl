@@ -66,6 +66,13 @@ function Base.:(==)(a1::ArcDiagram, a2::ArcDiagram)
     return (a1.nUpper, a1.nLower, a1.adjacency) == (a2.nUpper, a2.nLower, a2.adjacency)
 end
 
+function Base.hash(a::ArcDiagram, h::UInt)
+    h = hash(a.nUpper, h)
+    h = hash(a.nLower, h)
+    h = hash(a.adjacency, h)
+    return h
+end
+
 function Base.show(io::IO, a::ArcDiagram)
     show(IOContext(io, (:compact => true)), MIME"text/plain"(), a)
 end

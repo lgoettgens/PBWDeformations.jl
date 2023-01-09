@@ -19,6 +19,17 @@ struct Pseudograph2
     end
 end
 
+function Base.:(==)(pg1::Pseudograph2, pg2::Pseudograph2)
+    return (pg1.loops1, pg1.loops2, pg1.edges) == (pg2.loops1, pg2.loops2, pg2.edges)
+end
+
+function Base.hash(pg::Pseudograph2, h::UInt)
+    h = hash(pg.loops1, h)
+    h = hash(pg.loops2, h)
+    h = hash(pg.edges, h)
+    return h
+end
+
 function nedges(pg::Pseudograph2)
     return length(pg.loops1) + length(pg.loops2) + length(pg.edges)
 end
@@ -63,26 +74,23 @@ function to_arcdiag(pg::Pseudograph2, part::Generic.Partition=Partition(Int[]))
     nLower = 2 * (sum(pg) + part.n)
 
     adj = zeros(Int, nUpper + nLower)
+    addarc(i, j) = (adj[i] = j; adj[j] = i)
     i = 1
     j = div(nUpper, 2) + 1
     k = nUpper + 1
     for l1 in pg.loops1
         if l1 == 0
-            adj[i] = i + 1
-            adj[i+1] = i
+            addarc(i, i + 1)
             i += 2
         else
-            adj[i] = k
-            adj[k] = i
+            addarc(i, k)
             i += 1
             k += 1
             for _ in 2:l1
-                adj[k] = k + 1
-                adj[k+1] = k
+                addarc(k, k + 1)
                 k += 2
             end
-            adj[k] = i
-            adj[i] = k
+            addarc(k, i)
             i += 1
             k += 1
         end
@@ -90,22 +98,18 @@ function to_arcdiag(pg::Pseudograph2, part::Generic.Partition=Partition(Int[]))
 
     for e in pg.edges
         if e == 0
-            adj[i] = j
-            adj[j] = i
+            addarc(i, j)
             i += 1
             j += 1
         else
-            adj[i] = k
-            adj[k] = i
+            addarc(i, k)
             i += 1
             k += 1
             for _ in 2:e
-                adj[k] = k + 1
-                adj[k+1] = k
+                addarc(k, k + 1)
                 k += 2
             end
-            adj[k] = j
-            adj[j] = k
+            addarc(k, j)
             j += 1
             k += 1
         end
@@ -113,21 +117,17 @@ function to_arcdiag(pg::Pseudograph2, part::Generic.Partition=Partition(Int[]))
 
     for l2 in pg.loops2
         if l2 == 0
-            adj[j] = j + 1
-            adj[j+1] = j
+            addarc(j, j + 1)
             j += 2
         else
-            adj[j] = k
-            adj[k] = j
+            addarc(j, k)
             j += 1
             k += 1
             for _ in 2:l2
-                adj[k] = k + 1
-                adj[k+1] = k
+                addarc(k, k + 1)
                 k += 2
             end
-            adj[k] = j
-            adj[j] = k
+            addarc(k, j)
             j += 1
             k += 1
         end
@@ -137,12 +137,10 @@ function to_arcdiag(pg::Pseudograph2, part::Generic.Partition=Partition(Int[]))
         start = k
         k += 1
         for _ in 2:p
-            adj[k] = k + 1
-            adj[k+1] = k
+            addarc(k, k + 1)
             k += 2
         end
-        adj[k] = start
-        adj[start] = k
+        addarc(k, start)
         k += 1
     end
 

@@ -70,11 +70,10 @@ export ArcDiagram,
 
 export all_arc_diagrams,
     all_pseudographs,
-    corresponding_arc_diagram,
-    corresponding_arc_diagrams,
     free_algebra,
     is_crossing_free,
     is_pbwdeform,
+    lookup_data,
     nedges,
     quadratic_quo_algebra,
     pbwdeforms_all,
@@ -99,6 +98,9 @@ include("LieAlgebraStructConsts.jl")
 include("Algebra.jl")
 include("FreeAlgebra.jl")
 include("QuadraticQuoAlgebra.jl")
+
+include("DeformationBases/DeformBasis.jl")
+
 include("SmashProductLie.jl")
 include("SmashProductDeformLie.jl")
 include("SmashProductPBWDeformLie.jl")
