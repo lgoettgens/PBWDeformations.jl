@@ -7,6 +7,8 @@ of the smash product, and the other entry is its additive inverse.
 struct StdDeformBasis{C <: RingElement} <: DeformBasis{C}
     len::Int
     iter
+    extra_data::Dict{DeformationMap{C}, Nothing}
+    normalize
 
     function StdDeformBasis{C}(sp::SmashProductLie{C}, degs::AbstractVector{Int}) where {C <: RingElement}
         dimL = sp.dimL
@@ -24,7 +26,7 @@ struct StdDeformBasis{C <: RingElement} <: DeformBasis{C}
         )
 
         len = div(dimV * (dimV - 1), 2) * sum(binomial(dimL + k - 1, k) for k in degs)
-        return new{C}(len, iter)
+        return new{C}(len, iter, Dict{DeformationMap{C}, Nothing}(), normalize_default)
     end
 end
 

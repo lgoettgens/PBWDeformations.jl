@@ -8,6 +8,8 @@ This process is due to [FM22](@cite).
 struct PseudographDeformBasis{C <: RingElement} <: DeformBasis{C}
     len::Int
     iter
+    extra_data::Dict{DeformationMap{C}, Set{Pseudograph2}}
+    normalize
 
     function PseudographDeformBasis{C}(
         sp::SmashProductLie{C},
@@ -15,6 +17,8 @@ struct PseudographDeformBasis{C <: RingElement} <: DeformBasis{C}
         no_normalize::Bool=false,
     ) where {C <: RingElement}
         dimV, e = extract_sp_info__so_extpowers_stdmod(sp)
+        extra_data = Dict{DeformationMap{C}, Set{Pseudograph2}}()
+        normalize = no_normalize ? identity : normalize_default
 
         lens = []
         iters = []
@@ -26,7 +30,16 @@ struct PseudographDeformBasis{C <: RingElement} <: DeformBasis{C}
                 begin
                     @debug "Basis generation deg $(d), $(debug_counter = (debug_counter % len) + 1)/$(len), $(floor(Int, 100*debug_counter / len))%"
                     diag = to_arcdiag(pg, part)
-                    arcdiag_to_basiselem__so_extpowers_stdmod(diag, dimV, e, d, sp.alg(0), sp.basisL)
+                    basis_elem = arcdiag_to_basiselem__so_extpowers_stdmod(diag, dimV, e, d, sp.alg(0), sp.basisL)
+                    if !no_normalize
+                        basis_elem = normalize(basis_elem)
+                    end
+                    if haskey(extra_data, basis_elem)
+                        push!(extra_data[basis_elem], pg)
+                    else
+                        extra_data[basis_elem] = Set([pg])
+                    end
+                    basis_elem
                 end for (pg, part) in pg_iter
             )
             push!(lens, len)
@@ -35,10 +48,10 @@ struct PseudographDeformBasis{C <: RingElement} <: DeformBasis{C}
         len = sum(lens)
         iter = Iterators.flatten(iters)
         if !no_normalize
-            iter = normalize_basis(iter)
+            iter = unique(iter)
             len = length(iter)
         end
-        return new{C}(len, iter)
+        return new{C}(len, iter, extra_data, normalize)
     end
 end
 

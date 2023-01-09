@@ -1,4 +1,14 @@
 """
+    DeformationMap{C} = Matrix{QuadraticQuoAlgebraElem{C}} where {C <: RingElement}
+
+The type for deformation maps of a Lie algebra smash product.
+The entry `kappa[i,j]` should be the image of ``v_i \\wedge v_j`` under the deformation map, i.e. ``κ(v_i,v_j)``.
+Deformation maps are always assumed to be quadratic and skew-symmetric.
+"""
+DeformationMap{C} = Matrix{QuadraticQuoAlgebraElem{C}} where {C <: RingElement}
+
+
+"""
     abstract type DeformBasis{C <: RingElement} end
 
 A basis for a deformation map space of a Lie algebra smash product.
@@ -16,16 +26,17 @@ function Base.length(base::DeformBasis)
     error("length not implemented for $(typeof(base))")
 end
 
+function lookup_data(m::DeformationMap{C}, base::DeformBasis{C}) where {C <: RingElement}
+    m = base.normalize(m)
+    if haskey(base.extra_data, m)
+        return base.extra_data[m]
+    else
+        return nothing
+    end
+end
 
-function normalize_basis(basiselems)
-    unique((
-        begin
-            first_nz = begin
-                ind = findfirst(x -> !iszero(x), b)
-                CartesianIndex(ind[2], ind[1])
-            end
-            cu = canonical_unit(b[first_nz])
-            b = map(e -> divexact(e, cu), b)
-        end
-    ) for b in basiselems if !iszero(b))
+function normalize_default(m::DeformationMap{C}) where {C <: RingElement}
+    nz_index = findfirst(x -> !iszero(x), m)
+    cu = canonical_unit(m[CartesianIndex(nz_index[2], nz_index[1])])
+    m = map(e -> divexact(e, cu), m)
 end
