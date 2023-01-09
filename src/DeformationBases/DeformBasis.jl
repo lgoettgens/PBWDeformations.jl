@@ -12,6 +12,9 @@ abstract type DeformBasis{C <: RingElement} end
 
 Base.eltype(::Type{DeformBasis{C}}) where {C <: RingElement} = DeformationMap{C}
 
+function Base.length(base::DeformBasis)
+    error("length not implemented for $(typeof(base))")
+end
 
 
 function normalize_basis(basiselems)

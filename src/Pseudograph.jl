@@ -19,6 +19,17 @@ struct Pseudograph2
     end
 end
 
+function Base.:(==)(pg1::Pseudograph2, pg2::Pseudograph2)
+    return (pg1.loops1, pg1.loops2, pg1.edges) == (pg2.loops1, pg2.loops2, pg2.edges)
+end
+
+function Base.hash(pg::Pseudograph2, h::UInt)
+    h = hash(pg.loops1, h)
+    h = hash(pg.loops2, h)
+    h = hash(pg.edges, h)
+    return h
+end
+
 function nedges(pg::Pseudograph2)
     return length(pg.loops1) + length(pg.loops2) + length(pg.edges)
 end

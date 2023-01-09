@@ -118,7 +118,7 @@ function canonical_unit(a::AlgebraElem{C}) where {C <: RingElement}
     if iszero(a)
         return one(parent(a))
     end
-    ind = argmax(a.monoms[1:length(a)])
+    ind = argmin(a.monoms[1:length(a)])
     return canonical_unit(a.coeffs[ind])
 end
 
