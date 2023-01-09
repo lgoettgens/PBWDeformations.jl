@@ -35,4 +35,4 @@ StdDeformBasis
 
 #### Other bases
 
-Please refer to [Arc diagram induced bases](@ref) for more specialized bases.
+Please refer to [Arc diagram induced bases](@ref) and [Pseudograph induced bases](@ref) for more specialized bases.

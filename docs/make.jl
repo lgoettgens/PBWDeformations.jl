@@ -30,6 +30,7 @@ makedocs(
         "Smash product deformations" => "smash_product_deform_lie.md",
         "PBWDeformations" => "smash_product_pbwdeform_lie.md",
         "Arc diagrams" => "arc_diagrams.md",
+        "Pseudographs" => "pseudographs.md",
         "Structure constants" => "structure_constants.md",
         "Util functions" => "util.md",
         "References" => "references.md",

@@ -26,6 +26,12 @@ function Base.length(base::DeformBasis)
     error("length not implemented for $(typeof(base))")
 end
 
+"""
+    lookup_data(m::DeformationMap{C}, base::DeformBasis{C}) where {C <: RingElement}
+
+Look up additional data that was used to generate the deformation map `m` in the basis `base`.
+This can e.g. be an arc diagram or a pseudograph.
+"""
 function lookup_data(m::DeformationMap{C}, base::DeformBasis{C}) where {C <: RingElement}
     m = base.normalize(m)
     if haskey(base.extra_data, m)

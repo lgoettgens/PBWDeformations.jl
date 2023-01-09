@@ -32,7 +32,7 @@ smash_product_lie_so_extpowers_standard_module
 ```
 
 #### ``\mathfrak{sp}_{2n}`` -- symplectic Lie algebra
-For more details about the basis used for ``\mathfrak{sp}_{2n}``, refer to [`liealgebra_so_basis`](@ref).
+For more details about the basis used for ``\mathfrak{sp}_{2n}``, refer to [`liealgebra_sp_basis`](@ref).
 
 ```@docs
 smash_product_lie_sp_symmpowers_standard_module
