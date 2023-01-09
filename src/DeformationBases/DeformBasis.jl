@@ -37,6 +37,9 @@ end
 
 function normalize_default(m::DeformationMap{C}) where {C <: RingElement}
     nz_index = findfirst(x -> !iszero(x), m)
+    if nz_index === nothing
+        return m
+    end
     cu = canonical_unit(m[CartesianIndex(nz_index[2], nz_index[1])])
     m = map(e -> divexact(e, cu), m)
 end

@@ -47,7 +47,7 @@ struct ArcDiagDeformBasis{C <: RingElement} <: DeformBasis{C}
         len = sum(lens)
         iter = Iterators.flatten(iters)
         if !no_normalize
-            iter = unique(iter)
+            iter = unique(Iterators.filter(b -> !iszero(b), iter))
             len = length(iter)
         end
         return new{C}(len, iter, extra_data, normalize)
