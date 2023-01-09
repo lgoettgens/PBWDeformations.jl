@@ -2,7 +2,7 @@
 
 | **Documentation**                                                         | **Build Status**                                      |
 |:-------------------------------------------------------------------------:|:-----------------------------------------------------:|
-| [![](https://img.shields.io/badge/docs-stable-blue.svg)](https://pbwdeformations.github.io/pbwdeformations.jl/stable/) [![](https://img.shields.io/badge/docs-dev-blue.svg)](https://pbwdeformations.github.io/pbwdeformations.jl/dev/) | [![](https://github.com/PBWDeformations/pbwdeformations.jl/actions/workflows/Tests.yml/badge.svg?branch=master)](https://github.com/PBWDeformations/pbwdeformations.jl/actions/workflows/Tests.yml) [![](https://codecov.io/gh/PBWDeformations/pbwdeformations.jl/branch/master/graph/badge.svg?token=J9XN35I1WU)](https://app.codecov.io/gh/PBWDeformations/pbwdeformations.jl) |
+| [![](https://img.shields.io/badge/docs-stable-blue.svg)](https://pbwdeformations.github.io/PBWDeformations.jl/stable/) [![](https://img.shields.io/badge/docs-dev-blue.svg)](https://pbwdeformations.github.io/PBWDeformations.jl/dev/) | [![](https://github.com/PBWDeformations/PBWDeformations.jl/actions/workflows/Tests.yml/badge.svg?branch=master)](https://github.com/PBWDeformations/PBWDeformations.jl/actions/workflows/Tests.yml) [![](https://codecov.io/gh/PBWDeformations/PBWDeformations.jl/branch/master/graph/badge.svg?token=J9XN35I1WU)](https://app.codecov.io/gh/PBWDeformations/PBWDeformations.jl) |
 
 # PBWDeformations.jl Julia package
 
@@ -24,8 +24,8 @@ To solve classification problems efficiently, we use representation theoretic id
 
 ## Basic usage
 
-Please consult the [example jupyter notebook](https://nbviewer.org/urls/gitlab.com/johannesflake/pbwdeformations.jl/-/raw/master/examples/PBWDeformationsNotebook.ipynb) for v0.1.
-We expect documentation to be found at some point in future at [https://pbwdeformations.github.io/pbwdeformations.jl/](https://pbwdeformations.github.io/pbwdeformations.jl/).
+Please consult the [example jupyter notebook](https://nbviewer.org/urls/raw.githubusercontent.com/PBWDeformations/PBWDeformations.jl/master/examples/PBWDeformationsNotebook.ipynb) for v0.1.
+We expect documentation to be found at some point in future at [https://pbwdeformations.github.io/PBWDeformations.jl/](https://pbwdeformations.github.io/PBWDeformations.jl/).
 
 ## General Disclaimer
 
