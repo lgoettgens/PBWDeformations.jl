@@ -38,4 +38,4 @@ function Base.iterate(i::StdDeformBasis, s)
     return iterate(i.iter, s)
 end
 
-Base.length(base::StdDeformBasis) = base.len
+Base.length(basis::StdDeformBasis) = basis.len
