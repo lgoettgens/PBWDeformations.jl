@@ -146,37 +146,52 @@ function arcdiag_to_basiselem__so_extpowers_stdmod(
                 continue
             end
             unique!(sort!(frees))
-            free_index = Dict{Int, Int}()
-            for (k, f) in enumerate(frees)
-                free_index[f] = k
-            end
             entry = zero
-            for labeling in (isempty(frees) ? [Int[]] : AbstractAlgebra.ProductIterator(1:dimV, length(frees)))
-                lower_labeled = [
-                    labeled_diag[k] != 0 ? labeled_diag[k] : labeling[free_index[min(k, diag.adjacency[k])]] for
-                    k in 2*e+1:2*e+2*d
-                ]
-                zeroelem = false
-                sign_lower_labels = 1
-                basiselem = Int[]
-                for k in 1:2:length(lower_labeled)
-                    if lower_labeled[k] == lower_labeled[k+1]
-                        zeroelem = true
-                        break
-                    elseif lower_labeled[k] > lower_labeled[k+1]
-                        sign_lower_labels *= -1
-                        append!(basiselem, iso_wedge2V_g[[lower_labeled[k+1], lower_labeled[k]]])
-                    else
-                        append!(basiselem, iso_wedge2V_g[[lower_labeled[k], lower_labeled[k+1]]])
+
+            # iterate over lower point labelings
+            nextindex = 1
+            while true
+                if nextindex > length(frees)
+                    # begin inner
+                    zeroelem = false
+                    sign_lower_labels = 1
+                    basiselem = Int[]
+                    for k in 2*e+1:2:length(labeled_diag)
+                        if labeled_diag[k] == labeled_diag[k+1]
+                            zeroelem = true
+                            break
+                        elseif labeled_diag[k] > labeled_diag[k+1]
+                            sign_lower_labels *= -1
+                            append!(basiselem, iso_wedge2V_g[[labeled_diag[k+1], labeled_diag[k]]])
+                        else
+                            append!(basiselem, iso_wedge2V_g[[labeled_diag[k], labeled_diag[k+1]]])
+                        end
                     end
+                    if !zeroelem
+                        symm_basiselem =
+                            1 // factorial(length(basiselem)) *
+                            sum(prod(basisL[ind]) for ind in Combinatorics.permutations(basiselem))
+                        entry += sign_lower_labels * normal_form(symm_basiselem)
+                    end
+                    # end inner
+
+                    nextindex -= 1
                 end
-                if zeroelem
-                    continue
+
+                while nextindex >= 1 && labeled_diag[frees[nextindex]] == dimV
+                    labeled_diag[frees[nextindex]] = 0
+                    labeled_diag[diag.adjacency[frees[nextindex]]] = 0
+                    nextindex -= 1
                 end
-                symm_basiselem =
-                    1 // factorial(length(basiselem)) *
-                    sum(prod(basisL[ind]) for ind in Combinatorics.permutations(basiselem))
-                entry += sign_lower_labels * normal_form(symm_basiselem)
+                if nextindex == 0
+                    break
+                end
+                labeled_diag[frees[nextindex]] += 1
+                labeled_diag[diag.adjacency[frees[nextindex]]] += 1
+                if ispairgood(labeled_diag, frees[nextindex]) &&
+                   ispairgood(labeled_diag, diag.adjacency[frees[nextindex]])
+                    nextindex += 1
+                end
             end
 
             entry *= sgn_upper_labels
@@ -186,4 +201,9 @@ function arcdiag_to_basiselem__so_extpowers_stdmod(
         end
     end
     return kappa
+end
+
+function ispairgood(labeled_diag::Vector{Int}, k::Int)
+    left_k = k % 2 == 1 ? k : k - 1
+    return labeled_diag[left_k] != labeled_diag[left_k+1]
 end

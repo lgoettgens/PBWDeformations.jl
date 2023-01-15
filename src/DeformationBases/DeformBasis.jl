@@ -22,20 +22,19 @@ abstract type DeformBasis{C <: RingElement} end
 
 Base.eltype(::Type{DeformBasis{C}}) where {C <: RingElement} = DeformationMap{C}
 
-function Base.length(base::DeformBasis)
-    error("length not implemented for $(typeof(base))")
-end
+Base.length(basis::DeformBasis) = error("length not implemented for $(typeof(basis))")
+
 
 """
-    lookup_data(m::DeformationMap{C}, base::DeformBasis{C}) where {C <: RingElement}
+    lookup_data(m::DeformationMap{C}, basis::DeformBasis{C}) where {C <: RingElement}
 
-Look up additional data that was used to generate the deformation map `m` in the basis `base`.
+Look up additional data that was used to generate the deformation map `m` in the basis `basis`.
 This can e.g. be an arc diagram or a pseudograph.
 """
-function lookup_data(m::DeformationMap{C}, base::DeformBasis{C}) where {C <: RingElement}
-    m = base.normalize(m)
-    if haskey(base.extra_data, m)
-        return base.extra_data[m]
+function lookup_data(m::DeformationMap{C}, basis::DeformBasis{C}) where {C <: RingElement}
+    m = basis.normalize(m)
+    if haskey(basis.extra_data, m)
+        return basis.extra_data[m]
     else
         return nothing
     end
