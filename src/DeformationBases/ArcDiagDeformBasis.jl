@@ -188,7 +188,10 @@ function arcdiag_to_basiselem__so_extpowers_stdmod(
                 end
                 labeled_diag[frees[nextindex]] += 1
                 labeled_diag[diag.adjacency[frees[nextindex]]] += 1
-                nextindex += 1
+                if ispairgood(labeled_diag, frees[nextindex]) &&
+                   ispairgood(labeled_diag, diag.adjacency[frees[nextindex]])
+                    nextindex += 1
+                end
             end
 
             entry *= sgn_upper_labels
@@ -198,4 +201,9 @@ function arcdiag_to_basiselem__so_extpowers_stdmod(
         end
     end
     return kappa
+end
+
+function ispairgood(labeled_diag::Vector{Int}, k::Int)
+    left_k = k % 2 == 1 ? k : k - 1
+    return labeled_diag[left_k] != labeled_diag[left_k+1]
 end
