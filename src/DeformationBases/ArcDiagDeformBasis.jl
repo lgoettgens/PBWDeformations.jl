@@ -146,26 +146,25 @@ function arcdiag_to_basiselem__so_extpowers_stdmod(
                 continue
             end
             unique!(sort!(frees))
-            lower_labeled = labeled_diag
             entry = zero
 
             # iterate over lower point labelings
-            next = 1
+            nextindex = 1
             while true
-                if next > length(frees)
+                if nextindex > length(frees)
                     # begin inner
                     zeroelem = false
                     sign_lower_labels = 1
                     basiselem = Int[]
-                    for k in 2*e+1:2:length(lower_labeled)
-                        if lower_labeled[k] == lower_labeled[k+1]
+                    for k in 2*e+1:2:length(labeled_diag)
+                        if labeled_diag[k] == labeled_diag[k+1]
                             zeroelem = true
                             break
-                        elseif lower_labeled[k] > lower_labeled[k+1]
+                        elseif labeled_diag[k] > labeled_diag[k+1]
                             sign_lower_labels *= -1
-                            append!(basiselem, iso_wedge2V_g[[lower_labeled[k+1], lower_labeled[k]]])
+                            append!(basiselem, iso_wedge2V_g[[labeled_diag[k+1], labeled_diag[k]]])
                         else
-                            append!(basiselem, iso_wedge2V_g[[lower_labeled[k], lower_labeled[k+1]]])
+                            append!(basiselem, iso_wedge2V_g[[labeled_diag[k], labeled_diag[k+1]]])
                         end
                     end
                     if !zeroelem
@@ -176,20 +175,20 @@ function arcdiag_to_basiselem__so_extpowers_stdmod(
                     end
                     # end inner
 
-                    next -= 1
+                    nextindex -= 1
                 end
 
-                while next >= 1 && lower_labeled[frees[next]] == dimV
-                    lower_labeled[frees[next]] = 0
-                    lower_labeled[diag.adjacency[frees[next]]] = 0
-                    next -= 1
+                while nextindex >= 1 && labeled_diag[frees[nextindex]] == dimV
+                    labeled_diag[frees[nextindex]] = 0
+                    labeled_diag[diag.adjacency[frees[nextindex]]] = 0
+                    nextindex -= 1
                 end
-                if next == 0
+                if nextindex == 0
                     break
                 end
-                lower_labeled[frees[next]] += 1
-                lower_labeled[diag.adjacency[frees[next]]] += 1
-                next += 1
+                labeled_diag[frees[nextindex]] += 1
+                labeled_diag[diag.adjacency[frees[nextindex]]] += 1
+                nextindex += 1
             end
 
             entry *= sgn_upper_labels
