@@ -93,7 +93,6 @@ GAP = Oscar.GAP
 include("Util.jl")
 include("LieAlgebraStructConsts.jl")
 include("FreeAlgebra.jl")
-include("Algebra.jl")
 include("QuadraticQuoAlgebra.jl")
 
 include("DeformationBases/DeformBasis.jl")
