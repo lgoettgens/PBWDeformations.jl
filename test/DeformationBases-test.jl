@@ -21,4 +21,32 @@ pbw_arc_diagrams__so_extpowers_stdmod = PD.pbw_arc_diagrams__so_extpowers_stdmod
 
     end
 
+    @testset "All DeformationBases/PseudographDeformBasis.jl tests" begin
+        @testset "correctness regression" begin
+            sp, _ = smash_product_lie_so_extpowers_standard_module(QQ, 4, 2)
+
+            @test pbwdeforms_all(sp, PseudographDeformBasis{fmpq}(sp, 0:0); special_return=SparseMatrixCSC)[1] ==
+                  sparse(Int64[], Int64[], fmpq[], 0, 0)
+            @test pbwdeforms_all(sp, PseudographDeformBasis{fmpq}(sp, 0:1); special_return=SparseMatrixCSC)[1] ==
+                  sparse(Int64[], Int64[], fmpq[], 1, 1)
+            @test pbwdeforms_all(sp, PseudographDeformBasis{fmpq}(sp, 0:2); special_return=SparseMatrixCSC)[1] ==
+                  sparse(Int64[], Int64[], fmpq[], 1, 1)
+            @test pbwdeforms_all(sp, PseudographDeformBasis{fmpq}(sp, 0:3); special_return=SparseMatrixCSC)[1] ==
+                  sparse([2, 2, 2], [2, 3, 4], fmpq[1, 3//2, -1//2], 4, 4)
+
+
+            sp, _ = smash_product_lie_so_extpowers_standard_module(QQ, 5, 2)
+
+            @test pbwdeforms_all(sp, PseudographDeformBasis{fmpq}(sp, 0:0); special_return=SparseMatrixCSC)[1] ==
+                  sparse(Int64[], Int64[], fmpq[], 0, 0)
+            @test pbwdeforms_all(sp, PseudographDeformBasis{fmpq}(sp, 0:1); special_return=SparseMatrixCSC)[1] ==
+                  sparse(Int64[], Int64[], fmpq[], 1, 1)
+            @test pbwdeforms_all(sp, PseudographDeformBasis{fmpq}(sp, 0:2); special_return=SparseMatrixCSC)[1] ==
+                  sparse(Int64[], Int64[], fmpq[], 1, 1)
+            @test pbwdeforms_all(sp, PseudographDeformBasis{fmpq}(sp, 0:3); special_return=SparseMatrixCSC)[1] ==
+                  sparse([2, 3, 4], [2, 3, 4], fmpq[1, 1, 1], 4, 4)
+        end
+
+    end
+
 end

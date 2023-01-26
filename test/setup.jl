@@ -3,6 +3,7 @@ using TestSetExtensions
 using Documenter
 
 using Oscar
+using SparseArrays
 
 using PBWDeformations
 
