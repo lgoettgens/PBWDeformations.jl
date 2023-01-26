@@ -9,28 +9,14 @@ mutable struct QuadraticQuoAlgebra{C <: RingElement} <: Algebra{C}
         free_alg::FreeAlgebra{C},
         rels::Dict{Tuple{Int, Int}, FreeAlgebraElem{C}},
     ) where {C <: RingElement}
-        this = new{C}(
-            free_alg.base_ring,
-            free_alg.S,
-            free_alg.num_gens,
-            free_alg,
-            Dict{Tuple{Int, Int}, QuadraticQuoAlgebraElem{C}}(),
-        )
-        this.rels = Dict{Tuple{Int, Int}, QuadraticQuoAlgebraElem{C}}(k => this(a) for (k, a) in rels)
+        this = new{C}(free_alg.base_ring, free_alg.S, free_alg.num_gens, free_alg, QuadraticRelations{C}())
+        this.rels = QuadraticRelations{C}(k => this(a) for (k, a) in rels)
         return this
     end
 
     function QuadraticQuoAlgebra{C}(paren_alg::QuadraticQuoAlgebra{C}, rels) where {C <: RingElement} #rels::Dict{Tuple{Int,Int}, QuadraticQuoAlgebraElem{C}}
-        this = new{C}(
-            paren_alg.base_ring,
-            paren_alg.S,
-            paren_alg.num_gens,
-            paren_alg.free_alg,
-            Dict{Tuple{Int, Int}, QuadraticQuoAlgebraElem{C}}(),
-        )
-        this.rels = Dict{Tuple{Int, Int}, QuadraticQuoAlgebraElem{C}}(
-            k => this(a) for (k, a) in [collect(paren_alg.rels); collect(rels)]
-        )
+        this = new{C}(paren_alg.base_ring, paren_alg.S, paren_alg.num_gens, paren_alg.free_alg, QuadraticRelations{C}())
+        this.rels = QuadraticRelations{C}(k => this(a) for (k, a) in [collect(paren_alg.rels); collect(rels)])
         return this
     end
 
@@ -85,6 +71,9 @@ mutable struct QuadraticQuoAlgebraElem{C <: RingElement} <: AlgebraElem{C}
 
 end
 
+QuadraticRelations{C} = Dict{Tuple{Int, Int}, QuadraticQuoAlgebraElem{C}} where {C <: RingElement}
+
+
 function quadratic_quo_algebra(
     free_alg::FreeAlgebra{C},
     rels::Dict{Tuple{Int, Int}, FreeAlgebraElem{C}},
@@ -93,10 +82,7 @@ function quadratic_quo_algebra(
     return alg, gens(alg)
 end
 
-function quadratic_quo_algebra(
-    free_alg::QuadraticQuoAlgebra{C},
-    rels::Dict{Tuple{Int, Int}, QuadraticQuoAlgebraElem{C}},
-) where {C <: RingElement}
+function quadratic_quo_algebra(free_alg::QuadraticQuoAlgebra{C}, rels::QuadraticRelations{C}) where {C <: RingElement}
     alg = QuadraticQuoAlgebra{C}(free_alg, rels)
     return alg, gens(alg)
 end
@@ -157,12 +143,12 @@ function Base.isequal(a::QuadraticQuoAlgebraElem{C}, n::C; strict::Bool=false) w
 end
 
 function iszero(a::QuadraticQuoAlgebraElem; strict::Bool=false)
-    return strict ? normal_form(a).length == 0 : a.length == 0
+    return strict ? normal_form(a, parent(a).rels).length == 0 : a.length == 0
 end
 
 function isone(a::QuadraticQuoAlgebraElem; strict::Bool=false)
     if strict
-        b = normal_form(a)
+        b = normal_form(a, parent(a).rels)
     else
         b = a
     end
@@ -221,13 +207,12 @@ end
 
 function comm(a::QuadraticQuoAlgebraElem{C}, b::QuadraticQuoAlgebraElem{C}; strict=false) where {C <: RingElement}
     r = a * b - b * a
-    return strict ? normal_form(r) : r
+    return strict ? normal_form(r, parent(r).rels) : r
 end
 
-function normal_form(a::QuadraticQuoAlgebraElem{C}) where {C <: RingElement}
+function normal_form(a::AlgebraElem{C}, rels::QuadraticRelations) where {C <: RingElement}
     todo = deepcopy(a)
     result = zero(parent(todo))
-    rels = parent(a).rels
     R = base_ring(a)
     while todo.length > 0
         c = coeff(todo, 1)

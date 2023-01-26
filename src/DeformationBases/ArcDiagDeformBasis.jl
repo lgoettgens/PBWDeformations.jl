@@ -171,7 +171,7 @@ function arcdiag_to_basiselem__so_extpowers_stdmod(
                         symm_basiselem =
                             1 // factorial(length(basiselem)) *
                             sum(prod(basisL[ind]) for ind in Combinatorics.permutations(basiselem))
-                        entry += sign_lower_labels * normal_form(symm_basiselem)
+                        entry += sign_lower_labels * normal_form(symm_basiselem, parent(zero).rels)
                     end
                     # end inner
 

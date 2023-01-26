@@ -46,7 +46,7 @@ function pbwdeform_eqs(deform::SmashProductDeformLie{C}; disabled::Vector{Symbol
     iter_d = :d in disabled ? [] : []
 
     iter = Iterators.flatten([iter_a, iter_b, iter_c, iter_d])
-    return Iterators.map(normal_form, iter)
+    return Iterators.map(x -> normal_form(x, parent(x).rels), iter)
 end
 
 function pbwdeform_neqs(deform::SmashProductDeformLie{C}) where {C <: RingElement}
