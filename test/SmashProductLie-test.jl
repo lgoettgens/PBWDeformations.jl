@@ -42,23 +42,23 @@
             v2 = basisV[2]
 
             # sl_2 relations
-            @test comm(x, x; strict=true) == 0
-            @test comm(x, y; strict=true) == h
-            @test comm(x, h; strict=true) == -2 * x
-            @test comm(y, x; strict=true) == -h
-            @test comm(y, y; strict=true) == 0
-            @test comm(y, h; strict=true) == 2 * y
-            @test comm(h, x; strict=true) == 2 * x
-            @test comm(h, y; strict=true) == -2 * y
-            @test comm(h, h; strict=true) == 0
+            @test normal_form(comm(x, x), sp.rels) == 0
+            @test normal_form(comm(x, y), sp.rels) == h
+            @test normal_form(comm(x, h), sp.rels) == -2 * x
+            @test normal_form(comm(y, x), sp.rels) == -h
+            @test normal_form(comm(y, y), sp.rels) == 0
+            @test normal_form(comm(y, h), sp.rels) == 2 * y
+            @test normal_form(comm(h, x), sp.rels) == 2 * x
+            @test normal_form(comm(h, y), sp.rels) == -2 * y
+            @test normal_form(comm(h, h), sp.rels) == 0
 
             # natural representation relations
-            @test comm(x, v1; strict=true) == 0
-            @test comm(x, v2; strict=true) == v1
-            @test comm(y, v1; strict=true) == v2
-            @test comm(y, v2; strict=true) == 0
-            @test comm(h, v1; strict=true) == v1
-            @test comm(h, v2; strict=true) == -v2
+            @test normal_form(comm(x, v1), sp.rels) == 0
+            @test normal_form(comm(x, v2), sp.rels) == v1
+            @test normal_form(comm(y, v1), sp.rels) == v2
+            @test normal_form(comm(y, v2), sp.rels) == 0
+            @test normal_form(comm(h, v1), sp.rels) == v1
+            @test normal_form(comm(h, v2), sp.rels) == -v2
         end
 
         @testset "commutators for A_2 with hw [1,1]" begin
@@ -80,55 +80,55 @@
             v3 = basisV[3]
 
             # sl_3 relations
-            @test comm(x12, x23; strict=true) == x13
-            @test comm(x12, x13; strict=true) == 0
-            @test comm(x23, x13; strict=true) == 0
-            @test comm(y12, y23; strict=true) == -y13
-            @test comm(y12, y13; strict=true) == 0
-            @test comm(y23, y13; strict=true) == 0
-            @test comm(h1, h2; strict=true) == 0
-            @test comm(x12, y12; strict=true) == h1
-            @test comm(x23, y23; strict=true) == h2
-            @test comm(x13, y13; strict=true) == h1 + h2
-            @test comm(h1, x12; strict=true) == 2 * x12
-            @test comm(h1, x23; strict=true) == -x23
-            @test comm(h1, x13; strict=true) == x13
-            @test comm(h1, y12; strict=true) == -2 * y12
-            @test comm(h1, y23; strict=true) == y23
-            @test comm(h1, y13; strict=true) == -y13
-            @test comm(h2, x12; strict=true) == -x12
-            @test comm(h2, x23; strict=true) == 2 * x23
-            @test comm(h2, x13; strict=true) == x13
-            @test comm(h2, y12; strict=true) == y12
-            @test comm(h2, y23; strict=true) == -2 * y23
-            @test comm(h2, y13; strict=true) == -y13
+            @test normal_form(comm(x12, x23), sp.rels) == x13
+            @test normal_form(comm(x12, x13), sp.rels) == 0
+            @test normal_form(comm(x23, x13), sp.rels) == 0
+            @test normal_form(comm(y12, y23), sp.rels) == -y13
+            @test normal_form(comm(y12, y13), sp.rels) == 0
+            @test normal_form(comm(y23, y13), sp.rels) == 0
+            @test normal_form(comm(h1, h2), sp.rels) == 0
+            @test normal_form(comm(x12, y12), sp.rels) == h1
+            @test normal_form(comm(x23, y23), sp.rels) == h2
+            @test normal_form(comm(x13, y13), sp.rels) == h1 + h2
+            @test normal_form(comm(h1, x12), sp.rels) == 2 * x12
+            @test normal_form(comm(h1, x23), sp.rels) == -x23
+            @test normal_form(comm(h1, x13), sp.rels) == x13
+            @test normal_form(comm(h1, y12), sp.rels) == -2 * y12
+            @test normal_form(comm(h1, y23), sp.rels) == y23
+            @test normal_form(comm(h1, y13), sp.rels) == -y13
+            @test normal_form(comm(h2, x12), sp.rels) == -x12
+            @test normal_form(comm(h2, x23), sp.rels) == 2 * x23
+            @test normal_form(comm(h2, x13), sp.rels) == x13
+            @test normal_form(comm(h2, y12), sp.rels) == y12
+            @test normal_form(comm(h2, y23), sp.rels) == -2 * y23
+            @test normal_form(comm(h2, y13), sp.rels) == -y13
 
 
             # natural representation relations
-            @test comm(x12, v1; strict=true) == 0
-            @test comm(x23, v1; strict=true) == 0
-            @test comm(x13, v1; strict=true) == 0
-            @test comm(x12, v2; strict=true) == v1
-            @test comm(x23, v2; strict=true) == 0
-            @test comm(x13, v2; strict=true) == 0
-            @test comm(x12, v3; strict=true) == 0
-            @test comm(x23, v3; strict=true) == v2
-            @test comm(x13, v3; strict=true) == v1
-            @test comm(y12, v1; strict=true) == v2
-            @test comm(y23, v1; strict=true) == 0
-            @test comm(y13, v1; strict=true) == v3
-            @test comm(y12, v2; strict=true) == 0
-            @test comm(y23, v2; strict=true) == v3
-            @test comm(y13, v2; strict=true) == 0
-            @test comm(y12, v3; strict=true) == 0
-            @test comm(y23, v3; strict=true) == 0
-            @test comm(y13, v3; strict=true) == 0
-            @test comm(h1, v1; strict=true) == v1
-            @test comm(h2, v1; strict=true) == 0
-            @test comm(h1, v2; strict=true) == -v2
-            @test comm(h2, v2; strict=true) == v2
-            @test comm(h1, v3; strict=true) == 0
-            @test comm(h2, v3; strict=true) == -v3
+            @test normal_form(comm(x12, v1), sp.rels) == 0
+            @test normal_form(comm(x23, v1), sp.rels) == 0
+            @test normal_form(comm(x13, v1), sp.rels) == 0
+            @test normal_form(comm(x12, v2), sp.rels) == v1
+            @test normal_form(comm(x23, v2), sp.rels) == 0
+            @test normal_form(comm(x13, v2), sp.rels) == 0
+            @test normal_form(comm(x12, v3), sp.rels) == 0
+            @test normal_form(comm(x23, v3), sp.rels) == v2
+            @test normal_form(comm(x13, v3), sp.rels) == v1
+            @test normal_form(comm(y12, v1), sp.rels) == v2
+            @test normal_form(comm(y23, v1), sp.rels) == 0
+            @test normal_form(comm(y13, v1), sp.rels) == v3
+            @test normal_form(comm(y12, v2), sp.rels) == 0
+            @test normal_form(comm(y23, v2), sp.rels) == v3
+            @test normal_form(comm(y13, v2), sp.rels) == 0
+            @test normal_form(comm(y12, v3), sp.rels) == 0
+            @test normal_form(comm(y23, v3), sp.rels) == 0
+            @test normal_form(comm(y13, v3), sp.rels) == 0
+            @test normal_form(comm(h1, v1), sp.rels) == v1
+            @test normal_form(comm(h2, v1), sp.rels) == 0
+            @test normal_form(comm(h1, v2), sp.rels) == -v2
+            @test normal_form(comm(h2, v2), sp.rels) == v2
+            @test normal_form(comm(h1, v3), sp.rels) == 0
+            @test normal_form(comm(h2, v3), sp.rels) == -v3
         end
 
     end
@@ -175,23 +175,23 @@
             v2 = basisV[2]
 
             # sl_2 relations
-            @test comm(x, x; strict=true) == 0
-            @test comm(x, y; strict=true) == h
-            @test comm(x, h; strict=true) == -2x
-            @test comm(y, x; strict=true) == -h
-            @test comm(y, y; strict=true) == 0
-            @test comm(y, h; strict=true) == 2y
-            @test comm(h, x; strict=true) == 2x
-            @test comm(h, y; strict=true) == -2y
-            @test comm(h, h; strict=true) == 0
+            @test normal_form(comm(x, x), sp.rels) == 0
+            @test normal_form(comm(x, y), sp.rels) == h
+            @test normal_form(comm(x, h), sp.rels) == -2x
+            @test normal_form(comm(y, x), sp.rels) == -h
+            @test normal_form(comm(y, y), sp.rels) == 0
+            @test normal_form(comm(y, h), sp.rels) == 2y
+            @test normal_form(comm(h, x), sp.rels) == 2x
+            @test normal_form(comm(h, y), sp.rels) == -2y
+            @test normal_form(comm(h, h), sp.rels) == 0
 
             # natural representation relations
-            @test comm(x, v1; strict=true) == 0
-            @test comm(x, v2; strict=true) == v1
-            @test comm(y, v1; strict=true) == v2
-            @test comm(y, v2; strict=true) == 0
-            @test comm(h, v1; strict=true) == v1
-            @test comm(h, v2; strict=true) == -v2
+            @test normal_form(comm(x, v1), sp.rels) == 0
+            @test normal_form(comm(x, v2), sp.rels) == v1
+            @test normal_form(comm(y, v1), sp.rels) == v2
+            @test normal_form(comm(y, v2), sp.rels) == 0
+            @test normal_form(comm(h, v1), sp.rels) == v1
+            @test normal_form(comm(h, v2), sp.rels) == -v2
         end
 
     end

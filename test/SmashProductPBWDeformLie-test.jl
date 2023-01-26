@@ -68,7 +68,7 @@
 
                 if length(basis) >= 1
                     @test repr("text/plain", basis[1]) == """
-                        5×5 Matrix{QuadraticQuoAlgebraElem{fmpq}}:
+                        5×5 Matrix{FreeAlgebraElem{fmpq}}:
                          0                    -1*x_4     x_3     -1*x_1      x_9 + 1//2*x_10
                          x_4                  0          x_2     -1//2*x_10  x_5
                          -1*x_3               -1*x_2     0       -1*x_6      x_7

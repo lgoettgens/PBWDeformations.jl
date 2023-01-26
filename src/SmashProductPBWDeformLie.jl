@@ -15,13 +15,15 @@ function pbwdeform_eqs(deform::SmashProductDeformLie{C}; disabled::Vector{Symbol
     x(i) = gen(deform.alg, i)
     v(i) = gen(deform.alg, dimL + i)
 
+    nfcomm(a, b) = normal_form(comm(a, b), deform.rels)
+
     ## (a) κ is H-invariant
     iter_a =
         :a in disabled ? [] :
         (
-            comm(comm(h, v(i); strict=true), v(j)) # κ([h⋅v_i,v_j])
-            + comm(v(i), comm(h, v(j); strict=true)) # κ([v_i,h⋅v_j])
-            - comm(h, comm(v(i), v(j); strict=true)) # h⋅κ([v_i,v_j])
+            comm(nfcomm(h, v(i)), v(j)) # κ([h⋅v_i,v_j])
+            + comm(v(i), nfcomm(h, v(j))) # κ([v_i,h⋅v_j])
+            - comm(h, nfcomm(v(i), v(j))) # h⋅κ([v_i,v_j])
             for (h, (i, j)) in Iterators.product([x(i) for i in 1:dimL], Combinatorics.Combinations(dimV, 2))
         )
 
@@ -33,12 +35,10 @@ function pbwdeform_eqs(deform::SmashProductDeformLie{C}; disabled::Vector{Symbol
     iter_c =
         :c in disabled ? [] :
         (
-            comm(v(i), v(j); strict=true) * v(k) - v(i) * comm(v(j), v(k); strict=true) +
-            comm(v(j), v(k); strict=true) * v(i) - v(j) * comm(v(k), v(i); strict=true) +
-            comm(v(k), v(i); strict=true) * v(j) - v(k) * comm(v(i), v(j); strict=true) -
-            comm(v(k), v(j); strict=true) * v(i) + v(k) * comm(v(j), v(i); strict=true) -
-            comm(v(j), v(i); strict=true) * v(k) + v(j) * comm(v(i), v(k); strict=true) -
-            comm(v(i), v(k); strict=true) * v(j) + v(i) * comm(v(k), v(j); strict=true) for
+            nfcomm(v(i), v(j)) * v(k) - v(i) * nfcomm(v(j), v(k)) + nfcomm(v(j), v(k)) * v(i) -
+            v(j) * nfcomm(v(k), v(i)) + nfcomm(v(k), v(i)) * v(j) - v(k) * nfcomm(v(i), v(j)) -
+            nfcomm(v(k), v(j)) * v(i) + v(k) * nfcomm(v(j), v(i)) - nfcomm(v(j), v(i)) * v(k) +
+            v(j) * nfcomm(v(i), v(k)) - nfcomm(v(i), v(k)) * v(j) + v(i) * nfcomm(v(k), v(j)) for
             (i, j, k) in Combinatorics.Combinations(dimV, 3)
         )
 
@@ -46,7 +46,7 @@ function pbwdeform_eqs(deform::SmashProductDeformLie{C}; disabled::Vector{Symbol
     iter_d = :d in disabled ? [] : []
 
     iter = Iterators.flatten([iter_a, iter_b, iter_c, iter_d])
-    return Iterators.map(x -> normal_form(x, parent(x).rels), iter)
+    return Iterators.map(x -> normal_form(x, deform.rels), iter)
 end
 
 function pbwdeform_neqs(deform::SmashProductDeformLie{C}) where {C <: RingElement}

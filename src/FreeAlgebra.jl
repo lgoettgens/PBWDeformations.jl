@@ -35,6 +35,15 @@ mutable struct FreeAlgebraElem{C <: RingElement} <: AlgebraElem{C}
         return new{C}([a], [Int[]], 1, A)
     end
 
+
+    function FreeAlgebraElem{C1}(
+        A::FreeAlgebra{C1},
+        b::FreeAlgebraElem{C2},
+    ) where {C1 <: RingElement, C2 <: RingElement}
+        A.S == parent(b).S || throw(ArgumentError("Non-matching algebras"))
+        return new{C1}(map(base_ring(A), deepcopy(b.coeffs)), deepcopy(b.monoms), length(b.coeffs), A)
+    end
+
 end
 
 function free_algebra(R::Ring, S::Vector{Symbol})

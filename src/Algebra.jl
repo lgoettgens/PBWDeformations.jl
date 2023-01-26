@@ -424,3 +424,8 @@ function (A::Algebra{C})(b::AlgebraElem{C}) where {C <: RingElement}
     parent(b) === A || throw(ArgumentError("Non-matching algebras"))
     return b
 end
+
+function (A::Algebra{C1})(b::AlgebraElem{C2}) where {C1 <: RingElement, C2 <: RingElement}
+    A.S == parent(b).S || throw(ArgumentError("Non-matching algebras"))
+    return elem_type(A)(A, b)
+end

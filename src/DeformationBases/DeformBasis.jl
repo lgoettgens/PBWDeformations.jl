@@ -1,11 +1,11 @@
 """
-    DeformationMap{C} = Matrix{QuadraticQuoAlgebraElem{C}} where {C <: RingElement}
+    DeformationMap{C} = Matrix{FreeAlgebraElem{C}} where {C <: RingElement}
 
 The type for deformation maps of a Lie algebra smash product.
 The entry `kappa[i,j]` should be the image of ``v_i \\wedge v_j`` under the deformation map, i.e. ``κ(v_i,v_j)``.
 Deformation maps are always assumed to be quadratic and skew-symmetric.
 """
-DeformationMap{C} = Matrix{QuadraticQuoAlgebraElem{C}} where {C <: RingElement}
+DeformationMap{C} = Matrix{FreeAlgebraElem{C}} where {C <: RingElement}
 
 
 """

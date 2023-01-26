@@ -1,15 +1,16 @@
 """
 The struct representing a deformation of a Lie algebra smash product.
-It consists of the underlying QuadraticQuoAlgebra and some metadata.
+It consists of the underlying FreeAlgebra with relations and some metadata.
 It gets created by calling [`smash_product_deform_lie`](@ref).
 """
 mutable struct SmashProductDeformLie{C <: RingElement}
     dimL::Int
     dimV::Int
-    basisL::Vector{QuadraticQuoAlgebraElem{C}}
-    basisV::Vector{QuadraticQuoAlgebraElem{C}}
+    basisL::Vector{FreeAlgebraElem{C}}
+    basisV::Vector{FreeAlgebraElem{C}}
     coeff_ring::Ring
-    alg::QuadraticQuoAlgebra{C}
+    alg::FreeAlgebra{C}
+    rels::QuadraticRelations{C}
     symmetric::Bool
     kappa::DeformationMap{C}
 end
@@ -40,7 +41,7 @@ function smash_product_deform_lie(sp::SmashProductLie{C}, kappa::DeformationMap{
     end
 
     symmetric = true
-    rels = Dict{Tuple{Int, Int}, QuadraticQuoAlgebraElem{C}}()
+    rels = deepcopy(sp.rels)
     for i in 1:dimV, j in 1:dimV
         # We have the commutator relation [v_i, v_j] = kappa[i,j]
         # which is equivalent to v_i*v_j = v_j*v_i + kappa[i,j]
@@ -48,11 +49,8 @@ function smash_product_deform_lie(sp::SmashProductLie{C}, kappa::DeformationMap{
         symmetric &= iszero(kappa[i, j])
     end
 
-    alg, _ = quadratic_quo_algebra(sp.alg, rels)
-    basisL = map(alg, basisL)
-    basisV = map(alg, basisV)
-
-    return SmashProductDeformLie{C}(dimL, dimV, basisL, basisV, coeff_ring, alg, symmetric, kappa), (basisL, basisV)
+    return SmashProductDeformLie{C}(dimL, dimV, basisL, basisV, coeff_ring, sp.alg, rels, symmetric, kappa),
+    (basisL, basisV)
 end
 
 """
@@ -102,6 +100,7 @@ function change_base_ring(R::Ring, d::SmashProductDeformLie{C}) where {C <: Ring
     basisL = [gen(alg, i) for i in 1:d.dimL]
     basisV = [gen(alg, d.dimL + i) for i in 1:d.dimV]
     kappa = map(alg, d.kappa)
+    rels = QuadraticRelations{elem_type(R)}(k => alg(a) for (k, a) in d.rels)
 
-    return SmashProductDeformLie{elem_type(R)}(d.dimL, d.dimV, basisL, basisV, R, alg, d.symmetric, kappa)
+    return SmashProductDeformLie{elem_type(R)}(d.dimL, d.dimV, basisL, basisV, R, alg, rels, d.symmetric, kappa)
 end

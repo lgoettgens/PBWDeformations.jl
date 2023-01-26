@@ -28,7 +28,8 @@ struct ArcDiagDeformBasis{C <: RingElement} <: DeformBasis{C}
             iter = (
                 begin
                     @debug "Basis generation deg $(d), $(debug_counter = (debug_counter % len) + 1)/$(len), $(floor(Int, 100*debug_counter / len))%"
-                    basis_elem = arcdiag_to_basiselem__so_extpowers_stdmod(diag, dimV, e, d, sp.alg(0), sp.basisL)
+                    basis_elem =
+                        arcdiag_to_basiselem__so_extpowers_stdmod(diag, dimV, e, d, sp.alg(0), sp.basisL, sp.rels)
                     if !no_normalize
                         basis_elem = normalize(basis_elem)
                     end
@@ -97,8 +98,9 @@ function arcdiag_to_basiselem__so_extpowers_stdmod(
     dimV::Int,
     e::Int,
     d::Int,
-    zero::QuadraticQuoAlgebraElem{C},
-    basisL::Vector{QuadraticQuoAlgebraElem{C}},
+    zero::FreeAlgebraElem{C},
+    basisL::Vector{FreeAlgebraElem{C}},
+    rels::QuadraticRelations{C},
 ) where {C <: RingElement}
     iso_wedge2V_g = Dict{Vector{Int}, Int}()
     for (i, bs) in enumerate(Combinatorics.combinations(1:dimV, 2))
@@ -171,7 +173,7 @@ function arcdiag_to_basiselem__so_extpowers_stdmod(
                         symm_basiselem =
                             1 // factorial(length(basiselem)) *
                             sum(prod(basisL[ind]) for ind in Combinatorics.permutations(basiselem))
-                        entry += sign_lower_labels * normal_form(symm_basiselem, parent(zero).rels)
+                        entry += sign_lower_labels * normal_form(symm_basiselem, rels)
                     end
                     # end inner
 
