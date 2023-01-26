@@ -1,4 +1,4 @@
-mutable struct FreeAlgebra{C <: RingElement} <: Algebra{C}
+mutable struct FreeAlgebra{C <: RingElement} <: NCRing
     base_ring::Ring
     S::Vector{Symbol}
     num_gens::Int
@@ -13,7 +13,7 @@ mutable struct FreeAlgebra{C <: RingElement} <: Algebra{C}
 
 end
 
-mutable struct FreeAlgebraElem{C <: RingElement} <: AlgebraElem{C}
+mutable struct FreeAlgebraElem{C <: RingElement} <: NCRingElem
     coeffs::Vector{C}
     monoms::Vector{Vector{Int}}
     length::Int

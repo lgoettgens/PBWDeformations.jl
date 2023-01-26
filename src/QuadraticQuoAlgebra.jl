@@ -1,6 +1,6 @@
 QuadraticRelations{C} = Dict{Tuple{Int, Int}, FreeAlgebraElem{C}} where {C <: RingElement}
 
-function normal_form(a::AlgebraElem{C}, rels::QuadraticRelations) where {C <: RingElement}
+function normal_form(a::FreeAlgebraElem{C}, rels::QuadraticRelations) where {C <: RingElement}
     todo = deepcopy(a)
     result = zero(parent(todo))
     R = base_ring(a)

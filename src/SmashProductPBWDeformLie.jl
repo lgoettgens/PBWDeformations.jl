@@ -75,7 +75,7 @@ end
 #
 ###############################################################################
 
-@inline function coefficient_comparison(eq::AlgebraElem{C}) where {C <: RingElement}
+@inline function coefficient_comparison(eq::FreeAlgebraElem{C}) where {C <: RingElement}
     return eq.coeffs
 end
 

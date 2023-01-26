@@ -1,43 +1,40 @@
-abstract type Algebra{C} <: NCRing end
-abstract type AlgebraElem{C} <: NCRingElem end
+parent(a::FreeAlgebraElem{C}) where {C <: RingElement} = a.parent
 
-parent(a::AlgebraElem{C}) where {C <: RingElement} = a.parent
+base_ring(A::FreeAlgebra{C}) where {C <: RingElement} = A.base_ring::parent_type(C)
 
-base_ring(A::Algebra{C}) where {C <: RingElement} = A.base_ring::parent_type(C)
+base_ring(a::FreeAlgebraElem{C}) where {C <: RingElement} = base_ring(parent(a))
 
-base_ring(a::AlgebraElem{C}) where {C <: RingElement} = base_ring(parent(a))
+coefficient_ring(A::FreeAlgebra{C}) where {C <: RingElement} = A.base_ring::parent_type(C)
 
-coefficient_ring(A::Algebra{C}) where {C <: RingElement} = A.base_ring::parent_type(C)
+coefficient_ring(a::FreeAlgebraElem{C}) where {C <: RingElement} = coefficient_ring(parent(a))
 
-coefficient_ring(a::AlgebraElem{C}) where {C <: RingElement} = coefficient_ring(parent(a))
+parent_type(a::FreeAlgebraElem{C}) where {C <: RingElement} = parent_type(typeof(a))
 
-parent_type(a::AlgebraElem{C}) where {C <: RingElement} = parent_type(typeof(a))
+elem_type(A::FreeAlgebra{C}) where {C <: RingElement} = elem_type(typeof(A))
 
-elem_type(A::Algebra{C}) where {C <: RingElement} = elem_type(typeof(A))
+symbols(A::FreeAlgebra) = A.S
 
-symbols(A::Algebra) = A.S
+ngens(A::FreeAlgebra) = A.num_gens
 
-ngens(A::Algebra) = A.num_gens
-
-function gen(A::Algebra{C}, i::Int) where {C <: RingElement}
+function gen(A::FreeAlgebra{C}, i::Int) where {C <: RingElement}
     1 <= i <= A.num_gens || throw(ArgumentError("Invalid generator index `i`."))
-    return elem_type(A)(A, [one(A.base_ring)], [[i]])
+    return FreeAlgebraElem{C}(A, [one(A.base_ring)], [[i]])
 end
 
-function gens(A::Algebra{C}) where {C <: RingElement}
+function gens(A::FreeAlgebra{C}) where {C <: RingElement}
     return [gen(A, i) for i in 1:A.num_gens]
 end
 
 # variables actually occuring in a.
-function vars(a::AlgebraElem{C}) where {C <: RingElement}
+function vars(a::FreeAlgebraElem{C}) where {C <: RingElement}
     return [gen(parent(a), i) for i in var_ids(a)]
 end
 
-function var_ids(a::AlgebraElem{C}) where {C <: RingElement}
+function var_ids(a::FreeAlgebraElem{C}) where {C <: RingElement}
     return sort!(unique!(flatten(a.monoms)))
 end
 
-function check_parent(a1::AlgebraElem{C}, a2::AlgebraElem{C}, throw::Bool=true) where {C <: RingElement}
+function check_parent(a1::FreeAlgebraElem{C}, a2::FreeAlgebraElem{C}, throw::Bool=true) where {C <: RingElement}
     b = parent(a1) !== parent(a2)
     b & throw && error("Incompatible quadratic algebra elements")
     return !b
@@ -45,27 +42,27 @@ end
 
 # TODO: monomial vector manipulation
 
-function coeff(a::AlgebraElem, i::Int)
+function coeff(a::FreeAlgebraElem, i::Int)
     return a.coeffs[i]
 end
 
-function coeff(a::AlgebraElem{C}, m::Vector{Int}) where {C <: RingElement}
+function coeff(a::FreeAlgebraElem{C}, m::Vector{Int}) where {C <: RingElement}
     i = get_index(a, m)
     return isnothing(i) ? zero(C) : a.coeffs[i]
 end
 
-function coeff(a::AlgebraElem{C}, m::AlgebraElem{C}) where {C <: RingElement}
+function coeff(a::FreeAlgebraElem{C}, m::FreeAlgebraElem{C}) where {C <: RingElement}
     is_monomial(m) || throw(ArgumentError("`m` needs to be a monomial"))
     return coeff(a, m.monoms[1])
 end
 
 # TODO: setcoeff!
 
-function get_index(a::AlgebraElem{C}, m::Vector{Int}) where {C <: RingElement}
+function get_index(a::FreeAlgebraElem{C}, m::Vector{Int}) where {C <: RingElement}
     return findfirst(x -> x == m, a.monoms)
 end
 
-function Base.hash(a::AlgebraElem{C}, h::UInt) where {C <: RingElement}
+function Base.hash(a::FreeAlgebraElem{C}, h::UInt) where {C <: RingElement}
     b1 = 0x39fec7cd66dff6b4 % UInt
     b2 = 0x1e9a94f334b676fc % UInt
     h1 = xor(h, b1)
@@ -81,40 +78,40 @@ function Base.hash(a::AlgebraElem{C}, h::UInt) where {C <: RingElement}
     return xor(h1, h2)
 end
 
-# TODO function is_unit(a::AlgebraElem{C}) where C <: RingElement
+# TODO function is_unit(a::FreeAlgebraElem{C}) where C <: RingElement
 
-function monomial(a::AlgebraElem, i::Int)
+function monomial(a::FreeAlgebraElem, i::Int)
     R = base_ring(a)
     return parent(a)([one(R)], [a.monoms[i]])
 end
 
 # TODO monomial!
 
-function term(a::AlgebraElem, i::Int)
+function term(a::FreeAlgebraElem, i::Int)
     return parent(a)([deepcopy(a.coeffs[i])], [a.monoms[i]])
 end
 
-function length(a::AlgebraElem)
+function length(a::FreeAlgebraElem)
     return a.length
 end
 
-function zero(A::Algebra{C}) where {C <: RingElement}
+function zero(A::FreeAlgebra{C}) where {C <: RingElement}
     return A()
 end
 
-function zero(a::AlgebraElem)
+function zero(a::FreeAlgebraElem)
     return zero(parent(a))
 end
 
-function one(A::Algebra{C}) where {C <: RingElement}
+function one(A::FreeAlgebra{C}) where {C <: RingElement}
     return A(one(A.base_ring))
 end
 
-function one(a::AlgebraElem)
+function one(a::FreeAlgebraElem)
     return one(parent(a))
 end
 
-function canonical_unit(a::AlgebraElem{C}) where {C <: RingElement}
+function canonical_unit(a::FreeAlgebraElem{C}) where {C <: RingElement}
     if iszero(a)
         return one(parent(a))
     end
@@ -122,7 +119,7 @@ function canonical_unit(a::AlgebraElem{C}) where {C <: RingElement}
     return canonical_unit(a.coeffs[ind])
 end
 
-function show(io::IO, A::Algebra)
+function show(io::IO, A::FreeAlgebra)
     local max_gens = 5 # largest number of generators to print
     n = A.num_gens
     print(io, showname(typeof(A)) * " with ")
@@ -141,7 +138,7 @@ function show(io::IO, A::Algebra)
     print(IOContext(io, :compact => true), base_ring(A))
 end
 
-function show(io::IO, a::AlgebraElem{C}) where {C <: RingElement}
+function show(io::IO, a::FreeAlgebraElem{C}) where {C <: RingElement}
     if iszero(a)
         print(io, "0")
     else
@@ -180,26 +177,26 @@ end
 #
 ###############################################################################
 
-Base.:(==)(a::AlgebraElem{C}, b::AlgebraElem{C}) where {C <: RingElement} = isequal(a, b)
+Base.:(==)(a::FreeAlgebraElem{C}, b::FreeAlgebraElem{C}) where {C <: RingElement} = isequal(a, b)
 
-function Base.isequal(a::AlgebraElem{C}, b::AlgebraElem{C}) where {C <: RingElement}
+function Base.isequal(a::FreeAlgebraElem{C}, b::FreeAlgebraElem{C}) where {C <: RingElement}
     check_parent(a, b, false) || return false
     return iszero(a - b)
 end
 
-Base.:(==)(n::Union{Integer, Rational, AbstractFloat}, a::AlgebraElem) = isequal(a, n)
-Base.isequal(n::Union{Integer, Rational, AbstractFloat}, a::AlgebraElem) = isequal(a, n)
-Base.:(==)(a::AlgebraElem, n::Union{Integer, Rational, AbstractFloat}) = isequal(a, n)
+Base.:(==)(n::Union{Integer, Rational, AbstractFloat}, a::FreeAlgebraElem) = isequal(a, n)
+Base.isequal(n::Union{Integer, Rational, AbstractFloat}, a::FreeAlgebraElem) = isequal(a, n)
+Base.:(==)(a::FreeAlgebraElem, n::Union{Integer, Rational, AbstractFloat}) = isequal(a, n)
 
-function Base.isequal(a::AlgebraElem, n::Union{Integer, Rational, AbstractFloat})
+function Base.isequal(a::FreeAlgebraElem, n::Union{Integer, Rational, AbstractFloat})
     return iszero(a - parent(a)(n))
 end
 
-Base.:(==)(n::C, a::AlgebraElem{C}) where {C <: RingElem} = isequal(a, n)
-Base.:isequal(n::C, a::AlgebraElem{C}) where {C <: RingElem} = isequal(a, n)
-Base.:(==)(a::AlgebraElem{C}, n::C) where {C <: RingElem} = isequal(a, n)
+Base.:(==)(n::C, a::FreeAlgebraElem{C}) where {C <: RingElem} = isequal(a, n)
+Base.:isequal(n::C, a::FreeAlgebraElem{C}) where {C <: RingElem} = isequal(a, n)
+Base.:(==)(a::FreeAlgebraElem{C}, n::C) where {C <: RingElem} = isequal(a, n)
 
-function Base.isequal(a::AlgebraElem{C}, n::C) where {C <: RingElem}
+function Base.isequal(a::FreeAlgebraElem{C}, n::C) where {C <: RingElem}
     return iszero(a - parent(a)(n))
 end
 
@@ -210,7 +207,7 @@ end
 #
 ###############################################################################
 
-function Base.:-(a::AlgebraElem{C}) where {C <: RingElement}
+function Base.:-(a::FreeAlgebraElem{C}) where {C <: RingElement}
     r = zero(a)
     fit!(r, length(a))
     for i in 1:length(a)
@@ -221,7 +218,7 @@ function Base.:-(a::AlgebraElem{C}) where {C <: RingElement}
 end
 
 
-function Base.:+(a::AlgebraElem{C}, b::AlgebraElem{C}) where {C <: RingElement}
+function Base.:+(a::FreeAlgebraElem{C}, b::FreeAlgebraElem{C}) where {C <: RingElement}
     check_parent(a, b)
     r = deepcopy(a)
     for i in 1:length(b)
@@ -241,7 +238,7 @@ function Base.:+(a::AlgebraElem{C}, b::AlgebraElem{C}) where {C <: RingElement}
     return r
 end
 
-function Base.:+(a::AlgebraElem{C1}, b::C2) where {C1 <: RingElement, C2 <: RingElement}
+function Base.:+(a::FreeAlgebraElem{C1}, b::C2) where {C1 <: RingElement, C2 <: RingElement}
     r = deepcopy(a)
     j = get_index(a, Int[])
     if isnothing(j)
@@ -258,12 +255,12 @@ function Base.:+(a::AlgebraElem{C1}, b::C2) where {C1 <: RingElement, C2 <: Ring
     return r
 end
 
-function Base.:+(a::C1, b::AlgebraElem{C2}) where {C1 <: RingElement, C2 <: RingElement}
+function Base.:+(a::C1, b::FreeAlgebraElem{C2}) where {C1 <: RingElement, C2 <: RingElement}
     return b + a
 end
 
 
-function Base.:-(a::AlgebraElem{C}, b::AlgebraElem{C}) where {C <: RingElement}
+function Base.:-(a::FreeAlgebraElem{C}, b::FreeAlgebraElem{C}) where {C <: RingElement}
     check_parent(a, b)
     r = deepcopy(a)
     for i in 1:length(b)
@@ -284,7 +281,7 @@ function Base.:-(a::AlgebraElem{C}, b::AlgebraElem{C}) where {C <: RingElement}
 end
 
 
-function Base.:*(c::C, a::AlgebraElem{C}) where {C <: RingElem}
+function Base.:*(c::C, a::FreeAlgebraElem{C}) where {C <: RingElem}
     parent(c) === base_ring(a) || throw(ArgumentError("Incompatible coefficient rings"))
     r = zero(a)
     if !iszero(c)
@@ -301,7 +298,7 @@ function Base.:*(c::C, a::AlgebraElem{C}) where {C <: RingElem}
     return r
 end
 
-function Base.:*(c::C, a::AlgebraElem) where {C <: RingElement}
+function Base.:*(c::C, a::FreeAlgebraElem) where {C <: RingElement}
     r = zero(a)
     if !iszero(c)
         fit!(r, length(a))
@@ -317,7 +314,7 @@ function Base.:*(c::C, a::AlgebraElem) where {C <: RingElement}
     return r
 end
 
-function Base.:*(a::AlgebraElem{C}, b::AlgebraElem{C}) where {C <: RingElement}
+function Base.:*(a::FreeAlgebraElem{C}, b::FreeAlgebraElem{C}) where {C <: RingElement}
     check_parent(a, b)
     r = zero(a)
     for i in 1:length(a), j in 1:length(b)
@@ -343,7 +340,7 @@ function Base.:*(a::AlgebraElem{C}, b::AlgebraElem{C}) where {C <: RingElement}
 end
 
 
-function Base.:^(a::AlgebraElem{C}, n::Int) where {C <: RingElement}
+function Base.:^(a::FreeAlgebraElem{C}, n::Int) where {C <: RingElement}
     n >= 0 || throw(DomainError(n, "The exponent needs to be nonnegative."))
 
     r = one(a)
@@ -362,11 +359,11 @@ function Base.:^(a::AlgebraElem{C}, n::Int) where {C <: RingElement}
 end
 
 
-function comm(a::AlgebraElem{C}, b::AlgebraElem{C}) where {C <: RingElement}
+function comm(a::FreeAlgebraElem{C}, b::FreeAlgebraElem{C}) where {C <: RingElement}
     return a * b - b * a
 end
 
-function divexact(a::AlgebraElem{C}, c::C) where {C <: RingElement}
+function divexact(a::FreeAlgebraElem{C}, c::C) where {C <: RingElement}
     a = deepcopy(a)
     for i in 1:length(a)
         a.coeffs[i] = divexact(a.coeffs[i], c)
@@ -382,7 +379,7 @@ end
 
 ## TODO: continue
 
-function fit!(a::AlgebraElem{C}, n::Int) where {C <: RingElement}
+function fit!(a::FreeAlgebraElem{C}, n::Int) where {C <: RingElement}
     if length(a) < n
         resize!(a.coeffs, n)
         resize!(a.monoms, n)
@@ -399,33 +396,33 @@ end
 #
 ###############################################################################
 
-function (A::Algebra{C})(c::Vector{C}, m::Vector{Vector{Int}}) where {C <: RingElement}
-    return elem_type(A)(A, c, m)
+function (A::FreeAlgebra{C})(c::Vector{C}, m::Vector{Vector{Int}}) where {C <: RingElement}
+    return FreeAlgebraElem{C}(A, c, m)
 end
 
-function (A::Algebra{C})(b::RingElement) where {C <: RingElement}
+function (A::FreeAlgebra{C})(b::RingElement) where {C <: RingElement}
     return A(base_ring(A)(b))
 end
 
-function (A::Algebra{C})() where {C <: RingElement}
-    return elem_type(A)(A)
+function (A::FreeAlgebra{C})() where {C <: RingElement}
+    return FreeAlgebraElem{C}(A)
 end
 
-function (A::Algebra{C})(b::Union{Integer, Rational, AbstractFloat}) where {C <: RingElement}
-    return iszero(b) ? A() : elem_type(A)(A, base_ring(A)(b))
+function (A::FreeAlgebra{C})(b::Union{Integer, Rational, AbstractFloat}) where {C <: RingElement}
+    return iszero(b) ? A() : FreeAlgebraElem{C}(A, base_ring(A)(b))
 end
 
-function (A::Algebra{C})(b::C) where {C <: RingElement}
+function (A::FreeAlgebra{C})(b::C) where {C <: RingElement}
     parent(b) === base_ring(A) || throw(ArgumentError("Non-matching base rings"))
-    return elem_type(A)(A, b)
+    return FreeAlgebraElem{C}(A, b)
 end
 
-function (A::Algebra{C})(b::AlgebraElem{C}) where {C <: RingElement}
+function (A::FreeAlgebra{C})(b::FreeAlgebraElem{C}) where {C <: RingElement}
     parent(b) === A || throw(ArgumentError("Non-matching algebras"))
     return b
 end
 
-function (A::Algebra{C1})(b::AlgebraElem{C2}) where {C1 <: RingElement, C2 <: RingElement}
+function (A::FreeAlgebra{C1})(b::FreeAlgebraElem{C2}) where {C1 <: RingElement, C2 <: RingElement}
     A.S == parent(b).S || throw(ArgumentError("Non-matching algebras"))
-    return elem_type(A)(A, b)
+    return FreeAlgebraElem{C1}(A, b)
 end
