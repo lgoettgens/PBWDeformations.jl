@@ -98,8 +98,8 @@ function arcdiag_to_basiselem__so_extpowers_stdmod(
     dimV::Int,
     e::Int,
     d::Int,
-    zero::FreeAlgebraElem{C},
-    basisL::Vector{FreeAlgebraElem{C}},
+    zero::FreeAssAlgElem{C},
+    basisL::Vector{<:FreeAssAlgElem{C}},
     rels::QuadraticRelations{C},
 ) where {C <: RingElement}
     iso_wedge2V_g = Dict{Vector{Int}, Int}()
@@ -171,7 +171,7 @@ function arcdiag_to_basiselem__so_extpowers_stdmod(
                     end
                     if !zeroelem
                         symm_basiselem =
-                            1 // factorial(length(basiselem)) *
+                            C(1 // factorial(length(basiselem))) *
                             sum(prod(basisL[ind]) for ind in Combinatorics.permutations(basiselem))
                         entry += sign_lower_labels * normal_form(symm_basiselem, rels)
                     end

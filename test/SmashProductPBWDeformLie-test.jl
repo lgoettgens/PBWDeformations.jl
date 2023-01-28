@@ -22,7 +22,7 @@
 
     @testset "pbwdeforms_all construction stuff" begin
         @testset "coefficient_comparison tests" begin
-            A, (x, y, z) = free_algebra(QQ, ["x", "y", "z"])
+            A, (x, y, z) = FreeAssociativeAlgebra(QQ, ["x", "y", "z"])
             eq = QQ(2 // 3) * x + 88 * y * z - 12 * x * z + 3 * y + 0 * z^4 - 2 * y + 12 * x * z
             @test issetequal(PD.coefficient_comparison(eq), elem_type(QQ)[2//3, 88, 1])
         end
@@ -68,7 +68,7 @@
 
                 if length(basis) >= 1
                     @test repr("text/plain", basis[1]) == """
-                        5×5 Matrix{FreeAlgebraElem{fmpq}}:
+                        5×5 Matrix{FreeAssAlgElem{fmpq}}:
                          0                    -1*x_4     x_3     -1*x_1      x_9 + 1//2*x_10
                          x_4                  0          x_2     -1//2*x_10  x_5
                          -1*x_3               -1*x_2     0       -1*x_6      x_7

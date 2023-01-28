@@ -75,8 +75,8 @@ end
 #
 ###############################################################################
 
-@inline function coefficient_comparison(eq::FreeAlgebraElem{C}) where {C <: RingElement}
-    return eq.coeffs
+@inline function coefficient_comparison(eq::FreeAssAlgElem{C}) where {C <: RingElement}
+    return collect(coefficients(eq))
 end
 
 @inline function linpoly_to_spvector(a::fmpq_mpoly, var_lookup::Dict{fmpq_mpoly, Int}, nvars::Int)
@@ -166,7 +166,7 @@ function pbwdeforms_all(
     @info "Constructing kappa..."
     kappa = fill(new_sp.alg(0), dimV, dimV)
     for (i, b) in enumerate(deform_basis)
-        kappa += vars[i] .* new_sp.alg.(b)
+        kappa += vars[i] .* map(e -> change_base_ring(R, e, parent=new_sp.alg), b)
     end
 
     @info "Constructing deformation..."

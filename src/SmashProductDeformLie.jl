@@ -1,15 +1,15 @@
 """
 The struct representing a deformation of a Lie algebra smash product.
-It consists of the underlying FreeAlgebra with relations and some metadata.
+It consists of the underlying FreeAssAlgebra with relations and some metadata.
 It gets created by calling [`smash_product_deform_lie`](@ref).
 """
 mutable struct SmashProductDeformLie{C <: RingElement}
     dimL::Int
     dimV::Int
-    basisL::Vector{FreeAlgebraElem{C}}
-    basisV::Vector{FreeAlgebraElem{C}}
+    basisL::Vector{FreeAssAlgElem{C}}
+    basisV::Vector{FreeAssAlgElem{C}}
     coeff_ring::Ring
-    alg::FreeAlgebra{C}
+    alg::FreeAssAlgebra{C}
     rels::QuadraticRelations{C}
     symmetric::Bool
     kappa::DeformationMap{C}
@@ -34,9 +34,9 @@ function smash_product_deform_lie(sp::SmashProductLie{C}, kappa::DeformationMap{
 
     for i in 1:dimV, j in 1:i
         kappa[i, j] == -kappa[j, i] || throw(ArgumentError("kappa is not skew-symmetric."))
-        all(x -> x <= dimL, var_ids(kappa[i, j])) ||
+        all(x -> x <= dimL, Iterators.flatten(exponent_words(kappa[i, j]))) ||
             throw(ArgumentError("kappa does not only take values in the hopf algebra"))
-        all(x -> x <= dimL, var_ids(kappa[j, i])) ||
+        all(x -> x <= dimL, Iterators.flatten(exponent_words(kappa[j, i]))) ||
             throw(ArgumentError("kappa does not only take values in the hopf algebra"))
     end
 
@@ -96,11 +96,11 @@ function show(io::IO, deform::SmashProductDeformLie)
 end
 
 function change_base_ring(R::Ring, d::SmashProductDeformLie{C}) where {C <: RingElement}
-    alg = change_base_ring(R, d.alg)
-    basisL = [gen(alg, i) for i in 1:d.dimL]
-    basisV = [gen(alg, d.dimL + i) for i in 1:d.dimV]
-    kappa = map(alg, d.kappa)
-    rels = QuadraticRelations{elem_type(R)}(k => alg(a) for (k, a) in d.rels)
+    alg, _ = FreeAssociativeAlgebra(R, d.alg.S)
+    basisL = map(b -> change_base_ring(R, b, parent=alg), d.basisL)
+    basisV = map(b -> change_base_ring(R, b, parent=alg), d.basisV)
+    kappa = map(e -> change_base_ring(R, e, parent=alg), d.kappa)
+    rels = QuadraticRelations{elem_type(R)}(k => change_base_ring(R, a, parent=alg) for (k, a) in d.rels)
 
     return SmashProductDeformLie{elem_type(R)}(d.dimL, d.dimV, basisL, basisV, R, alg, rels, d.symmetric, kappa)
 end

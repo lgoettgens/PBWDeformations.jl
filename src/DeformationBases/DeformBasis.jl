@@ -1,11 +1,11 @@
 """
-    DeformationMap{C} = Matrix{FreeAlgebraElem{C}} where {C <: RingElement}
+    DeformationMap{C} = Matrix{FreeAssAlgElem{C}} where {C <: RingElement}
 
 The type for deformation maps of a Lie algebra smash product.
 The entry `kappa[i,j]` should be the image of ``v_i \\wedge v_j`` under the deformation map, i.e. ``κ(v_i,v_j)``.
 Deformation maps are always assumed to be quadratic and skew-symmetric.
 """
-DeformationMap{C} = Matrix{FreeAlgebraElem{C}} where {C <: RingElement}
+DeformationMap{C} = Matrix{<:FreeAssAlgElem{C}} where {C <: RingElement}
 
 
 """
@@ -46,5 +46,5 @@ function normalize_default(m::DeformationMap{C}) where {C <: RingElement}
         return m
     end
     cu = canonical_unit(m[CartesianIndex(nz_index[2], nz_index[1])])
-    m = map(e -> divexact(e, cu), m)
+    m = map(e -> C(1 // cu) * e, m)
 end

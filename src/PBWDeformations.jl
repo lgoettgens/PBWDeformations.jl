@@ -6,6 +6,8 @@ using SparseArrays
 
 import AbstractAlgebra:
     AllParts,
+    FreeAssAlgebra,
+    FreeAssAlgElem,
     Generic,
     NCRing,
     NCRingElem,
@@ -17,6 +19,7 @@ import AbstractAlgebra:
     change_base_ring,
     check_parent,
     coeff,
+    coefficient_ring,
     divexact,
     elem_type,
     gen,

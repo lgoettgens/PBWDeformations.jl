@@ -30,16 +30,16 @@ end
 
 """
 The struct representing a Lie algebra smash product.
-It consists of the underlying FreeAlgebra with relations and some metadata.
+It consists of the underlying FreeAssAlgebra with relations and some metadata.
 It gets created by calling [`smash_product_lie`](@ref).
 """
 mutable struct SmashProductLie{C <: RingElement}
     dimL::Int
     dimV::Int
-    basisL::Vector{FreeAlgebraElem{C}}
-    basisV::Vector{FreeAlgebraElem{C}}
+    basisL::Vector{FreeAssAlgElem{C}}
+    basisV::Vector{FreeAssAlgElem{C}}
     coeff_ring::Ring
-    alg::FreeAlgebra{C}
+    alg::FreeAssAlgebra{C}
     rels::QuadraticRelations{C}
     info::SmashProductLieInfo
 end
@@ -68,7 +68,7 @@ function smash_product_lie(
     dimL = length(symbL)
     dimV = length(symbV)
 
-    free_alg, _ = free_algebra(coeff_ring, [symbL; symbV])
+    free_alg, _ = FreeAssociativeAlgebra(coeff_ring, [symbL; symbV])
     free_basisL = [gen(free_alg, i) for i in 1:dimL]
     free_basisV = [gen(free_alg, dimL + i) for i in 1:dimV]
 
@@ -120,9 +120,9 @@ Constructs the smash product of the abstract semisimple Lie algebra given by
 coefficient ring `coeff_ring`.
 
 # Example
-```jldoctest
+```jldoctest; filter = r"AbstractAlgebra.Generic."
 julia> smash_product_lie_highest_weight(QQ, 'A', 1, [1])
-(Lie Algebra Smash Product with basis x_1, x_2, x_3, v_1, v_2 over Rational Field, (FreeAlgebraElem{fmpq}[x_1, x_2, x_3], FreeAlgebraElem{fmpq}[v_1, v_2]))
+(Lie Algebra Smash Product with basis x_1, x_2, x_3, v_1, v_2 over Rational Field, (FreeAssAlgElem{fmpq}[x_1, x_2, x_3], FreeAssAlgElem{fmpq}[v_1, v_2]))
 ```
 """
 function smash_product_lie_highest_weight(coeff_ring::Ring, dynkin::Char, n::Int, lambda::Vector{Int})
@@ -255,10 +255,10 @@ end
 
 
 function change_base_ring(R::Ring, sp::SmashProductLie{C}) where {C <: RingElement}
-    alg = change_base_ring(R, sp.alg)
-    basisL = [gen(alg, i) for i in 1:sp.dimL]
-    basisV = [gen(alg, sp.dimL + i) for i in 1:sp.dimV]
-    rels = QuadraticRelations{elem_type(R)}(k => alg(a) for (k, a) in sp.rels)
+    alg, _ = FreeAssociativeAlgebra(R, sp.alg.S)
+    basisL = map(b -> change_base_ring(R, b, parent=alg), sp.basisL)
+    basisV = map(b -> change_base_ring(R, b, parent=alg), sp.basisV)
+    rels = QuadraticRelations{elem_type(R)}(k => change_base_ring(R, a, parent=alg) for (k, a) in sp.rels)
 
     return SmashProductLie{elem_type(R)}(sp.dimL, sp.dimV, basisL, basisV, R, alg, rels, sp.info)
 end
