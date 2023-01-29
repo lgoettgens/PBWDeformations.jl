@@ -9,58 +9,22 @@ import AbstractAlgebra:
     FreeAssAlgebra,
     FreeAssAlgElem,
     Generic,
-    NCRing,
-    NCRingElem,
     Partition,
     Ring,
     RingElement,
-    base_ring,
     canonical_unit,
     change_base_ring,
-    check_parent,
-    coeff,
-    coefficient_ring,
-    divexact,
-    elem_type,
-    gen,
     gens,
-    is_gen,
-    is_monomial,
-    monomial,
-    ngens,
-    parent_type,
-    symbols,
-    vars
+    ngens
 
 import Oscar: comm, normal_form
 
-import Base:
-    Array,
-    deepcopy,
-    deepcopy_internal,
-    hash,
-    isequal,
-    isone,
-    iszero,
-    length,
-    one,
-    parent,
-    show,
-    sum,
-    xor,
-    zero,
-    +,
-    -,
-    *,
-    ^,
-    ==
+import Base: hash, length, show, sum, ==
 
 export ArcDiagram,
     ArcDiagDeformBasis,
     DeformationMap,
     DeformBasis,
-    FreeAlgebra,
-    FreeAlgebraElem,
     Pseudograph2,
     PseudographDeformBasis,
     QuadraticRelations,
@@ -71,7 +35,6 @@ export ArcDiagram,
 
 export all_arc_diagrams,
     all_pseudographs,
-    free_algebra,
     is_crossing_free,
     is_pbwdeform,
     lookup_data,
@@ -95,7 +58,6 @@ GAP = Oscar.GAP
 
 include("Util.jl")
 include("LieAlgebraStructConsts.jl")
-include("FreeAlgebra.jl")
 include("QuadraticQuoAlgebra.jl")
 
 include("DeformationBases/DeformBasis.jl")
