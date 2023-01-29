@@ -42,15 +42,15 @@
 
                 @test repr("text/plain", basis[1][1, 2]) == "1"
                 if length(basis) >= 2
-                    @test repr("text/plain", basis[2][1, 2]) == "-2*x_3 + 4*x_1*x_2 + x_3^2"
+                    @test repr("text/plain", basis[2][1, 2]) == "4*x_1*x_2 + x_3^2 - 2*x_3"
                 end
                 if length(basis) >= 3
                     @test repr("text/plain", basis[3][1, 2]) ==
-                          "8*x_3 + 16*x_1*x_2 + -32*x_1*x_2*x_3 + -4*x_3^3 + 16*x_1^2*x_2^2 + 8*x_1*x_2*x_3^2 + x_3^4"
+                          "16*x_1^2*x_2^2 + 8*x_1*x_2*x_3^2 + x_3^4 - 32*x_1*x_2*x_3 - 4*x_3^3 + 16*x_1*x_2 + 8*x_3"
                 end
                 if length(basis) >= 4
                     @test repr("text/plain", basis[4][1, 2]) ==
-                          "-96*x_3 + 64*x_1*x_2 + -64*x_1*x_2*x_3 + 40*x_3^3 + 320*x_1^2*x_2^2 + 208*x_1*x_2*x_3^2 + -288*x_1^2*x_2^2*x_3 + -96*x_1*x_2*x_3^3 + -6*x_3^5 + 64*x_1^3*x_2^3 + 48*x_1^2*x_2^2*x_3^2 + 12*x_1*x_2*x_3^4 + x_3^6"
+                          "64*x_1^3*x_2^3 + 48*x_1^2*x_2^2*x_3^2 + 12*x_1*x_2*x_3^4 + x_3^6 - 288*x_1^2*x_2^2*x_3 - 96*x_1*x_2*x_3^3 - 6*x_3^5 + 320*x_1^2*x_2^2 + 208*x_1*x_2*x_3^2 - 64*x_1*x_2*x_3 + 40*x_3^3 + 64*x_1*x_2 - 96*x_3"
                 end
             end
 
@@ -67,13 +67,13 @@
                 end
 
                 if length(basis) >= 1
-                    @test repr("text/plain", basis[1]) == """
+                    @test replace(repr("text/plain", basis[1]), r"AbstractAlgebra\.Generic\." => "") == """
                         5×5 Matrix{FreeAssAlgElem{fmpq}}:
-                         0                    -1*x_4     x_3     -1*x_1      x_9 + 1//2*x_10
-                         x_4                  0          x_2     -1//2*x_10  x_5
-                         -1*x_3               -1*x_2     0       -1*x_6      x_7
-                         x_1                  1//2*x_10  x_6     0           x_8
-                         -1*x_9 + -1//2*x_10  -1*x_5     -1*x_7  -1*x_8      0"""
+                         0                 -x_4       x_3   -x_1        x_9 + 1//2*x_10
+                         x_4               0          x_2   -1//2*x_10  x_5
+                         -x_3              -x_2       0     -x_6        x_7
+                         x_1               1//2*x_10  x_6   0           x_8
+                         -x_9 - 1//2*x_10  -x_5       -x_7  -x_8        0"""
                 end
 
             end
