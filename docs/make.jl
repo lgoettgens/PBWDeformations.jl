@@ -35,7 +35,7 @@ makedocs(
         "Util functions" => "util.md",
         "References" => "references.md",
     ],
-    doctestfilters = [r"(Nemo\.)?fmpq"],
+    # doctestfilters = [r"(Nemo\.)?fmpq"],
 )
 
 deploydocs(

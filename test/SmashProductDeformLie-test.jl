@@ -26,15 +26,15 @@
             # Test the module basis relations
             for i in eachindex(basisV), j in eachindex(basisV)
                 if i == 1 && j == 2
-                    @test comm(basisV[i], basisV[j]; strict=true) == basisL[1]
+                    @test normal_form(comm(basisV[i], basisV[j]), deform.rels) == basisL[1]
                 elseif i == 2 && j == 1
-                    @test comm(basisV[i], basisV[j]; strict=true) == -basisL[1]
+                    @test normal_form(comm(basisV[i], basisV[j]), deform.rels) == -basisL[1]
                 elseif i == 3 && j == 4
-                    @test comm(basisV[i], basisV[j]; strict=true) == basisL[2]
+                    @test normal_form(comm(basisV[i], basisV[j]), deform.rels) == basisL[2]
                 elseif i == 4 && j == 3
-                    @test comm(basisV[i], basisV[j]; strict=true) == -basisL[2]
+                    @test normal_form(comm(basisV[i], basisV[j]), deform.rels) == -basisL[2]
                 else
-                    @test iszero(comm(basisV[i], basisV[j]; strict=true))
+                    @test iszero(normal_form(comm(basisV[i], basisV[j]), deform.rels))
                 end
             end
 
@@ -66,7 +66,7 @@
 
             # Test that the module basis commutes
             for vi in basisV, vj in basisV
-                @test iszero(comm(vi, vj; strict=true))
+                @test iszero(normal_form(comm(vi, vj), deform.rels))
             end
 
             showOutput = @test_nowarn sprint(show, deform)
