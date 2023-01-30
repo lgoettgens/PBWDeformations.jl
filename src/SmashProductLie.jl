@@ -120,7 +120,7 @@ Constructs the smash product of the abstract semisimple Lie algebra given by
 coefficient ring `coeff_ring`.
 
 # Example
-```jldoctest; filter = r"(AbstractAlgebra\\.Generic\\.)?"
+```jldoctest; filter = [r"(AbstractAlgebra\\.Generic\\.)?", r"(Nemo\\.)?"]
 julia> smash_product_lie_highest_weight(QQ, 'A', 1, [1])
 (Lie Algebra Smash Product with basis x_1, x_2, x_3, v_1, v_2 over Rational Field, (FreeAssAlgElem{fmpq}[x_1, x_2, x_3], FreeAssAlgElem{fmpq}[v_1, v_2]))
 ```
