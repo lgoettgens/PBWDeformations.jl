@@ -16,7 +16,8 @@ struct PseudographDeformBasis{C <: RingElement} <: DeformBasis{C}
         degs::AbstractVector{Int};
         no_normalize::Bool=false,
     ) where {C <: RingElement}
-        dimV, e = extract_sp_info__so_extpowers_stdmod(sp)
+        dimV, e, typeof_power = extract_sp_info__so_powers_stdmod(sp)
+        typeof_power == :exterior || throw(ArgumentError("PseudographDeformBasis only works with exterior powers"))
         extra_data = Dict{DeformationMap{C}, Set{Tuple{Pseudograph2, Generic.Partition{Int}}}}()
         normalize = no_normalize ? identity : normalize_default
 
@@ -31,7 +32,7 @@ struct PseudographDeformBasis{C <: RingElement} <: DeformBasis{C}
                     @debug "Basis generation deg $(d), $(debug_counter = (debug_counter % len) + 1)/$(len), $(floor(Int, 100*debug_counter / len))%"
                     diag = to_arcdiag(pg, part)
                     basis_elem =
-                        arcdiag_to_basiselem__so_extpowers_stdmod(diag, dimV, e, d, sp.alg(0), sp.basisL, sp.rels)
+                        arcdiag_to_basiselem__so_powers_stdmod(diag, dimV, typeof_power, e, d, sp.alg(0), sp.rels)
                     if !no_normalize
                         basis_elem = normalize(basis_elem)
                     end
