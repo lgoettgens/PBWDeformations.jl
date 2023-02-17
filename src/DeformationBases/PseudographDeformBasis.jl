@@ -8,7 +8,7 @@ This process is due to [FM22](@cite).
 struct PseudographDeformBasis{C <: RingElement} <: DeformBasis{C}
     len::Int
     iter
-    extra_data::Dict{DeformationMap{C}, Set{Pseudograph2}}
+    extra_data::Dict{DeformationMap{C}, Set{Tuple{Pseudograph2, Generic.Partition{Int}}}}
     normalize
 
     function PseudographDeformBasis{C}(
@@ -17,7 +17,7 @@ struct PseudographDeformBasis{C <: RingElement} <: DeformBasis{C}
         no_normalize::Bool=false,
     ) where {C <: RingElement}
         dimV, e = extract_sp_info__so_extpowers_stdmod(sp)
-        extra_data = Dict{DeformationMap{C}, Set{Pseudograph2}}()
+        extra_data = Dict{DeformationMap{C}, Set{Tuple{Pseudograph2, Generic.Partition{Int}}}}()
         normalize = no_normalize ? identity : normalize_default
 
         lens = []
@@ -36,9 +36,9 @@ struct PseudographDeformBasis{C <: RingElement} <: DeformBasis{C}
                         basis_elem = normalize(basis_elem)
                     end
                     if haskey(extra_data, basis_elem)
-                        push!(extra_data[basis_elem], pg)
+                        push!(extra_data[basis_elem], (pg, part))
                     else
-                        extra_data[basis_elem] = Set([pg])
+                        extra_data[basis_elem] = Set([(pg, part)])
                     end
                     basis_elem
                 end for (pg, part) in pg_iter
