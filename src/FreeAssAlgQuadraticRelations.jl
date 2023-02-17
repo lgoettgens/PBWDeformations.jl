@@ -3,23 +3,19 @@ QuadraticRelations{C} = Dict{Tuple{Int, Int}, FreeAssAlgElem{C}} where {C <: Rin
 function normal_form(a::FreeAssAlgElem{C}, rels::QuadraticRelations{C}) where {C <: RingElement}
     todo = deepcopy(a)
     result = zero(parent(todo))
-    R = base_ring(a)
+    CR = base_ring(a)
+    A = parent(todo)
     while todo.length > 0
         c = leading_coefficient(todo)
-        m = leading_monomial(todo)
         exp = leading_exponent_word(todo)
-        t = c * m
+        t = leading_term(todo)
         todo -= t
 
         changed = false
         for i in 1:length(exp)-1
             if exp[i] > exp[i+1] && haskey(rels, (exp[i], exp[i+1]))
                 changed = true
-                todo +=
-                    c *
-                    parent(a)([one(R)], [exp[1:i-1]]) *
-                    rels[(exp[i], exp[i+1])] *
-                    parent(a)([one(R)], [exp[i+2:end]])
+                todo += A([c], [exp[1:i-1]]) * rels[(exp[i], exp[i+1])] * A([one(CR)], [exp[i+2:end]])
                 break
             end
         end
