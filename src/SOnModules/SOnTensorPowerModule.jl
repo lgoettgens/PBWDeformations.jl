@@ -67,8 +67,8 @@ function (V::SOnTensorPowerModule{C})(a::Vector{T}) where {T <: SOnModuleElem{C}
     length(a) == V.power || error("Length of vector does not match tensor power.")
     all(x -> parent(x) == V.inner_mod, a) || error("Incompatible modules.")
     mat = zero_matrix(base_ring(V), 1, ngens(V))
-    for (i, es) in enumerate(ProductIterator([a[i].mat for i in 1:length(a)]))
-        mat[1, i] = prod(es)
+    for (i, inds) in enumerate(V.ind_map)
+        mat[1, i] += prod(a[j].mat[k] for (j, k) in enumerate(inds))
     end
     return SOnTensorPowerModuleElem{C}(V, mat)
 end

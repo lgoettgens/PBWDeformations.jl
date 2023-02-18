@@ -26,7 +26,7 @@ import AbstractAlgebra:
 
 import AbstractAlgebra.PrettyPrinting: @enable_all_show_via_expressify, expressify
 
-import Oscar: comm, normal_form
+import Oscar: comm, exterior_power, normal_form, symmetric_power
 
 import Base: deepcopy_internal, hash, isequal, iszero, length, parent, show, sum, zero, +, -, *, ==
 
@@ -71,6 +71,8 @@ include("LieAlgebraStructConsts.jl")
 include("SOnModules/SOnModule.jl")
 include("SOnModules/SOnStdModule.jl")
 include("SOnModules/SOnTensorPowerModule.jl")
+include("SOnModules/SOnExteriorPowerModule.jl")
+include("SOnModules/SOnSymmetricPowerModule.jl")
 
 include("DeformationBases/DeformBasis.jl")
 
