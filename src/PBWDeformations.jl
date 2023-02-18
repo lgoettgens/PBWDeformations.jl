@@ -9,17 +9,26 @@ import AbstractAlgebra:
     FreeAssAlgebra,
     FreeAssAlgElem,
     Generic,
+    MatElem,
     Partition,
+    ProductIterator,
     Ring,
     RingElement,
+    base_ring,
     canonical_unit,
     change_base_ring,
+    elem_type,
+    gen,
     gens,
-    ngens
+    ngens,
+    parent_type,
+    symbols
+
+import AbstractAlgebra.PrettyPrinting: @enable_all_show_via_expressify, expressify
 
 import Oscar: comm, normal_form
 
-import Base: hash, length, show, sum, ==
+import Base: deepcopy_internal, hash, isequal, iszero, length, parent, show, sum, zero, +, -, *, ==
 
 export ArcDiagram,
     ArcDiagDeformBasis,
@@ -59,6 +68,9 @@ GAP = Oscar.GAP
 include("Util.jl")
 include("FreeAssAlgQuadraticRelations.jl")
 include("LieAlgebraStructConsts.jl")
+include("SOnModules/SOnModule.jl")
+include("SOnModules/SOnStdModule.jl")
+include("SOnModules/SOnTensorPowerModule.jl")
 
 include("DeformationBases/DeformBasis.jl")
 
