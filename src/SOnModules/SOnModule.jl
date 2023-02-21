@@ -15,6 +15,11 @@ abstract type SOnModuleElem{C <: RingElement} end
 #
 ###############################################################################
 
+# makes field access type stable
+@inline function _matrix(v::SOnModuleElem{C}) where {C <: RingElement}
+    return v.mat::dense_matrix_type(C)
+end
+
 base_ring(v::SOnModuleElem{C}) where {C <: RingElement} = base_ring(parent(v))
 
 gens(V::SOnModule{C}) where {C <: RingElement} = [gen(V, i) for i in 1:ngens(V)]
@@ -26,14 +31,14 @@ end
 
 zero(V::SOnModule{C}) where {C <: RingElement} = V()
 
-iszero(v::SOnModuleElem{C}) where {C <: RingElement} = iszero(v.mat)
+iszero(v::SOnModuleElem{C}) where {C <: RingElement} = iszero(_matrix(v))
 
 function Base.hash(v::SOnModuleElem{C}, h::UInt) where {C <: RingElement}
-    return hash(v.mat, hash(symbols(parent(v)), h))
+    return hash(_matrix(v), hash(symbols(parent(v)), h))
 end
 
 function Base.deepcopy_internal(v::SOnModuleElem{C}, dict::IdDict) where {C <: RingElement}
-    return parent(v)(deepcopy_internal(v.mat, dict))
+    return parent(v)(deepcopy_internal(_matrix(v), dict))
 end
 
 
@@ -45,7 +50,7 @@ end
 
 function expressify(v::SOnModuleElem{C}, s=symbols(parent(v)); context=nothing) where {C <: RingElement}
     sum = Expr(:call, :+)
-    for (i, c) in enumerate(v.mat)
+    for (i, c) in enumerate(_matrix(v))
         push!(sum.args, Expr(:call, :*, expressify(c, context=context), s[i]))
     end
     return sum
@@ -90,25 +95,25 @@ end
 ###############################################################################
 
 function Base.:-(v::SOnModuleElem{C}) where {C <: RingElement}
-    return parent(v)(-v.mat)
+    return parent(v)(-_matrix(v))
 end
 
-function Base.:+(v::SOnModuleElem{C}, w::SOnModuleElem{C}) where {C <: RingElement}
-    parent(v) == parent(w) || error("Incompatible modules.")
-    return parent(v)(v.mat + w.mat)
+function Base.:+(v1::SOnModuleElem{C}, v2::SOnModuleElem{C}) where {C <: RingElement}
+    parent(v1) == parent(v2) || error("Incompatible modules.")
+    return parent(v1)(_matrix(v1) + _matrix(v2))
 end
 
-function Base.:-(v::SOnModuleElem{C}, w::SOnModuleElem{C}) where {C <: RingElement}
-    parent(v) == parent(w) || error("Incompatible modules.")
-    return parent(v)(v.mat - w.mat)
+function Base.:-(v1::SOnModuleElem{C}, v2::SOnModuleElem{C}) where {C <: RingElement}
+    parent(v1) == parent(v2) || error("Incompatible modules.")
+    return parent(v1)(_matrix(v1) - _matrix(v2))
 end
 
 function Base.:*(c::C, v::SOnModuleElem{C}) where {C <: RingElement}
-    return parent(v)(c * v.mat)
+    return parent(v)(c * _matrix(v))
 end
 
 function Base.:*(c::Union{Integer, Rational, AbstractFloat}, v::SOnModuleElem{C}) where {C <: RingElement}
-    return parent(v)(c * v.mat)
+    return parent(v)(c * _matrix(v))
 end
 
 Base.:*(v::SOnModuleElem{C}, c::Union{Integer, Rational, AbstractFloat}) where {C <: RingElement} = c * v
@@ -122,7 +127,7 @@ Base.:*(v::SOnModuleElem{C}, c::C) where {C <: RingElement} = c * v
 #
 ###############################################################################
 
-function Base.:(==)(v::SOnModuleElem{C}, w::SOnModuleElem{C}) where {C <: RingElement}
-    parent(v) == parent(w) || return false
-    return v.mat == w.mat
+function Base.:(==)(v1::SOnModuleElem{C}, v2::SOnModuleElem{C}) where {C <: RingElement}
+    parent(v1) == parent(v2) || return false
+    return _matrix(v1) == _matrix(v2)
 end

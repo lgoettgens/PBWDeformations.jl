@@ -46,6 +46,7 @@ export all_arc_diagrams,
     all_pseudographs,
     is_crossing_free,
     is_pbwdeform,
+    exterior_power,
     lookup_data,
     nedges,
     pbwdeforms_all,
@@ -59,6 +60,9 @@ export all_arc_diagrams,
     smash_product_lie_sp_extpowers_standard_module,
     smash_product_deform_lie,
     smash_product_symmdeform_lie,
+    symmetric_power,
+    so_standard_module,
+    tensor_power,
     to_arcdiag
 
 
