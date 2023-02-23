@@ -78,7 +78,7 @@ end
 
 function (V::SOnModule{C})(v::MatElem{C}) where {C <: RingElement}
     ncols(v) == ngens(V) || error("Length of vector does not match number of generators")
-    nrows(v) == 1 || ("Not a vector in module constructor")
+    nrows(v) == 1 || error("Not a vector in module constructor")
     return elem_type(V)(V, v)
 end
 

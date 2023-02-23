@@ -4,7 +4,7 @@ struct SOnTensorPowerModule{C <: RingElement} <: SOnModule{C}
     ind_map::Vector{Vector{Int}}
 
     function SOnTensorPowerModule{C}(inner_mod::SOnModule, power::Int) where {C <: RingElement}
-        ind_map = collect(ProductIterator(1:ngens(inner_mod), power))
+        ind_map = collect(ProductIterator(1:ngens(inner_mod), power)) .|> reverse
         return new{C}(inner_mod, power, ind_map)
     end
 end
@@ -53,7 +53,7 @@ function symbols(V::SOnTensorPowerModule{C}) where {C <: RingElement}
         parentheses = x -> "($x)"
     end
 
-    return [join(s .|> parentheses, " ⊗ ") for s in ProductIterator(symbols(V.inner_mod), V.power)]
+    return [join(s .|> parentheses, " ⊗ ") for s in ProductIterator(symbols(V.inner_mod), V.power) .|> reverse]
 end
 
 
