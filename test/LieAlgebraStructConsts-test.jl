@@ -47,6 +47,33 @@ liealgebra_sp_extpowers_standard_module_struct_const = PD.liealgebra_sp_extpower
             @test (dimL, dimV) == size(liealgebra_so_extpowers_standard_module_struct_const(n, e))
         end
 
+        @testset "correctness regression" begin
+            @test repr("text/plain", PD.liealgebra_so_struct_const(3)) ==
+                  "3×3 Matrix{Vector{Tuple{Int64, Int64}}}:\n []         [(-1, 3)]  [(1, 2)]\n [(1, 3)]   []         [(-1, 1)]\n [(-1, 2)]  [(1, 1)]   []"
+            @test repr("text/plain", PD.liealgebra_so_struct_const(4)) ==
+                  "6×6 Matrix{Vector{Tuple{Int64, Int64}}}:\n []         [(-1, 4)]  [(-1, 5)]  [(1, 2)]   [(1, 3)]   []\n [(1, 4)]   []         [(-1, 6)]  [(-1, 1)]  []         [(1, 3)]\n [(1, 5)]   [(1, 6)]   []         []         [(-1, 1)]  [(-1, 2)]\n [(-1, 2)]  [(1, 1)]   []         []         [(-1, 6)]  [(1, 5)]\n [(-1, 3)]  []         [(1, 1)]   [(1, 6)]   []         [(-1, 4)]\n []         [(-1, 3)]  [(1, 2)]   [(-1, 5)]  [(1, 4)]   []"
+            @test repr("text/plain", PD.liealgebra_so_symmpowers_standard_module_struct_const(3, 1)) ==
+                  "3×3 Matrix{Vector{Tuple{Int64, Int64}}}:\n [(-1, 2)]  [(1, 1)]   []\n [(-1, 3)]  []         [(1, 1)]\n []         [(-1, 3)]  [(1, 2)]"
+            @test repr("text/plain", PD.liealgebra_so_symmpowers_standard_module_struct_const(3, 2)) ==
+                  "3×6 Matrix{Vector{Tuple{Int64, Int64}}}:\n [(-1, 2), (-1, 2)]  [(-1, 4), (1, 1)]  [(-1, 5)]          [(1, 2), (1, 2)]    [(1, 3)]           []\n [(-1, 3), (-1, 3)]  [(-1, 5)]          [(-1, 6), (1, 1)]  []                  [(1, 2)]           [(1, 3), (1, 3)]\n []                  [(-1, 3)]          [(1, 2)]           [(-1, 5), (-1, 5)]  [(-1, 6), (1, 4)]  [(1, 5), (1, 5)]"
+            @test repr("text/plain", PD.liealgebra_so_symmpowers_standard_module_struct_const(3, 3)) ==
+                  "3×10 Matrix{Vector{Tuple{Int64, Int64}}}:\n [(-1, 2), (-1, 2), (-1, 2)]  [(-1, 4), (-1, 4), (1, 1)]  [(-1, 5), (-1, 5)]          [(-1, 7), (1, 2), (1, 2)]  [(-1, 8), (1, 3)]  [(-1, 9)]                   [(1, 4), (1, 4), (1, 4)]     [(1, 5), (1, 5)]            [(1, 6)]                    []\n [(-1, 3), (-1, 3), (-1, 3)]  [(-1, 5), (-1, 5)]          [(-1, 6), (-1, 6), (1, 1)]  [(-1, 8)]                  [(-1, 9), (1, 2)]  [(-1, 10), (1, 3), (1, 3)]  []                           [(1, 4)]                    [(1, 5), (1, 5)]            [(1, 6), (1, 6), (1, 6)]\n []                           [(-1, 3)]                   [(1, 2)]                    [(-1, 5), (-1, 5)]         [(-1, 6), (1, 4)]  [(1, 5), (1, 5)]            [(-1, 8), (-1, 8), (-1, 8)]  [(-1, 9), (-1, 9), (1, 7)]  [(-1, 10), (1, 8), (1, 8)]  [(1, 9), (1, 9), (1, 9)]"
+            @test repr("text/plain", PD.liealgebra_so_symmpowers_standard_module_struct_const(4, 1)) ==
+                  "6×4 Matrix{Vector{Tuple{Int64, Int64}}}:\n [(-1, 2)]  [(1, 1)]   []         []\n [(-1, 3)]  []         [(1, 1)]   []\n [(-1, 4)]  []         []         [(1, 1)]\n []         [(-1, 3)]  [(1, 2)]   []\n []         [(-1, 4)]  []         [(1, 2)]\n []         []         [(-1, 4)]  [(1, 3)]"
+            @test repr("text/plain", PD.liealgebra_so_extpowers_standard_module_struct_const(3, 1)) ==
+                  "3×3 Matrix{Vector{Tuple{Int64, Int64}}}:\n [(-1, 2)]  [(1, 1)]   []\n [(-1, 3)]  []         [(1, 1)]\n []         [(-1, 3)]  [(1, 2)]"
+            @test repr("text/plain", PD.liealgebra_so_extpowers_standard_module_struct_const(3, 2)) ==
+                  "3×3 Matrix{Vector{Tuple{Int64, Int64}}}:\n []         [(-1, 3)]  [(1, 2)]\n [(1, 3)]   []         [(-1, 1)]\n [(-1, 2)]  [(1, 1)]   []"
+            @test repr("text/plain", PD.liealgebra_so_extpowers_standard_module_struct_const(4, 1)) ==
+                  "6×4 Matrix{Vector{Tuple{Int64, Int64}}}:\n [(-1, 2)]  [(1, 1)]   []         []\n [(-1, 3)]  []         [(1, 1)]   []\n [(-1, 4)]  []         []         [(1, 1)]\n []         [(-1, 3)]  [(1, 2)]   []\n []         [(-1, 4)]  []         [(1, 2)]\n []         []         [(-1, 4)]  [(1, 3)]"
+            @test repr("text/plain", PD.liealgebra_so_extpowers_standard_module_struct_const(4, 2)) ==
+                  "6×6 Matrix{Vector{Tuple{Int64, Int64}}}:\n []         [(-1, 4)]  [(-1, 5)]  [(1, 2)]   [(1, 3)]   []\n [(1, 4)]   []         [(-1, 6)]  [(-1, 1)]  []         [(1, 3)]\n [(1, 5)]   [(1, 6)]   []         []         [(-1, 1)]  [(-1, 2)]\n [(-1, 2)]  [(1, 1)]   []         []         [(-1, 6)]  [(1, 5)]\n [(-1, 3)]  []         [(1, 1)]   [(1, 6)]   []         [(-1, 4)]\n []         [(-1, 3)]  [(1, 2)]   [(-1, 5)]  [(1, 4)]   []"
+            @test repr("text/plain", PD.liealgebra_so_extpowers_standard_module_struct_const(4, 3)) ==
+                  "6×4 Matrix{Vector{Tuple{Int64, Int64}}}:\n []         []         [(-1, 4)]  [(1, 3)]\n []         [(1, 4)]   []         [(-1, 2)]\n [(-1, 4)]  []         []         [(1, 1)]\n []         [(-1, 3)]  [(1, 2)]   []\n [(1, 3)]   []         [(-1, 1)]  []\n [(-1, 2)]  [(1, 1)]   []         []"
+            @test repr("text/plain", PD.liealgebra_so_extpowers_standard_module_struct_const(5, 1)) ==
+                  "10×5 Matrix{Vector{Tuple{Int64, Int64}}}:\n [(-1, 2)]  [(1, 1)]   []         []         []\n [(-1, 3)]  []         [(1, 1)]   []         []\n [(-1, 4)]  []         []         [(1, 1)]   []\n [(-1, 5)]  []         []         []         [(1, 1)]\n []         [(-1, 3)]  [(1, 2)]   []         []\n []         [(-1, 4)]  []         [(1, 2)]   []\n []         [(-1, 5)]  []         []         [(1, 2)]\n []         []         [(-1, 4)]  [(1, 3)]   []\n []         []         [(-1, 5)]  []         [(1, 3)]\n []         []         []         [(-1, 5)]  [(1, 4)]"
+        end
+
     end
 
     @testset "liealgebra_sp" begin
