@@ -76,6 +76,18 @@ end
 
 ###############################################################################
 #
+#   Module action
+#
+###############################################################################
+
+function transformation_matrix_of_action(x::MatElem{C}, V::SOnTensorPowerModule{C}) where {C <: RingElement}
+    y = transformation_matrix_of_action(x, V.inner_mod)
+    return sum(reduce(kronecker_product, (j == i ? one(x) : y for j in 1:V.power)) for i in 1:V.power)
+end
+
+
+###############################################################################
+#
 #   Constructor
 #
 ###############################################################################

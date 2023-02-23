@@ -131,3 +131,30 @@ function Base.:(==)(v1::SOnModuleElem{C}, v2::SOnModuleElem{C}) where {C <: Ring
     parent(v1) == parent(v2) || return false
     return _matrix(v1) == _matrix(v2)
 end
+
+
+###############################################################################
+#
+#   Module action
+#
+###############################################################################
+
+function action(x::MatElem{C}, v::SOnModuleElem{C}) where {C <: RingElement}
+    size(x, 1) == size(x, 2) || error("Action matrix must be square.")
+    transformation_matrix = transformation_matrix_of_action(x, parent(v))
+    return action_by_transformation_matrix(transformation_matrix, v)
+end
+
+function Base.:*(x::MatElem{C}, v::SOnModuleElem{C}) where {C <: RingElement}
+    return action(x, v)
+end
+
+function transformation_matrix_of_action(_::MatElem{C}, v::SOnModule{C}) where {C <: RingElement}
+    error("Not implemented for $(typeof(v))")
+end
+
+function action_by_transformation_matrix(x::MatElem{C}, v::SOnModuleElem{C}) where {C <: RingElement}
+    size(x, 1) == size(x, 2) || error("Transformation matrix must be square.")
+    size(x, 1) == ngens(parent(v)) || error("Transformation matrix has wrong dimensions.")
+    return parent(v)(_matrix(v) * transpose(x)) # equivalent to (x * v^T)^T, since we work with row vectors
+end

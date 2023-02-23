@@ -77,6 +77,30 @@ end
 
 ###############################################################################
 #
+#   Module action
+#
+###############################################################################
+
+function transformation_matrix_of_action(x::MatElem{C}, V::SOnExteriorPowerModule{C}) where {C <: RingElement}
+    T = tensor_power(V.inner_mod, V.power)
+    basis_change_E2T = zero(x, ngens(T), ngens(V))
+    basis_change_T2E = zero(x, ngens(V), ngens(T))
+
+    for (i, _inds) in enumerate(V.ind_map), inds in Combinatorics.permutations(_inds)
+        sgn = levicivita(sortperm(inds))
+        j = findfirst(==(inds), T.ind_map)
+        basis_change_E2T[j, i] = sgn // 2
+        basis_change_T2E[i, j] = sgn
+    end
+
+    xT = transformation_matrix_of_action(x, T)
+
+    return basis_change_T2E * xT * basis_change_E2T
+end
+
+
+###############################################################################
+#
 #   Constructor
 #
 ###############################################################################

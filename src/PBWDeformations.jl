@@ -26,7 +26,7 @@ import AbstractAlgebra:
 
 import AbstractAlgebra.PrettyPrinting: @enable_all_show_via_expressify, expressify
 
-import Oscar: comm, exterior_power, normal_form, symmetric_power
+import Oscar: action, comm, exterior_power, normal_form, symmetric_power
 
 import Base: deepcopy_internal, hash, isequal, iszero, length, parent, show, sum, zero, +, -, *, ==
 

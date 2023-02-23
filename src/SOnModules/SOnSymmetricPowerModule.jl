@@ -88,6 +88,29 @@ end
 
 ###############################################################################
 #
+#   Module action
+#
+###############################################################################
+
+function transformation_matrix_of_action(x::MatElem{C}, V::SOnSymmetricPowerModule{C}) where {C <: RingElement}
+    T = tensor_power(V.inner_mod, V.power)
+    basis_change_S2T = zero(x, ngens(T), ngens(V))
+    basis_change_T2S = zero(x, ngens(V), ngens(T))
+
+    for (i, _inds) in enumerate(V.ind_map), inds in Combinatorics.permutations(_inds)
+        j = findfirst(==(inds), T.ind_map)
+        basis_change_S2T[j, i] += 1 // 2
+        basis_change_T2S[i, j] = 1
+    end
+
+    xT = transformation_matrix_of_action(x, T)
+
+    return basis_change_T2S * xT * basis_change_S2T
+end
+
+
+###############################################################################
+#
 #   Constructor
 #
 ###############################################################################
