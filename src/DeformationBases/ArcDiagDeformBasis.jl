@@ -15,7 +15,7 @@ struct ArcDiagDeformBasis{C <: RingElement} <: DeformBasis{C}
         degs::AbstractVector{Int};
         no_normalize::Bool=false,
     ) where {C <: RingElement}
-        dimV, e = extract_sp_info__so_extpowers_stdmod(sp)
+        dimV, e, typeof_power = extract_sp_info__so_powers_stdmod(sp)
         extra_data = Dict{DeformationMap{C}, Set{ArcDiagram}}()
         normalize = no_normalize ? identity : normalize_default
 
@@ -23,13 +23,13 @@ struct ArcDiagDeformBasis{C <: RingElement} <: DeformBasis{C}
         iters = []
         debug_counter = 0
         for d in degs
-            diag_iter = pbw_arc_diagrams__so_extpowers_stdmod(e, d)
+            diag_iter = pbw_arc_diagrams__so_powers_stdmod(typeof_power, e, d)
             len = length(diag_iter)
             iter = (
                 begin
                     @debug "Basis generation deg $(d), $(debug_counter = (debug_counter % len) + 1)/$(len), $(floor(Int, 100*debug_counter / len))%"
                     basis_elem =
-                        arcdiag_to_basiselem__so_extpowers_stdmod(diag, dimV, e, d, sp.alg(0), sp.basisL, sp.rels)
+                        arcdiag_to_basiselem__so_powers_stdmod(diag, dimV, typeof_power, e, d, sp.alg(0), sp.rels)
                     if !no_normalize
                         basis_elem = normalize(basis_elem)
                     end
@@ -66,7 +66,7 @@ end
 Base.length(basis::ArcDiagDeformBasis) = basis.len
 
 
-function extract_sp_info__so_extpowers_stdmod(sp::SmashProductLie{C}) where {C <: RingElement}
+function extract_sp_info__so_powers_stdmod(sp::SmashProductLie{C}) where {C <: RingElement}
     if isnothing(sp.info.dynkin) || isnothing(sp.info.n)
         error("Dynkin type unknown, but needed.")
     elseif !sp.info.constructive_basis
@@ -79,47 +79,80 @@ function extract_sp_info__so_extpowers_stdmod(sp::SmashProductLie{C}) where {C <
         error("Dynkin type '$(sp.info.dynkin)' not supported.")
     end
 
-    if isnothing(sp.info.power_of_std_mod) || !(sp.info.power_of_std_mod < 0)
+    if isnothing(sp.info.power_of_std_mod) || sp.info.power_of_std_mod == 0
         error("Module needs to be an exterior power of the standard module.")
     end
-    e = -sp.info.power_of_std_mod
-
-    return dimV, e
+    if sp.info.power_of_std_mod < 0
+        e = -sp.info.power_of_std_mod
+        typeof_power = :exterior
+    else
+        e = sp.info.power_of_std_mod
+        typeof_power = :symmetric
+    end
+    return dimV, e, typeof_power
 end
 
-function pbw_arc_diagrams__so_extpowers_stdmod(e::Int, d::Int)
-    indep_sets = [1:e, e+1:2*e, [[2 * e + 2 * i - 1, 2 * e + 2 * i] for i in 1:d]...]
-    return all_arc_diagrams(2 * e, 2 * d; indep_sets)
+function pbw_arc_diagrams__so_powers_stdmod(typeof_power::Symbol, e::Int, d::Int)
+    if typeof_power == :exterior
+        indep_sets = [1:e, e+1:2*e, [[2 * e + 2 * i - 1, 2 * e + 2 * i] for i in 1:d]...]
+        return all_arc_diagrams(2 * e, 2 * d; indep_sets)
+    elseif typeof_power == :symmetric
+        indep_sets = Vector{Vector{Int}}([[[2 * e + 2 * i - 1, 2 * e + 2 * i] for i in 1:d]...])
+        return all_arc_diagrams(2 * e, 2 * d; indep_sets)
+    else
+        error("Unknown type of power.")
+    end
 end
 
 
-function arcdiag_to_basiselem__so_extpowers_stdmod(
+function arcdiag_to_basiselem__so_powers_stdmod(
     diag::ArcDiagram,
     dimV::Int,
+    typeof_power::Symbol,
     e::Int,
     d::Int,
     zero::FreeAssAlgElem{C},
-    basisL::Vector{<:FreeAssAlgElem{C}},
     rels::QuadraticRelations{C},
 ) where {C <: RingElement}
     iso_wedge2V_g = Dict{Vector{Int}, Int}()
     for (i, bs) in enumerate(Combinatorics.combinations(1:dimV, 2))
         iso_wedge2V_g[bs] = i
     end
+
+    if typeof_power == :exterior
+        upper_label_iterator = Combinatorics.combinations(1:dimV, e)
+    elseif typeof_power == :symmetric
+        upper_label_iterator = Combinatorics.with_replacement_combinations(1:dimV, e)
+    else
+        error("Unknown type of power.")
+    end
     index = Dict{Vector{Int}, Int}()
-    for (i, is) in enumerate(Combinatorics.combinations(1:dimV, e))
+    for (i, is) in enumerate(upper_label_iterator)
         index[is] = i
     end
 
-    kappa = fill(zero, binomial(dimV, e), binomial(dimV, e))
-    for is in Combinatorics.combinations(1:dimV, e), js in Combinatorics.combinations(1:dimV, e)
+    if typeof_power == :exterior
+        kappadim = binomial(dimV, e)
+    elseif typeof_power == :symmetric
+        kappadim = binomial(dimV + e - 1, e)
+    else
+        error("Unknown type of power.")
+    end
+    kappa = fill(zero, kappadim, kappadim)
+    for is in upper_label_iterator, js in upper_label_iterator
         i = index[is]
         j = index[js]
         if i >= j
             continue
         end
         for is in Combinatorics.permutations(is), js in Combinatorics.permutations(js), swap in [false, true]
-            sgn_upper_labels = levicivita(sortperm(is)) * levicivita(sortperm(js))
+            if typeof_power == :exterior
+                sgn_upper_labels = levicivita(sortperm(is)) * levicivita(sortperm(js))
+            elseif typeof_power == :symmetric
+                sgn_upper_labels = 1
+            else
+                error("Unknown type of power.")
+            end
             if swap
                 is, js = js, is
                 sgn_upper_labels *= -1
