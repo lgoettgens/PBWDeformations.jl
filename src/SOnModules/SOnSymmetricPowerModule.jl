@@ -99,7 +99,7 @@ function transformation_matrix_of_action(x::MatElem{C}, V::SOnSymmetricPowerModu
 
     for (i, _inds) in enumerate(V.ind_map), inds in Combinatorics.permutations(_inds)
         j = findfirst(==(inds), T.ind_map)
-        basis_change_S2T[j, i] += 1 // 2
+        basis_change_S2T[j, i] += 1 // factorial(V.power)
         basis_change_T2S[i, j] = 1
     end
 

@@ -89,7 +89,7 @@ function transformation_matrix_of_action(x::MatElem{C}, V::SOnExteriorPowerModul
     for (i, _inds) in enumerate(V.ind_map), inds in Combinatorics.permutations(_inds)
         sgn = levicivita(sortperm(inds))
         j = findfirst(==(inds), T.ind_map)
-        basis_change_E2T[j, i] = sgn // 2
+        basis_change_E2T[j, i] = sgn // factorial(V.power)
         basis_change_T2E[i, j] = sgn
     end
 
