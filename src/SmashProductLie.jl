@@ -59,11 +59,11 @@ function smash_product_lie(
     coeff_ring::Ring,
     symbL::Vector{Symbol},
     symbV::Vector{Symbol},
-    struct_const_L::Matrix{Vector{Tuple{Int, Int}}},
-    struct_const_V::Matrix{Vector{Tuple{Int, Int}}},
+    struct_const_L::Matrix{Vector{Tuple{C, Int}}},
+    struct_const_V::Matrix{Vector{Tuple{C, Int}}},
     info=SmashProductLieInfo()::SmashProductLieInfo,
-)
-    C = elem_type(coeff_ring)
+) where {C <: RingElement}
+    @assert C == elem_type(coeff_ring)
 
     dimL = length(symbL)
     dimV = length(symbV)
@@ -105,10 +105,10 @@ function smash_product_lie(
     coeff_ring::Ring,
     symbL::Vector{String},
     symbV::Vector{String},
-    struct_const_L::Matrix{Vector{Tuple{Int, Int}}},
-    struct_const_V::Matrix{Vector{Tuple{Int, Int}}},
+    struct_const_L::Matrix{Vector{Tuple{C, Int}}},
+    struct_const_V::Matrix{Vector{Tuple{C, Int}}},
     info=SmashProductLieInfo()::SmashProductLieInfo,
-)
+) where {C <: RingElem}
     return smash_product_lie(coeff_ring, map(Symbol, symbL), map(Symbol, symbV), struct_const_L, struct_const_V, info)
 end
 
@@ -126,7 +126,7 @@ julia> smash_product_lie_highest_weight(QQ, 'A', 1, [1])
 ```
 """
 function smash_product_lie_highest_weight(coeff_ring::Ring, dynkin::Char, n::Int, lambda::Vector{Int})
-    symbL, symbV, scL, scV = liealgebra_gap_hightest_weight_module(dynkin, n, lambda)
+    symbL, symbV, scL, scV = liealgebra_gap_hightest_weight_module(dynkin, n, lambda, coeff_ring)
 
     info = SmashProductLieInfo(dynkin=dynkin, n=n, lambda=lambda)
 
@@ -141,9 +141,9 @@ e-th fundamental module over the coefficient ring `coeff_ring`.
 """
 function smash_product_lie_so_fundamental_module(coeff_ring::Ring, n::Int, e::Int) # so_n, e-th fundamental module (spin reps not implemented)
     symbL = liealgebra_so_symbols(n)
-    scL = liealgebra_so_struct_const(n)
+    scL = liealgebra_so_struct_const(n, coeff_ring)
     symbV = liealgebra_so_fundamental_module_symbols(n, e)
-    scV = liealgebra_so_fundamental_module_struct_const(n, e)
+    scV = liealgebra_so_fundamental_module_struct_const(n, e, coeff_ring)
 
     info = SmashProductLieInfo(dynkin=(n % 2 == 1 ? 'B' : 'D'), n=div(n, 2), constructive_basis=true)
 
@@ -159,9 +159,9 @@ coefficient ring `coeff_ring`.
 """
 function smash_product_lie_so_symmpowers_standard_module(coeff_ring::Ring, n::Int, e::Int) # so_n, e-th symm power of standard module
     symbL = liealgebra_so_symbols(n)
-    scL = liealgebra_so_struct_const(n)
+    scL = liealgebra_so_struct_const(n, coeff_ring)
     symbV = liealgebra_so_symmpowers_standard_module_symbols(n, e)
-    scV = liealgebra_so_symmpowers_standard_module_struct_const(n, e)
+    scV = liealgebra_so_symmpowers_standard_module_struct_const(n, e, coeff_ring)
 
     info =
         SmashProductLieInfo(dynkin=(n % 2 == 1 ? 'B' : 'D'), n=div(n, 2), constructive_basis=true, power_of_std_mod=e)
@@ -178,9 +178,9 @@ coefficient ring `coeff_ring`.
 """
 function smash_product_lie_so_extpowers_standard_module(coeff_ring::Ring, n::Int, e::Int) # so_n, e-th exterior power of standard module
     symbL = liealgebra_so_symbols(n)
-    scL = liealgebra_so_struct_const(n)
+    scL = liealgebra_so_struct_const(n, coeff_ring)
     symbV = liealgebra_so_extpowers_standard_module_symbols(n, e)
-    scV = liealgebra_so_extpowers_standard_module_struct_const(n, e)
+    scV = liealgebra_so_extpowers_standard_module_struct_const(n, e, coeff_ring)
 
     info =
         SmashProductLieInfo(dynkin=(n % 2 == 1 ? 'B' : 'D'), n=div(n, 2), constructive_basis=true, power_of_std_mod=-e)

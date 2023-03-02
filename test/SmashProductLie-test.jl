@@ -141,14 +141,28 @@
             symbV = ["b$i" for i in 1:dimV]
             struct_const_L = permutedims(
                 reshape(
-                    Vector{Tuple{Int, Int}}[[], [(1, 3)], [(-2, 1)], [(-1, 3)], [], [(2, 2)], [(2, 1)], [(-2, 2)], []],
+                    Vector{Tuple{elem_type(R), Int}}[
+                        [],
+                        [(R(1), 3)],
+                        [(R(-2), 1)],
+                        [(R(-1), 3)],
+                        [],
+                        [(R(2), 2)],
+                        [(R(2), 1)],
+                        [(R(-2), 2)],
+                        [],
+                    ],
                     3,
                     3,
                 ),
                 (2, 1),
             )
             struct_const_V = permutedims(
-                reshape(Vector{Tuple{Int, Int}}[[], [(1, 1)], [(1, 2)], [], [(1, 1)], [(-1, 2)]], 2, 3),
+                reshape(
+                    Vector{Tuple{elem_type(R), Int}}[[], [(R(1), 1)], [(R(1), 2)], [], [(R(1), 1)], [(R(-1), 2)]],
+                    2,
+                    3,
+                ),
                 (2, 1),
             )
 

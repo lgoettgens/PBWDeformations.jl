@@ -1,6 +1,4 @@
 std_basis = PD.std_basis
-ur_triag_entries = PD.ur_triag_entries
-ur_proper_triag_entries = PD.ur_proper_triag_entries
 
 @testset ExtendedTestSet "All Util.jl tests" begin
     @testset "flatten" begin
@@ -84,28 +82,6 @@ ur_proper_triag_entries = PD.ur_proper_triag_entries
                     end
                 end
             end
-        end
-    end
-
-
-    @testset "ur_triag_entries" begin
-        @test ur_triag_entries([1 2; 3 4]) == [1, 2, 4]
-        @test ur_triag_entries([1 2 3; 4 5 6; 7 8 9]) == [1, 2, 3, 5, 6, 9]
-
-        for n in 1:10
-            M = zeros(n, n)
-            @test length(ur_triag_entries(M)) == div(n * (n + 1), 2)
-        end
-    end
-
-
-    @testset "ur_proper_triag_entries" begin
-        @test ur_proper_triag_entries([1 2; 3 4]) == [2]
-        @test ur_proper_triag_entries([1 2 3; 4 5 6; 7 8 9]) == [2, 3, 6]
-
-        for n in 1:10
-            M = zeros(n, n)
-            @test length(ur_proper_triag_entries(M)) == div(n * (n - 1), 2)
         end
     end
 
