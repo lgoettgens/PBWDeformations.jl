@@ -62,7 +62,7 @@ function liealgebra_so_symmpowers_standard_module_struct_const(n::Int, e::Int, R
     basisL = liealgebra_so_basis(n, R)
 
     dimL = length(basisL)
-    V = symmetric_power(so_standard_module(R, n), e)
+    V = symmetric_power(standard_module(R, n), e)
     dimV = ngens(V)
     struct_const_V = Matrix{Vector{Tuple{elem_type(R), Int}}}(undef, dimL, dimV)
 
@@ -81,7 +81,7 @@ function liealgebra_so_extpowers_standard_module_struct_const(n::Int, e::Int, R:
     basisL = liealgebra_so_basis(n, R)
 
     dimL = length(basisL)
-    V = exterior_power(so_standard_module(R, n), e)
+    V = exterior_power(standard_module(R, n), e)
     dimV = ngens(V)
     struct_const_V = Matrix{Vector{Tuple{elem_type(R), Int}}}(undef, dimL, dimV)
 

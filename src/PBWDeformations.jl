@@ -65,7 +65,7 @@ export all_arc_diagrams,
     smash_product_symmdeform_lie,
     special_orthogonal_liealgebra,
     symmetric_power,
-    so_standard_module,
+    standard_module,
     tensor_power,
     to_arcdiag
 
@@ -77,11 +77,11 @@ include("Util.jl")
 include("FreeAssAlgQuadraticRelations.jl")
 include("LieAlgebra.jl")
 include("LieAlgebraStructConsts.jl")
-include("SOnModules/SOnModule.jl")
-include("SOnModules/SOnStdModule.jl")
-include("SOnModules/SOnTensorPowerModule.jl")
-include("SOnModules/SOnExteriorPowerModule.jl")
-include("SOnModules/SOnSymmetricPowerModule.jl")
+include("LieAlgebraModules/LieAlgebraModule.jl")
+include("LieAlgebraModules/LieAlgebraStdModule.jl")
+include("LieAlgebraModules/LieAlgebraTensorPowerModule.jl")
+include("LieAlgebraModules/LieAlgebraExteriorPowerModule.jl")
+include("LieAlgebraModules/LieAlgebraSymmetricPowerModule.jl")
 
 include("DeformationBases/DeformBasis.jl")
 

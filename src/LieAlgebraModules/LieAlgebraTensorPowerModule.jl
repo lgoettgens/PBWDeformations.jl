@@ -1,18 +1,18 @@
-struct SOnTensorPowerModule{C <: RingElement} <: SOnModule{C}
-    inner_mod::SOnModule
+struct LieAlgebraTensorPowerModule{C <: RingElement} <: LieAlgebraModule{C}
+    inner_mod::LieAlgebraModule
     power::Int
     transformation_matrix_cache::Dict{MatElem{C}, MatElem{C}}
     ind_map::Vector{Vector{Int}}
 
-    function SOnTensorPowerModule{C}(inner_mod::SOnModule, power::Int) where {C <: RingElement}
+    function LieAlgebraTensorPowerModule{C}(inner_mod::LieAlgebraModule, power::Int) where {C <: RingElement}
         transformation_matrix_cache = Dict{MatElem{C}, MatElem{C}}()
         ind_map = collect(ProductIterator(1:ngens(inner_mod), power)) .|> reverse
         return new{C}(inner_mod, power, transformation_matrix_cache, ind_map)
     end
 end
 
-struct SOnTensorPowerModuleElem{C <: RingElement} <: SOnModuleElem{C}
-    parent::SOnTensorPowerModule{C}
+struct LieAlgebraTensorPowerModuleElem{C <: RingElement} <: LieAlgebraModuleElem{C}
+    parent::LieAlgebraTensorPowerModule{C}
     mat::MatElem{C}
 end
 
@@ -23,15 +23,15 @@ end
 #
 ###############################################################################
 
-parent_type(::Type{SOnTensorPowerModuleElem{C}}) where {C <: RingElement} = SOnTensorPowerModule{C}
+parent_type(::Type{LieAlgebraTensorPowerModuleElem{C}}) where {C <: RingElement} = LieAlgebraTensorPowerModule{C}
 
-elem_type(::Type{SOnTensorPowerModule{C}}) where {C <: RingElement} = SOnTensorPowerModuleElem{C}
+elem_type(::Type{LieAlgebraTensorPowerModule{C}}) where {C <: RingElement} = LieAlgebraTensorPowerModuleElem{C}
 
-parent(v::SOnTensorPowerModuleElem{C}) where {C <: RingElement} = v.parent
+parent(v::LieAlgebraTensorPowerModuleElem{C}) where {C <: RingElement} = v.parent
 
-base_ring(V::SOnTensorPowerModule{C}) where {C <: RingElement} = base_ring(V.inner_mod)
+base_ring(V::LieAlgebraTensorPowerModule{C}) where {C <: RingElement} = base_ring(V.inner_mod)
 
-ngens(V::SOnTensorPowerModule{C}) where {C <: RingElement} = ngens(V.inner_mod)^V.power
+ngens(V::LieAlgebraTensorPowerModule{C}) where {C <: RingElement} = ngens(V.inner_mod)^V.power
 
 
 ###############################################################################
@@ -40,16 +40,16 @@ ngens(V::SOnTensorPowerModule{C}) where {C <: RingElement} = ngens(V.inner_mod)^
 #
 ###############################################################################
 
-function Base.show(io::IO, V::SOnTensorPowerModule{C}) where {C <: RingElement}
+function Base.show(io::IO, V::LieAlgebraTensorPowerModule{C}) where {C <: RingElement}
     print(io, "$(V.power)-th tensor power of ")
     print(IOContext(io, :compact => true), V.inner_mod)
 end
 
-function symbols(V::SOnTensorPowerModule{C}) where {C <: RingElement}
+function symbols(V::LieAlgebraTensorPowerModule{C}) where {C <: RingElement}
     if V.power == 1
         return symbols(V.inner_mod)
     end
-    if isa(V.inner_mod, SOnStdModule)
+    if isa(V.inner_mod, LieStdModule)
         parentheses = identity
     else
         parentheses = x -> "($x)"
@@ -65,14 +65,14 @@ end
 #
 ###############################################################################
 
-function (V::SOnTensorPowerModule{C})(a::Vector{T}) where {T <: SOnModuleElem{C}} where {C <: RingElement}
+function (V::LieAlgebraTensorPowerModule{C})(a::Vector{T}) where {T <: LieAlgebraModuleElem{C}} where {C <: RingElement}
     length(a) == V.power || error("Length of vector does not match tensor power.")
     all(x -> parent(x) == V.inner_mod, a) || error("Incompatible modules.")
     mat = zero_matrix(base_ring(V), 1, ngens(V))
     for (i, inds) in enumerate(V.ind_map)
         mat[1, i] += prod(a[j].mat[k] for (j, k) in enumerate(inds))
     end
-    return SOnTensorPowerModuleElem{C}(V, mat)
+    return LieAlgebraTensorPowerModuleElem{C}(V, mat)
 end
 
 
@@ -82,7 +82,7 @@ end
 #
 ###############################################################################
 
-function transformation_matrix_of_action(x::MatElem{C}, V::SOnTensorPowerModule{C}) where {C <: RingElement}
+function transformation_matrix_of_action(x::MatElem{C}, V::LieAlgebraTensorPowerModule{C}) where {C <: RingElement}
     y = transformation_matrix_of_action(x, V.inner_mod)
     return sum(reduce(kronecker_product, (j == i ? y : one(x) for j in 1:V.power)) for i in 1:V.power)
 end
@@ -94,6 +94,6 @@ end
 #
 ###############################################################################
 
-function tensor_power(V::SOnModule{C}, k::Int) where {C <: RingElement}
-    return SOnTensorPowerModule{C}(V, k)
+function tensor_power(V::LieAlgebraModule{C}, k::Int) where {C <: RingElement}
+    return LieAlgebraTensorPowerModule{C}(V, k)
 end

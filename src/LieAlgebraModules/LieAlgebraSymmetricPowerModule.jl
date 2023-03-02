@@ -1,18 +1,18 @@
-struct SOnSymmetricPowerModule{C <: RingElement} <: SOnModule{C}
-    inner_mod::SOnModule
+struct LieAlgebraSymmetricPowerModule{C <: RingElement} <: LieAlgebraModule{C}
+    inner_mod::LieAlgebraModule
     power::Int
     transformation_matrix_cache::Dict{MatElem{C}, MatElem{C}}
     ind_map::Vector{Vector{Int}}
 
-    function SOnSymmetricPowerModule{C}(inner_mod::SOnModule, power::Int) where {C <: RingElement}
+    function LieAlgebraSymmetricPowerModule{C}(inner_mod::LieAlgebraModule, power::Int) where {C <: RingElement}
         transformation_matrix_cache = Dict{MatElem{C}, MatElem{C}}()
         ind_map = collect(Combinatorics.with_replacement_combinations(1:ngens(inner_mod), power))
         return new{C}(inner_mod, power, transformation_matrix_cache, ind_map)
     end
 end
 
-struct SOnSymmetricPowerModuleElem{C <: RingElement} <: SOnModuleElem{C}
-    parent::SOnSymmetricPowerModule{C}
+struct LieAlgebraSymmetricPowerModuleElem{C <: RingElement} <: LieAlgebraModuleElem{C}
+    parent::LieAlgebraSymmetricPowerModule{C}
     mat::MatElem{C}
 end
 
@@ -23,15 +23,16 @@ end
 #
 ###############################################################################
 
-parent_type(::Type{SOnSymmetricPowerModuleElem{C}}) where {C <: RingElement} = SOnSymmetricPowerModule{C}
+parent_type(::Type{LieAlgebraSymmetricPowerModuleElem{C}}) where {C <: RingElement} = LieAlgebraSymmetricPowerModule{C}
 
-elem_type(::Type{SOnSymmetricPowerModule{C}}) where {C <: RingElement} = SOnSymmetricPowerModuleElem{C}
+elem_type(::Type{LieAlgebraSymmetricPowerModule{C}}) where {C <: RingElement} = LieAlgebraSymmetricPowerModuleElem{C}
 
-parent(v::SOnSymmetricPowerModuleElem{C}) where {C <: RingElement} = v.parent
+parent(v::LieAlgebraSymmetricPowerModuleElem{C}) where {C <: RingElement} = v.parent
 
-base_ring(V::SOnSymmetricPowerModule{C}) where {C <: RingElement} = base_ring(V.inner_mod)
+base_ring(V::LieAlgebraSymmetricPowerModule{C}) where {C <: RingElement} = base_ring(V.inner_mod)
 
-ngens(V::SOnSymmetricPowerModule{C}) where {C <: RingElement} = binomial(ngens(V.inner_mod) + V.power - 1, V.power)
+ngens(V::LieAlgebraSymmetricPowerModule{C}) where {C <: RingElement} =
+    binomial(ngens(V.inner_mod) + V.power - 1, V.power)
 
 ###############################################################################
 #
@@ -39,16 +40,16 @@ ngens(V::SOnSymmetricPowerModule{C}) where {C <: RingElement} = binomial(ngens(V
 #
 ###############################################################################
 
-function Base.show(io::IO, V::SOnSymmetricPowerModule{C}) where {C <: RingElement}
+function Base.show(io::IO, V::LieAlgebraSymmetricPowerModule{C}) where {C <: RingElement}
     print(io, "$(V.power)-th tensor power of ")
     print(IOContext(io, :compact => true), V.inner_mod)
 end
 
-function symbols(V::SOnSymmetricPowerModule{C}) where {C <: RingElement}
+function symbols(V::LieAlgebraSymmetricPowerModule{C}) where {C <: RingElement}
     if V.power == 1
         return symbols(V.inner_mod)
     end
-    if isa(V.inner_mod, SOnStdModule)
+    if isa(V.inner_mod, LieStdModule)
         parentheses = identity
     else
         parentheses = x -> "($x)"
@@ -77,14 +78,16 @@ end
 #
 ###############################################################################
 
-function (V::SOnSymmetricPowerModule{C})(a::Vector{T}) where {T <: SOnModuleElem{C}} where {C <: RingElement}
+function (V::LieAlgebraSymmetricPowerModule{C})(
+    a::Vector{T},
+) where {T <: LieAlgebraModuleElem{C}} where {C <: RingElement}
     length(a) == V.power || error("Length of vector does not match tensor power.")
     all(x -> parent(x) == V.inner_mod, a) || error("Incompatible modules.")
     mat = zero_matrix(base_ring(V), 1, ngens(V))
     for (i, _inds) in enumerate(V.ind_map), inds in unique(Combinatorics.permutations(_inds))
         mat[1, i] += prod(a[j].mat[k] for (j, k) in enumerate(inds))
     end
-    return SOnSymmetricPowerModuleElem{C}(V, mat)
+    return LieAlgebraSymmetricPowerModuleElem{C}(V, mat)
 end
 
 
@@ -94,7 +97,7 @@ end
 #
 ###############################################################################
 
-function transformation_matrix_of_action(x::MatElem{C}, V::SOnSymmetricPowerModule{C}) where {C <: RingElement}
+function transformation_matrix_of_action(x::MatElem{C}, V::LieAlgebraSymmetricPowerModule{C}) where {C <: RingElement}
     T = tensor_power(V.inner_mod, V.power)
     basis_change_S2T = zero(x, ngens(T), ngens(V))
     basis_change_T2S = zero(x, ngens(V), ngens(T))
@@ -117,6 +120,6 @@ end
 #
 ###############################################################################
 
-function symmetric_power(V::SOnModule{C}, k::Int) where {C <: RingElement}
-    return SOnSymmetricPowerModule{C}(V, k)
+function symmetric_power(V::LieAlgebraModule{C}, k::Int) where {C <: RingElement}
+    return LieAlgebraSymmetricPowerModule{C}(V, k)
 end
