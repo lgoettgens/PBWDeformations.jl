@@ -8,6 +8,8 @@ import AbstractAlgebra:
     AllParts,
     FreeAssAlgebra,
     FreeAssAlgElem,
+    FPModule,
+    FPModuleElem,
     Generic,
     MatElem,
     Partition,
@@ -23,6 +25,8 @@ import AbstractAlgebra:
     ngens,
     parent_type,
     symbols
+
+import AbstractAlgebra.Generic: _matrix, matrix_repr, rels
 
 import AbstractAlgebra.PrettyPrinting: @enable_all_show_via_expressify, expressify
 
@@ -44,6 +48,7 @@ export ArcDiagram,
 
 export all_arc_diagrams,
     all_pseudographs,
+    bracket,
     is_crossing_free,
     is_pbwdeform,
     exterior_power,
@@ -58,6 +63,7 @@ export all_arc_diagrams,
     smash_product_lie_so_extpowers_standard_module,
     smash_product_deform_lie,
     smash_product_symmdeform_lie,
+    special_orthogonal_liealgebra,
     symmetric_power,
     so_standard_module,
     tensor_power,
@@ -69,6 +75,7 @@ GAP = Oscar.GAP
 
 include("Util.jl")
 include("FreeAssAlgQuadraticRelations.jl")
+include("LieAlgebra.jl")
 include("LieAlgebraStructConsts.jl")
 include("SOnModules/SOnModule.jl")
 include("SOnModules/SOnStdModule.jl")
