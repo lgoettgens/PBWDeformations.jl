@@ -141,7 +141,12 @@ end
 
 function action(x::MatElem{C}, v::SOnModuleElem{C}) where {C <: RingElement}
     size(x, 1) == size(x, 2) || error("Action matrix must be square.")
-    transformation_matrix = transformation_matrix_of_action(x, parent(v))
+    if haskey(parent(v).transformation_matrix_cache, x)
+        transformation_matrix = parent(v).transformation_matrix_cache[x]
+    else
+        transformation_matrix = transformation_matrix_of_action(x, parent(v))
+        parent(v).transformation_matrix_cache[x] = transformation_matrix
+    end
     return action_by_transformation_matrix(transformation_matrix, v)
 end
 

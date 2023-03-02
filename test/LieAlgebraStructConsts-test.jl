@@ -26,7 +26,7 @@ liealgebra_so_extpowers_standard_module_struct_const = PD.liealgebra_so_extpower
             @test (dimL, dimL) == size(liealgebra_so_struct_const(n, R))
         end
 
-        @testset "symmpowers std module; n = $n, e = $e" for n in 1:5, e in 1:3
+        @testset "symmpowers std module; n = $n, e = $e" for n in 1:6, e in 1:3
             R = QQ
             dimL = length(liealgebra_so_basis(n, R))
             dimV = binomial(n + e - 1, e)

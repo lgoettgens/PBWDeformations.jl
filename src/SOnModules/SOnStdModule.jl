@@ -1,6 +1,12 @@
 struct SOnStdModule{C <: RingElement} <: SOnModule{C}
     R::Ring
     n::Int
+    transformation_matrix_cache::Dict{MatElem{C}, MatElem{C}}
+
+    function SOnStdModule{C}(R::Ring, n::Int) where {C <: RingElement}
+        transformation_matrix_cache = Dict{MatElem{C}, MatElem{C}}()
+        return new{C}(R, n, transformation_matrix_cache)
+    end
 end
 
 struct SOnStdModuleElem{C <: RingElement} <: SOnModuleElem{C}
