@@ -12,7 +12,7 @@ Returns a basis of the orthogonal Lie algebra of dimension `n` ``\\mathfrak{so}_
 It consists of the matrices ``X_{ij} = E_{ij} - E_{ji}`` with ``i < j`` in row-major order.
 """
 function liealgebra_so_basis(n::Int, R::Ring)
-    return [(b = zero_matrix(R, n, n); b[i, j] = 1; b[j, i] = -1; b) for i in 1:n for j in i+1:n]
+    return basis(special_orthogonal_liealgebra(R, n))
 end
 
 function liealgebra_so_symbols(n::Int)
@@ -20,23 +20,17 @@ function liealgebra_so_symbols(n::Int)
 end
 
 function liealgebra_so_struct_const(n::Int, R::Ring) # so_n
-    dimL = div(n * (n - 1), 2)
-    basisL = liealgebra_so_basis(n, R)
+    L = special_orthogonal_liealgebra(R, n)
+    dimL = ngens(L)
 
     struct_const_L = Matrix{Vector{Tuple{elem_type(R), Int}}}(undef, dimL, dimL)
-    for i in 1:dimL, j in 1:dimL
-        struct_const_L[i, j] = [
-            (c, k) for
-            (k, c) in enumerate(coefficient_vector(basisL[i] * basisL[j] - basisL[j] * basisL[i], basisL)) if !iszero(c)
-        ]
+    for (i, xi) in enumerate(gens(L)), (j, xj) in enumerate(gens(L))
+        struct_const_L[i, j] = [(c, k) for (k, c) in enumerate(_matrix(bracket(xi, xj))) if !iszero(c)]
     end
 
     return struct_const_L # dimL, struct_const_L
 end
 
-function liealgebra_so_standard_module_basis(n::Int)
-    return [std_basis(i, n) for i in 1:n]
-end
 
 function liealgebra_so_fundamental_module_symbols(n::Int, e::Int)
     if (n % 2 == 1 && e >= div(n, 2)) || (n % 2 == 0 && e >= div(n, 2) - 1)
@@ -59,15 +53,15 @@ function liealgebra_so_symmpowers_standard_module_symbols(n::Int, e::Int)
 end
 
 function liealgebra_so_symmpowers_standard_module_struct_const(n::Int, e::Int, R::Ring) # so_n, e-th symm power of the standard rep
-    basisL = liealgebra_so_basis(n, R)
+    L = special_orthogonal_liealgebra(R, n)
+    dimL = ngens(L)
 
-    dimL = length(basisL)
     V = symmetric_power(standard_module(R, n), e)
     dimV = ngens(V)
     struct_const_V = Matrix{Vector{Tuple{elem_type(R), Int}}}(undef, dimL, dimV)
 
-    for i in 1:dimL, j in 1:dimV
-        struct_const_V[i, j] = [(c, k) for (k, c) in enumerate(_matrix(basisL[i] * gen(V, j))) if !iszero(c)]
+    for (i, xi) in enumerate(gens(L)), (j, vj) in enumerate(gens(V))
+        struct_const_V[i, j] = [(c, k) for (k, c) in enumerate(_matrix(xi * vj)) if !iszero(c)]
     end
 
     return struct_const_V # dimV, struct_const_V
@@ -78,15 +72,15 @@ function liealgebra_so_extpowers_standard_module_symbols(n::Int, e::Int)
 end
 
 function liealgebra_so_extpowers_standard_module_struct_const(n::Int, e::Int, R::Ring) # so_n, e-th exterior power of the standard rep
-    basisL = liealgebra_so_basis(n, R)
+    L = special_orthogonal_liealgebra(R, n)
+    dimL = ngens(L)
 
-    dimL = length(basisL)
     V = exterior_power(standard_module(R, n), e)
     dimV = ngens(V)
     struct_const_V = Matrix{Vector{Tuple{elem_type(R), Int}}}(undef, dimL, dimV)
 
-    for i in 1:dimL, j in 1:dimV
-        struct_const_V[i, j] = [(c, k) for (k, c) in enumerate(_matrix(basisL[i] * gen(V, j))) if !iszero(c)]
+    for (i, xi) in enumerate(gens(L)), (j, vj) in enumerate(gens(V))
+        struct_const_V[i, j] = [(c, k) for (k, c) in enumerate(_matrix(xi * vj)) if !iszero(c)]
     end
 
     return struct_const_V # dimV, struct_const_V

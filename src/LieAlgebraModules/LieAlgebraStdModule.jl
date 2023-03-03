@@ -1,10 +1,10 @@
 struct LieAlgebraStdModule{C <: RingElement} <: LieAlgebraModule{C}
     R::Ring
     n::Int
-    transformation_matrix_cache::Dict{MatElem{C}, MatElem{C}}
+    transformation_matrix_cache::Dict{LieAlgebraElem{C}, MatElem{C}}
 
     function LieAlgebraStdModule{C}(R::Ring, n::Int) where {C <: RingElement}
-        transformation_matrix_cache = Dict{MatElem{C}, MatElem{C}}()
+        transformation_matrix_cache = Dict{LieAlgebraElem{C}, MatElem{C}}()
         return new{C}(R, n, transformation_matrix_cache)
     end
 end

@@ -1,11 +1,11 @@
 struct LieAlgebraExteriorPowerModule{C <: RingElement} <: LieAlgebraModule{C}
     inner_mod::LieAlgebraModule
     power::Int
-    transformation_matrix_cache::Dict{MatElem{C}, MatElem{C}}
+    transformation_matrix_cache::Dict{LieAlgebraElem{C}, MatElem{C}}
     ind_map::Vector{Vector{Int}}
 
-    function LieAlgebraExteriorPowerModule{C}(inner_mod::LieAlgebraModule, power::Int) where {C <: RingElement}
-        transformation_matrix_cache = Dict{MatElem{C}, MatElem{C}}()
+    function LieAlgebraExteriorPowerModule{C}(inner_mod::LieAlgebraModule{C}, power::Int) where {C <: RingElement}
+        transformation_matrix_cache = Dict{LieAlgebraElem{C}, MatElem{C}}()
         ind_map = collect(Combinatorics.combinations(1:ngens(inner_mod), power))
         return new{C}(inner_mod, power, transformation_matrix_cache, ind_map)
     end

@@ -1,11 +1,11 @@
 struct LieAlgebraTensorPowerModule{C <: RingElement} <: LieAlgebraModule{C}
     inner_mod::LieAlgebraModule
     power::Int
-    transformation_matrix_cache::Dict{MatElem{C}, MatElem{C}}
+    transformation_matrix_cache::Dict{LieAlgebraElem{C}, MatElem{C}}
     ind_map::Vector{Vector{Int}}
 
-    function LieAlgebraTensorPowerModule{C}(inner_mod::LieAlgebraModule, power::Int) where {C <: RingElement}
-        transformation_matrix_cache = Dict{MatElem{C}, MatElem{C}}()
+    function LieAlgebraTensorPowerModule{C}(inner_mod::LieAlgebraModule{C}, power::Int) where {C <: RingElement}
+        transformation_matrix_cache = Dict{LieAlgebraElem{C}, MatElem{C}}()
         ind_map = collect(ProductIterator(1:ngens(inner_mod), power)) .|> reverse
         return new{C}(inner_mod, power, transformation_matrix_cache, ind_map)
     end
