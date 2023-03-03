@@ -32,22 +32,6 @@ function liealgebra_so_struct_const(n::Int, R::Ring) # so_n
 end
 
 
-function liealgebra_so_fundamental_module_symbols(n::Int, e::Int)
-    if (n % 2 == 1 && e >= div(n, 2)) || (n % 2 == 0 && e >= div(n, 2) - 1)
-        error("spin representation (not implemented) or no fundamental representation")
-    end
-
-    return liealgebra_so_extpowers_standard_module_symbols(n, e)
-end
-
-function liealgebra_so_fundamental_module_struct_const(n::Int, e::Int, R::Ring)
-    if (n % 2 == 1 && e >= div(n, 2)) || (n % 2 == 0 && e >= div(n, 2) - 1)
-        error("spin representation (not implemented) or no fundamental representation")
-    end
-
-    return liealgebra_so_extpowers_standard_module_struct_const(n, e, R)
-end
-
 function liealgebra_so_symmpowers_standard_module_symbols(n::Int, e::Int)
     return e == 1 ? ["v_$(i)" for i in 1:n] : ["v_$(js)" for js in Combinatorics.with_replacement_combinations(1:n, e)]
 end
@@ -66,6 +50,7 @@ function liealgebra_so_symmpowers_standard_module_struct_const(n::Int, e::Int, R
 
     return struct_const_V # dimV, struct_const_V
 end
+
 
 function liealgebra_so_extpowers_standard_module_symbols(n::Int, e::Int)
     return e == 1 ? ["v_$(i)" for i in 1:n] : ["v_$(js)" for js in Combinatorics.combinations(1:n, e)]

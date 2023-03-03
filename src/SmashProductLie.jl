@@ -134,27 +134,10 @@ function smash_product_lie_highest_weight(coeff_ring::Ring, dynkin::Char, n::Int
 end
 
 """
-    smash_product_lie_so_fundamental_module(coeff_ring::Ring, n::Int, e::Int)
+    smash_product_lie_so_symmpowers_standard_module(coeff_ring::Ring, n::Int, e::Int)
 
 Constructs the smash product of the Lie algebra ``\\mathfrak{so}_n`` and the
-e-th fundamental module over the coefficient ring `coeff_ring`.
-"""
-function smash_product_lie_so_fundamental_module(coeff_ring::Ring, n::Int, e::Int) # so_n, e-th fundamental module (spin reps not implemented)
-    symbL = liealgebra_so_symbols(n)
-    scL = liealgebra_so_struct_const(n, coeff_ring)
-    symbV = liealgebra_so_fundamental_module_symbols(n, e)
-    scV = liealgebra_so_fundamental_module_struct_const(n, e, coeff_ring)
-
-    info = SmashProductLieInfo(dynkin=(n % 2 == 1 ? 'B' : 'D'), n=div(n, 2), constructive_basis=true)
-
-    return smash_product_lie(coeff_ring, symbL, symbV, scL, scV, info)
-end
-
-"""
-    smash_product_lie_so_symmpowers_fundamental_module(coeff_ring::Ring, n::Int, e::Int)
-
-Constructs the smash product of the Lie algebra ``\\mathfrak{so}_n`` and the
-e-th symmetric power of the fundamental module over the
+e-th symmetric power of the standard module over the
 coefficient ring `coeff_ring`.
 """
 function smash_product_lie_so_symmpowers_standard_module(coeff_ring::Ring, n::Int, e::Int) # so_n, e-th symm power of standard module
@@ -173,7 +156,7 @@ end
     smash_product_lie_so_extpowers_standard_module(coeff_ring::Ring, n::Int, e::Int)
 
 Constructs the smash product of the Lie algebra ``\\mathfrak{so}_n`` and the
-e-th exterior power of the fundamental module over the
+e-th exterior power of the standard module over the
 coefficient ring `coeff_ring`.
 """
 function smash_product_lie_so_extpowers_standard_module(coeff_ring::Ring, n::Int, e::Int) # so_n, e-th exterior power of standard module

@@ -20,7 +20,7 @@ end
     smash_product_lie_sp_extpowers_standard_module(coeff_ring::Ring, n::Int, e::Int)
 
 Constructs the smash product of the Lie algebra ``\\mathfrak{sp}_{2n}`` and the
-e-th exterior power of the fundamental module over the
+e-th exterior power of the standard module over the
 coefficient ring `coeff_ring`.
 """
 function smash_product_lie_sp_extpowers_standard_module(coeff_ring::Ring, n::Int, e::Int) # sp_2n, e-th exterior power of standard module

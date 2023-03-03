@@ -26,7 +26,6 @@ smash_product_lie_highest_weight
 For the orthogonal Lie algebras ``\mathfrak{so}_n`` there is a different constructor, that results in the well-known basis of ``\mathfrak{so}_n`` given by `x_i_j` ``= E_{i,j} - E_{j,i}`` for ``1 \leq i < j \leq n``. See [`liealgebra_so_basis`](@ref).
 
 ```@docs
-smash_product_lie_so_fundamental_module
 smash_product_lie_so_symmpowers_standard_module
 smash_product_lie_so_extpowers_standard_module
 ```
