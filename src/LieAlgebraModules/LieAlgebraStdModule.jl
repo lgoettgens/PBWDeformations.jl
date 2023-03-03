@@ -1,11 +1,8 @@
 struct LieAlgebraStdModule{C <: RingElement} <: LieAlgebraModule{C}
-    R::Ring
-    n::Int
-    transformation_matrix_cache::Dict{LieAlgebraElem{C}, MatElem{C}}
+    L::LieAlgebra{C}
 
-    function LieAlgebraStdModule{C}(R::Ring, n::Int) where {C <: RingElement}
-        transformation_matrix_cache = Dict{LieAlgebraElem{C}, MatElem{C}}()
-        return new{C}(R, n, transformation_matrix_cache)
+    function LieAlgebraStdModule{C}(L::LieAlgebra{C}) where {C <: RingElement}
+        return new{C}(L)
     end
 end
 
@@ -27,9 +24,11 @@ elem_type(::Type{LieAlgebraStdModule{C}}) where {C <: RingElement} = LieAlgebraS
 
 parent(v::LieAlgebraStdModuleElem{C}) where {C <: RingElement} = v.parent
 
-base_ring(V::LieAlgebraStdModule{C}) where {C <: RingElement} = V.R
+base_ring(V::LieAlgebraStdModule{C}) where {C <: RingElement} = base_ring(base_liealgebra(V))
 
-ngens(V::LieAlgebraStdModule{C}) where {C <: RingElement} = V.n
+base_liealgebra(V::LieAlgebraStdModule{C}) where {C <: RingElement} = V.L
+
+ngens(V::LieAlgebraStdModule{C}) where {C <: RingElement} = base_liealgebra(V).n
 
 
 ###############################################################################
@@ -39,8 +38,8 @@ ngens(V::LieAlgebraStdModule{C}) where {C <: RingElement} = V.n
 ###############################################################################
 
 function Base.show(io::IO, V::LieAlgebraStdModule{C}) where {C <: RingElement}
-    print(io, "SO_$(V.n)_StdModule over ")
-    print(IOContext(io, :compact => true), base_ring(V))
+    print(io, "StdModule of ")
+    print(IOContext(io, :compact => true), base_liealgebra(V))
 end
 
 function symbols(V::LieAlgebraStdModule{C}) where {C <: RingElement}
@@ -64,7 +63,7 @@ end
 ###############################################################################
 
 function Base.:(==)(V1::LieAlgebraStdModule{C}, V2::LieAlgebraStdModule{C}) where {C <: RingElement}
-    return (V1.R, V1.n) == (V2.R, V2.n)
+    return (V1.L) == (V2.L)
 end
 
 
@@ -74,9 +73,8 @@ end
 #
 ###############################################################################
 
-function transformation_matrix_of_action(x::MatElem{C}, V::LieAlgebraStdModule{C}) where {C <: RingElement}
-    size(x, 1) == size(x, 2) == V.n || throw(ArgumentError("Wrong size of matrix"))
-    return x
+function transformation_matrix_by_basisindex(V::LieAlgebraStdModule{C}, i::Int) where {C <: RingElement}
+    return basis(base_liealgebra(V))[i]
 end
 
 
@@ -86,6 +84,6 @@ end
 #
 ###############################################################################
 
-function standard_module(R::Ring, n::Int)
-    return LieAlgebraStdModule{elem_type(R)}(R, n)
+function standard_module(L::LieAlgebra{C}) where {C <: RingElement}
+    return LieAlgebraStdModule{elem_type(base_ring(L))}(L)
 end

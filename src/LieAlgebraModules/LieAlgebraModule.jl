@@ -95,25 +95,23 @@ end
 ###############################################################################
 
 function action(x::LieAlgebraElem{C}, v::LieAlgebraModuleElem{C}) where {C <: RingElement}
-    if haskey(parent(v).transformation_matrix_cache, x)
-        transformation_matrix = parent(v).transformation_matrix_cache[x]
-    else
-        transformation_matrix = transformation_matrix_of_action(matrix_repr(x), parent(v))
-        parent(v).transformation_matrix_cache[x] = transformation_matrix
-    end
-    return action_by_transformation_matrix(transformation_matrix, v)
+    parent(x) == base_liealgebra(parent(v)) || error("Incompatible Lie algebras.")
+
+    bx = basis(parent(x))
+    cx = coefficient_vector(matrix_repr(x), bx)
+
+    return parent(v)(
+        sum(
+            cx[i] * _matrix(v) * transpose(transformation_matrix_by_basisindex(parent(v), i)) for
+            i in 1:length(bx) if !iszero(cx[i])
+        ), # equivalent to (x * v^T)^T, since we work with row vectors
+    )
 end
 
 function Base.:*(x::LieAlgebraElem{C}, v::LieAlgebraModuleElem{C}) where {C <: RingElement}
     return action(x, v)
 end
 
-function transformation_matrix_of_action(_::MatElem{C}, v::LieAlgebraModule{C}) where {C <: RingElement}
-    error("Not implemented for $(typeof(v))")
-end
-
-function action_by_transformation_matrix(x::MatElem{C}, v::LieAlgebraModuleElem{C}) where {C <: RingElement}
-    size(x, 1) == size(x, 2) || error("Transformation matrix must be square.")
-    size(x, 1) == ngens(parent(v)) || error("Transformation matrix has wrong dimensions.")
-    return parent(v)(_matrix(v) * transpose(x)) # equivalent to (x * v^T)^T, since we work with row vectors
+function transformation_matrix_by_basisindex(V::LieAlgebraModule{C}, _::Int) where {C <: RingElement}
+    error("Not implemented for $(typeof(V))")
 end

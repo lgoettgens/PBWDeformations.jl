@@ -1,13 +1,13 @@
 struct LieAlgebraSymmetricPowerModule{C <: RingElement} <: LieAlgebraModule{C}
     inner_mod::LieAlgebraModule
     power::Int
-    transformation_matrix_cache::Dict{LieAlgebraElem{C}, MatElem{C}}
     ind_map::Vector{Vector{Int}}
+    transformation_matrix_cache::Vector{Union{Nothing, <:MatElem{C}}}
 
     function LieAlgebraSymmetricPowerModule{C}(inner_mod::LieAlgebraModule{C}, power::Int) where {C <: RingElement}
-        transformation_matrix_cache = Dict{LieAlgebraElem{C}, MatElem{C}}()
         ind_map = collect(Combinatorics.with_replacement_combinations(1:ngens(inner_mod), power))
-        return new{C}(inner_mod, power, transformation_matrix_cache, ind_map)
+        transformation_matrix_cache = Vector{Union{Nothing, <:MatElem{C}}}(nothing, ngens(base_liealgebra(inner_mod)))
+        return new{C}(inner_mod, power, ind_map, transformation_matrix_cache)
     end
 end
 
@@ -31,6 +31,8 @@ parent(v::LieAlgebraSymmetricPowerModuleElem{C}) where {C <: RingElement} = v.pa
 
 base_ring(V::LieAlgebraSymmetricPowerModule{C}) where {C <: RingElement} = base_ring(V.inner_mod)
 
+base_liealgebra(V::LieAlgebraSymmetricPowerModule{C}) where {C <: RingElement} = base_liealgebra(V.inner_mod)
+
 ngens(V::LieAlgebraSymmetricPowerModule{C}) where {C <: RingElement} =
     binomial(ngens(V.inner_mod) + V.power - 1, V.power)
 
@@ -50,7 +52,7 @@ function symbols(V::LieAlgebraSymmetricPowerModule{C}) where {C <: RingElement}
     if V.power == 1
         return symbols(V.inner_mod)
     end
-    if isa(V.inner_mod, LieStdModule)
+    if isa(V.inner_mod, LieAlgebraStdModule)
         parentheses = identity
     else
         parentheses = x -> "($x)"
@@ -112,20 +114,22 @@ end
 #
 ###############################################################################
 
-function transformation_matrix_of_action(x::MatElem{C}, V::LieAlgebraSymmetricPowerModule{C}) where {C <: RingElement}
-    T = tensor_power(V.inner_mod, V.power)
-    basis_change_S2T = zero(x, ngens(T), ngens(V))
-    basis_change_T2S = zero(x, ngens(V), ngens(T))
+function transformation_matrix_by_basisindex(V::LieAlgebraSymmetricPowerModule{C}, i::Int) where {C <: RingElement}
+    if V.transformation_matrix_cache[i] === nothing
+        T = tensor_power(V.inner_mod, V.power)
+        xT = transformation_matrix_by_basisindex(T, i)
 
-    for (i, _inds) in enumerate(V.ind_map), inds in Combinatorics.permutations(_inds)
-        j = findfirst(==(inds), T.ind_map)
-        basis_change_S2T[j, i] += 1 // factorial(V.power)
-        basis_change_T2S[i, j] = 1
+        basis_change_S2T = zero(xT, ngens(T), ngens(V))
+        basis_change_T2S = zero(xT, ngens(V), ngens(T))
+        for (i, _inds) in enumerate(V.ind_map), inds in Combinatorics.permutations(_inds)
+            j = findfirst(==(inds), T.ind_map)
+            basis_change_S2T[j, i] += 1 // factorial(V.power)
+            basis_change_T2S[i, j] = 1
+        end
+
+        V.transformation_matrix_cache[i] = basis_change_T2S * xT * basis_change_S2T
     end
-
-    xT = transformation_matrix_of_action(x, T)
-
-    return basis_change_T2S * xT * basis_change_S2T
+    return V.transformation_matrix_cache[i]
 end
 
 

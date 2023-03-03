@@ -1,13 +1,13 @@
 struct LieAlgebraExteriorPowerModule{C <: RingElement} <: LieAlgebraModule{C}
     inner_mod::LieAlgebraModule
     power::Int
-    transformation_matrix_cache::Dict{LieAlgebraElem{C}, MatElem{C}}
     ind_map::Vector{Vector{Int}}
+    transformation_matrix_cache::Vector{Union{Nothing, <:MatElem{C}}}
 
     function LieAlgebraExteriorPowerModule{C}(inner_mod::LieAlgebraModule{C}, power::Int) where {C <: RingElement}
-        transformation_matrix_cache = Dict{LieAlgebraElem{C}, MatElem{C}}()
         ind_map = collect(Combinatorics.combinations(1:ngens(inner_mod), power))
-        return new{C}(inner_mod, power, transformation_matrix_cache, ind_map)
+        transformation_matrix_cache = Vector{Union{Nothing, <:MatElem{C}}}(nothing, ngens(base_liealgebra(inner_mod)))
+        return new{C}(inner_mod, power, ind_map, transformation_matrix_cache)
     end
 end
 
@@ -31,6 +31,8 @@ parent(v::LieAlgebraExteriorPowerModuleElem{C}) where {C <: RingElement} = v.par
 
 base_ring(V::LieAlgebraExteriorPowerModule{C}) where {C <: RingElement} = base_ring(V.inner_mod)
 
+base_liealgebra(V::LieAlgebraExteriorPowerModule{C}) where {C <: RingElement} = base_liealgebra(V.inner_mod)
+
 ngens(V::LieAlgebraExteriorPowerModule{C}) where {C <: RingElement} = binomial(ngens(V.inner_mod), V.power)
 
 
@@ -49,7 +51,7 @@ function symbols(V::LieAlgebraExteriorPowerModule{C}) where {C <: RingElement}
     if V.power == 1
         return symbols(V.inner_mod)
     end
-    if isa(V.inner_mod, LieStdModule)
+    if isa(V.inner_mod, LieAlgebraStdModule)
         parentheses = identity
     else
         parentheses = x -> "($x)"
@@ -96,21 +98,24 @@ end
 #
 ###############################################################################
 
-function transformation_matrix_of_action(x::MatElem{C}, V::LieAlgebraExteriorPowerModule{C}) where {C <: RingElement}
-    T = tensor_power(V.inner_mod, V.power)
-    basis_change_E2T = zero(x, ngens(T), ngens(V))
-    basis_change_T2E = zero(x, ngens(V), ngens(T))
+function transformation_matrix_by_basisindex(V::LieAlgebraExteriorPowerModule{C}, i::Int) where {C <: RingElement}
+    if V.transformation_matrix_cache[i] === nothing
+        T = tensor_power(V.inner_mod, V.power)
+        xT = transformation_matrix_by_basisindex(T, i)
 
-    for (i, _inds) in enumerate(V.ind_map), inds in Combinatorics.permutations(_inds)
-        sgn = levicivita(sortperm(inds))
-        j = findfirst(==(inds), T.ind_map)
-        basis_change_E2T[j, i] = sgn // factorial(V.power)
-        basis_change_T2E[i, j] = sgn
+        basis_change_E2T = zero(xT, ngens(T), ngens(V))
+        basis_change_T2E = zero(xT, ngens(V), ngens(T))
+
+        for (i, _inds) in enumerate(V.ind_map), inds in Combinatorics.permutations(_inds)
+            sgn = levicivita(sortperm(inds))
+            j = findfirst(==(inds), T.ind_map)
+            basis_change_E2T[j, i] = sgn // factorial(V.power)
+            basis_change_T2E[i, j] = sgn
+        end
+
+        V.transformation_matrix_cache[i] = basis_change_T2E * xT * basis_change_E2T
     end
-
-    xT = transformation_matrix_of_action(x, T)
-
-    return basis_change_T2E * xT * basis_change_E2T
+    return V.transformation_matrix_cache[i]
 end
 
 

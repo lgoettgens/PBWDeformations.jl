@@ -48,6 +48,7 @@ export ArcDiagram,
 
 export all_arc_diagrams,
     all_pseudographs,
+    base_liealgebra,
     bracket,
     coefficient_vector,
     is_crossing_free,
