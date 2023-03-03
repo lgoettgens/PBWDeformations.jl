@@ -132,6 +132,18 @@ std_basis(i::Int, n::Int) = std_basis(Int, i, n)
 std_basis(::Type{T}, i::Int, n::Int) where {T <: Number} = [i == j ? T(1) : T(0) for j in 1:n]
 
 
+"""
+    coefficient_vector(M::MatElem{T}, basis::Vector{<:MatElem{T}}) where {T}
+
+Returns the vector of coefficients of the matrix `M` in the basis `basis`.
+Requires that `basis` is linearly independent and that `M` lies in the span of `basis`.
+
+# Examples
+```jldoctest; setup = :(coefficient_vector = PBWDeformations.coefficient_vector)
+julia> coefficient_vector(matrix(QQ, [1 2;3 4]), [matrix(QQ, [1 0;0 0]), matrix(QQ, [0 1;0 2]), matrix(QQ, [0 0;-1 0])])
+[1   2   -3]
+```
+"""
 function coefficient_vector(M::MatElem{T}, basis::Vector{<:MatElem{T}}) where {T}
     (nr, nc) = size(M)
     all(b -> size(b) == (nr, nc), basis) || throw(DimensionMismatch("The matrices in B must have the same size as M."))
