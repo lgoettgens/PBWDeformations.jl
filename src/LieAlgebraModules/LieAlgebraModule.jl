@@ -4,9 +4,9 @@
 #
 #################################################
 
-abstract type LieAlgebraModule{C <: RingElement} end
+abstract type LieAlgebraModule{C <: RingElement} <: FPModule{C} end
 
-abstract type LieAlgebraModuleElem{C <: RingElement} end
+abstract type LieAlgebraModuleElem{C <: RingElement} <: FPModuleElem{C} end
 
 
 ###############################################################################
@@ -14,11 +14,6 @@ abstract type LieAlgebraModuleElem{C <: RingElement} end
 #   Basic manipulation
 #
 ###############################################################################
-
-# makes field access type stable
-@inline function _matrix(v::LieAlgebraModuleElem{C}) where {C <: RingElement}
-    return v.mat::dense_matrix_type(C)
-end
 
 base_ring(v::LieAlgebraModuleElem{C}) where {C <: RingElement} = base_ring(parent(v))
 
@@ -29,18 +24,14 @@ function gen(V::LieAlgebraModule{C}, i::Int) where {C <: RingElement}
     return V([(j == i ? one(R) : zero(R)) for j in 1:ngens(V)])
 end
 
-zero(V::LieAlgebraModule{C}) where {C <: RingElement} = V()
-
-iszero(v::LieAlgebraModuleElem{C}) where {C <: RingElement} = iszero(_matrix(v))
-
-function Base.hash(v::LieAlgebraModuleElem{C}, h::UInt) where {C <: RingElement}
-    return hash(_matrix(v), hash(symbols(parent(v)), h))
+@inline function Generic._matrix(v::LieAlgebraModuleElem{C}) where {C <: RingElement}
+    return (v.mat)::dense_matrix_type(C)
 end
 
-function Base.deepcopy_internal(v::LieAlgebraModuleElem{C}, dict::IdDict) where {C <: RingElement}
-    return parent(v)(deepcopy_internal(_matrix(v), dict))
+function Generic.rels(_::LieAlgebraModule{C}) where {C <: RingElement}
+    # there are no relations in a vector space
+    return Vector{dense_matrix_type(C)}(undef, 0)
 end
-
 
 ###############################################################################
 #
@@ -94,43 +85,7 @@ end
 #
 ###############################################################################
 
-function Base.:-(v::LieAlgebraModuleElem{C}) where {C <: RingElement}
-    return parent(v)(-_matrix(v))
-end
-
-function Base.:+(v1::LieAlgebraModuleElem{C}, v2::LieAlgebraModuleElem{C}) where {C <: RingElement}
-    parent(v1) == parent(v2) || error("Incompatible modules.")
-    return parent(v1)(_matrix(v1) + _matrix(v2))
-end
-
-function Base.:-(v1::LieAlgebraModuleElem{C}, v2::LieAlgebraModuleElem{C}) where {C <: RingElement}
-    parent(v1) == parent(v2) || error("Incompatible modules.")
-    return parent(v1)(_matrix(v1) - _matrix(v2))
-end
-
-function Base.:*(c::C, v::LieAlgebraModuleElem{C}) where {C <: RingElement}
-    return parent(v)(c * _matrix(v))
-end
-
-function Base.:*(c::Union{Integer, Rational, AbstractFloat}, v::LieAlgebraModuleElem{C}) where {C <: RingElement}
-    return parent(v)(c * _matrix(v))
-end
-
-Base.:*(v::LieAlgebraModuleElem{C}, c::Union{Integer, Rational, AbstractFloat}) where {C <: RingElement} = c * v
-
-Base.:*(v::LieAlgebraModuleElem{C}, c::C) where {C <: RingElement} = c * v
-
-
-###############################################################################
-#
-#   Comparison functions
-#
-###############################################################################
-
-function Base.:(==)(v1::LieAlgebraModuleElem{C}, v2::LieAlgebraModuleElem{C}) where {C <: RingElement}
-    parent(v1) == parent(v2) || return false
-    return _matrix(v1) == _matrix(v2)
-end
+# Vector space operations get inherited from FPModule
 
 
 ###############################################################################

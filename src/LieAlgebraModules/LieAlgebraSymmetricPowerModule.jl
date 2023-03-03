@@ -34,6 +34,7 @@ base_ring(V::LieAlgebraSymmetricPowerModule{C}) where {C <: RingElement} = base_
 ngens(V::LieAlgebraSymmetricPowerModule{C}) where {C <: RingElement} =
     binomial(ngens(V.inner_mod) + V.power - 1, V.power)
 
+
 ###############################################################################
 #
 #   String I/O
@@ -88,6 +89,20 @@ function (V::LieAlgebraSymmetricPowerModule{C})(
         mat[1, i] += prod(a[j].mat[k] for (j, k) in enumerate(inds))
     end
     return LieAlgebraSymmetricPowerModuleElem{C}(V, mat)
+end
+
+
+###############################################################################
+#
+#   Comparison functions
+#
+###############################################################################
+
+function Base.:(==)(
+    V1::LieAlgebraSymmetricPowerModule{C},
+    V2::LieAlgebraSymmetricPowerModule{C},
+) where {C <: RingElement}
+    return (V1.inner_mod, V1.power) == (V2.inner_mod, V2.power)
 end
 
 
