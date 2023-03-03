@@ -7,7 +7,7 @@
 struct LieAlgebra{C <: RingElement} <: FPModule{C}
     R::Ring
     n::Int
-    basis::Vector{MatElem{C}}
+    basis::Vector{<:MatElem{C}}
     dim::Int
 
     function LieAlgebra{C}(R::Ring, n::Int, basis::Vector{<:MatElem{C}}) where {C <: RingElement}
@@ -50,6 +50,10 @@ end
     return (x.mat)::dense_matrix_type(T)
 end
 
+@inline function Generic.basis(L::LieAlgebra{T}) where {T}
+    return (L.basis)::Vector{dense_matrix_type(T)}
+end
+
 function Generic.rels(_::LieAlgebra{C}) where {C <: RingElement}
     # there are no relations in a vector space
     return Vector{dense_matrix_type(C)}(undef, 0)
@@ -87,7 +91,7 @@ end
 
 function (L::LieAlgebra{C})(m::MatElem{C}) where {C <: RingElement}
     if size(m) == (L.n, L.n)
-        m = coefficient_vector(m, L.basis)
+        m = coefficient_vector(m, basis(L))
     end
     size(m) == (1, ngens(L)) || error("Invalid matrix dimensions.")
     return elem_type(L)(L, m)
@@ -108,7 +112,7 @@ end
 # Vector space operations get inherited from FPModule
 
 function Generic.matrix_repr(x::LieAlgebraElem{C}) where {C <: RingElement}
-    return sum(c * b for (c, b) in zip(x.mat, parent(x).basis))
+    return sum(c * b for (c, b) in zip(x.mat, basis(parent(x))))
 end
 
 function bracket(x::LieAlgebraElem{C}, y::LieAlgebraElem{C}) where {C <: RingElement}

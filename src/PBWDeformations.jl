@@ -26,7 +26,7 @@ import AbstractAlgebra:
     parent_type,
     symbols
 
-import AbstractAlgebra.Generic: _matrix, matrix_repr, rels
+import AbstractAlgebra.Generic: basis, _matrix, matrix_repr, rels
 
 import AbstractAlgebra.PrettyPrinting: @enable_all_show_via_expressify, expressify
 
