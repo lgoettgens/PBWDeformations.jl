@@ -1,23 +1,42 @@
-mutable struct LieAlgebra{C <: RingElement} <: FPModule{C}
+@attributes mutable struct LieAlgebra{C <: RingElement} <: FPModule{C}
     R::Ring
     n::Int
     basis::Vector{<:MatElem{C}}
     dim::Int
+    s::Vector{Symbol}
 
-    function LieAlgebra{C}(R::Ring, n::Int, basis::Vector{<:MatElem{C}}, cached::Bool=true) where {C <: RingElement}
-        return get_cached!(LieAlgebraDict, (R, n, basis), cached) do
+    function LieAlgebra{C}(
+        R::Ring,
+        n::Int,
+        basis::Vector{<:MatElem{C}},
+        s::Vector{Symbol},
+        cached::Bool=true,
+    ) where {C <: RingElement}
+        return get_cached!(LieAlgebraDict, (R, n, basis, s), cached) do
             all(b -> size(b) == (n, n), basis) || error("Invalid basis element dimensions.")
-            new{C}(R, n, basis, length(basis))
+            length(s) == length(basis) || error("Invalid number of basis element names.")
+            new{C}(R, n, basis, length(basis), s)
         end::LieAlgebra{C}
+    end
+
+    function LieAlgebra{C}(
+        R::Ring,
+        n::Int,
+        basis::Vector{<:MatElem{C}},
+        s::Vector{<:Union{AbstractString, Char, Symbol}},
+        cached::Bool=true,
+    ) where {C <: RingElement}
+        return LieAlgebra{C}(R, n, basis, Symbol.(s), cached)
     end
 end
 
-const LieAlgebraDict = CacheDictType{Tuple{Ring, Int, Vector{<:MatElem}}, LieAlgebra}()
+const LieAlgebraDict = CacheDictType{Tuple{Ring, Int, Vector{<:MatElem}, Vector{Symbol}}, LieAlgebra}()
 
 struct LieAlgebraElem{C <: RingElement} <: FPModuleElem{C}
     parent::LieAlgebra{C}
     mat::MatElem{C}
 end
+
 
 ###############################################################################
 #
@@ -140,7 +159,30 @@ end
 #
 ###############################################################################
 
+function general_linear_liealgebra(R::Ring, n::Int)
+    basis = [(b = zero_matrix(R, n, n); b[i, j] = 1; b) for i in 1:n for j in 1:n]
+    s = ["x_$(i)_$(j)" for i in 1:n for j in 1:n]
+    L = LieAlgebra{elem_type(R)}(R, n, basis, s)
+    set_attribute!(L, :type, :general_linear)
+    return L
+end
+
+function special_linear_liealgebra(R::Ring, n::Int)
+    basis_e = [(b = zero_matrix(R, n, n); b[i, j] = 1; b) for i in 1:n for j in i+1:n]
+    basis_f = [(b = zero_matrix(R, n, n); b[j, i] = -1; b) for i in 1:n for j in i+1:n]
+    basis_h = [(b = zero_matrix(R, n, n); b[i, i] = 1; b[i+1, i+1] = -1; b) for i in 1:n-1]
+    s_e = ["e_$(i)_$(j)" for i in 1:n for j in i+1:n]
+    s_f = ["f_$(i)_$(j)" for i in 1:n for j in i+1:n]
+    s_h = ["h_$(i)" for i in 1:n-1]
+    L = LieAlgebra{elem_type(R)}(R, n, [basis_e; basis_f; basis_h], [s_e; s_f; s_h])
+    set_attribute!(L, :type, :special_linear)
+    return L
+end
+
 function special_orthogonal_liealgebra(R::Ring, n::Int)
     basis = [(b = zero_matrix(R, n, n); b[i, j] = 1; b[j, i] = -1; b) for i in 1:n for j in i+1:n]
-    return LieAlgebra{elem_type(R)}(R, n, basis)
+    s = ["x_$(i)_$(j)" for i in 1:n for j in i+1:n]
+    L = LieAlgebra{elem_type(R)}(R, n, basis, s)
+    set_attribute!(L, :type, :special_orthogonal)
+    return L
 end
