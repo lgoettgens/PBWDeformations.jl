@@ -141,9 +141,9 @@ e-th symmetric power of the standard module over the
 coefficient ring `coeff_ring`.
 """
 function smash_product_lie_so_symmpowers_standard_module(coeff_ring::Ring, n::Int, e::Int) # so_n, e-th symm power of standard module
-    symbL = liealgebra_so_symbols(n)
+    symbL = liealgebra_so_symbols(n, coeff_ring)
     scL = liealgebra_so_struct_const(n, coeff_ring)
-    symbV = liealgebra_so_symmpowers_standard_module_symbols(n, e)
+    symbV = liealgebra_so_symmpowers_standard_module_symbols(n, e, coeff_ring)
     scV = liealgebra_so_symmpowers_standard_module_struct_const(n, e, coeff_ring)
 
     info =
@@ -160,9 +160,9 @@ e-th exterior power of the standard module over the
 coefficient ring `coeff_ring`.
 """
 function smash_product_lie_so_extpowers_standard_module(coeff_ring::Ring, n::Int, e::Int) # so_n, e-th exterior power of standard module
-    symbL = liealgebra_so_symbols(n)
+    symbL = liealgebra_so_symbols(n, coeff_ring)
     scL = liealgebra_so_struct_const(n, coeff_ring)
-    symbV = liealgebra_so_extpowers_standard_module_symbols(n, e)
+    symbV = liealgebra_so_extpowers_standard_module_symbols(n, e, coeff_ring)
     scV = liealgebra_so_extpowers_standard_module_struct_const(n, e, coeff_ring)
 
     info =

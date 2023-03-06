@@ -15,8 +15,9 @@ function liealgebra_so_basis(n::Int, R::Ring)
     return basis(special_orthogonal_liealgebra(R, n))
 end
 
-function liealgebra_so_symbols(n::Int)
-    return ["x_$(i)_$(j)" for i in 1:n for j in i+1:n]
+function liealgebra_so_symbols(n::Int, R::Ring)
+    L = special_orthogonal_liealgebra(R, n)
+    return symbols(L)
 end
 
 function liealgebra_so_struct_const(n::Int, R::Ring) # so_n
@@ -32,8 +33,10 @@ function liealgebra_so_struct_const(n::Int, R::Ring) # so_n
 end
 
 
-function liealgebra_so_symmpowers_standard_module_symbols(n::Int, e::Int)
-    return e == 1 ? ["v_$(i)" for i in 1:n] : ["v_$(js)" for js in Combinatorics.with_replacement_combinations(1:n, e)]
+function liealgebra_so_symmpowers_standard_module_symbols(n::Int, e::Int, R::Ring)
+    L = special_orthogonal_liealgebra(R, n)
+    V = symmetric_power(standard_module(L), e)
+    return symbols(V)
 end
 
 function liealgebra_so_symmpowers_standard_module_struct_const(n::Int, e::Int, R::Ring) # so_n, e-th symm power of the standard rep
@@ -48,12 +51,14 @@ function liealgebra_so_symmpowers_standard_module_struct_const(n::Int, e::Int, R
         struct_const_V[i, j] = [(c, k) for (k, c) in enumerate(_matrix(xi * vj)) if !iszero(c)]
     end
 
-    return struct_const_V # dimV, struct_const_V
+    return struct_const_V
 end
 
 
-function liealgebra_so_extpowers_standard_module_symbols(n::Int, e::Int)
-    return e == 1 ? ["v_$(i)" for i in 1:n] : ["v_$(js)" for js in Combinatorics.combinations(1:n, e)]
+function liealgebra_so_extpowers_standard_module_symbols(n::Int, e::Int, R::Ring)
+    L = special_orthogonal_liealgebra(R, n)
+    V = exterior_power(standard_module(L), e)
+    return symbols(V)
 end
 
 function liealgebra_so_extpowers_standard_module_struct_const(n::Int, e::Int, R::Ring) # so_n, e-th exterior power of the standard rep
@@ -68,7 +73,7 @@ function liealgebra_so_extpowers_standard_module_struct_const(n::Int, e::Int, R:
         struct_const_V[i, j] = [(c, k) for (k, c) in enumerate(_matrix(xi * vj)) if !iszero(c)]
     end
 
-    return struct_const_V # dimV, struct_const_V
+    return struct_const_V
 end
 
 

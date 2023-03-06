@@ -19,7 +19,7 @@ liealgebra_so_extpowers_standard_module_struct_const = PD.liealgebra_so_extpower
             end
 
             @test dimL == length(liealgebra_so_basis(n, R))
-            @test dimL == length(liealgebra_so_symbols(n))
+            @test dimL == length(liealgebra_so_symbols(n, R))
             @test (dimL, dimL) == size(liealgebra_so_struct_const(n, R))
         end
 
@@ -27,7 +27,7 @@ liealgebra_so_extpowers_standard_module_struct_const = PD.liealgebra_so_extpower
             R = QQ
             dimL = length(liealgebra_so_basis(n, R))
             dimV = binomial(n + e - 1, e)
-            @test dimV == length(liealgebra_so_symmpowers_standard_module_symbols(n, e))
+            @test dimV == length(liealgebra_so_symmpowers_standard_module_symbols(n, e, R))
             @test (dimL, dimV) == size(liealgebra_so_symmpowers_standard_module_struct_const(n, e, R))
         end
 
@@ -35,7 +35,7 @@ liealgebra_so_extpowers_standard_module_struct_const = PD.liealgebra_so_extpower
             R = QQ
             dimL = length(liealgebra_so_basis(n, R))
             dimV = binomial(n, e)
-            @test dimV == length(liealgebra_so_extpowers_standard_module_symbols(n, e))
+            @test dimV == length(liealgebra_so_extpowers_standard_module_symbols(n, e, R))
             @test (dimL, dimV) == size(liealgebra_so_extpowers_standard_module_struct_const(n, e, R))
         end
 

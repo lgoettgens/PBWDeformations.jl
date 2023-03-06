@@ -88,6 +88,10 @@ function Base.show(io::IO, x::LieAlgebraElem{C}) where {C <: RingElement}
     Base.show(io, matrix_repr(x))
 end
 
+function symbols(L::LieAlgebra{C}) where {C <: RingElement}
+    return L.s
+end
+
 
 ###############################################################################
 #

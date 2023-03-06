@@ -72,7 +72,7 @@ function symbols(V::LieAlgebraExteriorPowerModule{C}) where {C <: RingElement}
         parentheses = x -> "($x)"
     end
 
-    return [join(s .|> parentheses, " ∧ ") for s in Combinatorics.combinations(symbols(V.inner_mod), V.power)]
+    return [Symbol(join(s .|> parentheses, " ∧ ")) for s in Combinatorics.combinations(symbols(V.inner_mod), V.power)]
 end
 
 

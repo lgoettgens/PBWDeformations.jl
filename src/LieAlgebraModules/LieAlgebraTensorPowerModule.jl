@@ -71,7 +71,7 @@ function symbols(V::LieAlgebraTensorPowerModule{C}) where {C <: RingElement}
         parentheses = x -> "($x)"
     end
 
-    return [join(s .|> parentheses, " ⊗ ") for s in ProductIterator(symbols(V.inner_mod), V.power) .|> reverse]
+    return [Symbol(join(s .|> parentheses, " ⊗ ")) for s in ProductIterator(symbols(V.inner_mod), V.power) .|> reverse]
 end
 
 

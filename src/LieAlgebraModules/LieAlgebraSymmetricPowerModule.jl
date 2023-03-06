@@ -76,7 +76,7 @@ function symbols(V::LieAlgebraSymmetricPowerModule{C}) where {C <: RingElement}
     end
 
     return [
-        begin
+        Symbol(
             join((
                 begin
                     e = count(==(i), inds)
@@ -86,8 +86,8 @@ function symbols(V::LieAlgebraSymmetricPowerModule{C}) where {C <: RingElement}
                         "$(s |> parentheses)^$e"
                     end
                 end for (i, s) in enumerate(symbols(V.inner_mod)) if in(i, inds)
-            ), "*")
-        end for inds in Combinatorics.with_replacement_combinations(1:ngens(V.inner_mod), V.power)
+            ), "*"),
+        ) for inds in Combinatorics.with_replacement_combinations(1:ngens(V.inner_mod), V.power)
     ]
 end
 
