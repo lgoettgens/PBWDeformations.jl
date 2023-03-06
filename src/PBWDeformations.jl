@@ -6,6 +6,7 @@ using SparseArrays
 
 import AbstractAlgebra:
     AllParts,
+    CacheDictType,
     FreeAssAlgebra,
     FreeAssAlgElem,
     FPModule,
@@ -22,6 +23,7 @@ import AbstractAlgebra:
     elem_type,
     gen,
     gens,
+    get_cached!,
     ngens,
     parent_type,
     symbols

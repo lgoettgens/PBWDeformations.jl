@@ -1,20 +1,18 @@
-#################################################
-#
-# Type definitions
-#
-#################################################
-
-struct LieAlgebra{C <: RingElement} <: FPModule{C}
+mutable struct LieAlgebra{C <: RingElement} <: FPModule{C}
     R::Ring
     n::Int
     basis::Vector{<:MatElem{C}}
     dim::Int
 
-    function LieAlgebra{C}(R::Ring, n::Int, basis::Vector{<:MatElem{C}}) where {C <: RingElement}
-        all(b -> size(b) == (n, n), basis) || error("Invalid basis element dimensions.")
-        return new{C}(R, n, basis, length(basis))
+    function LieAlgebra{C}(R::Ring, n::Int, basis::Vector{<:MatElem{C}}, cached::Bool=true) where {C <: RingElement}
+        return get_cached!(LieAlgebraDict, (R, n, basis), cached) do
+            all(b -> size(b) == (n, n), basis) || error("Invalid basis element dimensions.")
+            new{C}(R, n, basis, length(basis))
+        end::LieAlgebra{C}
     end
 end
+
+const LieAlgebraDict = CacheDictType{Tuple{Ring, Int, Vector{<:MatElem}}, LieAlgebra}()
 
 struct LieAlgebraElem{C <: RingElement} <: FPModuleElem{C}
     parent::LieAlgebra{C}
@@ -123,14 +121,16 @@ function bracket(x::LieAlgebraElem{C}, y::LieAlgebraElem{C}) where {C <: RingEle
     return L(x_mat * y_mat - y_mat * x_mat)
 end
 
+
 ###############################################################################
 #
 #   Comparison functions
 #
 ###############################################################################
 
+# Overwrite the equality of FPModule to be used for CacheDicts
 function Base.:(==)(L1::LieAlgebra{C}, L2::LieAlgebra{C}) where {C <: RingElement}
-    return (L1.R, L1.n, L1.basis) == (L2.R, L2.n, L2.basis)
+    return L1 === L2
 end
 
 

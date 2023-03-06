@@ -1,16 +1,30 @@
-struct LieAlgebraTensorPowerModule{C <: RingElement} <: LieAlgebraModule{C}
+mutable struct LieAlgebraTensorPowerModule{C <: RingElement} <: LieAlgebraModule{C}
     inner_mod::LieAlgebraModule
     power::Int
     ind_map::Vector{Vector{Int}}
     transformation_matrix_cache::Vector{Union{Nothing, <:MatElem{C}}}
 
-    function LieAlgebraTensorPowerModule{C}(inner_mod::LieAlgebraModule{C}, power::Int) where {C <: RingElement}
-        ind_map = collect(ProductIterator(1:ngens(inner_mod), power)) .|> reverse
-        transformation_matrix_cache = Vector{Union{Nothing, <:MatElem{C}}}(nothing, ngens(base_liealgebra(inner_mod)))
-        return new{C}(inner_mod, power, ind_map, transformation_matrix_cache)
+    function LieAlgebraTensorPowerModule{C}(
+        inner_mod::LieAlgebraModule{C},
+        power::Int,
+        cached::Bool=true,
+    ) where {C <: RingElement}
+        return get_cached!(
+            LieAlgebraTensorPowerModuleDict,
+            (inner_mod, power),
+            cached,
+        ) do
+            ind_map = collect(ProductIterator(1:ngens(inner_mod), power)) .|> reverse
+            transformation_matrix_cache = Vector{Union{Nothing, <:MatElem{C}}}(
+                nothing,
+                ngens(base_liealgebra(inner_mod)),
+            )
+            new{C}(inner_mod, power, ind_map, transformation_matrix_cache)
+        end::LieAlgebraTensorPowerModule{C}
     end
 end
 
+const LieAlgebraTensorPowerModuleDict = CacheDictType{Tuple{LieAlgebraModule, Int}, LieAlgebraTensorPowerModule}()
 struct LieAlgebraTensorPowerModuleElem{C <: RingElement} <: LieAlgebraModuleElem{C}
     parent::LieAlgebraTensorPowerModule{C}
     mat::MatElem{C}
@@ -75,17 +89,6 @@ function (V::LieAlgebraTensorPowerModule{C})(a::Vector{T}) where {T <: LieAlgebr
         mat[1, i] += prod(a[j].mat[k] for (j, k) in enumerate(inds))
     end
     return LieAlgebraTensorPowerModuleElem{C}(V, mat)
-end
-
-
-###############################################################################
-#
-#   Comparison functions
-#
-###############################################################################
-
-function Base.:(==)(V1::LieAlgebraTensorPowerModule{C}, V2::LieAlgebraTensorPowerModule{C}) where {C <: RingElement}
-    return (V1.inner_mod, V1.power) == (V2.inner_mod, V2.power)
 end
 
 

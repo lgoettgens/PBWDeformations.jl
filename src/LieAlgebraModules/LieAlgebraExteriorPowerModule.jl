@@ -1,15 +1,30 @@
-struct LieAlgebraExteriorPowerModule{C <: RingElement} <: LieAlgebraModule{C}
+mutable struct LieAlgebraExteriorPowerModule{C <: RingElement} <: LieAlgebraModule{C}
     inner_mod::LieAlgebraModule
     power::Int
     ind_map::Vector{Vector{Int}}
     transformation_matrix_cache::Vector{Union{Nothing, <:MatElem{C}}}
 
-    function LieAlgebraExteriorPowerModule{C}(inner_mod::LieAlgebraModule{C}, power::Int) where {C <: RingElement}
-        ind_map = collect(Combinatorics.combinations(1:ngens(inner_mod), power))
-        transformation_matrix_cache = Vector{Union{Nothing, <:MatElem{C}}}(nothing, ngens(base_liealgebra(inner_mod)))
-        return new{C}(inner_mod, power, ind_map, transformation_matrix_cache)
+    function LieAlgebraExteriorPowerModule{C}(
+        inner_mod::LieAlgebraModule{C},
+        power::Int,
+        cached::Bool=true,
+    ) where {C <: RingElement}
+        return get_cached!(
+            LieAlgebraExteriorPowerModuleDict,
+            (inner_mod, power),
+            cached,
+        ) do
+            ind_map = collect(Combinatorics.combinations(1:ngens(inner_mod), power))
+            transformation_matrix_cache = Vector{Union{Nothing, <:MatElem{C}}}(
+                nothing,
+                ngens(base_liealgebra(inner_mod)),
+            )
+            new{C}(inner_mod, power, ind_map, transformation_matrix_cache)
+        end::LieAlgebraExteriorPowerModule{C}
     end
 end
+
+const LieAlgebraExteriorPowerModuleDict = CacheDictType{Tuple{LieAlgebraModule, Int}, LieAlgebraExteriorPowerModule}()
 
 struct LieAlgebraExteriorPowerModuleElem{C <: RingElement} <: LieAlgebraModuleElem{C}
     parent::LieAlgebraExteriorPowerModule{C}
@@ -78,17 +93,6 @@ function (V::LieAlgebraExteriorPowerModule{C})(
         mat[1, i] += sgn * prod(a[j].mat[k] for (j, k) in enumerate(inds))
     end
     return LieAlgebraExteriorPowerModuleElem{C}(V, mat)
-end
-
-
-###############################################################################
-#
-#   Comparison functions
-#
-###############################################################################
-
-function Base.:(==)(V1::LieAlgebraExteriorPowerModule{C}, V2::LieAlgebraExteriorPowerModule{C}) where {C <: RingElement}
-    return (V1.inner_mod, V1.power) == (V2.inner_mod, V2.power)
 end
 
 

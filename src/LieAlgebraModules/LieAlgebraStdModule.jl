@@ -1,10 +1,14 @@
-struct LieAlgebraStdModule{C <: RingElement} <: LieAlgebraModule{C}
+mutable struct LieAlgebraStdModule{C <: RingElement} <: LieAlgebraModule{C}
     L::LieAlgebra{C}
 
-    function LieAlgebraStdModule{C}(L::LieAlgebra{C}) where {C <: RingElement}
-        return new{C}(L)
+    function LieAlgebraStdModule{C}(L::LieAlgebra{C}, cached::Bool=true) where {C <: RingElement}
+        return get_cached!(LieAlgebraStdModuleDict, L, cached) do
+            new{C}(L)
+        end::LieAlgebraStdModule{C}
     end
 end
+
+const LieAlgebraStdModuleDict = CacheDictType{LieAlgebra, LieAlgebraStdModule}()
 
 struct LieAlgebraStdModuleElem{C <: RingElement} <: LieAlgebraModuleElem{C}
     parent::LieAlgebraStdModule{C}
@@ -54,17 +58,6 @@ end
 ###############################################################################
 
 # no special ones
-
-
-###############################################################################
-#
-#   Comparison functions
-#
-###############################################################################
-
-function Base.:(==)(V1::LieAlgebraStdModule{C}, V2::LieAlgebraStdModule{C}) where {C <: RingElement}
-    return (V1.L) == (V2.L)
-end
 
 
 ###############################################################################

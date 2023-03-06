@@ -1,15 +1,32 @@
-struct LieAlgebraSymmetricPowerModule{C <: RingElement} <: LieAlgebraModule{C}
+mutable struct LieAlgebraSymmetricPowerModule{C <: RingElement} <: LieAlgebraModule{C}
     inner_mod::LieAlgebraModule
     power::Int
     ind_map::Vector{Vector{Int}}
     transformation_matrix_cache::Vector{Union{Nothing, <:MatElem{C}}}
 
-    function LieAlgebraSymmetricPowerModule{C}(inner_mod::LieAlgebraModule{C}, power::Int) where {C <: RingElement}
-        ind_map = collect(Combinatorics.with_replacement_combinations(1:ngens(inner_mod), power))
-        transformation_matrix_cache = Vector{Union{Nothing, <:MatElem{C}}}(nothing, ngens(base_liealgebra(inner_mod)))
-        return new{C}(inner_mod, power, ind_map, transformation_matrix_cache)
+    function LieAlgebraSymmetricPowerModule{C}(
+        inner_mod::LieAlgebraModule{C},
+        power::Int,
+        cached::Bool=true,
+    ) where {C <: RingElement}
+        return get_cached!(
+            LieAlgebraSymmetricPowerModuleDict,
+            (inner_mod, power),
+            cached,
+        ) do
+            ind_map = collect(
+                Combinatorics.with_replacement_combinations(1:ngens(inner_mod), power),
+            )
+            transformation_matrix_cache = Vector{Union{Nothing, <:MatElem{C}}}(
+                nothing,
+                ngens(base_liealgebra(inner_mod)),
+            )
+            new{C}(inner_mod, power, ind_map, transformation_matrix_cache)
+        end::LieAlgebraSymmetricPowerModule{C}
     end
 end
+
+const LieAlgebraSymmetricPowerModuleDict = CacheDictType{Tuple{LieAlgebraModule, Int}, LieAlgebraSymmetricPowerModule}()
 
 struct LieAlgebraSymmetricPowerModuleElem{C <: RingElement} <: LieAlgebraModuleElem{C}
     parent::LieAlgebraSymmetricPowerModule{C}
@@ -91,20 +108,6 @@ function (V::LieAlgebraSymmetricPowerModule{C})(
         mat[1, i] += prod(a[j].mat[k] for (j, k) in enumerate(inds))
     end
     return LieAlgebraSymmetricPowerModuleElem{C}(V, mat)
-end
-
-
-###############################################################################
-#
-#   Comparison functions
-#
-###############################################################################
-
-function Base.:(==)(
-    V1::LieAlgebraSymmetricPowerModule{C},
-    V2::LieAlgebraSymmetricPowerModule{C},
-) where {C <: RingElement}
-    return (V1.inner_mod, V1.power) == (V2.inner_mod, V2.power)
 end
 
 
