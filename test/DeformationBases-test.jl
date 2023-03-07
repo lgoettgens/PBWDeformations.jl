@@ -17,9 +17,6 @@
             end
         end
 
-    end
-
-    @testset "All DeformationBases/ArcDiagDeformBasis.jl tests" begin
         @testset "correctness regression" begin
             @testset "SO_4, ⋀²V" begin
                 sp, _ = smash_product_lie_so_extpowers_standard_module(QQ, 4, 2)

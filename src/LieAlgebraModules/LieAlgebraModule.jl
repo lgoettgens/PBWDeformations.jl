@@ -110,7 +110,7 @@ function action(x::LieAlgebraElem{C}, v::LieAlgebraModuleElem{C}) where {C <: Ri
     parent(x) == base_liealgebra(parent(v)) || error("Incompatible Lie algebras.")
 
     bx = basis(parent(x))
-    cx = coefficient_vector(matrix_repr(x), bx)
+    cx = _matrix(x)
 
     return parent(v)(
         sum(

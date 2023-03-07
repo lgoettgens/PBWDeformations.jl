@@ -67,18 +67,19 @@ Base.length(basis::ArcDiagDeformBasis) = basis.len
 
 
 function extract_sp_info__so_powers_stdmod(sp::SmashProductLie{C}) where {C <: RingElement}
-    if !has_attribute(sp, :base_liealgebra) || !has_attribute(sp, :base_liealgebra_module)
-        error("Metadata not found, but needed.")
-    end
+    has_attribute(sp, :base_liealgebra) || error("Metadata not found, but needed.")
+    has_attribute(sp, :base_liealgebra_module) || error("Metadata not found, but needed.")
+
     L = get_attribute(sp, :base_liealgebra)
     V = get_attribute(sp, :base_liealgebra_module)
 
+    get_attribute(L, :type) == :special_orthogonal || error("Only implemented for so_n.")
     n = L.n
 
-    if V isa LieAlgebraExteriorPowerModule{C}
+    if V isa LieAlgebraExteriorPowerModule{C} && V.inner_mod isa LieAlgebraStdModule{C}
         e = V.power
         typeof_power = :exterior
-    elseif V isa LieAlgebraSymmetricPowerModule{C}
+    elseif V isa LieAlgebraSymmetricPowerModule{C} && V.inner_mod isa LieAlgebraStdModule{C}
         e = V.power
         typeof_power = :symmetric
     else
