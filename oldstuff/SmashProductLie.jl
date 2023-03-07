@@ -11,9 +11,14 @@ function smash_product_lie_sp_symmpowers_standard_module(coeff_ring::Ring, n::In
     symbV = liealgebra_sp_symmpowers_standard_module_symbols(n, e)
     scV = liealgebra_sp_symmpowers_standard_module_struct_const(n, e)
 
-    info = SmashProductLieInfo(dynkin='C', n=n, constructive_basis=true, power_of_std_mod=e)
+    sp, basis = smash_product_lie(coeff_ring, symbL, symbV, scL, scV)
 
-    return smash_product_lie(coeff_ring, symbL, symbV, scL, scV, info)
+    set_attribute!(sp, :dynkin, 'C')
+    set_attribute!(sp, :n, n)
+    set_attribute!(sp, :constructive_basis, true)
+    set_attribute!(sp, :power_of_std_mod, e)
+
+    return sp, basis
 end
 
 """
@@ -29,7 +34,12 @@ function smash_product_lie_sp_extpowers_standard_module(coeff_ring::Ring, n::Int
     symbV = liealgebra_sp_extpowers_standard_module_symbols(n, e)
     scV = liealgebra_sp_extpowers_standard_module_struct_const(n, e)
 
-    info = SmashProductLieInfo(dynkin='C', n=n, constructive_basis=true, power_of_std_mod=-e)
+    sp, basis = smash_product_lie(coeff_ring, symbL, symbV, scL, scV)
 
-    return smash_product_lie(coeff_ring, symbL, symbV, scL, scV, info)
+    set_attribute!(sp, :dynkin, 'C')
+    set_attribute!(sp, :n, n)
+    set_attribute!(sp, :constructive_basis, true)
+    set_attribute!(sp, :power_of_std_mod, -e)
+
+    return sp, basis
 end

@@ -17,10 +17,10 @@
             @test ngens(sp) == (sp.dimL, sp.dimV)
             @test gens(sp) == (sp.basisL, sp.basisV)
 
-            @test sp.info.dynkin == dynkin
-            @test sp.info.n == n
-            @test sp.info.lambda == lambda
-            @test sp.info.constructive_basis == false
+            @test get_attribute(sp, :dynkin) == dynkin
+            @test get_attribute(sp, :n) == n
+            @test get_attribute(sp, :lambda) == lambda
+            @test get_attribute(sp, :constructive_basis, false) == false
 
             showOutput = @test_nowarn sprint(show, sp)
             @test occursin("smash product", lowercase(showOutput))

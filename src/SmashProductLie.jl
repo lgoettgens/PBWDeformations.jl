@@ -1,39 +1,9 @@
 """
-A struct containing additional information about a Lie algebra smash product.
-Every field can be set to nothing if it is unknown.
-
-| Name | Type | Description |
-|:---- |:---- |:------------|
-| `dynkin` | `Char?` | the family of the dynkin type of the Lie algebra |
-| `n` | `Int?`| the `n` of the dynkin type of the Lie algebra |
-| `lambda` | `Vector{Int}?`| highest weight vector of the module, only existing if the module is simple |
-| `constructive_basis` | `Bool`| true if the used basis for the structure constants is known in terms of matrices |
-| `power_of_std_mod` | `Int?`| if the module is a power of the standard module, positive = symmetric power, negative = exterior power |
-"""
-struct SmashProductLieInfo
-    dynkin::Union{Nothing, Char}
-    n::Union{Nothing, Int}
-    lambda::Union{Nothing, Vector{Int}}     # highest weight vector
-    constructive_basis::Bool
-    power_of_std_mod::Union{Nothing, Int}   # positive = symmetric power, negative = exterior power
-    function SmashProductLieInfo(;
-        dynkin=nothing,
-        n=nothing,
-        lambda=nothing,
-        constructive_basis=false,
-        power_of_std_mod=nothing,
-    )
-        new(dynkin, n, lambda, constructive_basis, power_of_std_mod)
-    end
-end
-
-
-"""
 The struct representing a Lie algebra smash product.
 It consists of the underlying FreeAssAlgebra with relations and some metadata.
 It gets created by calling [`smash_product_lie`](@ref).
 """
-mutable struct SmashProductLie{C <: RingElement}
+@attributes mutable struct SmashProductLie{C <: RingElement}
     dimL::Int
     dimV::Int
     basisL::Vector{FreeAssAlgElem{C}}
@@ -41,7 +11,19 @@ mutable struct SmashProductLie{C <: RingElement}
     coeff_ring::Ring
     alg::FreeAssAlgebra{C}
     rels::QuadraticRelations{C}
-    info::SmashProductLieInfo
+
+    # default constructor for @attributes
+    function SmashProductLie{C}(
+        dimL::Int,
+        dimV::Int,
+        basisL::Vector{<:FreeAssAlgElem{C}},
+        basisV::Vector{<:FreeAssAlgElem{C}},
+        coeff_ring::Ring,
+        alg::FreeAssAlgebra{C},
+        rels::QuadraticRelations{C},
+    ) where {C <: RingElement}
+        new{C}(dimL, dimV, basisL, basisV, coeff_ring, alg, rels)
+    end
 end
 
 
@@ -61,7 +43,6 @@ function smash_product_lie(
     symbV::Vector{Symbol},
     struct_const_L::Matrix{Vector{Tuple{C, Int}}},
     struct_const_V::Matrix{Vector{Tuple{C, Int}}},
-    info=SmashProductLieInfo()::SmashProductLieInfo,
 ) where {C <: RingElement}
     @assert C == elem_type(coeff_ring)
 
@@ -92,7 +73,7 @@ function smash_product_lie(
     basisL = [gen(free_alg, i) for i in 1:dimL]
     basisV = [gen(free_alg, dimL + i) for i in 1:dimV]
 
-    return SmashProductLie{C}(dimL, dimV, basisL, basisV, coeff_ring, free_alg, rels, info), (basisL, basisV)
+    return SmashProductLie{C}(dimL, dimV, basisL, basisV, coeff_ring, free_alg, rels), (basisL, basisV)
 end
 
 """
@@ -107,9 +88,8 @@ function smash_product_lie(
     symbV::Vector{String},
     struct_const_L::Matrix{Vector{Tuple{C, Int}}},
     struct_const_V::Matrix{Vector{Tuple{C, Int}}},
-    info=SmashProductLieInfo()::SmashProductLieInfo,
 ) where {C <: RingElem}
-    return smash_product_lie(coeff_ring, map(Symbol, symbL), map(Symbol, symbV), struct_const_L, struct_const_V, info)
+    return smash_product_lie(coeff_ring, map(Symbol, symbL), map(Symbol, symbV), struct_const_L, struct_const_V)
 end
 
 """
@@ -128,9 +108,13 @@ julia> smash_product_lie_highest_weight(QQ, 'A', 1, [1])
 function smash_product_lie_highest_weight(coeff_ring::Ring, dynkin::Char, n::Int, lambda::Vector{Int})
     symbL, symbV, scL, scV = liealgebra_gap_hightest_weight_module(dynkin, n, lambda, coeff_ring)
 
-    info = SmashProductLieInfo(dynkin=dynkin, n=n, lambda=lambda)
+    sp, basis = smash_product_lie(coeff_ring, symbL, symbV, scL, scV)
 
-    return smash_product_lie(coeff_ring, symbL, symbV, scL, scV, info)
+    set_attribute!(sp, :dynkin, dynkin)
+    set_attribute!(sp, :n, n)
+    set_attribute!(sp, :lambda, lambda)
+
+    return sp, basis
 end
 
 """
@@ -146,10 +130,14 @@ function smash_product_lie_so_symmpowers_standard_module(coeff_ring::Ring, n::In
     symbV = liealgebra_so_symmpowers_standard_module_symbols(n, e, coeff_ring)
     scV = liealgebra_so_symmpowers_standard_module_struct_const(n, e, coeff_ring)
 
-    info =
-        SmashProductLieInfo(dynkin=(n % 2 == 1 ? 'B' : 'D'), n=div(n, 2), constructive_basis=true, power_of_std_mod=e)
+    sp, basis = smash_product_lie(coeff_ring, symbL, symbV, scL, scV)
 
-    return smash_product_lie(coeff_ring, symbL, symbV, scL, scV, info)
+    set_attribute!(sp, :dynkin, n % 2 == 1 ? 'B' : 'D')
+    set_attribute!(sp, :n, div(n, 2))
+    set_attribute!(sp, :constructive_basis, true)
+    set_attribute!(sp, :power_of_std_mod, e)
+
+    return sp, basis
 end
 
 """
@@ -165,10 +153,14 @@ function smash_product_lie_so_extpowers_standard_module(coeff_ring::Ring, n::Int
     symbV = liealgebra_so_extpowers_standard_module_symbols(n, e, coeff_ring)
     scV = liealgebra_so_extpowers_standard_module_struct_const(n, e, coeff_ring)
 
-    info =
-        SmashProductLieInfo(dynkin=(n % 2 == 1 ? 'B' : 'D'), n=div(n, 2), constructive_basis=true, power_of_std_mod=-e)
+    sp, basis = smash_product_lie(coeff_ring, symbL, symbV, scL, scV)
 
-    return smash_product_lie(coeff_ring, symbL, symbV, scL, scV, info)
+    set_attribute!(sp, :dynkin, n % 2 == 1 ? 'B' : 'D')
+    set_attribute!(sp, :n, div(n, 2))
+    set_attribute!(sp, :constructive_basis, true)
+    set_attribute!(sp, :power_of_std_mod, -e)
+
+    return sp, basis
 end
 
 
@@ -208,5 +200,5 @@ function change_base_ring(R::Ring, sp::SmashProductLie{C}) where {C <: RingEleme
     basisV = map(b -> change_base_ring(R, b, parent=alg), sp.basisV)
     rels = QuadraticRelations{elem_type(R)}(k => change_base_ring(R, a, parent=alg) for (k, a) in sp.rels)
 
-    return SmashProductLie{elem_type(R)}(sp.dimL, sp.dimV, basisL, basisV, R, alg, rels, sp.info)
+    return SmashProductLie{elem_type(R)}(sp.dimL, sp.dimV, basisL, basisV, R, alg, rels)
 end

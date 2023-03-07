@@ -61,7 +61,6 @@ export ArcDiagram,
     PseudographDeformBasis,
     QuadraticRelations,
     SmashProductLie,
-    SmashProductLieInfo,
     SmashProductDeformLie,
     StdDeformBasis
 

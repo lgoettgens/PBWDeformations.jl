@@ -1,7 +1,7 @@
 @attributes mutable struct LieAlgebra{C <: RingElement} <: FPModule{C}
     R::Ring
     n::Int
-    basis::Vector{<:MatElem{C}}
+    basis::Vector{MatElem{C}}
     dim::Int
     s::Vector{Symbol}
 
@@ -68,7 +68,7 @@ end
 end
 
 @inline function Generic.basis(L::LieAlgebra{T}) where {T}
-    return (L.basis)::Vector{dense_matrix_type(T)}
+    return Vector{dense_matrix_type(T)}(L.basis)
 end
 
 function Generic.rels(_::LieAlgebra{C}) where {C <: RingElement}

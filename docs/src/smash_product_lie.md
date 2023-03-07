@@ -41,7 +41,6 @@ smash_product_lie_sp_extpowers_standard_module
 ## SmashProductLie struct
 ```@docs
 SmashProductLie
-SmashProductLieInfo
 ```
 
 ## Functions

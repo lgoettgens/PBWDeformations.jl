@@ -67,26 +67,26 @@ Base.length(basis::ArcDiagDeformBasis) = basis.len
 
 
 function extract_sp_info__so_powers_stdmod(sp::SmashProductLie{C}) where {C <: RingElement}
-    if isnothing(sp.info.dynkin) || isnothing(sp.info.n)
+    if !has_attribute(sp, :dynkin) || !has_attribute(sp, :n)
         error("Dynkin type unknown, but needed.")
-    elseif !sp.info.constructive_basis
+    elseif !get_attribute!(sp, :constructive_basis, false)
         error("Constructive basis needed.")
-    elseif sp.info.dynkin == 'B'
-        dimV = 2 * sp.info.n + 1
-    elseif sp.info.dynkin == 'D'
-        dimV = 2 * sp.info.n
+    elseif get_attribute(sp, :dynkin) == 'B'
+        dimV = 2 * get_attribute(sp, :n) + 1
+    elseif get_attribute(sp, :dynkin) == 'D'
+        dimV = 2 * get_attribute(sp, :n)
     else
-        error("Dynkin type '$(sp.info.dynkin)' not supported.")
+        error("Dynkin type '$(get_attribute(sp, :dynkin))' not supported.")
     end
 
-    if isnothing(sp.info.power_of_std_mod) || sp.info.power_of_std_mod == 0
-        error("Module needs to be an exterior power of the standard module.")
+    if get_attribute(sp, :power_of_std_mod, 0) == 0
+        error("Module needs to be an exterior or symmetric power of the standard module.")
     end
-    if sp.info.power_of_std_mod < 0
-        e = -sp.info.power_of_std_mod
+    if get_attribute(sp, :power_of_std_mod) < 0
+        e = -get_attribute(sp, :power_of_std_mod)
         typeof_power = :exterior
     else
-        e = sp.info.power_of_std_mod
+        e = get_attribute(sp, :power_of_std_mod)
         typeof_power = :symmetric
     end
     return dimV, e, typeof_power
