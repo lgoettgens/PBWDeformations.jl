@@ -15,7 +15,7 @@ struct ArcDiagDeformBasis{C <: RingElement} <: DeformBasis{C}
         degs::AbstractVector{Int};
         no_normalize::Bool=false,
     ) where {C <: RingElement}
-        dimV, e, typeof_power = extract_sp_info__so_powers_stdmod(sp)
+        n, e, typeof_power = extract_sp_info__so_powers_stdmod(sp)
         extra_data = Dict{DeformationMap{C}, Set{ArcDiagram}}()
         normalize = no_normalize ? identity : normalize_default
 
@@ -29,7 +29,7 @@ struct ArcDiagDeformBasis{C <: RingElement} <: DeformBasis{C}
                 begin
                     @debug "Basis generation deg $(d), $(debug_counter = (debug_counter % len) + 1)/$(len), $(floor(Int, 100*debug_counter / len))%"
                     basis_elem =
-                        arcdiag_to_basiselem__so_powers_stdmod(diag, dimV, typeof_power, e, d, sp.alg(0), sp.rels)
+                        arcdiag_to_basiselem__so_powers_stdmod(diag, n, typeof_power, e, d, sp.alg(0), sp.rels)
                     if !no_normalize
                         basis_elem = normalize(basis_elem)
                     end
@@ -67,29 +67,25 @@ Base.length(basis::ArcDiagDeformBasis) = basis.len
 
 
 function extract_sp_info__so_powers_stdmod(sp::SmashProductLie{C}) where {C <: RingElement}
-    if !has_attribute(sp, :dynkin) || !has_attribute(sp, :n)
-        error("Dynkin type unknown, but needed.")
-    elseif !get_attribute!(sp, :constructive_basis, false)
-        error("Constructive basis needed.")
-    elseif get_attribute(sp, :dynkin) == 'B'
-        dimV = 2 * get_attribute(sp, :n) + 1
-    elseif get_attribute(sp, :dynkin) == 'D'
-        dimV = 2 * get_attribute(sp, :n)
-    else
-        error("Dynkin type '$(get_attribute(sp, :dynkin))' not supported.")
+    if !has_attribute(sp, :base_liealgebra) || !has_attribute(sp, :base_liealgebra_module)
+        error("Metadata not found, but needed.")
     end
+    L = get_attribute(sp, :base_liealgebra)
+    V = get_attribute(sp, :base_liealgebra_module)
 
-    if get_attribute(sp, :power_of_std_mod, 0) == 0
+    n = L.n
+
+    if V isa LieAlgebraExteriorPowerModule{C}
+        e = V.power
+        typeof_power = :exterior
+    elseif V isa LieAlgebraSymmetricPowerModule{C}
+        e = V.power
+        typeof_power = :symmetric
+    else
         error("Module needs to be an exterior or symmetric power of the standard module.")
     end
-    if get_attribute(sp, :power_of_std_mod) < 0
-        e = -get_attribute(sp, :power_of_std_mod)
-        typeof_power = :exterior
-    else
-        e = get_attribute(sp, :power_of_std_mod)
-        typeof_power = :symmetric
-    end
-    return dimV, e, typeof_power
+
+    return n, e, typeof_power
 end
 
 function pbw_arc_diagrams__so_powers_stdmod(typeof_power::Symbol, e::Int, d::Int)
@@ -107,7 +103,7 @@ end
 
 function arcdiag_to_basiselem__so_powers_stdmod(
     diag::ArcDiagram,
-    dimV::Int,
+    dim_stdmod_V::Int,
     typeof_power::Symbol,
     e::Int,
     d::Int,
@@ -115,14 +111,14 @@ function arcdiag_to_basiselem__so_powers_stdmod(
     rels::QuadraticRelations{C},
 ) where {C <: RingElement}
     iso_wedge2V_g = Dict{Vector{Int}, Int}()
-    for (i, bs) in enumerate(Combinatorics.combinations(1:dimV, 2))
+    for (i, bs) in enumerate(Combinatorics.combinations(1:dim_stdmod_V, 2))
         iso_wedge2V_g[bs] = i
     end
 
     if typeof_power == :exterior
-        upper_label_iterator = Combinatorics.combinations(1:dimV, e)
+        upper_label_iterator = Combinatorics.combinations(1:dim_stdmod_V, e)
     elseif typeof_power == :symmetric
-        upper_label_iterator = Combinatorics.with_replacement_combinations(1:dimV, e)
+        upper_label_iterator = Combinatorics.with_replacement_combinations(1:dim_stdmod_V, e)
     else
         error("Unknown type of power.")
     end
@@ -132,9 +128,9 @@ function arcdiag_to_basiselem__so_powers_stdmod(
     end
 
     if typeof_power == :exterior
-        kappadim = binomial(dimV, e)
+        kappadim = binomial(dim_stdmod_V, e)
     elseif typeof_power == :symmetric
-        kappadim = binomial(dimV + e - 1, e)
+        kappadim = binomial(dim_stdmod_V + e - 1, e)
     else
         error("Unknown type of power.")
     end
@@ -214,7 +210,7 @@ function arcdiag_to_basiselem__so_powers_stdmod(
                     nextindex -= 1
                 end
 
-                while nextindex >= 1 && labeled_diag[frees[nextindex]] == dimV
+                while nextindex >= 1 && labeled_diag[frees[nextindex]] == dim_stdmod_V
                     labeled_diag[frees[nextindex]] = 0
                     labeled_diag[diag.adjacency[frees[nextindex]]] = 0
                     nextindex -= 1

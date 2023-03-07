@@ -49,31 +49,25 @@ function smash_product_lie(
     dimL = length(symbL)
     dimV = length(symbV)
 
-    free_alg, _ = FreeAssociativeAlgebra(coeff_ring, [symbL; symbV])
-    free_basisL = [gen(free_alg, i) for i in 1:dimL]
-    free_basisV = [gen(free_alg, dimL + i) for i in 1:dimV]
+    f_alg, _ = FreeAssociativeAlgebra(coeff_ring, [symbL; symbV])
+    f_basisL = [gen(f_alg, i) for i in 1:dimL]
+    f_basisV = [gen(f_alg, dimL + i) for i in 1:dimV]
 
     rels = QuadraticRelations{C}()
 
     for i in 1:dimL, j in 1:dimL
         rels[(i, j)] =
-            free_basisL[j] * free_basisL[i] +
-            sum(c * free_basisL[k] for (c, k) in struct_const_L[i, j]; init=zero(free_alg))
+            f_basisL[j] * f_basisL[i] + sum(c * f_basisL[k] for (c, k) in struct_const_L[i, j]; init=zero(f_alg))
     end
 
     for i in 1:dimL, j in 1:dimV
         rels[(i, dimL + j)] =
-            free_basisV[j] * free_basisL[i] +
-            sum(c * free_basisV[k] for (c, k) in struct_const_V[i, j]; init=zero(free_alg))
+            f_basisV[j] * f_basisL[i] + sum(c * f_basisV[k] for (c, k) in struct_const_V[i, j]; init=zero(f_alg))
         rels[(dimL + j, i)] =
-            free_basisL[i] * free_basisV[j] -
-            sum(c * free_basisV[k] for (c, k) in struct_const_V[i, j]; init=zero(free_alg))
+            f_basisL[i] * f_basisV[j] - sum(c * f_basisV[k] for (c, k) in struct_const_V[i, j]; init=zero(f_alg))
     end
 
-    basisL = [gen(free_alg, i) for i in 1:dimL]
-    basisV = [gen(free_alg, dimL + i) for i in 1:dimV]
-
-    return SmashProductLie{C}(dimL, dimV, basisL, basisV, coeff_ring, free_alg, rels), (basisL, basisV)
+    return SmashProductLie{C}(dimL, dimV, f_basisL, f_basisV, coeff_ring, f_alg, rels), (f_basisL, f_basisV)
 end
 
 """
@@ -125,19 +119,10 @@ e-th symmetric power of the standard module over the
 coefficient ring `coeff_ring`.
 """
 function smash_product_lie_so_symmpowers_standard_module(coeff_ring::Ring, n::Int, e::Int) # so_n, e-th symm power of standard module
-    symbL = liealgebra_so_symbols(n, coeff_ring)
-    scL = liealgebra_so_struct_const(n, coeff_ring)
-    symbV = liealgebra_so_symmpowers_standard_module_symbols(n, e, coeff_ring)
-    scV = liealgebra_so_symmpowers_standard_module_struct_const(n, e, coeff_ring)
+    L = special_orthogonal_liealgebra(coeff_ring, n)
+    V = symmetric_power(standard_module(L), e)
 
-    sp, basis = smash_product_lie(coeff_ring, symbL, symbV, scL, scV)
-
-    set_attribute!(sp, :dynkin, n % 2 == 1 ? 'B' : 'D')
-    set_attribute!(sp, :n, div(n, 2))
-    set_attribute!(sp, :constructive_basis, true)
-    set_attribute!(sp, :power_of_std_mod, e)
-
-    return sp, basis
+    return smash_product_lie(L, V)
 end
 
 """
@@ -148,21 +133,46 @@ e-th exterior power of the standard module over the
 coefficient ring `coeff_ring`.
 """
 function smash_product_lie_so_extpowers_standard_module(coeff_ring::Ring, n::Int, e::Int) # so_n, e-th exterior power of standard module
-    symbL = liealgebra_so_symbols(n, coeff_ring)
-    scL = liealgebra_so_struct_const(n, coeff_ring)
-    symbV = liealgebra_so_extpowers_standard_module_symbols(n, e, coeff_ring)
-    scV = liealgebra_so_extpowers_standard_module_struct_const(n, e, coeff_ring)
+    L = special_orthogonal_liealgebra(coeff_ring, n)
+    V = exterior_power(standard_module(L), e)
 
-    sp, basis = smash_product_lie(coeff_ring, symbL, symbV, scL, scV)
-
-    set_attribute!(sp, :dynkin, n % 2 == 1 ? 'B' : 'D')
-    set_attribute!(sp, :n, div(n, 2))
-    set_attribute!(sp, :constructive_basis, true)
-    set_attribute!(sp, :power_of_std_mod, -e)
-
-    return sp, basis
+    return smash_product_lie(L, V)
 end
 
+
+function smash_product_lie(L::LieAlgebra{C}, V::LieAlgebraModule{C}) where {C <: RingElement}
+    L == base_liealgebra(V) || error("Incompatible module.")
+    R = base_ring(L)
+
+    dimL = ngens(L)
+    dimV = ngens(V)
+
+    f_alg, _ = FreeAssociativeAlgebra(R, [symbols(L); symbols(V)])
+    f_basisL = [gen(f_alg, i) for i in 1:dimL]
+    f_basisV = [gen(f_alg, dimL + i) for i in 1:dimV]
+
+    rels = QuadraticRelations{C}()
+
+    for (i, xi) in enumerate(gens(L)), (j, xj) in enumerate(gens(L))
+        commutator =
+            sum(c * f_basisL[k] for (k, c) in enumerate(_matrix(bracket(xi, xj))) if !iszero(c); init=zero(f_alg))
+        rels[(i, j)] = f_basisL[j] * f_basisL[i] + commutator
+
+    end
+
+    for (i, xi) in enumerate(gens(L)), (j, vj) in enumerate(gens(V))
+        commutator = sum(c * f_basisV[k] for (k, c) in enumerate(_matrix(xi * vj)) if !iszero(c); init=zero(f_alg))
+        rels[(i, dimL + j)] = f_basisV[j] * f_basisL[i] + commutator
+        rels[(dimL + j, i)] = f_basisL[i] * f_basisV[j] - commutator
+    end
+
+    sp = SmashProductLie{C}(dimL, dimV, f_basisL, f_basisV, R, f_alg, rels)
+
+    set_attribute!(sp, :base_liealgebra, L)
+    set_attribute!(sp, :base_liealgebra_module, V)
+
+    return sp, (f_basisL, f_basisV)
+end
 
 
 ngens(sp::SmashProductLie) = sp.dimL, sp.dimV
