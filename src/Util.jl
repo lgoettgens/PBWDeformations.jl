@@ -105,32 +105,6 @@ function is_valid_dynkin(dynkin::Char, n::Int)
     end
 end
 
-"""
-    std_basis(i::Int, n::Int)
-    std_basis(::Type{T}, i::Int, n::Int) where {T <: Number}
-
-Returns the `i`-th standard basis vector of dimension `n`.
-If supplied with a type, the vector is of that type, otherwise it is of type `Int`.
-
-# Examples
-```jldoctest; setup = :(std_basis = PBWDeformations.std_basis)
-julia> std_basis(1, 3)
-3-element Vector{Int64}:
- 1
- 0
- 0
-
-julia> std_basis(Float64,2,4)
-4-element Vector{Float64}:
- 0.0
- 1.0
- 0.0
- 0.0
-```
-"""
-std_basis(i::Int, n::Int) = std_basis(Int, i, n)
-std_basis(::Type{T}, i::Int, n::Int) where {T <: Number} = [i == j ? T(1) : T(0) for j in 1:n]
-
 
 """
     coefficient_vector(M::MatElem{T}, basis::Vector{<:MatElem{T}}) where {T}

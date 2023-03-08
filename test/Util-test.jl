@@ -1,5 +1,3 @@
-std_basis = PD.std_basis
-
 @testset ExtendedTestSet "All Util.jl tests" begin
     @testset "flatten" begin
         flatten = PD.flatten
@@ -44,45 +42,5 @@ std_basis = PD.std_basis
         testit('X', _ -> false)
     end
 
-
-    @testset "std_basis" begin
-        @test std_basis(1, 3) == [1, 0, 0]
-        @test std_basis(2, 3) == [0, 1, 0]
-        @test std_basis(3, 3) == [0, 0, 1]
-
-        @test std_basis(1, 4) == [1, 0, 0, 0]
-        @test std_basis(2, 4) == [0, 1, 0, 0]
-        @test std_basis(3, 4) == [0, 0, 1, 0]
-        @test std_basis(4, 4) == [0, 0, 0, 1]
-
-        for n in 1:10
-            for i in 1:n
-                @test sum(std_basis(i, n)) == 1
-                for j in 1:n
-                    @test std_basis(i, n)[j] == (i == j ? 1 : 0)
-                end
-            end
-        end
-
-        @testset "std_basis, T = $T" for T in [Int, Float64, UInt16, Bool, Rational{Int}, Complex{Int}]
-            @test std_basis(T, 1, 3) == [one(T), zero(T), zero(T)]
-            @test std_basis(T, 2, 3) == [zero(T), one(T), zero(T)]
-            @test std_basis(T, 3, 3) == [zero(T), zero(T), one(T)]
-
-            @test std_basis(T, 1, 4) == [one(T), zero(T), zero(T), zero(T)]
-            @test std_basis(T, 2, 4) == [zero(T), one(T), zero(T), zero(T)]
-            @test std_basis(T, 3, 4) == [zero(T), zero(T), one(T), zero(T)]
-            @test std_basis(T, 4, 4) == [zero(T), zero(T), zero(T), one(T)]
-
-            for n in 1:6
-                for i in 1:n
-                    @test sum(std_basis(T, i, n)) == one(T)
-                    for j in 1:n
-                        @test std_basis(T, i, n)[j] == (i == j ? one(T) : zero(T))
-                    end
-                end
-            end
-        end
-    end
 
 end
