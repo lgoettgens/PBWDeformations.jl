@@ -48,8 +48,12 @@ ngens(L::LinearLieAlgebra{C}) where {C <: RingElement} = L.dim
     return (x.mat)::dense_matrix_type(C)
 end
 
-@inline function Generic.basis(L::LinearLieAlgebra{C}) where {C <: RingElement}
+function matrix_repr_basis(L::LinearLieAlgebra{C}) where {C <: RingElement}
     return Vector{dense_matrix_type(C)}(L.basis)
+end
+
+function matrix_repr_basis(L::LinearLieAlgebra{C}, i::Int) where {C <: RingElement}
+    return (L.basis[i])::dense_matrix_type(C)
 end
 
 ###############################################################################
@@ -77,7 +81,7 @@ end
 
 function (L::LinearLieAlgebra{C})(m::MatElem{C}) where {C <: RingElement}
     if size(m) == (L.n, L.n)
-        m = coefficient_vector(m, basis(L))
+        m = coefficient_vector(m, matrix_repr_basis(L))
     end
     size(m) == (1, ngens(L)) || error("Invalid matrix dimensions.")
     return elem_type(L)(L, m)
@@ -93,7 +97,7 @@ end
 # Vector space operations get inherited from FPModule
 
 function Generic.matrix_repr(x::LinearLieAlgebraElem{C}) where {C <: RingElement}
-    return sum(c * b for (c, b) in zip(x.mat, basis(parent(x))))
+    return sum(c * b for (c, b) in zip(x.mat, matrix_repr_basis(parent(x))))
 end
 
 function bracket(x::LinearLieAlgebraElem{C}, y::LinearLieAlgebraElem{C}) where {C <: RingElement}

@@ -67,7 +67,7 @@ end
 ###############################################################################
 
 function transformation_matrix_by_basisindex(V::LieAlgebraStdModule{C}, i::Int) where {C <: RingElement}
-    return basis(base_liealgebra(V))[i]
+    return matrix_repr_basis(base_liealgebra(V), i)
 end
 
 

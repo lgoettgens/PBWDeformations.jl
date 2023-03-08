@@ -109,7 +109,7 @@ end
 function action(x::LieAlgebraElem{C}, v::LieAlgebraModuleElem{C}) where {C <: RingElement}
     parent(x) == base_liealgebra(parent(v)) || error("Incompatible Lie algebras.")
 
-    bx = basis(parent(x))
+    bx = matrix_repr_basis(parent(x))
     cx = _matrix(x)
 
     return parent(v)(

@@ -34,7 +34,7 @@ import AbstractAlgebra:
     set_attribute!,
     symbols
 
-import AbstractAlgebra.Generic: basis, _matrix, matrix_repr, rels
+import AbstractAlgebra.Generic: _matrix, matrix_repr, rels
 
 import AbstractAlgebra.PrettyPrinting: @enable_all_show_via_expressify, expressify
 
@@ -77,6 +77,7 @@ export all_arc_diagrams,
     general_linear_liealgebra,
     liealgebra,
     lookup_data,
+    matrix_repr_basis,
     nedges,
     pbwdeforms_all,
     pbwdeform_eqs,
