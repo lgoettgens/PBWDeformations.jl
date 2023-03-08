@@ -1,8 +1,8 @@
 @attributes mutable struct LinearLieAlgebra{C <: RingElement} <: LieAlgebra{C}
     R::Ring
     n::Int  # the n of the gl_n this embeds into
-    basis::Vector{MatElem{C}}
     dim::Int
+    basis::Vector{MatElem{C}}
     s::Vector{Symbol}
 
     function LinearLieAlgebra{C}(
@@ -15,7 +15,7 @@
         return get_cached!(LinearLieAlgebraDict, (R, n, basis, s), cached) do
             all(b -> size(b) == (n, n), basis) || error("Invalid basis element dimensions.")
             length(s) == length(basis) || error("Invalid number of basis element names.")
-            new{C}(R, n, basis, length(basis), s)
+            new{C}(R, n, length(basis), basis, s)
         end::LinearLieAlgebra{C}
     end
 end
@@ -62,7 +62,7 @@ end
 #
 ###############################################################################
 
-# TODO
+# TODO: Base.show(io::IO, x::LinearLieAlgebra{C})
 
 function Base.show(io::IO, x::LinearLieAlgebraElem{C}) where {C <: RingElement}
     Base.show(io, matrix_repr(x))
@@ -93,8 +93,6 @@ end
 #   Arithmetic operations
 #
 ###############################################################################
-
-# Vector space operations get inherited from FPModule
 
 function Generic.matrix_repr(x::LinearLieAlgebraElem{C}) where {C <: RingElement}
     return sum(c * b for (c, b) in zip(x.mat, matrix_repr_basis(parent(x))))

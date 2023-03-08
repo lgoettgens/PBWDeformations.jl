@@ -42,7 +42,9 @@ import Oscar: action, comm, exterior_power, normal_form, symmetric_power
 
 import Base: deepcopy_internal, hash, isequal, iszero, length, parent, show, sum, zero, +, -, *, ==
 
-export ArcDiagram,
+export AbstractLieAlgebra,
+    AbstractLieAlgebraElem,
+    ArcDiagram,
     ArcDiagDeformBasis,
     DeformationMap,
     DeformBasis,
@@ -101,6 +103,7 @@ GAP = Oscar.GAP
 include("Util.jl")
 include("FreeAssAlgQuadraticRelations.jl")
 include("LieAlgebra.jl")
+include("AbstractLieAlgebra.jl")
 include("LinearLieAlgebra.jl")
 include("LieAlgebraStructConsts.jl")
 include("LieAlgebraModules/LieAlgebraModule.jl")

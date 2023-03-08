@@ -64,6 +64,11 @@ function (L::LieAlgebra{C})(mat::MatElem{C}) where {C <: RingElement}
     return elem_type(L)(L, mat)
 end
 
+function (L::LieAlgebra{C})(v::SRow{C}) where {C <: RingElement}
+    mat = dense_row(v, ngens(L))
+    return elem_type(L)(L, mat)
+end
+
 function (L::LieAlgebra{C})(v::LieAlgebraElem{C}) where {C <: RingElement}
     L == parent(v) || error("Incompatible modules.")
     return v
