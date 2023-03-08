@@ -57,6 +57,8 @@ export ArcDiagram,
     LieAlgebraSymmetricPowerModuleElem,
     LieAlgebraTensorPowerModule,
     LieAlgebraTensorPowerModuleElem,
+    LinearLieAlgebra,
+    LinearLieAlgebraElem,
     Pseudograph2,
     PseudographDeformBasis,
     QuadraticRelations,
@@ -73,6 +75,7 @@ export all_arc_diagrams,
     is_pbwdeform,
     exterior_power,
     general_linear_liealgebra,
+    liealgebra,
     lookup_data,
     nedges,
     pbwdeforms_all,
@@ -97,6 +100,7 @@ GAP = Oscar.GAP
 include("Util.jl")
 include("FreeAssAlgQuadraticRelations.jl")
 include("LieAlgebra.jl")
+include("LinearLieAlgebra.jl")
 include("LieAlgebraStructConsts.jl")
 include("LieAlgebraModules/LieAlgebraModule.jl")
 include("LieAlgebraModules/LieAlgebraStdModule.jl")
