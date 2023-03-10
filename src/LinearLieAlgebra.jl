@@ -9,7 +9,7 @@
         R::Ring,
         n::Int,
         basis::Vector{<:MatElem{C}},
-        s::Vector{Symbol},
+        s::Vector{Symbol};
         cached::Bool=true,
     ) where {C <: RingElement}
         return get_cached!(LinearLieAlgebraDict, (R, n, basis, s), cached) do
@@ -120,8 +120,8 @@ function liealgebra(
     R::Ring,
     n::Int,
     basis::Vector{<:MatElem{C}},
-    s::Vector{<:Union{AbstractString, Char, Symbol}},
+    s::Vector{<:Union{AbstractString, Char, Symbol}};
     cached::Bool=true,
 ) where {C <: RingElement}
-    return LinearLieAlgebra{elem_type(R)}(R, n, basis, Symbol.(s), cached)
+    return LinearLieAlgebra{elem_type(R)}(R, n, basis, Symbol.(s); cached)
 end

@@ -6,7 +6,7 @@ mutable struct LieAlgebraSymmetricPowerModule{C <: RingElement} <: LieAlgebraMod
 
     function LieAlgebraSymmetricPowerModule{C}(
         inner_mod::LieAlgebraModule{C},
-        power::Int,
+        power::Int;
         cached::Bool=true,
     ) where {C <: RingElement}
         return get_cached!(
@@ -142,6 +142,6 @@ end
 #
 ###############################################################################
 
-function symmetric_power(V::LieAlgebraModule{C}, k::Int) where {C <: RingElement}
-    return LieAlgebraSymmetricPowerModule{C}(V, k)
+function symmetric_power(V::LieAlgebraModule{C}, k::Int; cached::Bool=true) where {C <: RingElement}
+    return LieAlgebraSymmetricPowerModule{C}(V, k; cached)
 end

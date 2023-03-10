@@ -6,7 +6,7 @@ mutable struct LieAlgebraExteriorPowerModule{C <: RingElement} <: LieAlgebraModu
 
     function LieAlgebraExteriorPowerModule{C}(
         inner_mod::LieAlgebraModule{C},
-        power::Int,
+        power::Int;
         cached::Bool=true,
     ) where {C <: RingElement}
         return get_cached!(
@@ -129,6 +129,6 @@ end
 #
 ###############################################################################
 
-function exterior_power(V::LieAlgebraModule{C}, k::Int) where {C <: RingElement}
-    return LieAlgebraExteriorPowerModule{C}(V, k)
+function exterior_power(V::LieAlgebraModule{C}, k::Int; cached::Bool=true) where {C <: RingElement}
+    return LieAlgebraExteriorPowerModule{C}(V, k; cached)
 end

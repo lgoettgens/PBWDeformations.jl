@@ -1,7 +1,7 @@
 mutable struct LieAlgebraStdModule{C <: RingElement} <: LieAlgebraModule{C}
     L::LinearLieAlgebra{C}
 
-    function LieAlgebraStdModule{C}(L::LinearLieAlgebra{C}, cached::Bool=true) where {C <: RingElement}
+    function LieAlgebraStdModule{C}(L::LinearLieAlgebra{C}; cached::Bool=true) where {C <: RingElement}
         return get_cached!(LieAlgebraStdModuleDict, L, cached) do
             new{C}(L)
         end::LieAlgebraStdModule{C}
@@ -77,6 +77,6 @@ end
 #
 ###############################################################################
 
-function standard_module(L::LinearLieAlgebra{C}) where {C <: RingElement}
-    return LieAlgebraStdModule{elem_type(base_ring(L))}(L)
+function standard_module(L::LinearLieAlgebra{C}; cached::Bool=true) where {C <: RingElement}
+    return LieAlgebraStdModule{elem_type(base_ring(L))}(L; cached)
 end

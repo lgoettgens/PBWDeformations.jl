@@ -7,8 +7,8 @@
     function AbstractLieAlgebra{C}(
         R::Ring,
         struct_consts::Matrix{SRow{C}},
-        s::Vector{Symbol},
-        cached::Bool=true;
+        s::Vector{Symbol};
+        cached::Bool=true,
         check::Bool=true,
     ) where {C <: RingElement}
         return get_cached!(AbstractLieAlgebraDict, (R, struct_consts, s), cached) do
@@ -123,18 +123,18 @@ end
 function liealgebra(
     R::Ring,
     struct_consts::Matrix{SRow{C}},
-    s::Vector{<:Union{AbstractString, Char, Symbol}},
-    cached::Bool=true;
+    s::Vector{<:Union{AbstractString, Char, Symbol}};
+    cached::Bool=true,
     check::Bool=true,
 ) where {C <: RingElement}
-    return AbstractLieAlgebra{elem_type(R)}(R, struct_consts, Symbol.(s), cached; check)
+    return AbstractLieAlgebra{elem_type(R)}(R, struct_consts, Symbol.(s); cached, check)
 end
 
 function liealgebra(
     R::Ring,
     struct_consts::Array{C, 3},
-    s::Vector{<:Union{AbstractString, Char, Symbol}},
-    cached::Bool=true;
+    s::Vector{<:Union{AbstractString, Char, Symbol}};
+    cached::Bool=true,
     check::Bool=true,
 ) where {C <: RingElement}
     struct_consts2 = Matrix{SRow{elem_type(R)}}(undef, size(struct_consts, 1), size(struct_consts, 2))
@@ -142,5 +142,5 @@ function liealgebra(
         struct_consts2[i, j] = sparse_row(R, collect(axes(struct_consts, 3)), struct_consts[i, j, :])
     end
 
-    return AbstractLieAlgebra{elem_type(R)}(R, struct_consts2, Symbol.(s), cached; check)
+    return AbstractLieAlgebra{elem_type(R)}(R, struct_consts2, Symbol.(s); cached, check)
 end

@@ -8,8 +8,8 @@ mutable struct LieAlgebraAbstractModule{C <: RingElement} <: LieAlgebraModule{C}
         L::LieAlgebra{C},
         dim::Int,
         transformation_matrices::Vector{<:MatElem{C}},
-        s::Vector{Symbol},
-        cached::Bool=true;
+        s::Vector{Symbol};
+        cached::Bool=true,
         check::Bool=true,
     ) where {C <: RingElement}
         return get_cached!(
@@ -108,19 +108,19 @@ function abstract_module(
     L::LieAlgebra{C},
     dim::Int,
     transformation_matrices::Vector{<:MatElem{C}},
-    s::Vector{<:Union{AbstractString, Char, Symbol}},
-    cached::Bool=true;
+    s::Vector{<:Union{AbstractString, Char, Symbol}};
+    cached::Bool=true,
     check::Bool=true,
 ) where {C <: RingElement}
-    return LieAlgebraAbstractModule{C}(L, dim, transformation_matrices, Symbol.(s), cached; check=check)
+    return LieAlgebraAbstractModule{C}(L, dim, transformation_matrices, Symbol.(s); cached, check=check)
 end
 
 function abstract_module(
     L::LieAlgebra{C},
     dim::Int,
     struct_consts::Matrix{SRow{C}},
-    s::Vector{<:Union{AbstractString, Char, Symbol}},
-    cached::Bool=true;
+    s::Vector{<:Union{AbstractString, Char, Symbol}};
+    cached::Bool=true,
     check::Bool=true,
 ) where {C <: RingElement}
     ngens(L) == size(struct_consts, 1) || error("Invalid structure constants dimensions.")
@@ -132,5 +132,5 @@ function abstract_module(
         transformation_matrices[i][:, j] = transpose(dense_row(struct_consts[i, j], dim))
     end
 
-    return LieAlgebraAbstractModule{C}(L, dim, transformation_matrices, Symbol.(s), cached; check=check)
+    return LieAlgebraAbstractModule{C}(L, dim, transformation_matrices, Symbol.(s); cached, check=check)
 end

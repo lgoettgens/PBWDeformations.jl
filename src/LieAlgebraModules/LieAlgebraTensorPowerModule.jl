@@ -6,7 +6,7 @@ mutable struct LieAlgebraTensorPowerModule{C <: RingElement} <: LieAlgebraModule
 
     function LieAlgebraTensorPowerModule{C}(
         inner_mod::LieAlgebraModule{C},
-        power::Int,
+        power::Int;
         cached::Bool=true,
     ) where {C <: RingElement}
         return get_cached!(
@@ -114,6 +114,6 @@ end
 #
 ###############################################################################
 
-function tensor_power(V::LieAlgebraModule{C}, k::Int) where {C <: RingElement}
-    return LieAlgebraTensorPowerModule{C}(V, k)
+function tensor_power(V::LieAlgebraModule{C}, k::Int; cached::Bool=true) where {C <: RingElement}
+    return LieAlgebraTensorPowerModule{C}(V, k; cached)
 end
