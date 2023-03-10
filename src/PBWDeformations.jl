@@ -51,10 +51,12 @@ export AbstractLieAlgebra,
     LieAlgebra,
     LieAlgebraElem,
     LieAlgebraModule,
-    LieAlgebraStdModule,
-    LieAlgebraStdModuleElem,
+    LieAlgebraAbstractModule,
+    LieAlgebraAbstractModuleElem,
     LieAlgebraExteriorPowerModule,
     LieAlgebraExteriorPowerModuleElem,
+    LieAlgebraStdModule,
+    LieAlgebraStdModuleElem,
     LieAlgebraSymmetricPowerModule,
     LieAlgebraSymmetricPowerModuleElem,
     LieAlgebraTensorPowerModule,
@@ -68,7 +70,8 @@ export AbstractLieAlgebra,
     SmashProductDeformLie,
     StdDeformBasis
 
-export all_arc_diagrams,
+export abstract_module,
+    all_arc_diagrams,
     all_pseudographs,
     base_liealgebra,
     bracket,
@@ -107,6 +110,7 @@ include("AbstractLieAlgebra.jl")
 include("LinearLieAlgebra.jl")
 include("LieAlgebraStructConsts.jl")
 include("LieAlgebraModules/LieAlgebraModule.jl")
+include("LieAlgebraModules/LieAlgebraAbstractModule.jl")
 include("LieAlgebraModules/LieAlgebraStdModule.jl")
 include("LieAlgebraModules/LieAlgebraTensorPowerModule.jl")
 include("LieAlgebraModules/LieAlgebraExteriorPowerModule.jl")

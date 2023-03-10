@@ -70,7 +70,10 @@ end
 #
 ###############################################################################
 
-# TODO: Base.show(io::IO, x::AbtractLieAlgebra{C})
+function Base.show(io::IO, V::AbstractLieAlgebra{C}) where {C <: RingElement}
+    print(io, "AbstractLieAlgebra over ")
+    print(IOContext(io, :compact => true), base_ring(V))
+end
 
 function expressify(v::AbstractLieAlgebraElem{C}, s=symbols(parent(v)); context=nothing) where {C <: RingElement}
     sum = Expr(:call, :+)

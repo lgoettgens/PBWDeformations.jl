@@ -62,7 +62,10 @@ end
 #
 ###############################################################################
 
-# TODO: Base.show(io::IO, x::LinearLieAlgebra{C})
+function Base.show(io::IO, V::LinearLieAlgebra{C}) where {C <: RingElement}
+    print(io, "LinearLieAlgebra (⊆ gl_$(V.n)) over ")
+    print(IOContext(io, :compact => true), base_ring(V))
+end
 
 function Base.show(io::IO, x::LinearLieAlgebraElem{C}) where {C <: RingElement}
     Base.show(io, matrix_repr(x))
