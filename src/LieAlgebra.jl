@@ -112,7 +112,7 @@ end
 
 function special_linear_liealgebra(R::Ring, n::Int)
     basis_e = [(b = zero_matrix(R, n, n); b[i, j] = 1; b) for i in 1:n for j in i+1:n]
-    basis_f = [(b = zero_matrix(R, n, n); b[j, i] = -1; b) for i in 1:n for j in i+1:n]
+    basis_f = [(b = zero_matrix(R, n, n); b[j, i] = 1; b) for i in 1:n for j in i+1:n]
     basis_h = [(b = zero_matrix(R, n, n); b[i, i] = 1; b[i+1, i+1] = -1; b) for i in 1:n-1]
     s_e = ["e_$(i)_$(j)" for i in 1:n for j in i+1:n]
     s_f = ["f_$(i)_$(j)" for i in 1:n for j in i+1:n]
