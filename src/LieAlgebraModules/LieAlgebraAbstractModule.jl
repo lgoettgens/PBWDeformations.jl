@@ -1,4 +1,4 @@
-mutable struct LieAlgebraAbstractModule{C <: RingElement} <: LieAlgebraModule{C}
+@attributes mutable struct LieAlgebraAbstractModule{C <: RingElement} <: LieAlgebraModule{C}
     L::LieAlgebra{C}
     dim::Int
     transformation_matrices::Vector{MatElem{C}}
@@ -108,7 +108,7 @@ function abstract_module(
     L::LieAlgebra{C},
     dim::Int,
     transformation_matrices::Vector{<:MatElem{C}},
-    s::Vector{<:Union{AbstractString, Char, Symbol}};
+    s::Vector{<:Union{AbstractString, Char, Symbol}}=[Symbol("v_$i") for i in 1:dim];
     cached::Bool=true,
     check::Bool=true,
 ) where {C <: RingElement}
@@ -119,7 +119,7 @@ function abstract_module(
     L::LieAlgebra{C},
     dim::Int,
     struct_consts::Matrix{SRow{C}},
-    s::Vector{<:Union{AbstractString, Char, Symbol}};
+    s::Vector{<:Union{AbstractString, Char, Symbol}}=[Symbol("v_$i") for i in 1:dim];
     cached::Bool=true,
     check::Bool=true,
 ) where {C <: RingElement}

@@ -80,6 +80,7 @@ export abstract_module,
     is_pbwdeform,
     exterior_power,
     general_linear_liealgebra,
+    highest_weight_module,
     liealgebra,
     lookup_data,
     matrix_repr_basis,
@@ -108,13 +109,13 @@ include("FreeAssAlgQuadraticRelations.jl")
 include("LieAlgebra.jl")
 include("AbstractLieAlgebra.jl")
 include("LinearLieAlgebra.jl")
-include("LieAlgebraStructConsts.jl")
 include("LieAlgebraModules/LieAlgebraModule.jl")
 include("LieAlgebraModules/LieAlgebraAbstractModule.jl")
 include("LieAlgebraModules/LieAlgebraStdModule.jl")
 include("LieAlgebraModules/LieAlgebraTensorPowerModule.jl")
 include("LieAlgebraModules/LieAlgebraExteriorPowerModule.jl")
 include("LieAlgebraModules/LieAlgebraSymmetricPowerModule.jl")
+include("GapWrapper.jl")
 
 include("DeformationBases/DeformBasis.jl")
 

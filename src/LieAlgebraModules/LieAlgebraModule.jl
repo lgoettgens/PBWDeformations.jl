@@ -109,13 +109,12 @@ end
 function action(x::LieAlgebraElem{C}, v::ElemT) where {ElemT <: LieAlgebraModuleElem{C}} where {C <: RingElement}
     parent(x) == base_liealgebra(parent(v)) || error("Incompatible Lie algebras.")
 
-    bx = matrix_repr_basis(parent(x))
     cx = _matrix(x)
 
     return parent(v)(
         sum(
             cx[i] * _matrix(v) * transpose(transformation_matrix_by_basisindex(parent(v), i)) for
-            i in 1:length(bx) if !iszero(cx[i]);
+            i in 1:ngens(parent(x)) if !iszero(cx[i]);
             init=zero_matrix(base_ring(parent(v)), 1, ngens(parent(v)))::dense_matrix_type(C),
         ), # equivalent to (x * v^T)^T, since we work with row vectors
     )::ElemT

@@ -123,7 +123,7 @@ end
 function liealgebra(
     R::Ring,
     struct_consts::Matrix{SRow{C}},
-    s::Vector{<:Union{AbstractString, Char, Symbol}};
+    s::Vector{<:Union{AbstractString, Char, Symbol}}=[Symbol("x_$i") for i in 1:size(struct_consts, 1)];
     cached::Bool=true,
     check::Bool=true,
 ) where {C <: RingElement}
@@ -133,7 +133,7 @@ end
 function liealgebra(
     R::Ring,
     struct_consts::Array{C, 3},
-    s::Vector{<:Union{AbstractString, Char, Symbol}};
+    s::Vector{<:Union{AbstractString, Char, Symbol}}=[Symbol("x_$i") for i in 1:size(struct_consts, 1)];
     cached::Bool=true,
     check::Bool=true,
 ) where {C <: RingElement}
