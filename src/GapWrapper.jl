@@ -37,6 +37,7 @@ end
 
 function liealgebra_struct_consts_gap(R::Ring, dynkin::Tuple{Char, Int})
     is_valid_dynkin(dynkin...) || throw("Input not allowed by GAP.")
+    R == QQ || error("Works only for QQ.")
 
     GAPG = GAP.Globals
 
@@ -59,6 +60,7 @@ function liealgebra_highest_weight_module_struct_consts_gap(
     weight::Vector{Int},
 ) where {C <: RingElement}
     R = base_ring(L)
+    R == QQ || error("Works only for QQ.")
     GAPG = GAP.Globals
 
     gap_sc_table = [
