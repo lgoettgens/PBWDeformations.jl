@@ -1,5 +1,5 @@
 mutable struct LieAlgebraTensorPowerModule{C <: RingElement} <: LieAlgebraModule{C}
-    inner_mod::LieAlgebraModule
+    inner_mod::LieAlgebraModule{C}
     power::Int
     ind_map::Vector{Vector{Int}}
     transformation_matrix_cache::Vector{Union{Nothing, <:MatElem{C}}}
@@ -100,11 +100,11 @@ end
 
 function transformation_matrix_by_basisindex(V::LieAlgebraTensorPowerModule{C}, i::Int) where {C <: RingElement}
     if V.transformation_matrix_cache[i] === nothing
-        y = transformation_matrix_by_basisindex(V.inner_mod, i)
+        y = transformation_matrix_by_basisindex(V.inner_mod, i)::dense_matrix_type(C)
         V.transformation_matrix_cache[i] =
             sum(reduce(kronecker_product, (j == i ? y : one(y) for j in 1:V.power)) for i in 1:V.power)
     end
-    return V.transformation_matrix_cache[i]
+    return (V.transformation_matrix_cache[i])::dense_matrix_type(C)
 end
 
 

@@ -1,5 +1,5 @@
 mutable struct LieAlgebraExteriorPowerModule{C <: RingElement} <: LieAlgebraModule{C}
-    inner_mod::LieAlgebraModule
+    inner_mod::LieAlgebraModule{C}
     power::Int
     ind_map::Vector{Vector{Int}}
     transformation_matrix_cache::Vector{Union{Nothing, <:MatElem{C}}}
@@ -119,7 +119,7 @@ function transformation_matrix_by_basisindex(V::LieAlgebraExteriorPowerModule{C}
 
         V.transformation_matrix_cache[i] = basis_change_T2E * xT * basis_change_E2T
     end
-    return V.transformation_matrix_cache[i]
+    return (V.transformation_matrix_cache[i])::dense_matrix_type(C)
 end
 
 
