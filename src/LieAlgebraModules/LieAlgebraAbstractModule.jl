@@ -6,7 +6,7 @@
 
     function LieAlgebraAbstractModule{C}(
         L::LieAlgebra{C},
-        dim::Int,
+        dimV::Int,
         transformation_matrices::Vector{<:MatElem{C}},
         s::Vector{Symbol};
         cached::Bool=true,
@@ -14,14 +14,14 @@
     ) where {C <: RingElement}
         return get_cached!(
             LieAlgebraAbstractModuleDict,
-            (L, dim, transformation_matrices, s),
+            (L, dimV, transformation_matrices, s),
             cached,
         ) do
-            all(m -> size(m) == (dim, dim), transformation_matrices) ||
+            all(m -> size(m) == (dimV, dimV), transformation_matrices) ||
                 error("Invalid transformation matrix dimensions.")
-            dim == length(s) || error("Invalid number of basis element names.")
+            dimV == length(s) || error("Invalid number of basis element names.")
 
-            V = new{C}(L, dim, transformation_matrices, s)
+            V = new{C}(L, dimV, transformation_matrices, s)
             if check
                 for xi in gens(L), xj in gens(L), v in gens(V)
                     bracket(xi, xj) * v == xi * (xj * v) - xj * (xi * v) ||
@@ -59,7 +59,7 @@ base_ring(V::LieAlgebraAbstractModule{C}) where {C <: RingElement} = base_ring(b
 
 base_liealgebra(V::LieAlgebraAbstractModule{C}) where {C <: RingElement} = V.L
 
-ngens(V::LieAlgebraAbstractModule{C}) where {C <: RingElement} = V.dim
+dim(V::LieAlgebraAbstractModule{C}) where {C <: RingElement} = V.dim
 
 
 ###############################################################################
@@ -106,31 +106,31 @@ end
 
 function abstract_module(
     L::LieAlgebra{C},
-    dim::Int,
+    dimV::Int,
     transformation_matrices::Vector{<:MatElem{C}},
-    s::Vector{<:Union{AbstractString, Char, Symbol}}=[Symbol("v_$i") for i in 1:dim];
+    s::Vector{<:Union{AbstractString, Char, Symbol}}=[Symbol("v_$i") for i in 1:dimV];
     cached::Bool=true,
     check::Bool=true,
 ) where {C <: RingElement}
-    return LieAlgebraAbstractModule{C}(L, dim, transformation_matrices, Symbol.(s); cached, check=check)
+    return LieAlgebraAbstractModule{C}(L, dimV, transformation_matrices, Symbol.(s); cached, check=check)
 end
 
 function abstract_module(
     L::LieAlgebra{C},
-    dim::Int,
+    dimV::Int,
     struct_consts::Matrix{SRow{C}},
-    s::Vector{<:Union{AbstractString, Char, Symbol}}=[Symbol("v_$i") for i in 1:dim];
+    s::Vector{<:Union{AbstractString, Char, Symbol}}=[Symbol("v_$i") for i in 1:dimV];
     cached::Bool=true,
     check::Bool=true,
 ) where {C <: RingElement}
-    ngens(L) == size(struct_consts, 1) || error("Invalid structure constants dimensions.")
-    dim == size(struct_consts, 2) || error("Invalid structure constants dimensions.")
-    dim == length(s) || error("Invalid number of basis element names.")
+    dim(L) == size(struct_consts, 1) || error("Invalid structure constants dimensions.")
+    dimV == size(struct_consts, 2) || error("Invalid structure constants dimensions.")
+    dimV == length(s) || error("Invalid number of basis element names.")
 
-    transformation_matrices = [zero_matrix(base_ring(L), dim, dim) for _ in 1:ngens(L)]
-    for i in 1:ngens(L), j in 1:dim
-        transformation_matrices[i][:, j] = transpose(dense_row(struct_consts[i, j], dim))
+    transformation_matrices = [zero_matrix(base_ring(L), dimV, dimV) for _ in 1:dim(L)]
+    for i in 1:dim(L), j in 1:dimV
+        transformation_matrices[i][:, j] = transpose(dense_row(struct_consts[i, j], dimV))
     end
 
-    return LieAlgebraAbstractModule{C}(L, dim, transformation_matrices, Symbol.(s); cached, check=check)
+    return LieAlgebraAbstractModule{C}(L, dimV, transformation_matrices, Symbol.(s); cached, check=check)
 end

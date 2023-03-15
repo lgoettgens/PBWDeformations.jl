@@ -5,7 +5,7 @@ _matrix = PD._matrix
         @testset "correctness regression" begin
             function liealgebra_struct_const(L::LieAlgebra{C}) where {C <: RingElement}
                 R = base_ring(L)
-                dimL = ngens(L)
+                dimL = dim(L)
                 struct_const_L = Matrix{Vector{Tuple{elem_type(R), Int}}}(undef, dimL, dimL)
                 for (i, xi) in enumerate(gens(L)), (j, xj) in enumerate(gens(L))
                     struct_const_L[i, j] = [(c, k) for (k, c) in enumerate(_matrix(bracket(xi, xj))) if !iszero(c)]
@@ -15,8 +15,8 @@ _matrix = PD._matrix
 
             function liealgebra_module_struct_const(L::LieAlgebra{C}, V::LieAlgebraModule{C}) where {C <: RingElement}
                 R = base_ring(L)
-                dimL = ngens(L)
-                dimV = ngens(V)
+                dimL = dim(L)
+                dimV = dim(V)
                 struct_const_V = Matrix{Vector{Tuple{elem_type(R), Int}}}(undef, dimL, dimV)
                 for (i, xi) in enumerate(gens(L)), (j, vj) in enumerate(gens(V))
                     struct_const_V[i, j] = [(c, k) for (k, c) in enumerate(_matrix(xi * vj)) if !iszero(c)]

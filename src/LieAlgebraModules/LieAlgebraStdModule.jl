@@ -32,7 +32,7 @@ base_ring(V::LieAlgebraStdModule{C}) where {C <: RingElement} = base_ring(base_l
 
 base_liealgebra(V::LieAlgebraStdModule{C}) where {C <: RingElement} = V.L
 
-ngens(V::LieAlgebraStdModule{C}) where {C <: RingElement} = base_liealgebra(V).n
+dim(V::LieAlgebraStdModule{C}) where {C <: RingElement} = base_liealgebra(V).n
 
 
 ###############################################################################
@@ -47,7 +47,7 @@ function Base.show(io::IO, V::LieAlgebraStdModule{C}) where {C <: RingElement}
 end
 
 function symbols(V::LieAlgebraStdModule{C}) where {C <: RingElement}
-    return [Symbol("v_$(i)") for i in 1:ngens(V)]
+    return [Symbol("v_$(i)") for i in 1:dim(V)]
 end
 
 

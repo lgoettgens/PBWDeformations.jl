@@ -14,10 +14,10 @@ mutable struct LieAlgebraTensorPowerModule{C <: RingElement} <: LieAlgebraModule
             (inner_mod, power),
             cached,
         ) do
-            ind_map = collect(ProductIterator(1:ngens(inner_mod), power)) .|> reverse
+            ind_map = collect(ProductIterator(1:dim(inner_mod), power)) .|> reverse
             transformation_matrix_cache = Vector{Union{Nothing, <:MatElem{C}}}(
                 nothing,
-                ngens(base_liealgebra(inner_mod)),
+                dim(base_liealgebra(inner_mod)),
             )
             new{C}(inner_mod, power, ind_map, transformation_matrix_cache)
         end::LieAlgebraTensorPowerModule{C}
@@ -47,7 +47,7 @@ base_ring(V::LieAlgebraTensorPowerModule{C}) where {C <: RingElement} = base_rin
 
 base_liealgebra(V::LieAlgebraTensorPowerModule{C}) where {C <: RingElement} = base_liealgebra(V.inner_mod)
 
-ngens(V::LieAlgebraTensorPowerModule{C}) where {C <: RingElement} = ngens(V.inner_mod)^V.power
+dim(V::LieAlgebraTensorPowerModule{C}) where {C <: RingElement} = dim(V.inner_mod)^V.power
 
 
 ###############################################################################
@@ -84,7 +84,7 @@ end
 function (V::LieAlgebraTensorPowerModule{C})(a::Vector{T}) where {T <: LieAlgebraModuleElem{C}} where {C <: RingElement}
     length(a) == V.power || error("Length of vector does not match tensor power.")
     all(x -> parent(x) == V.inner_mod, a) || error("Incompatible modules.")
-    mat = zero_matrix(base_ring(V), 1, ngens(V))
+    mat = zero_matrix(base_ring(V), 1, dim(V))
     for (i, inds) in enumerate(V.ind_map)
         mat[1, i] += prod(a[j].mat[k] for (j, k) in enumerate(inds))
     end

@@ -13,7 +13,7 @@ abstract type LieAlgebraElem{C <: RingElement} <: FPModuleElem{C} end
 # elem_type(::Type{MyLieAlgebra{C}})
 # parent(x::MyLieAlgebraElem{C})
 # base_ring(L::MyLieAlgebra{C})
-# ngens(L::MyLieAlgebra{C})
+# dim(L::MyLieAlgebra{C})
 # Generic._matrix(x::MyLieAlgebraElem{C})
 # Base.show(io::IO, x::MyLieAlgebra{C})
 # Base.show(io::IO, x::MyLieAlgebraElem{C})
@@ -29,11 +29,13 @@ abstract type LieAlgebraElem{C <: RingElement} <: FPModuleElem{C} end
 
 base_ring(x::LieAlgebraElem{C}) where {C <: RingElement} = base_ring(parent(x))
 
-gens(L::LieAlgebra{C}) where {C <: RingElement} = [gen(L, i) for i in 1:ngens(L)]
+ngens(L::LieAlgebra{C}) where {C <: RingElement} = dim(L)
+
+gens(L::LieAlgebra{C}) where {C <: RingElement} = [gen(L, i) for i in 1:dim(L)]
 
 function gen(L::LieAlgebra{C}, i::Int) where {C <: RingElement}
     R = base_ring(L)
-    return L([(j == i ? one(R) : zero(R)) for j in 1:ngens(L)])
+    return L([(j == i ? one(R) : zero(R)) for j in 1:dim(L)])
 end
 
 function Generic.rels(_::LieAlgebra{C}) where {C <: RingElement}
@@ -49,23 +51,23 @@ end
 ###############################################################################
 
 function (L::LieAlgebra{C})() where {C <: RingElement}
-    mat = zero_matrix(base_ring(L), 1, ngens(L))
+    mat = zero_matrix(base_ring(L), 1, dim(L))
     return elem_type(L)(L, mat)
 end
 
 function (L::LieAlgebra{C})(v::Vector{C}) where {C <: RingElement}
-    length(v) == ngens(L) || error("Length of vector does not match number of generators.")
+    length(v) == dim(L) || error("Length of vector does not match number of generators.")
     mat = matrix(base_ring(L), 1, length(v), v)
     return elem_type(L)(L, mat)
 end
 
 function (L::LieAlgebra{C})(mat::MatElem{C}) where {C <: RingElement}
-    size(mat) == (1, ngens(L)) || error("Invalid matrix dimensions.")
+    size(mat) == (1, dim(L)) || error("Invalid matrix dimensions.")
     return elem_type(L)(L, mat)
 end
 
 function (L::LieAlgebra{C})(v::SRow{C}) where {C <: RingElement}
-    mat = dense_row(v, ngens(L))
+    mat = dense_row(v, dim(L))
     return elem_type(L)(L, mat)
 end
 

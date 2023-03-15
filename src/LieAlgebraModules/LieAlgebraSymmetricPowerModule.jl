@@ -15,11 +15,11 @@ mutable struct LieAlgebraSymmetricPowerModule{C <: RingElement} <: LieAlgebraMod
             cached,
         ) do
             ind_map = collect(
-                Combinatorics.with_replacement_combinations(1:ngens(inner_mod), power),
+                Combinatorics.with_replacement_combinations(1:dim(inner_mod), power),
             )
             transformation_matrix_cache = Vector{Union{Nothing, <:MatElem{C}}}(
                 nothing,
-                ngens(base_liealgebra(inner_mod)),
+                dim(base_liealgebra(inner_mod)),
             )
             new{C}(inner_mod, power, ind_map, transformation_matrix_cache)
         end::LieAlgebraSymmetricPowerModule{C}
@@ -50,8 +50,7 @@ base_ring(V::LieAlgebraSymmetricPowerModule{C}) where {C <: RingElement} = base_
 
 base_liealgebra(V::LieAlgebraSymmetricPowerModule{C}) where {C <: RingElement} = base_liealgebra(V.inner_mod)
 
-ngens(V::LieAlgebraSymmetricPowerModule{C}) where {C <: RingElement} =
-    binomial(ngens(V.inner_mod) + V.power - 1, V.power)
+dim(V::LieAlgebraSymmetricPowerModule{C}) where {C <: RingElement} = binomial(dim(V.inner_mod) + V.power - 1, V.power)
 
 
 ###############################################################################
@@ -87,7 +86,7 @@ function symbols(V::LieAlgebraSymmetricPowerModule{C}) where {C <: RingElement}
                     end
                 end for (i, s) in enumerate(symbols(V.inner_mod)) if in(i, inds)
             ), "*"),
-        ) for inds in Combinatorics.with_replacement_combinations(1:ngens(V.inner_mod), V.power)
+        ) for inds in Combinatorics.with_replacement_combinations(1:dim(V.inner_mod), V.power)
     ]
 end
 
@@ -103,7 +102,7 @@ function (V::LieAlgebraSymmetricPowerModule{C})(
 ) where {T <: LieAlgebraModuleElem{C}} where {C <: RingElement}
     length(a) == V.power || error("Length of vector does not match tensor power.")
     all(x -> parent(x) == V.inner_mod, a) || error("Incompatible modules.")
-    mat = zero_matrix(base_ring(V), 1, ngens(V))
+    mat = zero_matrix(base_ring(V), 1, dim(V))
     for (i, _inds) in enumerate(V.ind_map), inds in unique(Combinatorics.permutations(_inds))
         mat[1, i] += prod(a[j].mat[k] for (j, k) in enumerate(inds))
     end
@@ -122,8 +121,8 @@ function transformation_matrix_by_basisindex(V::LieAlgebraSymmetricPowerModule{C
         T = tensor_power(V.inner_mod, V.power)
         xT = transformation_matrix_by_basisindex(T, i)
 
-        basis_change_S2T = zero(xT, ngens(T), ngens(V))
-        basis_change_T2S = zero(xT, ngens(V), ngens(T))
+        basis_change_S2T = zero(xT, dim(T), dim(V))
+        basis_change_T2S = zero(xT, dim(V), dim(T))
         for (i, _inds) in enumerate(V.ind_map), inds in Combinatorics.permutations(_inds)
             j = findfirst(==(inds), T.ind_map)
             basis_change_S2T[j, i] += 1 // factorial(V.power)

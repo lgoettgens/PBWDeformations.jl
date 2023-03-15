@@ -7,8 +7,8 @@ end
 
 function highest_weight_module(L::LieAlgebra{C}, weight::Vector{Int}; cached::Bool=true) where {C <: RingElement}
     struct_consts = liealgebra_highest_weight_module_struct_consts_gap(L, weight)
-    dim = size(struct_consts, 2)
-    V = abstract_module(L, dim, struct_consts; cached, check=true)
+    dimV = size(struct_consts, 2)
+    V = abstract_module(L, dimV, struct_consts; cached, check=true)
     set_attribute!(V, :highest_weight, weight)
     return V
 end

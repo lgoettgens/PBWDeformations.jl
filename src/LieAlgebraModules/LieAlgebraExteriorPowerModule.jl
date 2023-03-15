@@ -14,10 +14,10 @@ mutable struct LieAlgebraExteriorPowerModule{C <: RingElement} <: LieAlgebraModu
             (inner_mod, power),
             cached,
         ) do
-            ind_map = collect(Combinatorics.combinations(1:ngens(inner_mod), power))
+            ind_map = collect(Combinatorics.combinations(1:dim(inner_mod), power))
             transformation_matrix_cache = Vector{Union{Nothing, <:MatElem{C}}}(
                 nothing,
-                ngens(base_liealgebra(inner_mod)),
+                dim(base_liealgebra(inner_mod)),
             )
             new{C}(inner_mod, power, ind_map, transformation_matrix_cache)
         end::LieAlgebraExteriorPowerModule{C}
@@ -48,7 +48,7 @@ base_ring(V::LieAlgebraExteriorPowerModule{C}) where {C <: RingElement} = base_r
 
 base_liealgebra(V::LieAlgebraExteriorPowerModule{C}) where {C <: RingElement} = base_liealgebra(V.inner_mod)
 
-ngens(V::LieAlgebraExteriorPowerModule{C}) where {C <: RingElement} = binomial(ngens(V.inner_mod), V.power)
+dim(V::LieAlgebraExteriorPowerModule{C}) where {C <: RingElement} = binomial(dim(V.inner_mod), V.power)
 
 
 ###############################################################################
@@ -87,7 +87,7 @@ function (V::LieAlgebraExteriorPowerModule{C})(
 ) where {T <: LieAlgebraModuleElem{C}} where {C <: RingElement}
     length(a) == V.power || error("Length of vector does not match tensor power.")
     all(x -> parent(x) == V.inner_mod, a) || error("Incompatible modules.")
-    mat = zero_matrix(base_ring(V), 1, ngens(V))
+    mat = zero_matrix(base_ring(V), 1, dim(V))
     for (i, _inds) in enumerate(V.ind_map), inds in Combinatorics.permutations(_inds)
         sgn = levicivita(sortperm(inds))
         mat[1, i] += sgn * prod(a[j].mat[k] for (j, k) in enumerate(inds))
@@ -107,8 +107,8 @@ function transformation_matrix_by_basisindex(V::LieAlgebraExteriorPowerModule{C}
         T = tensor_power(V.inner_mod, V.power)
         xT = transformation_matrix_by_basisindex(T, i)
 
-        basis_change_E2T = zero(xT, ngens(T), ngens(V))
-        basis_change_T2E = zero(xT, ngens(V), ngens(T))
+        basis_change_E2T = zero(xT, dim(T), dim(V))
+        basis_change_T2E = zero(xT, dim(V), dim(T))
 
         for (i, _inds) in enumerate(V.ind_map), inds in Combinatorics.permutations(_inds)
             sgn = levicivita(sortperm(inds))

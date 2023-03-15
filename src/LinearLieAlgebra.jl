@@ -42,7 +42,7 @@ parent(x::LinearLieAlgebraElem{C}) where {C <: RingElement} = x.parent
 
 base_ring(L::LinearLieAlgebra{C}) where {C <: RingElement} = L.R
 
-ngens(L::LinearLieAlgebra{C}) where {C <: RingElement} = L.dim
+dim(L::LinearLieAlgebra{C}) where {C <: RingElement} = L.dim
 
 @inline function Generic._matrix(x::LinearLieAlgebraElem{C}) where {C <: RingElement}
     return (x.mat)::dense_matrix_type(C)
@@ -86,7 +86,7 @@ function (L::LinearLieAlgebra{C})(m::MatElem{C}) where {C <: RingElement}
     if size(m) == (L.n, L.n)
         m = coefficient_vector(m, matrix_repr_basis(L))
     end
-    size(m) == (1, ngens(L)) || error("Invalid matrix dimensions.")
+    size(m) == (1, dim(L)) || error("Invalid matrix dimensions.")
     return elem_type(L)(L, m)
 end
 

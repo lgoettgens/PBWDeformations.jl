@@ -119,8 +119,8 @@ function smash_product_lie(L::LieAlgebra{C}, V::LieAlgebraModule{C}) where {C <:
     L == base_liealgebra(V) || error("Incompatible module.")
     R = base_ring(L)
 
-    dimL = ngens(L)
-    dimV = ngens(V)
+    dimL = dim(L)
+    dimV = dim(V)
 
     f_alg, _ = FreeAssociativeAlgebra(R, [symbols(L); symbols(V)])
     f_basisL = [gen(f_alg, i) for i in 1:dimL]

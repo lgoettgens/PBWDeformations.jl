@@ -22,6 +22,7 @@ import AbstractAlgebra:
     base_ring,
     canonical_unit,
     change_base_ring,
+    dim,
     elem_type,
     gen,
     gens,
