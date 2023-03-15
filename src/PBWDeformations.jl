@@ -7,6 +7,7 @@ using SparseArrays
 import AbstractAlgebra:
     @attributes,
     @attr,
+    @enable_all_show_via_expressify,
     AllParts,
     CacheDictType,
     FreeAssAlgebra,
@@ -24,6 +25,7 @@ import AbstractAlgebra:
     change_base_ring,
     dim,
     elem_type,
+    expressify,
     gen,
     gens,
     get_attribute,
@@ -36,8 +38,6 @@ import AbstractAlgebra:
     symbols
 
 import AbstractAlgebra.Generic: _matrix, matrix_repr, rels
-
-import AbstractAlgebra.PrettyPrinting: @enable_all_show_via_expressify, expressify
 
 import Oscar: action, comm, exterior_power, normal_form, symmetric_power
 
@@ -106,18 +106,19 @@ GAP = Oscar.GAP
 
 
 include("Util.jl")
-include("FreeAssAlgQuadraticRelations.jl")
-include("LieAlgebra.jl")
-include("AbstractLieAlgebra.jl")
-include("LinearLieAlgebra.jl")
+
+include("LieAlgebras/LieAlgebra.jl")
+include("LieAlgebras/AbstractLieAlgebra.jl")
+include("LieAlgebras/LinearLieAlgebra.jl")
 include("LieAlgebraModules/LieAlgebraModule.jl")
 include("LieAlgebraModules/LieAlgebraAbstractModule.jl")
-include("LieAlgebraModules/LieAlgebraStdModule.jl")
-include("LieAlgebraModules/LieAlgebraTensorPowerModule.jl")
 include("LieAlgebraModules/LieAlgebraExteriorPowerModule.jl")
+include("LieAlgebraModules/LieAlgebraStdModule.jl")
 include("LieAlgebraModules/LieAlgebraSymmetricPowerModule.jl")
+include("LieAlgebraModules/LieAlgebraTensorPowerModule.jl")
 include("GapWrapper.jl")
 
+include("FreeAssAlgQuadraticRelations.jl")
 include("DeformationBases/DeformBasis.jl")
 
 include("SmashProductLie.jl")
