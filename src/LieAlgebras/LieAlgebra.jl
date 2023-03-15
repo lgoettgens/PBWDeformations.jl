@@ -55,6 +55,10 @@ function (L::LieAlgebra{C})() where {C <: RingElement}
     return elem_type(L)(L, mat)
 end
 
+function (L::LieAlgebra{C})(v::Vector{Int}) where {C <: RingElement}
+    return L(base_ring(L).(v))
+end
+
 function (L::LieAlgebra{C})(v::Vector{C}) where {C <: RingElement}
     length(v) == dim(L) || error("Length of vector does not match number of generators.")
     mat = matrix(base_ring(L), 1, length(v), v)

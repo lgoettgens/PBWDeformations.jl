@@ -63,6 +63,10 @@ function (V::LieAlgebraModule{C})() where {C <: RingElement}
     return elem_type(V)(V, mat)
 end
 
+function (V::LieAlgebraModule{C})(v::Vector{Int}) where {C <: RingElement}
+    return V(base_ring(V).(v))
+end
+
 function (V::LieAlgebraModule{C})(v::Vector{C}) where {C <: RingElement}
     length(v) == dim(V) || error("Length of vector does not match number of generators.")
     mat = matrix(base_ring(V), 1, length(v), v)
@@ -73,6 +77,11 @@ function (V::LieAlgebraModule{C})(v::MatElem{C}) where {C <: RingElement}
     ncols(v) == dim(V) || error("Length of vector does not match number of generators")
     nrows(v) == 1 || error("Not a vector in module constructor")
     return elem_type(V)(V, v)
+end
+
+function (V::LieAlgebraModule{C})(v::SRow{C}) where {C <: RingElement}
+    mat = dense_row(v, dim(V))
+    return elem_type(V)(V, mat)
 end
 
 function (V::LieAlgebraModule{C})(v::LieAlgebraModuleElem{C}) where {C <: RingElement}
