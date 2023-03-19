@@ -1,4 +1,4 @@
-mutable struct LieAlgebraStdModule{C <: RingElement} <: LieAlgebraModule{C}
+@attributes mutable struct LieAlgebraStdModule{C <: RingElement} <: LieAlgebraModule{C}
     L::LinearLieAlgebra{C}
 
     function LieAlgebraStdModule{C}(L::LinearLieAlgebra{C}; cached::Bool=true) where {C <: RingElement}
@@ -32,7 +32,7 @@ base_ring(V::LieAlgebraStdModule{C}) where {C <: RingElement} = base_ring(base_l
 
 base_liealgebra(V::LieAlgebraStdModule{C}) where {C <: RingElement} = V.L
 
-dim(V::LieAlgebraStdModule{C}) where {C <: RingElement} = base_liealgebra(V).n
+@attr dim(V::LieAlgebraStdModule{C}) where {C <: RingElement} = base_liealgebra(V).n
 
 
 ###############################################################################

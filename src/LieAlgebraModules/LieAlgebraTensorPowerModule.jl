@@ -1,4 +1,4 @@
-mutable struct LieAlgebraTensorPowerModule{C <: RingElement} <: LieAlgebraModule{C}
+@attributes mutable struct LieAlgebraTensorPowerModule{C <: RingElement} <: LieAlgebraModule{C}
     inner_mod::LieAlgebraModule{C}
     power::Int
     ind_map::Vector{Vector{Int}}
@@ -47,7 +47,7 @@ base_ring(V::LieAlgebraTensorPowerModule{C}) where {C <: RingElement} = base_rin
 
 base_liealgebra(V::LieAlgebraTensorPowerModule{C}) where {C <: RingElement} = base_liealgebra(V.inner_mod)
 
-dim(V::LieAlgebraTensorPowerModule{C}) where {C <: RingElement} = dim(V.inner_mod)^V.power
+@attr dim(V::LieAlgebraTensorPowerModule{C}) where {C <: RingElement} = dim(V.inner_mod)^V.power
 
 
 ###############################################################################

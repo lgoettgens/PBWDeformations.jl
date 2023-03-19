@@ -1,4 +1,4 @@
-mutable struct LieAlgebraExteriorPowerModule{C <: RingElement} <: LieAlgebraModule{C}
+@attributes mutable struct LieAlgebraExteriorPowerModule{C <: RingElement} <: LieAlgebraModule{C}
     inner_mod::LieAlgebraModule{C}
     power::Int
     ind_map::Vector{Vector{Int}}
@@ -48,7 +48,7 @@ base_ring(V::LieAlgebraExteriorPowerModule{C}) where {C <: RingElement} = base_r
 
 base_liealgebra(V::LieAlgebraExteriorPowerModule{C}) where {C <: RingElement} = base_liealgebra(V.inner_mod)
 
-dim(V::LieAlgebraExteriorPowerModule{C}) where {C <: RingElement} = binomial(dim(V.inner_mod), V.power)
+@attr dim(V::LieAlgebraExteriorPowerModule{C}) where {C <: RingElement} = binomial(dim(V.inner_mod), V.power)
 
 
 ###############################################################################

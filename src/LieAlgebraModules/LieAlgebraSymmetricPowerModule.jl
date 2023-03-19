@@ -1,4 +1,4 @@
-mutable struct LieAlgebraSymmetricPowerModule{C <: RingElement} <: LieAlgebraModule{C}
+@attributes mutable struct LieAlgebraSymmetricPowerModule{C <: RingElement} <: LieAlgebraModule{C}
     inner_mod::LieAlgebraModule{C}
     power::Int
     ind_map::Vector{Vector{Int}}
@@ -50,7 +50,8 @@ base_ring(V::LieAlgebraSymmetricPowerModule{C}) where {C <: RingElement} = base_
 
 base_liealgebra(V::LieAlgebraSymmetricPowerModule{C}) where {C <: RingElement} = base_liealgebra(V.inner_mod)
 
-dim(V::LieAlgebraSymmetricPowerModule{C}) where {C <: RingElement} = binomial(dim(V.inner_mod) + V.power - 1, V.power)
+@attr dim(V::LieAlgebraSymmetricPowerModule{C}) where {C <: RingElement} =
+    binomial(dim(V.inner_mod) + V.power - 1, V.power)
 
 
 ###############################################################################
