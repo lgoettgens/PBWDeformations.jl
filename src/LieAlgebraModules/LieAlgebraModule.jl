@@ -19,7 +19,7 @@ base_ring(v::LieAlgebraModuleElem{C}) where {C <: RingElement} = base_ring(paren
 
 ngens(V::LieAlgebraModule{C}) where {C <: RingElement} = dim(V)
 
-gens(V::LieAlgebraModule{C}) where {C <: RingElement} = [gen(V, i) for i in 1:dim(V)]
+gens(V::LieAlgebraModule{C}) where {C <: RingElement} = [gen(V, i)::elem_type(V) for i in 1:dim(V)]
 
 function gen(V::LieAlgebraModule{C}, i::Int) where {C <: RingElement}
     R = base_ring(V)

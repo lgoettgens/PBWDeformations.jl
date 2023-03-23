@@ -1,6 +1,8 @@
 include("setup.jl")
 
 @testset ExtendedTestSet "All PBWDeformations tests" begin
+    @test all(n -> isdefined(PBWDeformations, n), names(PBWDeformations))
+
     include("ArcDiagram-test.jl")
     include("DeformationBases-test.jl")
     include("LieAlgebras/LieAlgebra-test.jl")

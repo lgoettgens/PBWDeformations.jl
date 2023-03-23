@@ -31,7 +31,7 @@ base_ring(x::LieAlgebraElem{C}) where {C <: RingElement} = base_ring(parent(x))
 
 ngens(L::LieAlgebra{C}) where {C <: RingElement} = dim(L)
 
-gens(L::LieAlgebra{C}) where {C <: RingElement} = [gen(L, i) for i in 1:dim(L)]
+gens(L::LieAlgebra{C}) where {C <: RingElement} = [gen(L, i)::elem_type(L) for i in 1:dim(L)]
 
 function gen(L::LieAlgebra{C}, i::Int) where {C <: RingElement}
     R = base_ring(L)
