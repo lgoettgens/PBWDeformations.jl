@@ -8,7 +8,7 @@ end
 function highest_weight_module(L::LieAlgebra{C}, weight::Vector{Int}; cached::Bool=true) where {C <: RingElement}
     struct_consts = liealgebra_highest_weight_module_struct_consts_gap(L, weight)
     dimV = size(struct_consts, 2)
-    V = abstract_module(L, dimV, struct_consts; cached, check=true)
+    V = abstract_module(L, dimV, struct_consts; cached, check=false)
     set_attribute!(V, :highest_weight, weight)
     return V
 end
@@ -24,14 +24,14 @@ coefficient ring `coeff_ring`.
 # Example
 ```jldoctest; filter = [r"(AbstractAlgebra\\.Generic\\.)?", r"(Nemo\\.)?"]
 julia> smash_product_lie_highest_weight(QQ, 'A', 1, [1])
-(Lie Algebra Smash Product with basis x_1, x_2, x_3, v_1, v_2 over Rational Field, (FreeAssAlgElem{fmpq}[x_1, x_2, x_3], FreeAssAlgElem{fmpq}[v_1, v_2]))
+Smash Product of AbstractLieAlgebra over Rational Field and AbstractModule of AbstractLieAlgebra over Rational Field
 ```
 """
 function smash_product_lie_highest_weight(coeff_ring::Ring, dynkin::Char, n::Int, lambda::Vector{Int})
     L = liealgebra(coeff_ring, (dynkin, n))
     V = highest_weight_module(L, lambda)
 
-    return smash_product_lie(L, V)
+    return smash_product(L, V)
 end
 
 

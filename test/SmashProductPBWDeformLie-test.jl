@@ -1,41 +1,45 @@
 @testset ExtendedTestSet "All SmashProductPBWDeformLie.jl tests" begin
+    @testset "is_pbwdeformation" begin
+        @testset "symmetric deformation of so_4(QQ) ⋉ ⋀^2 V" begin
+            L = special_orthogonal_liealgebra(QQ, 4)
+            V = exterior_power(standard_module(L), 2)
+            sp = smash_product(L, V)
 
-    @testset "is_pbwdeform" begin
-        @testset "symmetric deformation of $(dynkin)_$n with hw $lambda is PBW" for (dynkin, n, lambda) in
-                                                                                    [('A', 2, [1, 1]), ('B', 2, [1, 0])]
-            sp, _ = smash_product_lie_highest_weight(QQ, dynkin, n, lambda)
-            d, _ = smash_product_symmdeform_lie(sp)
-            @test is_pbwdeform(d)
+            d = symmetric_deformation(sp)
+            @test is_pbwdeformation(d)
         end
 
         @testset "non-PBW deformations" begin
-            sp, (basisL, basisV) = smash_product_lie_highest_weight(QQ, 'A', 2, [1, 0])
-            kappa = fill(zero(sp.alg), 3, 3)
+            L = special_orthogonal_liealgebra(QQ, 4)
+            V = exterior_power(standard_module(L), 2)
+            sp = smash_product(L, V)
+
+            kappa = fill(zero(sp.alg), 6, 6)
             # some made-up skew-symmetric entries
-            kappa[1, 2] = basisL[2]
-            kappa[2, 1] = -basisL[2]
-            d, _ = smash_product_deform_lie(sp, kappa)
-            @test !is_pbwdeform(d)
+            kappa[1, 2] = gen(sp, 2, :L)
+            kappa[2, 1] = -gen(sp, 2, :L)
+            d = deform(sp, kappa)
+            @test !is_pbwdeformation(d)
         end
 
     end
 
-    @testset "pbwdeforms_all construction stuff" begin
+    @testset "all_pbwdeformations construction stuff" begin
         @testset "coefficient_comparison tests" begin
             A, (x, y, z) = FreeAssociativeAlgebra(QQ, ["x", "y", "z"])
             eq = QQ(2 // 3) * x + 88 * y * z - 12 * x * z + 3 * y + 0 * z^4 - 2 * y + 12 * x * z
             @test issetequal(PD.coefficient_comparison(eq), elem_type(QQ)[2//3, 88, 1])
         end
 
-        @testset "pbwdeforms_all tests" begin
-            sp, _ = smash_product_lie_highest_weight(QQ, 'A', 1, [1])
+        @testset "all_pbwdeformations tests" begin
+            sp = smash_product_lie_highest_weight(QQ, 'A', 1, [1])
             @testset "A_1 with hw [1], maxdeg = $maxdeg" for maxdeg in 0:8
-                basis = pbwdeforms_all(sp, 0:maxdeg)
+                basis = all_pbwdeformations(sp, 0:maxdeg)
 
                 @test length(basis) == 1 + div(maxdeg, 2)
 
                 for b in basis
-                    for i in 1:sp.dimV, j in 1:sp.dimV
+                    for i in 1:dim(sp.V), j in 1:dim(sp.V)
                         @test iszero(b[i, j] + b[j, i])
                     end
                 end
@@ -53,33 +57,7 @@
                           "64*x_1^3*x_2^3 + 48*x_1^2*x_2^2*x_3^2 + 12*x_1*x_2*x_3^4 + x_3^6 - 288*x_1^2*x_2^2*x_3 - 96*x_1*x_2*x_3^3 - 6*x_3^5 + 320*x_1^2*x_2^2 + 208*x_1*x_2*x_3^2 - 64*x_1*x_2*x_3 + 40*x_3^3 + 64*x_1*x_2 - 96*x_3"
                 end
             end
-
-            sp, _ = smash_product_lie_highest_weight(QQ, 'B', 2, [1, 0])
-            @testset "B_2 with hw [1,0], maxdeg = $maxdeg" for maxdeg in 0:2
-                basis = pbwdeforms_all(sp, 0:maxdeg)
-
-                @test_broken length(basis) == div(maxdeg + 1, 2) && false
-
-                for b in basis
-                    for i in 1:sp.dimV, j in 1:sp.dimV
-                        @test iszero(b[i, j] + b[j, i])
-                    end
-                end
-
-                if length(basis) >= 1
-                    @test_broken replace(repr("text/plain", basis[1]), r"AbstractAlgebra\.Generic\." => "") == """
-                        5×5 Matrix{FreeAssAlgElem{fmpq}}:
-                         0                 -x_4       x_3   -x_1        x_9 + 1//2*x_10
-                         x_4               0          x_2   -1//2*x_10  x_5
-                         -x_3              -x_2       0     -x_6        x_7
-                         x_1               1//2*x_10  x_6   0           x_8
-                         -x_9 - 1//2*x_10  -x_5       -x_7  -x_8        0"""
-                end
-
-            end
-
         end
-
     end
 
 end

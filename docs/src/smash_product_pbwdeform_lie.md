@@ -11,14 +11,14 @@ end
 ## General deformation functions
 
 ```@docs
-is_pbwdeform
+is_pbwdeformation
 pbwdeform_eqs
 ```
 
 ## All PBW deformations
 
 ```@docs
-pbwdeforms_all
+all_pbwdeformations
 ```
 
 ### Bases of deformation map spaces

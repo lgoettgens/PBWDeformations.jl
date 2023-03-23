@@ -11,8 +11,8 @@ end
 ## Constructors
 ```@docs
 DeformationMap
-smash_product_deform_lie
-smash_product_symmdeform_lie
+deform
+symmetric_deformation
 ```
 
 ## SmashProductDeformLie struct

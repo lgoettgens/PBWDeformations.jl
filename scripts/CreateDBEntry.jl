@@ -55,7 +55,7 @@ for deg in 0:maxdeg
     else
         @assert false
     end
-    kappas = pbwdeforms_all(sp, deg)
+    kappas = all_pbwdeformations(sp, deg)
 
     @info "Writing Output... (degree=$deg)"
     path = "db"

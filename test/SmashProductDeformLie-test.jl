@@ -1,151 +1,160 @@
 @testset ExtendedTestSet "All SmashProductDeformLie.jl tests" begin
 
-    @testset "smash_product_deform_lie constructor" begin
-        @testset "$(dynkin)_$n with hw $lambda; R = $R" for (dynkin, n, lambda) in [('A', 2, [1, 1]), ('B', 2, [1, 0])],
-            R in [
-                QQ,
-                # PolynomialRing(QQ, ["x", "y", "z"])[1]
-            ]
+    @testset "SmashProductDeformLie constructor" begin
+        @testset "R = $R" for R in [QQ, PolynomialRing(QQ, ["x", "y", "z"])[1]]
+            L = special_orthogonal_liealgebra(R, 4)
+            V = exterior_power(standard_module(L), 2)
+            sp = smash_product(L, V)
 
-            sp, (sp_basisL, sp_basisV) = smash_product_lie_highest_weight(R, dynkin, n, lambda)
-            kappa = fill(zero(sp.alg), sp.dimV, sp.dimV)
-            kappa[1, 2] = sp_basisL[1]
+            kappa = fill(zero(sp.alg), dim(sp.V), dim(sp.V))
+            kappa[1, 2] = gen(sp, 1, :L)
             kappa[2, 1] = -kappa[1, 2]
-            kappa[3, 4] = sp_basisL[2]
+            kappa[3, 4] = gen(sp, 2, :L)
             kappa[4, 3] = -kappa[3, 4]
-            deform, (basisL, basisV) = smash_product_deform_lie(sp, kappa)
+            d = deform(sp, kappa)
 
-            @test deform.dimL == sp.dimL == length(deform.basisL)
-            @test deform.dimV == sp.dimV == length(deform.basisV)
-            @test deform.basisL == basisL
-            @test deform.basisV == basisV
-            @test deform.coeff_ring == R
-            @test deform.symmetric == false
-            @test deform.kappa == kappa
+            @test dim(L) == ngens(d, :L)
+            @test dim(L) == length(gens(d, :L))
+            @test dim(L) == 6
 
-            @test ngens(deform) == (deform.dimL, deform.dimV)
-            @test gens(deform) == (deform.basisL, deform.basisV)
+            @test dim(V) == ngens(d, :V)
+            @test dim(V) == length(gens(d, :V))
+            @test dim(V) == 6
+
+            @test dim(L) + dim(V) == ngens(d)
+            @test dim(L) + dim(V) == length(gens(d))
+            @test dim(L) + dim(V) == 12
+
+            @test get_attribute(d, :is_symmetric, false) == false
+            @test d.kappa == kappa
+            @test !iszero(d.kappa)
 
             # Test the module basis relations
-            for i in eachindex(basisV), j in eachindex(basisV)
+            for i in 1:ngens(d, :V), j in 1:ngens(d, :V)
                 if i == 1 && j == 2
-                    @test normal_form(comm(basisV[i], basisV[j]), deform.rels) == basisL[1]
+                    @test normal_form(comm(gen(d, i, :V), gen(d, j, :V)), d.rels) == gen(d, 1, :L)
                 elseif i == 2 && j == 1
-                    @test normal_form(comm(basisV[i], basisV[j]), deform.rels) == -basisL[1]
+                    @test normal_form(comm(gen(d, i, :V), gen(d, j, :V)), d.rels) == -gen(d, 1, :L)
                 elseif i == 3 && j == 4
-                    @test normal_form(comm(basisV[i], basisV[j]), deform.rels) == basisL[2]
+                    @test normal_form(comm(gen(d, i, :V), gen(d, j, :V)), d.rels) == gen(d, 2, :L)
                 elseif i == 4 && j == 3
-                    @test normal_form(comm(basisV[i], basisV[j]), deform.rels) == -basisL[2]
+                    @test normal_form(comm(gen(d, i, :V), gen(d, j, :V)), d.rels) == -gen(d, 2, :L)
                 else
-                    @test iszero(normal_form(comm(basisV[i], basisV[j]), deform.rels))
+                    @test iszero(normal_form(comm(gen(d, i, :V), gen(d, j, :V)), d.rels))
                 end
             end
 
-            showOutput = @test_nowarn sprint(show, deform)
-            @test occursin("smash product", lowercase(showOutput))
-            @test occursin("lie algebra", lowercase(showOutput))
-            # @test_broken occursin(string(dynkin), showOutput)
-            # @test_broken occursin(string(lambda), showOutput)
+            showOutput = @test_nowarn sprint(show, d)
             @test !occursin("symmetric", lowercase(showOutput))
-            @test occursin("deformation", lowercase(showOutput))
         end
 
     end
 
-    @testset "smash_product_symmdeform_lie constructor" begin
-        @testset "$(dynkin)_$n with hw $lambda; R = $R" for (dynkin, n, lambda) in [('A', 2, [1, 1]), ('B', 2, [1, 0])],
-            R in [
-                QQ,
-                # PolynomialRing(QQ, ["x", "y", "z"])[1]
-            ]
+    @testset "symmetric_deformation constructor" begin
+        @testset "R = $R" for R in [QQ, PolynomialRing(QQ, ["x", "y", "z"])[1]]
 
-            sp, _ = smash_product_lie_highest_weight(R, dynkin, n, lambda)
-            deform, (basisL, basisV) = smash_product_symmdeform_lie(sp)
+            for (sp, dimL, dimV) in [begin
+                L = special_orthogonal_liealgebra(R, 4)
+                V = exterior_power(standard_module(L), 2)
+                sp = smash_product(L, V)
+                return (sp, 6, 6)
+            end, begin
+                L = general_linear_liealgebra(R, 4)
+                V = symmetric_power(standard_module(L), 2)
+                sp = smash_product(L, V)
+                return (sp, 16, 10)
+            end]
 
-            @test deform.dimL == sp.dimL == length(deform.basisL)
-            @test deform.dimV == sp.dimV == length(deform.basisV)
-            @test deform.basisL == basisL
-            @test deform.basisV == basisV
-            @test deform.coeff_ring == R
-            @test deform.symmetric == true
-            @test deform.kappa == fill(zero(sp.alg), sp.dimV, sp.dimV)
+                d = symmetric_deformation(sp)
 
-            # Test that the module basis commutes
-            for vi in basisV, vj in basisV
-                @test iszero(normal_form(comm(vi, vj), deform.rels))
+                @test dim(L) == ngens(d, :L)
+                @test dim(L) == length(gens(d, :L))
+                @test dim(L) == dimL
+
+                @test dim(V) == ngens(d, :V)
+                @test dim(V) == length(gens(d, :V))
+                @test dim(V) == dimV
+
+                @test dim(L) + dim(V) == ngens(d)
+                @test dim(L) + dim(V) == length(gens(d))
+                @test dim(L) + dim(V) == dimL + dimV
+
+                @test get_attribute(d, :is_symmetric) == true
+                @test iszero(d.kappa)
+
+                # Test that the module basis commutes
+                for vi in gens(d, :V), vj in gens(d, :V)
+                    @test iszero(normal_form(comm(vi, vj), d.rels))
+                end
+
+                showOutput = @test_nowarn sprint(show, d)
+                @test occursin("symmetric", lowercase(showOutput))
             end
-
-            showOutput = @test_nowarn sprint(show, deform)
-            @test occursin("smash product", lowercase(showOutput))
-            @test occursin("lie algebra", lowercase(showOutput))
-            # @test_broken occursin(string(dynkin), showOutput)
-            # @test_broken occursin(string(lambda), showOutput)
-            @test occursin("symmetric deformation", lowercase(showOutput))
         end
-
     end
 
-    @testset "smash_product_deform_lie sanitize checks; R = $R" for R in [
-        QQ,
-        # PolynomialRing(QQ, ["x", "y", "z"])[1]
-    ]
-        @testset "check dimensions of kappa" begin
-            sp, _ = smash_product_lie_highest_weight(R, 'B', 2, [1, 0])
+    @testset "SmashProductDeformLie sanitize checks" begin
+        @testset "R = $R" for R in [QQ, PolynomialRing(QQ, ["x", "y", "z"])[1]]
 
-            for eps in [-1, 1]
-                kappa = fill(zero(sp.alg), sp.dimV + eps, sp.dimV)
-                @test_throws ArgumentError("kappa has wrong dimensions.") smash_product_deform_lie(sp, kappa)
+            L = special_orthogonal_liealgebra(R, 4)
+            V = exterior_power(standard_module(L), 2)
+            sp = smash_product(L, V)
 
-                kappa = fill(zero(sp.alg), sp.dimV, sp.dimV + eps)
-                @test_throws ArgumentError("kappa has wrong dimensions.") smash_product_deform_lie(sp, kappa)
+            @testset "check dimensions of kappa" begin
+                for eps in [-1, 1]
+                    kappa = fill(zero(sp.alg), dim(sp.V) + eps, dim(sp.V))
+                    @test_throws ArgumentError("kappa has wrong dimensions.") deform(sp, kappa)
 
-                kappa = fill(zero(sp.alg), sp.dimV + eps, sp.dimV + eps)
-                @test_throws ArgumentError("kappa has wrong dimensions.") smash_product_deform_lie(sp, kappa)
+                    kappa = fill(zero(sp.alg), dim(sp.V), dim(sp.V) + eps)
+                    @test_throws ArgumentError("kappa has wrong dimensions.") deform(sp, kappa)
+
+                    kappa = fill(zero(sp.alg), dim(sp.V) + eps, dim(sp.V) + eps)
+                    @test_throws ArgumentError("kappa has wrong dimensions.") deform(sp, kappa)
+
+                    kappa = fill(zero(sp.alg), dim(sp.V) + eps, dim(sp.V) - eps)
+                    @test_throws ArgumentError("kappa has wrong dimensions.") deform(sp, kappa)
+                end
+            end
+
+            @testset "check kappa is skew symmetric" begin
+                kappa = fill(zero(sp.alg), dim(sp.V), dim(sp.V))
+                kappa[1, 1] = gen(sp, 1, :L)
+                @test_throws ArgumentError("kappa is not skew-symmetric.") deform(sp, kappa)
+
+                kappa = fill(zero(sp.alg), dim(sp.V), dim(sp.V))
+                kappa[1, 2] = gen(sp, 1, :L)
+                @test_throws ArgumentError("kappa is not skew-symmetric.") deform(sp, kappa)
+
+                kappa = fill(zero(sp.alg), dim(sp.V), dim(sp.V))
+                kappa[1, 2] = gen(sp, 1, :L)
+                kappa[2, 1] = -2 * gen(sp, 1, :L)
+                @test_throws ArgumentError("kappa is not skew-symmetric.") deform(sp, kappa)
+            end
+
+            @testset "check entries of kappa contained in Hopf algebra of smash product" begin
+                kappa = fill(zero(sp.alg), dim(sp.V), dim(sp.V))
+                kappa[1, 2] = gen(sp, 1, :V)
+                kappa[2, 1] = -kappa[1, 2]
+                @test_throws ArgumentError("kappa does not only take values in the hopf algebra") deform(sp, kappa)
+
+                kappa = fill(zero(sp.alg), dim(sp.V), dim(sp.V))
+                kappa[1, 2] = gen(sp, 1, :V) * gen(sp, 1, :L)
+                kappa[2, 1] = -kappa[1, 2]
+                @test_throws ArgumentError("kappa does not only take values in the hopf algebra") deform(sp, kappa)
+            end
+
+            @testset "correct input" begin
+                kappa = fill(zero(sp.alg), dim(sp.V), dim(sp.V))
+                kappa[1, 2] = sp.alg(2)
+                kappa[2, 1] = -kappa[1, 2]
+                @test_nowarn deform(sp, kappa)
+
+                kappa = fill(zero(sp.alg), dim(sp.V), dim(sp.V))
+                kappa[1, 2] = gen(sp, 1, :L) * gen(sp, 2, :L) - 3 * gen(sp, 3, :L)
+                kappa[2, 1] = -kappa[1, 2]
+                @test_nowarn deform(sp, kappa)
             end
         end
-
-        @testset "check entries of kappa contained in Hopf algebra of smash product" begin
-            sp, (basisL, basisV) = smash_product_lie_highest_weight(R, 'B', 2, [1, 0])
-
-            kappa = fill(zero(sp.alg), sp.dimV, sp.dimV)
-            kappa[1, 2] = basisV[1]
-            kappa[2, 1] = -kappa[1, 2]
-            @test_throws ArgumentError("kappa does not only take values in the hopf algebra") smash_product_deform_lie(
-                sp,
-                kappa,
-            )
-
-            kappa = fill(zero(sp.alg), sp.dimV, sp.dimV)
-            kappa[1, 2] = basisV[1] * basisL[1]
-            kappa[2, 1] = -kappa[1, 2]
-            @test_throws ArgumentError("kappa does not only take values in the hopf algebra") smash_product_deform_lie(
-                sp,
-                kappa,
-            )
-
-            kappa = fill(zero(sp.alg), sp.dimV, sp.dimV)
-            kappa[1, 2] = sp.alg(2)
-            kappa[2, 1] = -kappa[1, 2]
-            @test_nowarn smash_product_deform_lie(sp, kappa)
-        end
-
-        @testset "check kappa is skew symmetric" begin
-            sp, (basisL, basisV) = smash_product_lie_highest_weight(R, 'B', 2, [1, 0])
-
-            kappa = fill(zero(sp.alg), sp.dimV, sp.dimV)
-            kappa[1, 1] = basisL[1]
-            @test_throws ArgumentError("kappa is not skew-symmetric.") smash_product_deform_lie(sp, kappa)
-
-            kappa = fill(zero(sp.alg), sp.dimV, sp.dimV)
-            kappa[1, 2] = basisL[1]
-            @test_throws ArgumentError("kappa is not skew-symmetric.") smash_product_deform_lie(sp, kappa)
-
-            kappa = fill(zero(sp.alg), sp.dimV, sp.dimV)
-            kappa[1, 2] = basisL[1]
-            kappa[2, 1] = -2 * basisL[1]
-            @test_throws ArgumentError("kappa is not skew-symmetric.") smash_product_deform_lie(sp, kappa)
-        end
-
     end
 
 end

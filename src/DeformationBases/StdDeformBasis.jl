@@ -11,13 +11,13 @@ struct StdDeformBasis{C <: RingElement} <: DeformBasis{C}
     normalize
 
     function StdDeformBasis{C}(sp::SmashProductLie{C}, degs::AbstractVector{Int}) where {C <: RingElement}
-        dimL = sp.dimL
-        dimV = sp.dimV
+        dimL = dim(sp.L)
+        dimV = dim(sp.V)
         R = coefficient_ring(sp.alg)
         iter = (
             begin
                 kappa = fill(sp.alg(0), dimV, dimV)
-                entry = prod(map(k -> sp.basisL[k], ind); init=sp.alg(1))
+                entry = prod(map(k -> gen(sp, k, :L), ind); init=sp.alg(1))
                 kappa[i, j] += entry
                 kappa[j, i] -= entry
                 kappa
