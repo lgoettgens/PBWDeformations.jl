@@ -15,7 +15,7 @@ Pages   = ["Pseudograph.jl"]
 
 ## Pseudograph induced bases
 !!! warning
-    The basis [`PseudographDeformBasis`](@ref) can currently only be used for exterior powers of the standard module of Lie type $\mathfrak{so}_n$.
+    The basis [`PseudographDeformBasis`](@ref) can currently only be used for exterior and symmetric powers of the standard module of special orthogonal Lie algebras.
 ```@docs
 PseudographDeformBasis
 ```

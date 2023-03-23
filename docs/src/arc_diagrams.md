@@ -15,7 +15,7 @@ Pages   = ["ArcDiagram.jl"]
 
 ## Arc diagram induced bases
 !!! warning
-    The basis [`ArcDiagDeformBasis`](@ref) can currently only be used for exterior powers of the standard module of Lie type $\mathfrak{so}_n$.
+    The basis [`ArcDiagDeformBasis`](@ref) can currently only be used for exterior and symmetric powers of the standard module of special orthogonal Lie algebras.
 ```@docs
 ArcDiagDeformBasis
 ```
