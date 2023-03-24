@@ -1,36 +1,38 @@
 """
 The struct representing a deformation of a Lie algebra smash product.
 It consists of the underlying FreeAssAlgebra with relations and some metadata.
-It gets created by calling [`smash_product_deform_lie`](@ref).
+It gets created by calling [`deform`](@ref).
 """
-mutable struct SmashProductDeformLie{C <: RingElement}
-    dimL::Int
-    dimV::Int
-    basisL::Vector{FreeAssAlgElem{C}}
-    basisV::Vector{FreeAssAlgElem{C}}
-    coeff_ring::Ring
-    alg::FreeAssAlgebra{C}
+@attributes mutable struct SmashProductDeformLie{C <: RingElement, C_lie <: RingElement}
+    sp::SmashProductLie{C, C_lie}
     rels::QuadraticRelations{C}
-    symmetric::Bool
     kappa::DeformationMap{C}
+
+    # default constructor for @attributes
+    function SmashProductDeformLie{C, C_lie}(
+        sp::SmashProductLie{C, C_lie},
+        rels::QuadraticRelations{C},
+        kappa::DeformationMap{C},
+    ) where {C <: RingElement, C_lie <: RingElement}
+        new{C, C_lie}(sp, rels, kappa)
+    end
 end
 
 
 """
-    smash_product_deform_lie(sp::SmashProductLie{C}, kappa::DeformationMap{C}) where {C <: RingElement}
+    deform(sp::SmashProductLie{C}, kappa::DeformationMap{C}) where {C <: RingElement}
 
 Constructs the deformation of the smash product `sp` by the deformation map `kappa`.
 
 Returns a [`SmashProductDeformLie`](@ref) struct and a two-part basis.
 """
-function smash_product_deform_lie(sp::SmashProductLie{C}, kappa::DeformationMap{C}) where {C <: RingElement}
-    size(kappa) == (sp.dimV, sp.dimV) || throw(ArgumentError("kappa has wrong dimensions."))
+function deform(sp::SmashProductLie{C, C_lie}, kappa::DeformationMap{C}) where {C <: RingElement, C_lie <: RingElement}
+    dimL = dim(sp.L)
+    dimV = dim(sp.V)
 
-    dimL = sp.dimL
-    dimV = sp.dimV
-    coeff_ring = sp.coeff_ring
-    basisL = sp.basisL
-    basisV = sp.basisV
+    size(kappa) == (dimV, dimV) || throw(ArgumentError("kappa has wrong dimensions."))
+
+    basisV = [gen(sp.alg, dimL + i) for i in 1:dimV]
 
     for i in 1:dimV, j in 1:i
         kappa[i, j] == -kappa[j, i] || throw(ArgumentError("kappa is not skew-symmetric."))
@@ -49,58 +51,61 @@ function smash_product_deform_lie(sp::SmashProductLie{C}, kappa::DeformationMap{
         symmetric &= iszero(kappa[i, j])
     end
 
-    return SmashProductDeformLie{C}(dimL, dimV, basisL, basisV, coeff_ring, sp.alg, rels, symmetric, kappa),
-    (basisL, basisV)
+    d = SmashProductDeformLie{C, C_lie}(sp, rels, kappa)
+
+    set_attribute!(d, :is_symmetric, symmetric)
+
+    return d
 end
 
 """
-    smash_product_symmdeform_lie(sp::SmashProductLie{C}) where {C <: RingElement}
+    symmetric_deformation(sp::SmashProductLie{C}) where {C <: RingElement}
 
 Constructs the symmetric deformation of the smash product `sp`.
 """
-function smash_product_symmdeform_lie(sp::SmashProductLie{C}) where {C <: RingElement}
-    kappa = fill(zero(sp.alg), sp.dimV, sp.dimV)
-    return smash_product_deform_lie(sp, kappa)
-end
-
-ngens(d::SmashProductDeformLie) = d.dimL, d.dimV
-
-function gens(d::SmashProductDeformLie{C}) where {C <: RingElement}
-    return [gen(d.alg, i) for i in 1:d.dimL], [gen(d.alg, i + d.dimL) for i in 1:d.dimV]
+function symmetric_deformation(sp::SmashProductLie{C, C_lie}) where {C <: RingElement, C_lie <: RingElement}
+    kappa = fill(zero(sp.alg), dim(sp.V), dim(sp.V))
+    d = deform(sp, kappa)
+    return d
 end
 
 
-function show(io::IO, deform::SmashProductDeformLie)
-    local max_gens = 4 # largest number of generators to print
-    if deform.symmetric
-        print(io, "Symmetric ")
+ngens(d::SmashProductDeformLie{C}) where {C <: RingElement} = length(gens(d.sp.alg)) # ngens(d.sp.alg), see https://github.com/Nemocas/AbstractAlgebra.jl/pull/1295
+function ngens(d::SmashProductDeformLie{C}, part::Symbol) where {C <: RingElement}
+    part == :L && return dim(d.sp.L)
+    part == :V && return dim(d.sp.V)
+    error("Invalid part.")
+end
+
+gens(d::SmashProductDeformLie{C}) where {C <: RingElement} = gens(d.sp.alg)
+function gens(d::SmashProductDeformLie{C}, part::Symbol) where {C}
+    part == :L && return [gen(d.sp.alg, i) for i in 1:dim(d.sp.L)]
+    part == :V && return [gen(d.sp.alg, i + dim(d.sp.L)) for i in 1:dim(d.sp.V)]
+    error("Invalid part.")
+end
+
+gen(d::SmashProductDeformLie{C}, i::Int) where {C <: RingElement} = gen(d.sp.alg, i)
+function gen(d::SmashProductDeformLie{C}, i::Int, part::Symbol) where {C <: RingElement}
+    1 <= i <= ngens(d, part) || error("Invalid generator index.")
+    part == :L && return gen(d.sp.alg, i)
+    part == :V && return gen(d.sp.alg, i + dim(d.sp.L))
+    error("Invalid part.")
+end
+
+
+function show(io::IO, d::SmashProductDeformLie)
+    if get_attribute(d, :is_symmetric, false)
+        print(io, "Symmetric deformation of ")
+    else
+        print(io, "Deformation of ")
     end
-    print(io, "Deformation of ")
-    print(io, "Lie Algebra Smash Product with basis ")
-    for i in 1:min(deform.dimL - 1, max_gens - 1)
-        print(io, string(deform.alg.S[i]), ", ")
-    end
-    if deform.dimL > max_gens
-        print(io, "..., ")
-    end
-    print(io, string(deform.alg.S[deform.dimL]) * ", ")
-    for i in 1:min(deform.dimV - 1, max_gens - 1)
-        print(io, string(deform.alg.S[deform.dimL+i]), ", ")
-    end
-    if deform.dimV > max_gens
-        print(io, "..., ")
-    end
-    print(io, string(deform.alg.S[deform.dimL+deform.dimV]))
-    print(io, " over ")
-    print(IOContext(io, :compact => true), deform.coeff_ring)
+    print(IOContext(io, :compact => true), d.sp)
 end
 
 function change_base_ring(R::Ring, d::SmashProductDeformLie{C}) where {C <: RingElement}
-    alg, _ = FreeAssociativeAlgebra(R, d.alg.S)
-    basisL = map(b -> change_base_ring(R, b, parent=alg), d.basisL)
-    basisV = map(b -> change_base_ring(R, b, parent=alg), d.basisV)
-    kappa = map(e -> change_base_ring(R, e, parent=alg), d.kappa)
+    sp = change_base_ring(R, d.sp)
     rels = QuadraticRelations{elem_type(R)}(k => change_base_ring(R, a, parent=alg) for (k, a) in d.rels)
+    kappa = map(e -> change_base_ring(R, e, parent=alg), d.kappa)
 
-    return SmashProductDeformLie{elem_type(R)}(d.dimL, d.dimV, basisL, basisV, R, alg, rels, d.symmetric, kappa)
+    return SmashProductDeformLie{elem_type(R)}(sp, rels, kappa)
 end
