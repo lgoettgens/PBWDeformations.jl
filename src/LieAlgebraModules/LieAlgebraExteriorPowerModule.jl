@@ -58,7 +58,7 @@ base_liealgebra(V::LieAlgebraExteriorPowerModule{C}) where {C <: RingElement} = 
 ###############################################################################
 
 function Base.show(io::IO, V::LieAlgebraExteriorPowerModule{C}) where {C <: RingElement}
-    print(io, "$(V.power)-th tensor power of ")
+    print(io, "$(V.power)-th exterior power of ")
     print(IOContext(io, :compact => true), V.inner_mod)
 end
 
