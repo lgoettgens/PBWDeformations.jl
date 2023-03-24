@@ -61,7 +61,7 @@ base_liealgebra(V::LieAlgebraSymmetricPowerModule{C}) where {C <: RingElement} =
 ###############################################################################
 
 function Base.show(io::IO, V::LieAlgebraSymmetricPowerModule{C}) where {C <: RingElement}
-    print(io, "$(V.power)-th tensor power of ")
+    print(io, "$(V.power)-th symmetric power of ")
     print(IOContext(io, :compact => true), V.inner_mod)
 end
 
