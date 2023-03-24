@@ -12,7 +12,7 @@
             end
 
             @testset "deformation is equivariant, d = $deg" for deg in 1:3
-                for diag in PD.pbw_arc_diagrams__so_powers_stdmod(:exterior, 2, deg)
+                for diag in PD.pbw_arc_diagrams__so(V, deg)
                     dm = PD.arcdiag_to_basiselem__so_powers_stdmod(diag, 4, :exterior, 2, deg, sp.alg(0), sp.rels)
                     d = deform(sp, dm)
                     @test all(iszero, pbwdeform_eqs(d, disabled=[:b, :c, :d]))

@@ -15,11 +15,11 @@ struct ArcDiagDeformBasis{C <: RingElement} <: DeformBasis{C}
         degs::AbstractVector{Int};
         no_normalize::Bool=false,
     ) where {C <: RingElement}
-        get_attribute(sp.L, :type) == :special_orthogonal || error("Only works for so_n.")
+        get_attribute(sp.L, :type, nothing) == :special_orthogonal || error("Only works for so_n.")
         sp.V isa Union{LieAlgebraExteriorPowerModule{C}, LieAlgebraSymmetricPowerModule{C}} &&
             sp.V.inner_mod isa LieAlgebraStdModule{C} || error("Only works for exterior powers of the standard module.")
 
-        e = sp.V.power
+        e = arc_diagram_num_points__so(sp.V)
         if sp.V isa LieAlgebraExteriorPowerModule{C}
             typeof_power = :exterior
         elseif sp.V isa LieAlgebraSymmetricPowerModule{C}
@@ -35,7 +35,7 @@ struct ArcDiagDeformBasis{C <: RingElement} <: DeformBasis{C}
         iters = []
         debug_counter = 0
         for d in degs
-            diag_iter = pbw_arc_diagrams__so_powers_stdmod(typeof_power, e, d)
+            diag_iter = pbw_arc_diagrams__so(sp.V, d)
             len = length(diag_iter)
             iter = (
                 begin
@@ -85,15 +85,59 @@ end
 Base.length(basis::ArcDiagDeformBasis) = basis.len
 
 
-function pbw_arc_diagrams__so_powers_stdmod(typeof_power::Symbol, e::Int, d::Int)
-    if typeof_power == :exterior
-        indep_sets = [1:e, e+1:2*e, [[2 * e + 2 * i - 1, 2 * e + 2 * i] for i in 1:d]...]
-        return all_arc_diagrams(2 * e, 2 * d; indep_sets)
-    elseif typeof_power == :symmetric
-        indep_sets = Vector{Vector{Int}}([[[2 * e + 2 * i - 1, 2 * e + 2 * i] for i in 1:d]...])
-        return all_arc_diagrams(2 * e, 2 * d; indep_sets)
+function pbw_arc_diagrams__so(V::LieAlgebraModule{C}, d::Int) where {C <: RingElement}
+    e = arc_diagram_num_points__so(V)
+    upper_indep_sets = Vector{Int}[is .+ a * e for a in [0, 1] for is in arc_diagram_indep_sets__so(V)]
+    lower_indep_sets = Vector{Int}[[[2i - 1, 2i] for i in 1:d]...]
+    indep_sets = Vector{Int}[upper_indep_sets..., [is .+ 2e for is in lower_indep_sets]...]
+    return all_arc_diagrams(2e, 2d; indep_sets)
+end
+
+function arc_diagram_num_points__so(_::LieAlgebraStdModule{C}) where {C <: RingElement}
+    return 1
+end
+
+function arc_diagram_num_points__so(V::LieAlgebraExteriorPowerModule{C}) where {C <: RingElement}
+    return arc_diagram_num_points__so(V.inner_mod) * V.power
+end
+
+function arc_diagram_num_points__so(V::LieAlgebraSymmetricPowerModule{C}) where {C <: RingElement}
+    return arc_diagram_num_points__so(V.inner_mod) * V.power
+end
+
+function arc_diagram_num_points__so(V::LieAlgebraTensorPowerModule{C}) where {C <: RingElement}
+    return arc_diagram_num_points__so(V.inner_mod) * V.power
+end
+
+
+function arc_diagram_indep_sets__so(_::LieAlgebraStdModule{C}) where {C <: RingElement}
+    return Vector{Int}[]
+end
+
+function arc_diagram_indep_sets__so(V::LieAlgebraExteriorPowerModule{C}) where {C <: RingElement}
+    if V.inner_mod isa LieAlgebraStdModule{C}
+        return [1:V.power]
     else
-        error("Unknown type of power.")
+        is = arc_diagram_indep_sets__so(V.inner_mod)
+        return [map(i -> i + k * arc_diagram_num_points__so(V.inner_mod), is) for k in 0:V.power-1, is in is]
+    end
+end
+
+function arc_diagram_indep_sets__so(V::LieAlgebraSymmetricPowerModule{C}) where {C <: RingElement}
+    if V.inner_mod isa LieAlgebraStdModule{C}
+        return Vector{Int}[]
+    else
+        is = arc_diagram_indep_sets__so(V.inner_mod)
+        return [map(i -> i + k * arc_diagram_num_points__so(V.inner_mod), is) for k in 0:V.power-1, is in is]
+    end
+end
+
+function arc_diagram_indep_sets__so(V::LieAlgebraTensorPowerModule{C}) where {C <: RingElement}
+    if V.inner_mod isa LieAlgebraStdModule{C}
+        return Vector{Int}[]
+    else
+        is = arc_diagram_indep_sets__so(V.inner_mod)
+        return [map(i -> i + k * arc_diagram_num_points__so(V.inner_mod), is) for k in 0:V.power-1, is in is]
     end
 end
 
