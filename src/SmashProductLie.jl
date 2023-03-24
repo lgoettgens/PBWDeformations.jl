@@ -22,7 +22,11 @@ It gets created by calling [`smash_product`](@ref).
     end
 end
 
+"""
+    smash_product(L::LieAlgebra{C}, V::LieAlgebraModule{C}) where {C <: RingElement}
 
+Construct the smash product ``TV \\rtimes U(L)``.
+"""
 function smash_product(L::LieAlgebra{C}, V::LieAlgebraModule{C}) where {C <: RingElement}
     L == base_liealgebra(V) || error("Incompatible module.")
     R = base_ring(L)::parent_type(C)
