@@ -15,7 +15,19 @@ struct ArcDiagDeformBasis{C <: RingElement} <: DeformBasis{C}
         degs::AbstractVector{Int};
         no_normalize::Bool=false,
     ) where {C <: RingElement}
-        n, e, typeof_power = extract_sp_info__so_powers_stdmod(sp)
+        get_attribute(sp.L, :type) == :special_orthogonal || error("Only works for so_n.")
+        sp.V isa Union{LieAlgebraExteriorPowerModule{C}, LieAlgebraSymmetricPowerModule{C}} &&
+            sp.V.inner_mod isa LieAlgebraStdModule{C} || error("Only works for exterior powers of the standard module.")
+
+        e = sp.V.power
+        if sp.V isa LieAlgebraExteriorPowerModule{C}
+            typeof_power = :exterior
+        elseif sp.V isa LieAlgebraSymmetricPowerModule{C}
+            typeof_power = :symmetric
+        else
+            error("Unreachable.")
+        end
+
         extra_data = Dict{DeformationMap{C}, Set{ArcDiagram}}()
         normalize = no_normalize ? identity : normalize_default
 
@@ -28,8 +40,15 @@ struct ArcDiagDeformBasis{C <: RingElement} <: DeformBasis{C}
             iter = (
                 begin
                     @debug "Basis generation deg $(d), $(debug_counter = (debug_counter % len) + 1)/$(len), $(floor(Int, 100*debug_counter / len))%"
-                    basis_elem =
-                        arcdiag_to_basiselem__so_powers_stdmod(diag, n, typeof_power, e, d, sp.alg(0), sp.rels)
+                    basis_elem = arcdiag_to_basiselem__so_powers_stdmod(
+                        diag,
+                        sp.L.n,
+                        typeof_power,
+                        e,
+                        d,
+                        sp.alg(0),
+                        sp.rels,
+                    )
                     if !no_normalize
                         basis_elem = normalize(basis_elem)
                     end
@@ -65,29 +84,6 @@ end
 
 Base.length(basis::ArcDiagDeformBasis) = basis.len
 
-
-function extract_sp_info__so_powers_stdmod(sp::SmashProductLie{C}) where {C <: RingElement}
-    has_attribute(sp, :base_liealgebra) || error("Metadata not found, but needed.")
-    has_attribute(sp, :base_liealgebra_module) || error("Metadata not found, but needed.")
-
-    L = get_attribute(sp, :base_liealgebra)
-    V = get_attribute(sp, :base_liealgebra_module)
-
-    get_attribute(L, :type) == :special_orthogonal || error("Only implemented for so_n.")
-    n = L.n
-
-    if V isa LieAlgebraExteriorPowerModule{C} && V.inner_mod isa LieAlgebraStdModule{C}
-        e = V.power
-        typeof_power = :exterior
-    elseif V isa LieAlgebraSymmetricPowerModule{C} && V.inner_mod isa LieAlgebraStdModule{C}
-        e = V.power
-        typeof_power = :symmetric
-    else
-        error("Module needs to be an exterior or symmetric power of the standard module.")
-    end
-
-    return n, e, typeof_power
-end
 
 function pbw_arc_diagrams__so_powers_stdmod(typeof_power::Symbol, e::Int, d::Int)
     if typeof_power == :exterior
