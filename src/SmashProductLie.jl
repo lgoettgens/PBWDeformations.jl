@@ -55,9 +55,6 @@ function smash_product(L::LieAlgebra{C}, V::LieAlgebraModule{C}) where {C <: Rin
 
     sp = SmashProductLie{C, C}(R, L, V, f_alg, rels)
 
-    set_attribute!(sp, :base_liealgebra, L)
-    set_attribute!(sp, :base_liealgebra_module, V)
-
     return sp
 end
 
