@@ -35,8 +35,7 @@ struct PseudographDeformBasis{C <: RingElement} <: DeformBasis{C}
                 begin
                     @debug "Basis generation deg $(d), $(debug_counter = (debug_counter % len) + 1)/$(len), $(floor(Int, 100*debug_counter / len))%"
                     diag = to_arcdiag(pg, part)
-                    basis_elem =
-                        arcdiag_to_basiselem__so_powers_stdmod(diag, sp.L.n, :exterior, e, d, sp.alg(0), sp.rels)
+                    basis_elem = arcdiag_to_deformationmap__so(diag, sp)
                     if !no_normalize
                         basis_elem = normalize(basis_elem)
                     end

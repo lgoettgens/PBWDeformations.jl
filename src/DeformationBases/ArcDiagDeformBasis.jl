@@ -19,15 +19,6 @@ struct ArcDiagDeformBasis{C <: RingElement} <: DeformBasis{C}
         sp.V isa Union{LieAlgebraExteriorPowerModule{C}, LieAlgebraSymmetricPowerModule{C}} &&
             sp.V.inner_mod isa LieAlgebraStdModule{C} || error("Only works for exterior powers of the standard module.")
 
-        e = arc_diagram_num_points__so(sp.V)
-        if sp.V isa LieAlgebraExteriorPowerModule{C}
-            typeof_power = :exterior
-        elseif sp.V isa LieAlgebraSymmetricPowerModule{C}
-            typeof_power = :symmetric
-        else
-            error("Unreachable.")
-        end
-
         extra_data = Dict{DeformationMap{C}, Set{ArcDiagram}}()
         normalize = no_normalize ? identity : normalize_default
 
@@ -40,15 +31,7 @@ struct ArcDiagDeformBasis{C <: RingElement} <: DeformBasis{C}
             iter = (
                 begin
                     @debug "Basis generation deg $(d), $(debug_counter = (debug_counter % len) + 1)/$(len), $(floor(Int, 100*debug_counter / len))%"
-                    basis_elem = arcdiag_to_basiselem__so_powers_stdmod(
-                        diag,
-                        sp.L.n,
-                        typeof_power,
-                        e,
-                        d,
-                        sp.alg(0),
-                        sp.rels,
-                    )
+                    basis_elem = arcdiag_to_deformationmap__so(diag, sp)
                     if !no_normalize
                         basis_elem = normalize(basis_elem)
                     end
@@ -142,54 +125,113 @@ function arc_diagram_indep_sets__so(V::LieAlgebraTensorPowerModule{C}) where {C 
 end
 
 
-function arcdiag_to_basiselem__so_powers_stdmod(
-    diag::ArcDiagram,
-    dim_stdmod_V::Int,
-    typeof_power::Symbol,
-    e::Int,
-    d::Int,
-    zero::FreeAssAlgElem{C},
-    rels::QuadraticRelations{C},
-) where {C <: RingElement}
+function arc_diagram_label_iterator__so(_::LieAlgebraStdModule, base_labels::AbstractVector{Int})
+    return [[l] for l in base_labels]
+end
+
+function arc_diagram_label_iterator__so(V::LieAlgebraExteriorPowerModule, base_labels::AbstractVector{Int})
+    return Combinatorics.combinations(collect(arc_diagram_label_iterator__so(V.inner_mod, base_labels)), V.power) .|>
+           Iterators.flatten .|>
+           collect
+
+end
+
+function arc_diagram_label_iterator__so(V::LieAlgebraSymmetricPowerModule, base_labels::AbstractVector{Int})
+    return Combinatorics.with_replacement_combinations(
+               collect(arc_diagram_label_iterator__so(V.inner_mod, base_labels)),
+               V.power,
+           ) .|>
+           Iterators.flatten .|>
+           collect
+end
+
+function arc_diagram_label_iterator__so(V::LieAlgebraTensorPowerModule, base_labels::AbstractVector{Int})
+    return ProductIterator(arc_diagram_label_iterator__so(V.inner_mod, base_labels), V.power) .|>
+           reverse .|>
+           Iterators.flatten .|>
+           collect
+end
+
+
+function arc_diagram_label_permutations__so(_::LieAlgebraStdModule, label::AbstractVector{Int})
+    length(label) == 1 || error("Number of labels mistmatch.")
+    return [(label, 1)]
+end
+
+function arc_diagram_label_permutations__so(V::LieAlgebraExteriorPowerModule, label::AbstractVector)
+    m = arc_diagram_num_points__so(V.inner_mod)
+    length(label) == m * V.power || error("Number of labels mistmatch.")
+    return [
+        begin
+            inner_label = flatten(first.(inner_iter))
+            inner_sign = prod(last.(inner_iter))
+            (inner_label, inner_sign * levicivita(outer_perm))
+        end for outer_perm in Combinatorics.permutations(1:V.power) for inner_iter in ProductIterator([
+            arc_diagram_label_permutations__so(V.inner_mod, label[(outer_perm[i]-1)*m+1:outer_perm[i]*m]) for
+            i in 1:V.power
+        ])
+    ]
+end
+
+function arc_diagram_label_permutations__so(V::LieAlgebraSymmetricPowerModule, label::AbstractVector)
+    m = arc_diagram_num_points__so(V.inner_mod)
+    length(label) == m * V.power || error("Number of labels mistmatch.")
+    return [
+        begin
+            inner_label = flatten(first.(inner_iter))
+            inner_sign = prod(last.(inner_iter))
+            (inner_label, inner_sign)
+        end for outer_perm in Combinatorics.permutations(1:V.power) for inner_iter in ProductIterator([
+            arc_diagram_label_permutations__so(V.inner_mod, label[(outer_perm[i]-1)*m+1:outer_perm[i]*m]) for
+            i in 1:V.power
+        ])
+    ]
+end
+
+function arc_diagram_label_permutations__so(V::LieAlgebraTensorPowerModule, label::AbstractVector)
+    m = arc_diagram_num_points__so(V.inner_mod)
+    length(label) == m * V.power || error("Number of labels mistmatch.")
+    return [
+        begin
+            inner_label = flatten(first.(inner_iter))
+            inner_sign = prod(last.(inner_iter))
+            (inner_label, inner_sign)
+        end for inner_iter in
+        ProductIterator([arc_diagram_label_permutations__so(V.inner_mod, label[(i-1)*m+1:i*m]) for i in 1:V.power])
+    ]
+end
+
+
+function arcdiag_to_deformationmap__so(diag::ArcDiagram, sp::SmashProductLie{C}) where {C <: RingElement}
+    d = div(diag.nLower, 2)
+    dim_stdmod_V = sp.L.n
+
+    e = arc_diagram_num_points__so(sp.V)
+
     iso_wedge2V_g = Dict{Vector{Int}, Int}()
-    for (i, bs) in enumerate(Combinatorics.combinations(1:dim_stdmod_V, 2))
+    for (i, bs) in enumerate(Combinatorics.combinations(1:sp.L.n, 2))
         iso_wedge2V_g[bs] = i
     end
 
-    if typeof_power == :exterior
-        upper_label_iterator = Combinatorics.combinations(1:dim_stdmod_V, e)
-    elseif typeof_power == :symmetric
-        upper_label_iterator = Combinatorics.with_replacement_combinations(1:dim_stdmod_V, e)
-    else
-        error("Unknown type of power.")
-    end
     index = Dict{Vector{Int}, Int}()
-    for (i, is) in enumerate(upper_label_iterator)
+    for (i, is) in enumerate(arc_diagram_label_iterator__so(sp.V, 1:dim_stdmod_V))
         index[is] = i
     end
 
-    if typeof_power == :exterior
-        kappadim = binomial(dim_stdmod_V, e)
-    elseif typeof_power == :symmetric
-        kappadim = binomial(dim_stdmod_V + e - 1, e)
-    else
-        error("Unknown type of power.")
-    end
-    kappa = fill(zero, kappadim, kappadim)
-    for is in upper_label_iterator, js in upper_label_iterator
+    kappa = fill(zero(sp.alg), dim(sp.V), dim(sp.V))
+    for is in arc_diagram_label_iterator__so(sp.V, 1:dim_stdmod_V),
+        js in arc_diagram_label_iterator__so(sp.V, 1:dim_stdmod_V)
+
         i = index[is]
         j = index[js]
         if i >= j
             continue
         end
-        for is in Combinatorics.permutations(is), js in Combinatorics.permutations(js), swap in [false, true]
-            if typeof_power == :exterior
-                sgn_upper_labels = levicivita(sortperm(is)) * levicivita(sortperm(js))
-            elseif typeof_power == :symmetric
-                sgn_upper_labels = 1
-            else
-                error("Unknown type of power.")
-            end
+        for (is, sgn_left) in arc_diagram_label_permutations__so(sp.V, is),
+            (js, sgn_right) in arc_diagram_label_permutations__so(sp.V, js),
+            swap in [false, true]
+
+            sgn_upper_labels = sgn_left * sgn_right
             if swap
                 is, js = js, is
                 sgn_upper_labels *= -1
@@ -218,7 +260,7 @@ function arcdiag_to_basiselem__so_powers_stdmod(
                 continue
             end
             unique!(sort!(frees))
-            entry = zero
+            entry = zero(sp.alg)
 
             # iterate over lower point labelings
             nextindex = 1
@@ -240,11 +282,11 @@ function arcdiag_to_basiselem__so_powers_stdmod(
                         end
                     end
                     if !zeroelem
-                        symm_basiselem = parent(zero)(
+                        symm_basiselem = sp.alg(
                             fill(C(1 // factorial(length(basiselem))), factorial(length(basiselem))),
                             [ind for ind in Combinatorics.permutations(basiselem)],
                         )
-                        entry += sign_lower_labels * normal_form(symm_basiselem, rels)
+                        entry += sign_lower_labels * normal_form(symm_basiselem, sp.rels)
                     end
                     # end inner
 
