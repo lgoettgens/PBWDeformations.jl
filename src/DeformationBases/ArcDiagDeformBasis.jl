@@ -114,16 +114,13 @@ function arc_diagram_label_iterator__so(V::LieAlgebraModule, base_labels::Abstra
     elseif is_exterior_power(V)
         inner_mod = get_attribute(V, :inner_module)
         power = get_attribute(V, :power)
-        return Combinatorics.combinations(collect(arc_diagram_label_iterator__so(inner_mod, base_labels)), power) .|>
+        return combinations(collect(arc_diagram_label_iterator__so(inner_mod, base_labels)), power) .|>
                Iterators.flatten .|>
                collect
     elseif is_symmetric_power(V)
         inner_mod = get_attribute(V, :inner_module)
         power = get_attribute(V, :power)
-        return Combinatorics.with_replacement_combinations(
-                   collect(arc_diagram_label_iterator__so(inner_mod, base_labels)),
-                   power,
-               ) .|>
+        return multicombinations(collect(arc_diagram_label_iterator__so(inner_mod, base_labels)), power) .|>
                Iterators.flatten .|>
                collect
     elseif is_tensor_power(V)
@@ -152,8 +149,8 @@ function arc_diagram_label_permutations__so(V::LieAlgebraModule, label::Abstract
                 begin
                     inner_label = flatten(first.(inner_iter))
                     inner_sign = prod(last.(inner_iter))
-                    (inner_label, inner_sign * levicivita(outer_perm))
-                end for outer_perm in Combinatorics.permutations(1:power) for inner_iter in ProductIterator([
+                    (inner_label, inner_sign * outer_sign)
+                end for (outer_perm, outer_sign) in permutations_with_sign(1:power) for inner_iter in ProductIterator([
                     arc_diagram_label_permutations__so(inner_mod, label[(outer_perm[i]-1)*m+1:outer_perm[i]*m]) for
                     i in 1:power
                 ])
@@ -164,7 +161,7 @@ function arc_diagram_label_permutations__so(V::LieAlgebraModule, label::Abstract
                     inner_label = flatten(first.(inner_iter))
                     inner_sign = prod(last.(inner_iter))
                     (inner_label, inner_sign)
-                end for outer_perm in Combinatorics.permutations(1:power) for inner_iter in ProductIterator([
+                end for outer_perm in permutations(1:power) for inner_iter in ProductIterator([
                     arc_diagram_label_permutations__so(inner_mod, label[(outer_perm[i]-1)*m+1:outer_perm[i]*m]) for
                     i in 1:power
                 ])
@@ -192,7 +189,7 @@ function arcdiag_to_deformationmap__so(diag::ArcDiagram, sp::SmashProductLie{C})
     e = arc_diagram_num_points__so(sp.V)
 
     iso_wedge2V_g = Dict{Vector{Int}, Int}()
-    for (i, bs) in enumerate(Combinatorics.combinations(1:sp.L.n, 2))
+    for (i, bs) in enumerate(combinations(sp.L.n, 2))
         iso_wedge2V_g[bs] = i
     end
 
@@ -267,7 +264,7 @@ function arcdiag_to_deformationmap__so(diag::ArcDiagram, sp::SmashProductLie{C})
                     if !zeroelem
                         symm_basiselem = sp.alg(
                             fill(C(1 // factorial(length(basiselem))), factorial(length(basiselem))),
-                            [ind for ind in Combinatorics.permutations(basiselem)],
+                            [ind for ind in permutations(basiselem)],
                         )
                         entry += sign_lower_labels * normal_form(symm_basiselem, sp.rels)
                     end

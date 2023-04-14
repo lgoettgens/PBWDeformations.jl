@@ -52,9 +52,9 @@ function all_pseudographs(reg::Int, sumtotal::Int; upto_iso::Bool=false)
             for sumloop2 in 0:sumtotal-sume
                 sumloop1 = sumtotal - sume - sumloop2
 
-                for edges in (ne > 0 ? Combinatorics.partitions(sume + ne, ne) : [Int[]])
-                    for loops1 in (nloops > 0 ? Combinatorics.partitions(sumloop1 + nloops, nloops) : [Int[]])
-                        for loops2 in (nloops > 0 ? Combinatorics.partitions(sumloop2 + nloops, nloops) : [Int[]])
+                for edges in partitions(sume + ne, ne)
+                    for loops1 in partitions(sumloop1 + nloops, nloops)
+                        for loops2 in partitions(sumloop2 + nloops, nloops)
                             if upto_iso && !(loops1 >= loops2)
                                 continue
                             end

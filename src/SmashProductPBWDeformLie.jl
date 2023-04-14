@@ -24,7 +24,7 @@ function pbwdeform_eqs(d::SmashProductDeformLie{C}; disabled::Vector{Symbol}=Sym
             comm(nfcomm(h, v(i)), v(j)) # κ([h⋅v_i,v_j])
             + comm(v(i), nfcomm(h, v(j))) # κ([v_i,h⋅v_j])
             - comm(h, nfcomm(v(i), v(j))) # h⋅κ([v_i,v_j])
-            for (h, (i, j)) in Iterators.product([x(i) for i in 1:dimL], Combinatorics.Combinations(dimV, 2))
+            for (h, (i, j)) in Iterators.product([x(i) for i in 1:dimL], combinations(dimV, 2))
         )
 
     ## (b) trivial
@@ -39,7 +39,7 @@ function pbwdeform_eqs(d::SmashProductDeformLie{C}; disabled::Vector{Symbol}=Sym
             v(j) * nfcomm(v(k), v(i)) + nfcomm(v(k), v(i)) * v(j) - v(k) * nfcomm(v(i), v(j)) -
             nfcomm(v(k), v(j)) * v(i) + v(k) * nfcomm(v(j), v(i)) - nfcomm(v(j), v(i)) * v(k) +
             v(j) * nfcomm(v(i), v(k)) - nfcomm(v(i), v(k)) * v(j) + v(i) * nfcomm(v(k), v(j)) for
-            (i, j, k) in Combinatorics.Combinations(dimV, 3)
+            (i, j, k) in combinations(dimV, 3)
         )
 
     ## (d) trivial
