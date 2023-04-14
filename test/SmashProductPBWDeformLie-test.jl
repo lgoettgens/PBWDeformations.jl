@@ -26,7 +26,7 @@
 
     @testset "all_pbwdeformations construction stuff" begin
         @testset "coefficient_comparison tests" begin
-            A, (x, y, z) = FreeAssociativeAlgebra(QQ, ["x", "y", "z"])
+            A, (x, y, z) = free_associative_algebra(QQ, ["x", "y", "z"])
             eq = QQ(2 // 3) * x + 88 * y * z - 12 * x * z + 3 * y + 0 * z^4 - 2 * y + 12 * x * z
             @test issetequal(PD.coefficient_comparison(eq), elem_type(QQ)[2//3, 88, 1])
         end

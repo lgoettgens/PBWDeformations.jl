@@ -82,7 +82,7 @@ end
     return collect(coefficients(eq))
 end
 
-@inline function linpoly_to_spvector(a::fmpq_mpoly, var_lookup::Dict{fmpq_mpoly, Int}, nvars::Int)
+@inline function linpoly_to_spvector(a::QQMPolyRingElem, var_lookup::Dict{QQMPolyRingElem, Int}, nvars::Int)
     @assert total_degree(a) <= 1
 
     return sparsevec(Dict(var_lookup[monomial(a, i)] => coeff(a, i) for i in 1:length(a)), nvars)
@@ -160,7 +160,7 @@ function all_pbwdeformations(
     nvars = length(deform_basis)
 
     @info "Constructing MPolyRing..."
-    R, vars = PolynomialRing(sp.coeff_ring, max(nvars, 1))
+    R, vars = polynomial_ring(sp.coeff_ring, max(nvars, 1))
     var_lookup = Dict(vars[i] => i for i in 1:nvars)
 
     @info "Changing SmashProductLie coeffcient type..."
@@ -190,7 +190,7 @@ function all_pbwdeformations(
     )
 
     @info "Computing row-echelon form..."
-    lgs = Vector{Union{Nothing, SparseVector{fmpq, Int}}}(nothing, nvars)
+    lgs = Vector{Union{Nothing, SparseVector{QQFieldElem, Int}}}(nothing, nvars)
     for v in iter
         reduce_and_store!(lgs, v)
     end

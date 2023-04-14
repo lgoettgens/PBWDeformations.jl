@@ -34,7 +34,7 @@ function smash_product(L::LieAlgebra{C}, V::LieAlgebraModule{C}) where {C <: Rin
     dimL = dim(L)
     dimV = dim(V)
 
-    f_alg, _ = FreeAssociativeAlgebra(R, [symbols(L); symbols(V)])
+    f_alg, _ = free_associative_algebra(R, [symbols(L); symbols(V)])
     f_basisL = [gen(f_alg, i) for i in 1:dimL]
     f_basisV = [gen(f_alg, dimL + i) for i in 1:dimV]
 
@@ -95,7 +95,7 @@ end
 
 
 function change_base_ring(R::Ring, sp::SmashProductLie{C, C_lie}) where {C <: RingElement, C_lie <: RingElement}
-    alg, _ = FreeAssociativeAlgebra(R, symbols(sp.alg))
+    alg, _ = free_associative_algebra(R, symbols(sp.alg))
     rels = QuadraticRelations{elem_type(R)}(k => change_base_ring(R, a, parent=alg) for (k, a) in sp.rels)
 
     return SmashProductLie{elem_type(R), C_lie}(R, sp.L, sp.V, alg, rels)
