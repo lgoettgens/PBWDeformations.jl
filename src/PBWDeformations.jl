@@ -54,7 +54,6 @@ import Oscar.LieAlgebras:
     LinearLieAlgebraElem,
     abstract_module,
     base_lie_algebra,
-    bracket,
     combinations,
     exterior_power,
     general_linear_lie_algebra,
@@ -94,7 +93,6 @@ export all_arc_diagrams
 export all_pbwdeformations
 export all_pseudographs
 export base_lie_algebra
-export bracket
 export deform
 export exterior_power
 export flatten
@@ -116,9 +114,6 @@ export symmetric_deformation
 export symmetric_power
 export tensor_power
 export to_arcdiag
-
-
-GAP = Oscar.GAP
 
 
 include("Util.jl")

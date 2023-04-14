@@ -40,14 +40,13 @@ function smash_product(L::LieAlgebra{C}, V::LieAlgebraModule{C}) where {C <: Rin
 
     rels = QuadraticRelations{C}()
 
-    for (i, xi) in enumerate(gens(L)), (j, xj) in enumerate(gens(L))
-        commutator =
-            sum(c * f_basisL[k] for (k, c) in enumerate(_matrix(bracket(xi, xj))) if !iszero(c); init=zero(f_alg))
+    for (i, xi) in enumerate(basis(L)), (j, xj) in enumerate(basis(L))
+        commutator = sum(c * f_basisL[k] for (k, c) in enumerate(_matrix(xi * xj)) if !iszero(c); init=zero(f_alg))
         rels[(i, j)] = f_basisL[j] * f_basisL[i] + commutator
 
     end
 
-    for (i, xi) in enumerate(gens(L)), (j, vj) in enumerate(gens(V))
+    for (i, xi) in enumerate(basis(L)), (j, vj) in enumerate(basis(V))
         commutator = sum(c * f_basisV[k] for (k, c) in enumerate(_matrix(xi * vj)) if !iszero(c); init=zero(f_alg))
         rels[(i, dimL + j)] = f_basisV[j] * f_basisL[i] + commutator
         rels[(dimL + j, i)] = f_basisL[i] * f_basisV[j] - commutator
