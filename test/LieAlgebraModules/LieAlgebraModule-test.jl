@@ -1,5 +1,5 @@
 
-function liealgebra_module_conformance_test(
+function lie_algebra_module_conformance_test(
     L::LieAlgebra{C},
     V::LieAlgebraModule{C},
     parentT::DataType,
@@ -24,8 +24,6 @@ function liealgebra_module_conformance_test(
         @test dim(V) == ngens(V)
         @test length(gens(V)) == ngens(V)
         @test all(gen(V, i) == gens(V)[i] for i in 1:ngens(V))
-
-        @test isempty(rels(V))
     end
 
     @testset "parent object call overload" begin

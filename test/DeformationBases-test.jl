@@ -1,7 +1,7 @@
 @testset ExtendedTestSet "All DeformationBases/*.jl tests" begin
     @testset "All DeformationBases/ArcDiagDeformBasis.jl tests" begin
         @testset "arcdiag_to_deformationmap__so(:exterior)" begin
-            L = special_orthogonal_liealgebra(QQ, 4)
+            L = special_orthogonal_lie_algebra(QQ, 4)
             V = exterior_power(standard_module(L), 2)
             sp = smash_product(L, V)
 
@@ -22,7 +22,7 @@
 
         @testset "correctness regression" begin
             @testset "SO_4, ⋀²V" begin
-                L = special_orthogonal_liealgebra(QQ, 4)
+                L = special_orthogonal_lie_algebra(QQ, 4)
                 V = exterior_power(standard_module(L), 2)
                 sp = smash_product(L, V)
 
@@ -34,7 +34,7 @@
                 b = ArcDiagDeformBasis{fmpq}(sp, 0:2)
                 @test length(collect(b)) == 1
                 @test repr("text/plain", collect(b)) ==
-                      "1-element Vector{Any}:\n AbstractAlgebra.Generic.FreeAssAlgElem{fmpq}[0 x_2_3 x_2_4 -x_1_3 -x_1_4 0; -x_2_3 0 x_3_4 x_1_2 0 -x_1_4; -x_2_4 -x_3_4 0 0 x_1_2 x_1_3; x_1_3 -x_1_2 0 0 x_3_4 -x_2_4; x_1_4 0 -x_1_2 -x_3_4 0 x_2_3; 0 x_1_4 -x_1_3 x_2_4 -x_2_3 0]"
+                      "1-element Vector{Any}:\n AbstractAlgebra.Generic.FreeAssAlgElem{QQFieldElem}[0 x_2_3 x_2_4 -x_1_3 -x_1_4 0; -x_2_3 0 x_3_4 x_1_2 0 -x_1_4; -x_2_4 -x_3_4 0 0 x_1_2 x_1_3; x_1_3 -x_1_2 0 0 x_3_4 -x_2_4; x_1_4 0 -x_1_2 -x_3_4 0 x_2_3; 0 x_1_4 -x_1_3 x_2_4 -x_2_3 0]"
                 @test all_pbwdeformations(sp, b; special_return=SparseMatrixCSC)[1] ==
                       sparse(Int64[], Int64[], fmpq[], 1, 1)
 
@@ -45,7 +45,7 @@
             end
 
             @testset "SO_5, ⋀²V" begin
-                L = special_orthogonal_liealgebra(QQ, 5)
+                L = special_orthogonal_lie_algebra(QQ, 5)
                 V = exterior_power(standard_module(L), 2)
                 sp = smash_product(L, V)
 
@@ -57,13 +57,13 @@
                 b = ArcDiagDeformBasis{fmpq}(sp, 0:2)
                 @test length(collect(b)) == 1
                 @test repr("text/plain", collect(b)) ==
-                      "1-element Vector{Any}:\n AbstractAlgebra.Generic.FreeAssAlgElem{fmpq}[0 x_2_3 x_2_4 x_2_5 -x_1_3 -x_1_4 -x_1_5 0 0 0; -x_2_3 0 x_3_4 x_3_5 x_1_2 0 0 -x_1_4 -x_1_5 0; -x_2_4 -x_3_4 0 x_4_5 0 x_1_2 0 x_1_3 0 -x_1_5; -x_2_5 -x_3_5 -x_4_5 0 0 0 x_1_2 0 x_1_3 x_1_4; x_1_3 -x_1_2 0 0 0 x_3_4 x_3_5 -x_2_4 -x_2_5 0; x_1_4 0 -x_1_2 0 -x_3_4 0 x_4_5 x_2_3 0 -x_2_5; x_1_5 0 0 -x_1_2 -x_3_5 -x_4_5 0 0 x_2_3 x_2_4; 0 x_1_4 -x_1_3 0 x_2_4 -x_2_3 0 0 x_4_5 -x_3_5; 0 x_1_5 0 -x_1_3 x_2_5 0 -x_2_3 -x_4_5 0 x_3_4; 0 0 x_1_5 -x_1_4 0 x_2_5 -x_2_4 x_3_5 -x_3_4 0]"
+                      "1-element Vector{Any}:\n AbstractAlgebra.Generic.FreeAssAlgElem{QQFieldElem}[0 x_2_3 x_2_4 x_2_5 -x_1_3 -x_1_4 -x_1_5 0 0 0; -x_2_3 0 x_3_4 x_3_5 x_1_2 0 0 -x_1_4 -x_1_5 0; -x_2_4 -x_3_4 0 x_4_5 0 x_1_2 0 x_1_3 0 -x_1_5; -x_2_5 -x_3_5 -x_4_5 0 0 0 x_1_2 0 x_1_3 x_1_4; x_1_3 -x_1_2 0 0 0 x_3_4 x_3_5 -x_2_4 -x_2_5 0; x_1_4 0 -x_1_2 0 -x_3_4 0 x_4_5 x_2_3 0 -x_2_5; x_1_5 0 0 -x_1_2 -x_3_5 -x_4_5 0 0 x_2_3 x_2_4; 0 x_1_4 -x_1_3 0 x_2_4 -x_2_3 0 0 x_4_5 -x_3_5; 0 x_1_5 0 -x_1_3 x_2_5 0 -x_2_3 -x_4_5 0 x_3_4; 0 0 x_1_5 -x_1_4 0 x_2_5 -x_2_4 x_3_5 -x_3_4 0]"
                 @test all_pbwdeformations(sp, b; special_return=SparseMatrixCSC)[1] ==
                       sparse(Int64[], Int64[], fmpq[], 1, 1)
             end
 
             @testset "SO_4, S²V" begin
-                L = special_orthogonal_liealgebra(QQ, 4)
+                L = special_orthogonal_lie_algebra(QQ, 4)
                 V = symmetric_power(standard_module(L), 2)
                 sp = smash_product(L, V)
 
@@ -79,7 +79,7 @@
             end
 
             @testset "SO_5, S²V" begin
-                L = special_orthogonal_liealgebra(QQ, 5)
+                L = special_orthogonal_lie_algebra(QQ, 5)
                 V = symmetric_power(standard_module(L), 2)
                 sp = smash_product(L, V)
 
@@ -100,7 +100,7 @@
     @testset "All DeformationBases/PseudographDeformBasis.jl tests" begin
         @testset "correctness regression" begin
             @testset "SO_4, ⋀²V" begin
-                L = special_orthogonal_liealgebra(QQ, 4)
+                L = special_orthogonal_lie_algebra(QQ, 4)
                 V = exterior_power(standard_module(L), 2)
                 sp = smash_product(L, V)
 
@@ -112,7 +112,7 @@
                 b = PseudographDeformBasis{fmpq}(sp, 0:2)
                 @test length(collect(b)) == 1
                 @test repr("text/plain", collect(b)) ==
-                      "1-element Vector{Any}:\n AbstractAlgebra.Generic.FreeAssAlgElem{fmpq}[0 x_2_3 x_2_4 -x_1_3 -x_1_4 0; -x_2_3 0 x_3_4 x_1_2 0 -x_1_4; -x_2_4 -x_3_4 0 0 x_1_2 x_1_3; x_1_3 -x_1_2 0 0 x_3_4 -x_2_4; x_1_4 0 -x_1_2 -x_3_4 0 x_2_3; 0 x_1_4 -x_1_3 x_2_4 -x_2_3 0]"
+                      "1-element Vector{Any}:\n AbstractAlgebra.Generic.FreeAssAlgElem{QQFieldElem}[0 x_2_3 x_2_4 -x_1_3 -x_1_4 0; -x_2_3 0 x_3_4 x_1_2 0 -x_1_4; -x_2_4 -x_3_4 0 0 x_1_2 x_1_3; x_1_3 -x_1_2 0 0 x_3_4 -x_2_4; x_1_4 0 -x_1_2 -x_3_4 0 x_2_3; 0 x_1_4 -x_1_3 x_2_4 -x_2_3 0]"
                 @test all_pbwdeformations(sp, b; special_return=SparseMatrixCSC)[1] ==
                       sparse(Int64[], Int64[], fmpq[], 1, 1)
 
@@ -123,7 +123,7 @@
             end
 
             @testset "SO_5, ⋀²V" begin
-                L = special_orthogonal_liealgebra(QQ, 5)
+                L = special_orthogonal_lie_algebra(QQ, 5)
                 V = exterior_power(standard_module(L), 2)
                 sp = smash_product(L, V)
 
@@ -135,7 +135,7 @@
                 b = PseudographDeformBasis{fmpq}(sp, 0:2)
                 @test length(collect(b)) == 1
                 @test repr("text/plain", collect(b)) ==
-                      "1-element Vector{Any}:\n AbstractAlgebra.Generic.FreeAssAlgElem{fmpq}[0 x_2_3 x_2_4 x_2_5 -x_1_3 -x_1_4 -x_1_5 0 0 0; -x_2_3 0 x_3_4 x_3_5 x_1_2 0 0 -x_1_4 -x_1_5 0; -x_2_4 -x_3_4 0 x_4_5 0 x_1_2 0 x_1_3 0 -x_1_5; -x_2_5 -x_3_5 -x_4_5 0 0 0 x_1_2 0 x_1_3 x_1_4; x_1_3 -x_1_2 0 0 0 x_3_4 x_3_5 -x_2_4 -x_2_5 0; x_1_4 0 -x_1_2 0 -x_3_4 0 x_4_5 x_2_3 0 -x_2_5; x_1_5 0 0 -x_1_2 -x_3_5 -x_4_5 0 0 x_2_3 x_2_4; 0 x_1_4 -x_1_3 0 x_2_4 -x_2_3 0 0 x_4_5 -x_3_5; 0 x_1_5 0 -x_1_3 x_2_5 0 -x_2_3 -x_4_5 0 x_3_4; 0 0 x_1_5 -x_1_4 0 x_2_5 -x_2_4 x_3_5 -x_3_4 0]"
+                      "1-element Vector{Any}:\n AbstractAlgebra.Generic.FreeAssAlgElem{QQFieldElem}[0 x_2_3 x_2_4 x_2_5 -x_1_3 -x_1_4 -x_1_5 0 0 0; -x_2_3 0 x_3_4 x_3_5 x_1_2 0 0 -x_1_4 -x_1_5 0; -x_2_4 -x_3_4 0 x_4_5 0 x_1_2 0 x_1_3 0 -x_1_5; -x_2_5 -x_3_5 -x_4_5 0 0 0 x_1_2 0 x_1_3 x_1_4; x_1_3 -x_1_2 0 0 0 x_3_4 x_3_5 -x_2_4 -x_2_5 0; x_1_4 0 -x_1_2 0 -x_3_4 0 x_4_5 x_2_3 0 -x_2_5; x_1_5 0 0 -x_1_2 -x_3_5 -x_4_5 0 0 x_2_3 x_2_4; 0 x_1_4 -x_1_3 0 x_2_4 -x_2_3 0 0 x_4_5 -x_3_5; 0 x_1_5 0 -x_1_3 x_2_5 0 -x_2_3 -x_4_5 0 x_3_4; 0 0 x_1_5 -x_1_4 0 x_2_5 -x_2_4 x_3_5 -x_3_4 0]"
                 @test all_pbwdeformations(sp, b; special_return=SparseMatrixCSC)[1] ==
                       sparse(Int64[], Int64[], fmpq[], 1, 1)
 

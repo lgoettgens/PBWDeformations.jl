@@ -17,10 +17,10 @@ struct PseudographDeformBasis{C <: RingElement} <: DeformBasis{C}
         no_normalize::Bool=false,
     ) where {C <: RingElement}
         get_attribute(sp.L, :type, nothing) == :special_orthogonal || error("Only works for so_n.")
-        sp.V isa LieAlgebraExteriorPowerModule{C} && sp.V.inner_mod isa LieAlgebraStdModule{C} ||
+        is_exterior_power(sp.V) && is_standard_module(get_attribute(sp.V, :inner_module)) ||
             error("Only works for exterior powers of the standard module.")
 
-        e = sp.V.power
+        e = get_attribute(sp.V, :power)
 
         extra_data = Dict{DeformationMap{C}, Set{Tuple{Pseudograph2, Generic.Partition{Int}}}}()
         normalize = no_normalize ? identity : normalize_default

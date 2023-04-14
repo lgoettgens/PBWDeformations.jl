@@ -1,5 +1,5 @@
 
-function liealgebra_conformance_test(L::LieAlgebra{C}, parentT::DataType, elemT::DataType) where {C <: RingElement}
+function lie_algebra_conformance_test(L::LieAlgebra{C}, parentT::DataType, elemT::DataType) where {C <: RingElement}
     @testset "basic manipulation" begin
         x = L(rand(-10:10, dim(L)))
 
@@ -19,8 +19,6 @@ function liealgebra_conformance_test(L::LieAlgebra{C}, parentT::DataType, elemT:
         @test dim(L) == ngens(L)
         @test length(gens(L)) == ngens(L)
         @test all(gen(L, i) == gens(L)[i] for i in 1:ngens(L))
-
-        @test isempty(rels(L))
     end
 
     @testset "parent object call overload" begin
