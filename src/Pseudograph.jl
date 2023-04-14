@@ -10,10 +10,10 @@ struct Pseudograph2
         check::Bool=true,
     )
         if check
-            all(x -> x >= 0, loops1) || throw(ArgumentError("all labels in loops1 must be non-negative"))
-            all(x -> x >= 0, loops2) || throw(ArgumentError("all labels in loops2 must be non-negative"))
-            all(x -> x >= 0, edges) || throw(ArgumentError("all labels in edges must be non-negative"))
-            length(loops1) == length(loops2) || throw(ArgumentError("both vertices must have the same degree"))
+            @req all(x -> x >= 0, loops1) "all labels in loops1 must be non-negative"
+            @req all(x -> x >= 0, loops2) "all labels in loops2 must be non-negative"
+            @req all(x -> x >= 0, edges) "all labels in edges must be non-negative"
+            @req length(loops1) == length(loops2) "both vertices must have the same degree"
         end
         return new(loops1, loops2, edges)
     end

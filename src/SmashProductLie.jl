@@ -28,7 +28,7 @@ end
 Construct the smash product ``TV \\rtimes U(L)``.
 """
 function smash_product(L::LieAlgebra{C}, V::LieAlgebraModule{C}) where {C <: RingElement}
-    L == base_lie_algebra(V) || error("Incompatible module.")
+    @req L == base_lie_algebra(V) "Incompatible module."
     R = base_ring(L)::parent_type(C)
 
     dimL = dim(L)
@@ -74,7 +74,7 @@ end
 
 gen(sp::SmashProductLie{C}, i::Int) where {C <: RingElement} = gen(sp.alg, i)
 function gen(sp::SmashProductLie{C}, i::Int, part::Symbol) where {C <: RingElement}
-    1 <= i <= ngens(sp, part) || error("Invalid generator index.")
+    @req 1 <= i <= ngens(sp, part) "Invalid generator index."
     part == :L && return gen(sp.alg, i)
     part == :V && return gen(sp.alg, i + dim(sp.L))
     error("Invalid part.")

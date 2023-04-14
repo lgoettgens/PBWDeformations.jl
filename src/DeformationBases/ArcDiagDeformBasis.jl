@@ -15,10 +15,9 @@ struct ArcDiagDeformBasis{C <: RingElement} <: DeformBasis{C}
         degs::AbstractVector{Int};
         no_normalize::Bool=false,
     ) where {C <: RingElement}
-        get_attribute(sp.L, :type, nothing) == :special_orthogonal || error("Only works for so_n.")
-        (is_exterior_power(sp.V) || is_symmetric_power(sp.V)) &&
-            is_standard_module(get_attribute(sp.V, :inner_module)) ||
-            error("Only works for exterior powers of the standard module.")
+        @req get_attribute(sp.L, :type, nothing) == :special_orthogonal "Only works for so_n."
+        @req (is_exterior_power(sp.V) || is_symmetric_power(sp.V)) &&
+             is_standard_module(get_attribute(sp.V, :inner_module)) "Only works for exterior powers of the standard module."
 
         extra_data = Dict{DeformationMap{C}, Set{ArcDiagram}}()
         normalize = no_normalize ? identity : normalize_default
@@ -137,13 +136,13 @@ end
 
 function arc_diagram_label_permutations__so(V::LieAlgebraModule, label::AbstractVector{Int})
     if is_standard_module(V)
-        length(label) == 1 || error("Number of labels mistmatch.")
+        @req length(label) == 1 "Number of labels mistmatch."
         return [(label, 1)]
     elseif is_exterior_power(V) || is_symmetric_power(V) || is_tensor_power(V)
         inner_mod = get_attribute(V, :inner_module)
         power = get_attribute(V, :power)
         m = arc_diagram_num_points__so(inner_mod)
-        length(label) == m * power || error("Number of labels mistmatch.")
+        @req length(label) == m * power "Number of labels mistmatch."
         if is_exterior_power(V)
             return [
                 begin

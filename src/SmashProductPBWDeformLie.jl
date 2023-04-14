@@ -135,7 +135,7 @@ function lgs_to_mat(lgs::Vector{Union{Nothing, SparseVector{T, Int}}}) where {T 
 end
 
 function indices_of_freedom(mat::SparseArrays.SparseMatrixCSC{T, Int}) where {T <: Union{RingElement, Number}}
-    size(mat)[1] == size(mat)[2] || throw(ArgumentError("Matrix needs to be square."))
+    @req size(mat)[1] == size(mat)[2] "Matrix needs to be square."
     return filter(i -> iszero(mat[i, i]), 1:size(mat)[1])
 end
 

@@ -16,9 +16,8 @@ struct PseudographDeformBasis{C <: RingElement} <: DeformBasis{C}
         degs::AbstractVector{Int};
         no_normalize::Bool=false,
     ) where {C <: RingElement}
-        get_attribute(sp.L, :type, nothing) == :special_orthogonal || error("Only works for so_n.")
-        is_exterior_power(sp.V) && is_standard_module(get_attribute(sp.V, :inner_module)) ||
-            error("Only works for exterior powers of the standard module.")
+        @req get_attribute(sp.L, :type, nothing) == :special_orthogonal "Only works for so_n."
+        @req is_exterior_power(sp.V) && is_standard_module(get_attribute(sp.V, :inner_module)) "Only works for exterior powers of the standard module."
 
         e = get_attribute(sp.V, :power)
 

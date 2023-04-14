@@ -6,10 +6,10 @@ struct ArcDiagram
     function ArcDiagram(nUpper::Int, nLower::Int, adjacency::Vector{Int}; skipchecks::Bool=false)
         if !skipchecks
             n = nUpper + nLower
-            length(adjacency) == n || throw(ArgumentError("Adjacency list has wrong length."))
-            all(i -> 1 <= adjacency[i] <= n, 1:n) || throw(ArgumentError("Out of bounds adjacency."))
-            all(i -> i != adjacency[i], 1:n) || throw(ArgumentError("No self-loops allowed."))
-            all(i -> i == adjacency[adjacency[i]], 1:n) || throw(ArgumentError("Adjacency not symmetric."))
+            @req length(adjacency) == n "Adjacency list has wrong length."
+            @req all(i -> 1 <= adjacency[i] <= n, 1:n) "Out of bounds adjacency."
+            @req all(i -> i != adjacency[i], 1:n) "No self-loops allowed."
+            @req all(i -> i == adjacency[adjacency[i]], 1:n) "Adjacency not symmetric."
         end
         return new(nUpper, nLower, adjacency)
     end
@@ -25,7 +25,7 @@ struct ArcDiagram
             adj = [0 for i in 1:nUpper+nLower]
             symbols = unique(str)
             for s in symbols
-                count(s, str) == 2 || throw(ArgumentError("Symbol $s does not appear exactly twice."))
+                @req count(s, str) == 2 "Symbol $s does not appear exactly twice."
             end
             for s in symbols
                 i, j = findall(s, str)
@@ -45,7 +45,7 @@ struct ArcDiagram
             adj = [0 for i in 1:nUpper+nLower]
             symbols = unique(str)
             for s in symbols
-                count(string(s), str) == 2 || throw(ArgumentError("Symbol $s does not appear exactly twice."))
+                @req count(string(s), str) == 2 "Symbol $s does not appear exactly twice."
             end
             for s in symbols
                 i, j = findall(string(s), str)

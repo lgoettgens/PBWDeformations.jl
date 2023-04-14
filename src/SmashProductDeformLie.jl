@@ -30,16 +30,14 @@ function deform(sp::SmashProductLie{C, C_lie}, kappa::DeformationMap{C}) where {
     dimL = dim(sp.L)
     dimV = dim(sp.V)
 
-    size(kappa) == (dimV, dimV) || throw(ArgumentError("kappa has wrong dimensions."))
+    @req size(kappa) == (dimV, dimV) "kappa has wrong dimensions."
 
     basisV = [gen(sp.alg, dimL + i) for i in 1:dimV]
 
     for i in 1:dimV, j in 1:i
-        kappa[i, j] == -kappa[j, i] || throw(ArgumentError("kappa is not skew-symmetric."))
-        all(x -> x <= dimL, Iterators.flatten(exponent_words(kappa[i, j]))) ||
-            throw(ArgumentError("kappa does not only take values in the hopf algebra"))
-        all(x -> x <= dimL, Iterators.flatten(exponent_words(kappa[j, i]))) ||
-            throw(ArgumentError("kappa does not only take values in the hopf algebra"))
+        @req kappa[i, j] == -kappa[j, i] "kappa is not skew-symmetric."
+        @req all(x -> x <= dimL, Iterators.flatten(exponent_words(kappa[i, j]))) "kappa does not only take values in the hopf algebra"
+        @req all(x -> x <= dimL, Iterators.flatten(exponent_words(kappa[j, i]))) "kappa does not only take values in the hopf algebra"
     end
 
     symmetric = true
@@ -86,7 +84,7 @@ end
 
 gen(d::SmashProductDeformLie{C}, i::Int) where {C <: RingElement} = gen(d.sp.alg, i)
 function gen(d::SmashProductDeformLie{C}, i::Int, part::Symbol) where {C <: RingElement}
-    1 <= i <= ngens(d, part) || error("Invalid generator index.")
+    @req 1 <= i <= ngens(d, part) "Invalid generator index."
     part == :L && return gen(d.sp.alg, i)
     part == :V && return gen(d.sp.alg, i + dim(d.sp.L))
     error("Invalid part.")
