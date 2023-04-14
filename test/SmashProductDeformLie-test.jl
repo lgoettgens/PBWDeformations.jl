@@ -1,8 +1,8 @@
 @testset ExtendedTestSet "All SmashProductDeformLie.jl tests" begin
 
     @testset "SmashProductDeformLie constructor" begin
-        @testset "R = $R" for R in [QQ, PolynomialRing(QQ, ["x", "y", "z"])[1]]
-            L = special_orthogonal_liealgebra(R, 4)
+        @testset "R = $R" for R in [QQ, polynomial_ring(QQ, ["x", "y", "z"])[1]]
+            L = special_orthogonal_lie_algebra(R, 4)
             V = exterior_power(standard_module(L), 2)
             sp = smash_product(L, V)
 
@@ -51,15 +51,15 @@
     end
 
     @testset "symmetric_deformation constructor" begin
-        @testset "R = $R" for R in [QQ, PolynomialRing(QQ, ["x", "y", "z"])[1]]
+        @testset "R = $R" for R in [QQ, polynomial_ring(QQ, ["x", "y", "z"])[1]]
 
             for (sp, dimL, dimV) in [begin
-                L = special_orthogonal_liealgebra(R, 4)
+                L = special_orthogonal_lie_algebra(R, 4)
                 V = exterior_power(standard_module(L), 2)
                 sp = smash_product(L, V)
                 return (sp, 6, 6)
             end, begin
-                L = general_linear_liealgebra(R, 4)
+                L = general_linear_lie_algebra(R, 4)
                 V = symmetric_power(standard_module(L), 2)
                 sp = smash_product(L, V)
                 return (sp, 16, 10)
@@ -94,9 +94,9 @@
     end
 
     @testset "SmashProductDeformLie sanitize checks" begin
-        @testset "R = $R" for R in [QQ, PolynomialRing(QQ, ["x", "y", "z"])[1]]
+        @testset "R = $R" for R in [QQ, polynomial_ring(QQ, ["x", "y", "z"])[1]]
 
-            L = special_orthogonal_liealgebra(R, 4)
+            L = special_orthogonal_lie_algebra(R, 4)
             V = exterior_power(standard_module(L), 2)
             sp = smash_product(L, V)
 

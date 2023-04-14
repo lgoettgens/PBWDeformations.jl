@@ -17,7 +17,6 @@ smash_product
 
 ### Highest weight / GAP case
 ```@docs
-smash_product_lie_highest_weight
 ```
 
 ## SmashProductLie struct

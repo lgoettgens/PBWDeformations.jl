@@ -24,7 +24,7 @@ function pbwdeform_eqs(d::SmashProductDeformLie{C}; disabled::Vector{Symbol}=Sym
             comm(nfcomm(h, v(i)), v(j)) # κ([h⋅v_i,v_j])
             + comm(v(i), nfcomm(h, v(j))) # κ([v_i,h⋅v_j])
             - comm(h, nfcomm(v(i), v(j))) # h⋅κ([v_i,v_j])
-            for (h, (i, j)) in Iterators.product([x(i) for i in 1:dimL], Combinatorics.Combinations(dimV, 2))
+            for (h, (i, j)) in Iterators.product([x(i) for i in 1:dimL], combinations(dimV, 2))
         )
 
     ## (b) trivial
@@ -39,7 +39,7 @@ function pbwdeform_eqs(d::SmashProductDeformLie{C}; disabled::Vector{Symbol}=Sym
             v(j) * nfcomm(v(k), v(i)) + nfcomm(v(k), v(i)) * v(j) - v(k) * nfcomm(v(i), v(j)) -
             nfcomm(v(k), v(j)) * v(i) + v(k) * nfcomm(v(j), v(i)) - nfcomm(v(j), v(i)) * v(k) +
             v(j) * nfcomm(v(i), v(k)) - nfcomm(v(i), v(k)) * v(j) + v(i) * nfcomm(v(k), v(j)) for
-            (i, j, k) in Combinatorics.Combinations(dimV, 3)
+            (i, j, k) in combinations(dimV, 3)
         )
 
     ## (d) trivial
@@ -82,7 +82,7 @@ end
     return collect(coefficients(eq))
 end
 
-@inline function linpoly_to_spvector(a::fmpq_mpoly, var_lookup::Dict{fmpq_mpoly, Int}, nvars::Int)
+@inline function linpoly_to_spvector(a::QQMPolyRingElem, var_lookup::Dict{QQMPolyRingElem, Int}, nvars::Int)
     @assert total_degree(a) <= 1
 
     return sparsevec(Dict(var_lookup[monomial(a, i)] => coeff(a, i) for i in 1:length(a)), nvars)
@@ -135,7 +135,7 @@ function lgs_to_mat(lgs::Vector{Union{Nothing, SparseVector{T, Int}}}) where {T 
 end
 
 function indices_of_freedom(mat::SparseArrays.SparseMatrixCSC{T, Int}) where {T <: Union{RingElement, Number}}
-    size(mat)[1] == size(mat)[2] || throw(ArgumentError("Matrix needs to be square."))
+    @req size(mat)[1] == size(mat)[2] "Matrix needs to be square."
     return filter(i -> iszero(mat[i, i]), 1:size(mat)[1])
 end
 
@@ -160,7 +160,7 @@ function all_pbwdeformations(
     nvars = length(deform_basis)
 
     @info "Constructing MPolyRing..."
-    R, vars = PolynomialRing(sp.coeff_ring, max(nvars, 1))
+    R, vars = polynomial_ring(sp.coeff_ring, max(nvars, 1))
     var_lookup = Dict(vars[i] => i for i in 1:nvars)
 
     @info "Changing SmashProductLie coeffcient type..."
@@ -190,7 +190,7 @@ function all_pbwdeformations(
     )
 
     @info "Computing row-echelon form..."
-    lgs = Vector{Union{Nothing, SparseVector{fmpq, Int}}}(nothing, nvars)
+    lgs = Vector{Union{Nothing, SparseVector{QQFieldElem, Int}}}(nothing, nvars)
     for v in iter
         reduce_and_store!(lgs, v)
     end

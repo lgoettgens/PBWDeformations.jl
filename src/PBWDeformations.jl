@@ -1,6 +1,5 @@
 module PBWDeformations
 
-using Combinatorics
 using Oscar
 using SparseArrays
 
@@ -43,18 +42,43 @@ import Oscar: action, comm, exterior_power, normal_form, symmetric_power
 
 import Base: deepcopy_internal, hash, isequal, iszero, length, parent, show, sum, zero, +, -, *, ==
 
+import Oscar.LieAlgebras:
+    AbstractLieAlgebra,
+    AbstractLieAlgebraElem,
+    LieAlgebra,
+    LieAlgebraElem,
+    LieAlgebraModule,
+    LieAlgebraModuleElem,
+    LinearLieAlgebra,
+    LinearLieAlgebraElem,
+    abstract_module,
+    base_lie_algebra,
+    # combinations,
+    exterior_power,
+    general_linear_lie_algebra,
+    highest_weight_module,
+    is_exterior_power,
+    is_standard_module,
+    is_symmetric_power,
+    is_tensor_power,
+    lie_algebra,
+    matrix_repr_basis,
+    multicombinations,
+    permutations,
+    permutations_with_sign,
+    special_linear_lie_algebra,
+    special_orthogonal_lie_algebra,
+    standard_module,
+    symmetric_power,
+    tensor_power
+
 export AbstractLieAlgebra, AbstractLieAlgebraElem
 export ArcDiagDeformBasis
 export ArcDiagram
 export DeformationMap
 export DeformBasis
 export LieAlgebra, LieAlgebraElem
-export LieAlgebraAbstractModule, LieAlgebraAbstractModuleElem
-export LieAlgebraExteriorPowerModule, LieAlgebraExteriorPowerModuleElem
 export LieAlgebraModule, LieAlgebraModuleElem
-export LieAlgebraStdModule, LieAlgebraStdModuleElem
-export LieAlgebraSymmetricPowerModule, LieAlgebraSymmetricPowerModuleElem
-export LieAlgebraTensorPowerModule, LieAlgebraTensorPowerModuleElem
 export LinearLieAlgebra, LinearLieAlgebraElem
 export Pseudograph2
 export PseudographDeformBasis
@@ -67,24 +91,23 @@ export abstract_module
 export all_arc_diagrams
 export all_pbwdeformations
 export all_pseudographs
-export base_liealgebra
-export bracket
-export coefficient_vector
+export base_lie_algebra
 export deform
 export exterior_power
-export general_linear_liealgebra
+export flatten
+export general_linear_lie_algebra
+export groupBy
 export highest_weight_module
 export is_crossing_free
 export is_pbwdeformation
-export liealgebra
+export lie_algebra
 export lookup_data
 export matrix_repr_basis
 export nedges
 export pbwdeform_eqs
 export smash_product
-export smash_product_lie_highest_weight
-export special_linear_liealgebra
-export special_orthogonal_liealgebra
+export special_linear_lie_algebra
+export special_orthogonal_lie_algebra
 export standard_module
 export symmetric_deformation
 export symmetric_power
@@ -92,21 +115,20 @@ export tensor_power
 export to_arcdiag
 
 
-GAP = Oscar.GAP
+function combinations(n::Int, k::Int)
+    # TODO: can be removed once thofma/Hecke.jl#1040 is available
+    if k > n
+        return Vector{Int}[]
+    end
+    return Oscar.LieAlgebras.combinations(n, k)
+end
+function combinations(v::AbstractVector{T}, k::Integer) where {T}
+    reorder(v, inds) = [v[i] for i in inds]
+    return (reorder(v, inds) for inds in combinations(length(v), k))
+end
 
 
 include("Util.jl")
-
-include("LieAlgebras/LieAlgebra.jl")
-include("LieAlgebras/AbstractLieAlgebra.jl")
-include("LieAlgebras/LinearLieAlgebra.jl")
-include("LieAlgebraModules/LieAlgebraModule.jl")
-include("LieAlgebraModules/LieAlgebraAbstractModule.jl")
-include("LieAlgebraModules/LieAlgebraExteriorPowerModule.jl")
-include("LieAlgebraModules/LieAlgebraStdModule.jl")
-include("LieAlgebraModules/LieAlgebraSymmetricPowerModule.jl")
-include("LieAlgebraModules/LieAlgebraTensorPowerModule.jl")
-include("GapWrapper.jl")
 
 include("FreeAssAlgQuadraticRelations.jl")
 include("DeformationBases/DeformBasis.jl")

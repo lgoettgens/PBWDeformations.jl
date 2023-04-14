@@ -28,26 +28,25 @@ end
 Construct the smash product ``TV \\rtimes U(L)``.
 """
 function smash_product(L::LieAlgebra{C}, V::LieAlgebraModule{C}) where {C <: RingElement}
-    L == base_liealgebra(V) || error("Incompatible module.")
+    @req L == base_lie_algebra(V) "Incompatible module."
     R = base_ring(L)::parent_type(C)
 
     dimL = dim(L)
     dimV = dim(V)
 
-    f_alg, _ = FreeAssociativeAlgebra(R, [symbols(L); symbols(V)])
+    f_alg, _ = free_associative_algebra(R, [symbols(L); symbols(V)])
     f_basisL = [gen(f_alg, i) for i in 1:dimL]
     f_basisV = [gen(f_alg, dimL + i) for i in 1:dimV]
 
     rels = QuadraticRelations{C}()
 
-    for (i, xi) in enumerate(gens(L)), (j, xj) in enumerate(gens(L))
-        commutator =
-            sum(c * f_basisL[k] for (k, c) in enumerate(_matrix(bracket(xi, xj))) if !iszero(c); init=zero(f_alg))
+    for (i, xi) in enumerate(basis(L)), (j, xj) in enumerate(basis(L))
+        commutator = sum(c * f_basisL[k] for (k, c) in enumerate(_matrix(xi * xj)) if !iszero(c); init=zero(f_alg))
         rels[(i, j)] = f_basisL[j] * f_basisL[i] + commutator
 
     end
 
-    for (i, xi) in enumerate(gens(L)), (j, vj) in enumerate(gens(V))
+    for (i, xi) in enumerate(basis(L)), (j, vj) in enumerate(basis(V))
         commutator = sum(c * f_basisV[k] for (k, c) in enumerate(_matrix(xi * vj)) if !iszero(c); init=zero(f_alg))
         rels[(i, dimL + j)] = f_basisV[j] * f_basisL[i] + commutator
         rels[(dimL + j, i)] = f_basisL[i] * f_basisV[j] - commutator
@@ -75,7 +74,7 @@ end
 
 gen(sp::SmashProductLie{C}, i::Int) where {C <: RingElement} = gen(sp.alg, i)
 function gen(sp::SmashProductLie{C}, i::Int, part::Symbol) where {C <: RingElement}
-    1 <= i <= ngens(sp, part) || error("Invalid generator index.")
+    @req 1 <= i <= ngens(sp, part) "Invalid generator index."
     part == :L && return gen(sp.alg, i)
     part == :V && return gen(sp.alg, i + dim(sp.L))
     error("Invalid part.")
@@ -95,7 +94,7 @@ end
 
 
 function change_base_ring(R::Ring, sp::SmashProductLie{C, C_lie}) where {C <: RingElement, C_lie <: RingElement}
-    alg, _ = FreeAssociativeAlgebra(R, symbols(sp.alg))
+    alg, _ = free_associative_algebra(R, symbols(sp.alg))
     rels = QuadraticRelations{elem_type(R)}(k => change_base_ring(R, a, parent=alg) for (k, a) in sp.rels)
 
     return SmashProductLie{elem_type(R), C_lie}(R, sp.L, sp.V, alg, rels)

@@ -21,8 +21,7 @@ struct StdDeformBasis{C <: RingElement} <: DeformBasis{C}
                 kappa[i, j] += entry
                 kappa[j, i] -= entry
                 kappa
-            end for i in 1:dimV for j in i+1:dimV for d in degs for
-            ind in Combinatorics.with_replacement_combinations(1:dimL, d)
+            end for i in 1:dimV for j in i+1:dimV for d in degs for ind in multicombinations(1:dimL, d)
         )
 
         len = div(dimV * (dimV - 1), 2) * sum(binomial(dimL + k - 1, k) for k in degs)

@@ -1,7 +1,7 @@
 @testset ExtendedTestSet "All SmashProductPBWDeformLie.jl tests" begin
     @testset "is_pbwdeformation" begin
         @testset "symmetric deformation of so_4(QQ) ⋉ ⋀^2 V" begin
-            L = special_orthogonal_liealgebra(QQ, 4)
+            L = special_orthogonal_lie_algebra(QQ, 4)
             V = exterior_power(standard_module(L), 2)
             sp = smash_product(L, V)
 
@@ -10,7 +10,7 @@
         end
 
         @testset "non-PBW deformations" begin
-            L = special_orthogonal_liealgebra(QQ, 4)
+            L = special_orthogonal_lie_algebra(QQ, 4)
             V = exterior_power(standard_module(L), 2)
             sp = smash_product(L, V)
 
@@ -26,13 +26,15 @@
 
     @testset "all_pbwdeformations construction stuff" begin
         @testset "coefficient_comparison tests" begin
-            A, (x, y, z) = FreeAssociativeAlgebra(QQ, ["x", "y", "z"])
+            A, (x, y, z) = free_associative_algebra(QQ, ["x", "y", "z"])
             eq = QQ(2 // 3) * x + 88 * y * z - 12 * x * z + 3 * y + 0 * z^4 - 2 * y + 12 * x * z
             @test issetequal(PD.coefficient_comparison(eq), elem_type(QQ)[2//3, 88, 1])
         end
 
         @testset "all_pbwdeformations tests" begin
-            sp = smash_product_lie_highest_weight(QQ, 'A', 1, [1])
+            L = lie_algebra(QQ, ('A', 1))
+            V = highest_weight_module(L, [1])
+            sp = smash_product(L, V)
             @testset "A_1 with hw [1], maxdeg = $maxdeg" for maxdeg in 0:8
                 basis = all_pbwdeformations(sp, 0:maxdeg)
 
