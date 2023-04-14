@@ -5,8 +5,6 @@ include("setup.jl")
 
     include("ArcDiagram-test.jl")
     include("DeformationBases-test.jl")
-    include("LieAlgebras/LieAlgebra-test.jl")
-    include("LieAlgebraModules/LieAlgebraModule-test.jl")
     include("Pseudograph-test.jl")
     include("SmashProductLie-test.jl")
     include("SmashProductDeformLie-test.jl")
