@@ -1,4 +1,4 @@
-@testset ExtendedTestSet "All Util.jl tests" begin
+@testset "Util.jl tests" begin
     @testset "flatten" begin
         flatten = PD.flatten
 

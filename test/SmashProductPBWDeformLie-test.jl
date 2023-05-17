@@ -1,4 +1,4 @@
-@testset ExtendedTestSet "All SmashProductPBWDeformLie.jl tests" begin
+@testset "SmashProductPBWDeformLie.jl tests" begin
     @testset "is_pbwdeformation" begin
         @testset "symmetric deformation of so_4(QQ) ⋉ ⋀^2 V" begin
             L = special_orthogonal_lie_algebra(QQ, 4)

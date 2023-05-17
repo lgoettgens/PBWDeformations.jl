@@ -1,5 +1,5 @@
-@testset ExtendedTestSet "All DeformationBases/*.jl tests" begin
-    @testset "All DeformationBases/ArcDiagDeformBasis.jl tests" begin
+@testset "DeformationBases/*.jl tests" begin
+    @testset "ArcDiagDeformBasis.jl" begin
         @testset "arcdiag_to_deformationmap__so(:exterior)" begin
             L = special_orthogonal_lie_algebra(QQ, 4)
             V = exterior_power(standard_module(L), 2)
@@ -97,7 +97,7 @@
 
     end
 
-    @testset "All DeformationBases/PseudographDeformBasis.jl tests" begin
+    @testset "PseudographDeformBasis.jl" begin
         @testset "correctness regression" begin
             @testset "SO_4, ⋀²V" begin
                 L = special_orthogonal_lie_algebra(QQ, 4)

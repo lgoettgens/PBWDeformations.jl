@@ -1,5 +1,4 @@
 using Test
-using TestSetExtensions
 using Documenter
 
 using PBWDeformations

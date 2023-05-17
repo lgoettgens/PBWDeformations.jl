@@ -1,5 +1,5 @@
-@testset ExtendedTestSet "All ArcDiagram.jl tests" begin
-    @testset "ArcDiagram numeric constructor" begin
+@testset "ArcDiagram.jl tests" begin
+    @testset "numeric constructor" begin
         # wrong length
         @test_throws ArgumentError ArcDiagram(5, 5, [2, 1, 4, 3, 6, 5, 8, 7])
         @test_throws ArgumentError ArcDiagram(5, 5, [2, 1, 4, 3, 6, 5, 8, 7, 10])
@@ -17,7 +17,7 @@
         @test ArcDiagram(5, 5, [2, 1, 4, 3, 6, 5, 8, 7, 10, 9]) !== nothing
     end
 
-    @testset "ArcDiagram string constructor" begin
+    @testset "string constructor" begin
         # not all symbols twice
         @test_throws ArgumentError ArcDiagram("ABC,ABD")
         @test_throws ArgumentError ArcDiagram("ABCD,ABDD")
