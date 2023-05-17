@@ -89,9 +89,7 @@ end
 end
 
 function indices_of_freedom(mat::SMat{T}) where {T <: RingElement}
-    return map(j -> (Oscar.Hecke.find_row_starting_with(mat, j), j), 1:size(mat)[2]) |>
-           filter(ij -> is_zero(mat[ij[1], ij[2]])) |>
-           x -> map(ij -> ij[2], x)
+    return [j for j in 1:size(mat)[2] if is_zero(mat[Oscar.Hecke.find_row_starting_with(mat, j), j])]
 end
 
 
