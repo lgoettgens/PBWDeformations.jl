@@ -1,7 +1,5 @@
 [deps]
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
-Oscar = "f1435218-dba5-11e9-1e4d-f1a5fab5fc13"
-PBWDeformations = "5e7992ee-18b2-4301-9ba0-4f17696dc75a"
 SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 TestSetExtensions = "98d24dd4-01ad-11ea-1b02-c9a08f80db04"
