@@ -11,6 +11,11 @@ include("setup.jl")
     include("SmashProductPBWDeformLie-test.jl")
     include("Util-test.jl")
 
-    DocMeta.setdocmeta!(PBWDeformations, :DocTestSetup, :(using Oscar; using PBWDeformations); recursive=true)
+    DocMeta.setdocmeta!(
+        PBWDeformations,
+        :DocTestSetup,
+        :(using PBWDeformations; using PBWDeformations.Oscar);
+        recursive=true,
+    )
     doctest(PBWDeformations)
 end

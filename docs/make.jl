@@ -7,7 +7,7 @@ using PBWDeformations
 DocMeta.setdocmeta!(
     PBWDeformations,
     :DocTestSetup,
-    :(using PBWDeformations; using Oscar);
+    :(using PBWDeformations; using PBWDeformations.Oscar);
     recursive = true,
 )
 
