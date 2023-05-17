@@ -1,7 +1,6 @@
 module PBWDeformations
 
 using Oscar
-using SparseArrays
 
 import AbstractAlgebra:
     @attributes,
