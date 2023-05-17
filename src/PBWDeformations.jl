@@ -53,7 +53,7 @@ import Oscar.LieAlgebras:
     LinearLieAlgebraElem,
     abstract_module,
     base_lie_algebra,
-    # combinations,
+    combinations,
     exterior_power,
     general_linear_lie_algebra,
     highest_weight_module,
@@ -114,18 +114,6 @@ export symmetric_power
 export tensor_power
 export to_arcdiag
 
-
-function combinations(n::Int, k::Int)
-    # TODO: can be removed once thofma/Hecke.jl#1040 is available
-    if k > n
-        return Vector{Int}[]
-    end
-    return Oscar.LieAlgebras.combinations(n, k)
-end
-function combinations(v::AbstractVector{T}, k::Integer) where {T}
-    reorder(v, inds) = [v[i] for i in inds]
-    return (reorder(v, inds) for inds in combinations(length(v), k))
-end
 
 
 include("Util.jl")
