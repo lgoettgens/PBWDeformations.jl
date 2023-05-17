@@ -82,59 +82,53 @@ end
     return collect(coefficients(eq))
 end
 
-@inline function linpoly_to_spvector(a::QQMPolyRingElem, var_lookup::Dict{QQMPolyRingElem, Int}, nvars::Int)
+@inline function linpoly_to_spvector(a::QQMPolyRingElem, var_lookup::Dict{QQMPolyRingElem, Int})
     @assert total_degree(a) <= 1
 
-    return sparsevec(Dict(var_lookup[monomial(a, i)] => coeff(a, i) for i in 1:length(a)), nvars)
+    return sparse_row(QQ, [(var_lookup[monomial(a, i)], coeff(a, i)) for i in 1:length(a)])
 end
 
-function reduce_and_store!(
-    lgs::Vector{Union{Nothing, SparseVector{T, Int}}},
-    v::SparseVector{T, Int},
-) where {T <: Union{RingElement, Number}}
-    while count(!iszero, v) > 0
-        nz_inds, nz_vals = findnz(v)
+function reduce_and_store!(lgs::Vector{Union{Nothing, SRow{T}}}, v::SRow{T}) where {T <: RingElement}
+    while !is_zero(v)
+        nz_ind, nz_val = first(v)
 
-        if !isone(nz_vals[1])
-            v = inv(nz_vals[1]) .* v
-        end
+        v = divexact(v, nz_val)
 
-        if lgs[nz_inds[1]] === nothing
-            lgs[nz_inds[1]] = v
+        if isnothing(lgs[nz_ind])
+            lgs[nz_ind] = v
             return
         else
-            v -= lgs[nz_inds[1]]
+            v -= lgs[nz_ind]
         end
     end
 end
 
-function reduced_row_echelon!(lgs::Vector{Union{Nothing, SparseVector{T, Int}}}) where {T <: Union{RingElement, Number}}
+function reduced_row_echelon!(lgs::Vector{Union{Nothing, SRow{T}}}) where {T <: RingElement}
     for i in length(lgs):-1:1
-        if lgs[i] === nothing
+        if isnothing(lgs[i])
             continue
         end
-        nz_inds, nz_vals = findnz(lgs[i])
-        for (ind, j) in enumerate(nz_inds[2:end])
-            if lgs[j] !== nothing
-                lgs[i] -= nz_vals[ind+1] .* lgs[j]
+        for (nz_ind, nz_val) in Iterators.drop(lgs[i], 1)
+            if !isnothing(lgs[nz_ind])
+                lgs[i] -= nz_val * lgs[nz_ind]
             end
         end
     end
     return lgs
 end
 
-function lgs_to_mat(lgs::Vector{Union{Nothing, SparseVector{T, Int}}}) where {T <: Union{RingElement, Number}}
+function lgs_to_mat(lgs::Vector{Union{Nothing, SRow{T}}}, R::Ring) where {T <: RingElement}
     n = length(lgs)
-    mat = spzeros(T, n, n)
+    mat = sparse_matrix(R, n, n)
     for i in 1:n
-        if lgs[i] !== nothing
-            mat[i, :] = lgs[i]
+        if !isnothing(lgs[i])
+            setindex!(mat, lgs[i], i)
         end
     end
     return mat
 end
 
-function indices_of_freedom(mat::SparseArrays.SparseMatrixCSC{T, Int}) where {T <: Union{RingElement, Number}}
+function indices_of_freedom(mat::SMat{T}) where {T <: RingElement}
     @req size(mat)[1] == size(mat)[2] "Matrix needs to be square."
     return filter(i -> iszero(mat[i, i]), 1:size(mat)[1])
 end
@@ -145,7 +139,7 @@ end
 
 Computes a basis of all Poincare-Birkhoff-Witt deformations of `sp`.
 `deform_basis` specifies the basis to use for the space of deformation maps.
-If `special_return` is `SparseArrays.SparseMatrixCSC`, the function returns intermediate results.
+If `special_return` is `SMat`, the function returns intermediate results.
 
 Uses [`pbwdeform_eqs`](@ref) and thus Theorem 3.1 of [WW14](@cite).
 """
@@ -153,7 +147,9 @@ function all_pbwdeformations(
     sp::SmashProductLie{C},
     deform_basis::DeformBasis{C};
     special_return::Type{T}=Nothing,
-) where {C <: RingElement, T <: Union{Nothing, SparseMatrixCSC}}
+) where {C <: RingElement, T <: Union{Nothing, SMat}}
+    @req sp.coeff_ring == QQ "Only implemented for QQ coefficients."
+
     dimL = dim(sp.L)
     dimV = dim(sp.V)
 
@@ -178,7 +174,7 @@ function all_pbwdeformations(
     @info "Generating equation iterator..."
     neqs = pbwdeform_neqs(d)
     iter = Iterators.map(
-        a -> linpoly_to_spvector(a, var_lookup, nvars),
+        a -> linpoly_to_spvector(a, var_lookup),
         Iterators.flatten(
             Iterators.map(function (x)
                     i = x[1]
@@ -190,7 +186,7 @@ function all_pbwdeformations(
     )
 
     @info "Computing row-echelon form..."
-    lgs = Vector{Union{Nothing, SparseVector{QQFieldElem, Int}}}(nothing, nvars)
+    lgs = Vector{Union{Nothing, SRow{QQFieldElem}}}(nothing, nvars)
     for v in iter
         reduce_and_store!(lgs, v)
     end
@@ -198,9 +194,9 @@ function all_pbwdeformations(
     @info "Computing reduced row-echelon form..."
     reduced_row_echelon!(lgs)
 
-    mat = lgs_to_mat(lgs)
+    mat = lgs_to_mat(lgs, sp.coeff_ring)
 
-    if special_return === SparseMatrixCSC
+    if special_return <: SMat
         return mat, vars
     end
 
@@ -234,7 +230,7 @@ end
 
 Computes a basis of all Poincare-Birkhoff-Witt deformations of `sp` of degrees `degs`.
 `DeformBasisType` specifies the type of basis to use for the space of deformation maps.
-If `special_return` is `SparseArrays.SparseMatrixCSC`, the function returns intermediate results.
+If `special_return` is `SMat`, the function returns intermediate results.
 
 Uses [`pbwdeform_eqs`](@ref) and thus Theorem 3.1 of [WW14](@cite).
 """
@@ -243,7 +239,7 @@ function all_pbwdeformations(
     degs::AbstractVector{Int},
     DeformBasisType::Type{<:DeformBasis{C}}=StdDeformBasis{C};
     special_return::Type{T}=Nothing,
-) where {C <: RingElement, T <: Union{Nothing, SparseMatrixCSC}}
+) where {C <: RingElement, T <: Union{Nothing, SMat}}
     @info "Computing Deform Basis"
     deform_basis = DeformBasisType(sp, degs)
     return all_pbwdeformations(sp, deform_basis; special_return)
@@ -259,6 +255,6 @@ function all_pbwdeformations(
     deg::Int,
     DeformBasisType::Type{<:DeformBasis{C}}=StdDeformBasis{C};
     special_return::Type{T}=Nothing,
-) where {C <: RingElement, T <: Union{Nothing, SparseMatrixCSC}}
+) where {C <: RingElement, T <: Union{Nothing, SMat}}
     return all_pbwdeformations(sp, [deg], DeformBasisType; special_return)
 end
