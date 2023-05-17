@@ -88,46 +88,6 @@ end
     return sparse_row(QQ, [(var_lookup[monomial(a, i)], coeff(a, i)) for i in 1:length(a)])
 end
 
-function reduce_and_store!(lgs::Vector{Union{Nothing, SRow{T}}}, v::SRow{T}) where {T <: RingElement}
-    while !is_zero(v)
-        nz_ind, nz_val = first(v)
-
-        v = divexact(v, nz_val)
-
-        if isnothing(lgs[nz_ind])
-            lgs[nz_ind] = v
-            return
-        else
-            v -= lgs[nz_ind]
-        end
-    end
-end
-
-function reduced_row_echelon!(lgs::Vector{Union{Nothing, SRow{T}}}) where {T <: RingElement}
-    for i in length(lgs):-1:1
-        if isnothing(lgs[i])
-            continue
-        end
-        for (nz_ind, nz_val) in Iterators.drop(lgs[i], 1)
-            if !isnothing(lgs[nz_ind])
-                lgs[i] -= nz_val * lgs[nz_ind]
-            end
-        end
-    end
-    return lgs
-end
-
-function lgs_to_mat(lgs::Vector{Union{Nothing, SRow{T}}}, R::Ring) where {T <: RingElement}
-    n = length(lgs)
-    mat = sparse_matrix(R, n, n)
-    for i in 1:n
-        if !isnothing(lgs[i])
-            setindex!(mat, lgs[i], i)
-        end
-    end
-    return mat
-end
-
 function indices_of_freedom(mat::SMat{T}) where {T <: RingElement}
     return map(j -> (Oscar.Hecke.find_row_starting_with(mat, j), j), 1:size(mat)[2]) |>
            filter(ij -> is_zero(mat[ij[1], ij[2]])) |>
