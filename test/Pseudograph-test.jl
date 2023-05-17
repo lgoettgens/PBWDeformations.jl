@@ -1,5 +1,5 @@
-@testset ExtendedTestSet "All Pseudograph.jl tests" begin
-    @testset "Pseudograph constructor" begin
+@testset "Pseudograph.jl tests" begin
+    @testset "pseudograph constructor" begin
         # negative weights
         for _ in 1:num_random_tests
             nloops = rand(0:10)

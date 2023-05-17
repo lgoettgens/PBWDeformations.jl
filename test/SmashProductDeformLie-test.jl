@@ -1,4 +1,4 @@
-@testset ExtendedTestSet "All SmashProductDeformLie.jl tests" begin
+@testset "SmashProductDeformLie.jl tests" begin
 
     @testset "SmashProductDeformLie constructor" begin
         @testset "R = $R" for R in [QQ, polynomial_ring(QQ, ["x", "y", "z"])[1]]
