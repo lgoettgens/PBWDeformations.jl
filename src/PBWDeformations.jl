@@ -95,7 +95,6 @@ export deform
 export exterior_power
 export flatten
 export general_linear_lie_algebra
-export groupBy
 export highest_weight_module
 export is_crossing_free
 export is_pbwdeformation
