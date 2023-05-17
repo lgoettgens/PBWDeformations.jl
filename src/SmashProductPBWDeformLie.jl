@@ -129,8 +129,9 @@ function lgs_to_mat(lgs::Vector{Union{Nothing, SRow{T}}}, R::Ring) where {T <: R
 end
 
 function indices_of_freedom(mat::SMat{T}) where {T <: RingElement}
-    @req size(mat)[1] == size(mat)[2] "Matrix needs to be square."
-    return filter(i -> iszero(mat[i, i]), 1:size(mat)[1])
+    return map(j -> (Oscar.Hecke.find_row_starting_with(mat, j), j), 1:size(mat)[2]) |>
+           filter(ij -> is_zero(mat[ij[1], ij[2]])) |>
+           x -> map(ij -> ij[2], x)
 end
 
 
@@ -185,38 +186,37 @@ function all_pbwdeformations(
         ),
     )
 
-    @info "Computing row-echelon form..."
-    lgs = Vector{Union{Nothing, SRow{QQFieldElem}}}(nothing, nvars)
+    @info "Computing matrix..."
+    lgs = sparse_matrix(sp.coeff_ring, 0, nvars)
     for v in iter
-        reduce_and_store!(lgs, v)
+        push!(lgs, v)
     end
 
     @info "Computing reduced row-echelon form..."
-    reduced_row_echelon!(lgs)
-
-    mat = lgs_to_mat(lgs, sp.coeff_ring)
+    rref!(lgs; truncate=true)
 
     if special_return <: SMat
-        return mat, vars
+        return lgs, vars
     end
 
     @info "Computing a basis..."
-    freedom_ind = indices_of_freedom(mat)
+    freedom_ind = indices_of_freedom(lgs)
     freedom_deg = length(freedom_ind)
     kappas = Vector{DeformationMap{C}}(undef, freedom_deg)
     for l in 1:freedom_deg
         kappas[l] = fill(sp.alg(0), dimV, dimV)
     end
     if freedom_deg > 0
-        for (i, b) in enumerate(deform_basis)
-            if iszero(mat[i, i])
-                l = findfirst(isequal(i), freedom_ind)
+        for (j, b) in enumerate(deform_basis)
+            l = findfirst(==(j), freedom_ind)
+            if !isnothing(l)
                 kappas[l] += b
             else
-                for j in i+1:nvars
-                    if !iszero(mat[i, j])
-                        l = findfirst(isequal(j), freedom_ind)
-                        kappas[l] += -mat[i, j] .* b
+                i = Oscar.Hecke.find_row_starting_with(lgs, j)
+                for k in j+1:nvars
+                    if !iszero(lgs[i, k])
+                        l = findfirst(==(k), freedom_ind)
+                        kappas[l] += -lgs[i, k] .* b
                     end
                 end
             end
