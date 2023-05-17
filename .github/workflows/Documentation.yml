@@ -22,12 +22,12 @@ jobs:
       - name: "Set up Julia"
         uses: julia-actions/setup-julia@latest
         with:
-          version: '1.6'
+          version: '1.8'
 
       - name: Restore cache
         uses: julia-actions/cache@v1
         with:
-          cache-name: 'docs-1.6'
+          cache-name: 'docs-1.8'
 
       - name: Build package
         uses: julia-actions/julia-buildpkg@latest
