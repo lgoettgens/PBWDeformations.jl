@@ -1,7 +1,6 @@
 include("setup.jl")
 
-# start tests
-@test all(n -> isdefined(PBWDeformations, n), names(PBWDeformations))
+include("Aqua.jl")
 
 include("ArcDiagram-test.jl")
 include("DeformationBases-test.jl")
