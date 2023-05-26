@@ -27,20 +27,21 @@
                 sp = smash_product(L, V)
 
                 @test all_pbwdeformations(sp, ArcDiagDeformBasis{QQFieldElem}(sp, 0:0); special_return=SMat)[1] ==
-                      sparse_matrix(QQ, 0, 0)
+                      matrix(QQ, 0, 0, [])
                 @test all_pbwdeformations(sp, ArcDiagDeformBasis{QQFieldElem}(sp, 0:1); special_return=SMat)[1] ==
-                      sparse_matrix(QQ, 0, 1)
+                      matrix(QQ, 1, 1, [1])
 
                 b = ArcDiagDeformBasis{QQFieldElem}(sp, 0:2)
                 @test length(collect(b)) == 1
                 @test repr("text/plain", collect(b)) ==
                       "1-element Vector{Any}:\n AbstractAlgebra.Generic.FreeAssAlgElem{QQFieldElem}[0 x_2_3 x_2_4 -x_1_3 -x_1_4 0; -x_2_3 0 x_3_4 x_1_2 0 -x_1_4; -x_2_4 -x_3_4 0 0 x_1_2 x_1_3; x_1_3 -x_1_2 0 0 x_3_4 -x_2_4; x_1_4 0 -x_1_2 -x_3_4 0 x_2_3; 0 x_1_4 -x_1_3 x_2_4 -x_2_3 0]"
-                @test all_pbwdeformations(sp, b; special_return=SMat)[1] == sparse_matrix(QQ, 0, 1)
+                @test all_pbwdeformations(sp, b; special_return=SMat)[1] == matrix(QQ, 1, 1, [1])
                 @test all_pbwdeformations(sp, b) == collect(b)
 
                 b = ArcDiagDeformBasis{QQFieldElem}(sp, 0:3)
                 @test length(collect(b)) == 4
-                @test all_pbwdeformations(sp, b; special_return=SMat)[1] == sparse_matrix(QQ, [0 1 3 // 2 -1 // 2])
+                @test all_pbwdeformations(sp, b; special_return=SMat)[1] ==
+                      matrix(QQ, 4, 3, [1, 0, 0, 0, -3 // 2, 1 // 2, 0, 1, 0, 0, 0, 1])
                 ms = all_pbwdeformations(sp, b)
                 @test length(ms) == 3
                 @test ms[1] == collect(b)[1]
@@ -55,15 +56,15 @@
                 sp = smash_product(L, V)
 
                 @test all_pbwdeformations(sp, ArcDiagDeformBasis{QQFieldElem}(sp, 0:0); special_return=SMat)[1] ==
-                      sparse_matrix(QQ, 0, 0)
+                      matrix(QQ, 0, 0, [])
                 @test all_pbwdeformations(sp, ArcDiagDeformBasis{QQFieldElem}(sp, 0:1); special_return=SMat)[1] ==
-                      sparse_matrix(QQ, 0, 1)
+                      matrix(QQ, 1, 1, [1])
 
                 b = ArcDiagDeformBasis{QQFieldElem}(sp, 0:2)
                 @test length(collect(b)) == 1
                 @test repr("text/plain", collect(b)) ==
                       "1-element Vector{Any}:\n AbstractAlgebra.Generic.FreeAssAlgElem{QQFieldElem}[0 x_2_3 x_2_4 x_2_5 -x_1_3 -x_1_4 -x_1_5 0 0 0; -x_2_3 0 x_3_4 x_3_5 x_1_2 0 0 -x_1_4 -x_1_5 0; -x_2_4 -x_3_4 0 x_4_5 0 x_1_2 0 x_1_3 0 -x_1_5; -x_2_5 -x_3_5 -x_4_5 0 0 0 x_1_2 0 x_1_3 x_1_4; x_1_3 -x_1_2 0 0 0 x_3_4 x_3_5 -x_2_4 -x_2_5 0; x_1_4 0 -x_1_2 0 -x_3_4 0 x_4_5 x_2_3 0 -x_2_5; x_1_5 0 0 -x_1_2 -x_3_5 -x_4_5 0 0 x_2_3 x_2_4; 0 x_1_4 -x_1_3 0 x_2_4 -x_2_3 0 0 x_4_5 -x_3_5; 0 x_1_5 0 -x_1_3 x_2_5 0 -x_2_3 -x_4_5 0 x_3_4; 0 0 x_1_5 -x_1_4 0 x_2_5 -x_2_4 x_3_5 -x_3_4 0]"
-                @test all_pbwdeformations(sp, b; special_return=SMat)[1] == sparse_matrix(QQ, 0, 1)
+                @test all_pbwdeformations(sp, b; special_return=SMat)[1] == matrix(QQ, 1, 1, [1])
                 @test all_pbwdeformations(sp, b) == collect(b)
             end
 
@@ -73,13 +74,13 @@
                 sp = smash_product(L, V)
 
                 @test all_pbwdeformations(sp, ArcDiagDeformBasis{QQFieldElem}(sp, 0:0); special_return=SMat)[1] ==
-                      sparse_matrix(QQ, 0, 0)
+                      matrix(QQ, 0, 0, [])
                 @test all_pbwdeformations(sp, ArcDiagDeformBasis{QQFieldElem}(sp, 0:1); special_return=SMat)[1] ==
-                      sparse_matrix(QQ, 0, 1)
+                      matrix(QQ, 1, 1, [1])
 
                 b = ArcDiagDeformBasis{QQFieldElem}(sp, 0:2)
                 @test length(collect(b)) == 2
-                @test all_pbwdeformations(sp, b; special_return=SMat)[1] == sparse_matrix(QQ, [0 1])
+                @test all_pbwdeformations(sp, b; special_return=SMat)[1] == matrix(QQ, 2, 1, [1, 0])
                 @test all_pbwdeformations(sp, b) == collect(b)[1:1]
             end
 
@@ -89,13 +90,13 @@
                 sp = smash_product(L, V)
 
                 @test all_pbwdeformations(sp, ArcDiagDeformBasis{QQFieldElem}(sp, 0:0); special_return=SMat)[1] ==
-                      sparse_matrix(QQ, 0, 0)
+                      matrix(QQ, 0, 0, [])
                 @test all_pbwdeformations(sp, ArcDiagDeformBasis{QQFieldElem}(sp, 0:1); special_return=SMat)[1] ==
-                      sparse_matrix(QQ, 0, 1)
+                      matrix(QQ, 1, 1, [1])
 
                 b = ArcDiagDeformBasis{QQFieldElem}(sp, 0:2)
                 @test length(collect(b)) == 2
-                @test all_pbwdeformations(sp, b; special_return=SMat)[1] == sparse_matrix(QQ, [0 1])
+                @test all_pbwdeformations(sp, b; special_return=SMat)[1] == matrix(QQ, 2, 1, [1, 0])
                 @test all_pbwdeformations(sp, b) == collect(b)[1:1]
             end
         end
@@ -110,20 +111,21 @@
                 sp = smash_product(L, V)
 
                 @test all_pbwdeformations(sp, PseudographDeformBasis{QQFieldElem}(sp, 0:0); special_return=SMat)[1] ==
-                      sparse_matrix(QQ, 0, 0)
+                      matrix(QQ, 0, 0, [])
                 @test all_pbwdeformations(sp, PseudographDeformBasis{QQFieldElem}(sp, 0:1); special_return=SMat)[1] ==
-                      sparse_matrix(QQ, 0, 1)
+                      matrix(QQ, 1, 1, [1])
 
                 b = PseudographDeformBasis{QQFieldElem}(sp, 0:2)
                 @test length(collect(b)) == 1
                 @test repr("text/plain", collect(b)) ==
                       "1-element Vector{Any}:\n AbstractAlgebra.Generic.FreeAssAlgElem{QQFieldElem}[0 x_2_3 x_2_4 -x_1_3 -x_1_4 0; -x_2_3 0 x_3_4 x_1_2 0 -x_1_4; -x_2_4 -x_3_4 0 0 x_1_2 x_1_3; x_1_3 -x_1_2 0 0 x_3_4 -x_2_4; x_1_4 0 -x_1_2 -x_3_4 0 x_2_3; 0 x_1_4 -x_1_3 x_2_4 -x_2_3 0]"
-                @test all_pbwdeformations(sp, b; special_return=SMat)[1] == sparse_matrix(QQ, 0, 1)
+                @test all_pbwdeformations(sp, b; special_return=SMat)[1] == matrix(QQ, 1, 1, [1])
                 @test all_pbwdeformations(sp, b) == collect(b)
 
                 b = PseudographDeformBasis{QQFieldElem}(sp, 0:3)
                 @test length(collect(b)) == 4
-                @test all_pbwdeformations(sp, b; special_return=SMat)[1] == sparse_matrix(QQ, [0 1 3 // 2 -1 // 2])
+                @test all_pbwdeformations(sp, b; special_return=SMat)[1] ==
+                      matrix(QQ, 4, 3, [1, 0, 0, 0, -3 // 2, 1 // 2, 0, 1, 0, 0, 0, 1])
                 ms = all_pbwdeformations(sp, b)
                 @test length(ms) == 3
                 @test ms[1] == collect(b)[1]
@@ -138,21 +140,20 @@
                 sp = smash_product(L, V)
 
                 @test all_pbwdeformations(sp, PseudographDeformBasis{QQFieldElem}(sp, 0:0); special_return=SMat)[1] ==
-                      sparse_matrix(QQ, 0, 0)
+                      matrix(QQ, 0, 0, [])
                 @test all_pbwdeformations(sp, PseudographDeformBasis{QQFieldElem}(sp, 0:1); special_return=SMat)[1] ==
-                      sparse_matrix(QQ, 0, 1)
+                      matrix(QQ, 1, 1, [1])
 
                 b = PseudographDeformBasis{QQFieldElem}(sp, 0:2)
                 @test length(collect(b)) == 1
                 @test repr("text/plain", collect(b)) ==
                       "1-element Vector{Any}:\n AbstractAlgebra.Generic.FreeAssAlgElem{QQFieldElem}[0 x_2_3 x_2_4 x_2_5 -x_1_3 -x_1_4 -x_1_5 0 0 0; -x_2_3 0 x_3_4 x_3_5 x_1_2 0 0 -x_1_4 -x_1_5 0; -x_2_4 -x_3_4 0 x_4_5 0 x_1_2 0 x_1_3 0 -x_1_5; -x_2_5 -x_3_5 -x_4_5 0 0 0 x_1_2 0 x_1_3 x_1_4; x_1_3 -x_1_2 0 0 0 x_3_4 x_3_5 -x_2_4 -x_2_5 0; x_1_4 0 -x_1_2 0 -x_3_4 0 x_4_5 x_2_3 0 -x_2_5; x_1_5 0 0 -x_1_2 -x_3_5 -x_4_5 0 0 x_2_3 x_2_4; 0 x_1_4 -x_1_3 0 x_2_4 -x_2_3 0 0 x_4_5 -x_3_5; 0 x_1_5 0 -x_1_3 x_2_5 0 -x_2_3 -x_4_5 0 x_3_4; 0 0 x_1_5 -x_1_4 0 x_2_5 -x_2_4 x_3_5 -x_3_4 0]"
-                @test all_pbwdeformations(sp, b; special_return=SMat)[1] == sparse_matrix(QQ, 0, 1)
+                @test all_pbwdeformations(sp, b; special_return=SMat)[1] == matrix(QQ, 1, 1, [1])
                 @test all_pbwdeformations(sp, b) == collect(b)
 
                 b = PseudographDeformBasis{QQFieldElem}(sp, 0:3)
                 @test length(collect(b)) == 4
-                @test all_pbwdeformations(sp, b; special_return=SMat)[1] ==
-                      sparse_matrix(QQ, [0 1 0 0; 0 0 1 0; 0 0 0 1])
+                @test all_pbwdeformations(sp, b; special_return=SMat)[1] == matrix(QQ, 4, 1, [1, 0, 0, 0])
                 @test all_pbwdeformations(sp, b) == collect(b)[1:1]
             end
         end

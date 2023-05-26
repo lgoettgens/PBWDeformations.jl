@@ -146,12 +146,12 @@ function all_pbwdeformations(
         Hecke._add_row_to_rref!(lgs, v)
     end
 
-    if special_return <: SMat
-        return lgs, vars
-    end
-
     @info "Computing the kernel..."
     kernel_dim, kernel = right_kernel(lgs)
+
+    if special_return <: SMat
+        return kernel, vars
+    end
 
     @info "Computing a basis..."
     kappas = Vector{DeformationMap{C}}(undef, kernel_dim)
