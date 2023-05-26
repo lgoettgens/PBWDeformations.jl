@@ -88,10 +88,6 @@ end
     return sparse_row(QQ, [(var_lookup[monomial(a, i)], coeff(a, i)) for i in 1:length(a)])
 end
 
-function indices_of_freedom(mat::SMat{T}) where {T <: RingElement}
-    return [j for j in 1:size(mat)[2] if is_zero(mat[Oscar.Hecke.find_row_starting_with(mat, j), j])]
-end
-
 
 """
     all_pbwdeformations(sp::SmashProductLie{C}, deform_basis::DeformBasis{C}; special_return=Nothing) where {C <: RingElement}
@@ -144,41 +140,27 @@ function all_pbwdeformations(
         ),
     )
 
-    @info "Computing matrix..."
+    @info "Computing reduced row-echelon form..."
     lgs = sparse_matrix(sp.coeff_ring, 0, nvars)
     for v in iter
-        push!(lgs, v)
+        Hecke._add_row_to_rref!(lgs, v)
     end
 
-    @info "Computing reduced row-echelon form..."
-    rref!(lgs; truncate=true)
+    @info "Computing the kernel..."
+    kernel_dim, kernel = right_kernel(lgs)
 
     if special_return <: SMat
-        return lgs, vars
+        return kernel, vars
     end
 
     @info "Computing a basis..."
-    freedom_ind = indices_of_freedom(lgs)
-    freedom_deg = length(freedom_ind)
-    kappas = Vector{DeformationMap{C}}(undef, freedom_deg)
-    for l in 1:freedom_deg
-        kappas[l] = fill(sp.alg(0), dimV, dimV)
-    end
-    if freedom_deg > 0
-        for (j, b) in enumerate(deform_basis)
-            l = findfirst(==(j), freedom_ind)
-            if !isnothing(l)
-                kappas[l] += b
-            else
-                i = Oscar.Hecke.find_row_starting_with(lgs, j)
-                for k in j+1:nvars
-                    if !iszero(lgs[i, k])
-                        l = findfirst(==(k), freedom_ind)
-                        kappas[l] += -lgs[i, k] .* b
-                    end
-                end
-            end
+    kappas = Vector{DeformationMap{C}}(undef, kernel_dim)
+    for l in 1:kernel_dim
+        kappa = fill(sp.alg(0), dimV, dimV)
+        for (i, b) in enumerate(deform_basis)
+            kappa += kernel[i, l] .* b
         end
+        kappas[l] = kappa
     end
     return kappas
 end
