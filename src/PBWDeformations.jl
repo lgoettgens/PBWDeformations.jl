@@ -112,7 +112,9 @@ export symmetric_power
 export tensor_power
 export to_arcdiag
 
-
+function __init__()
+    Hecke.add_verbose_scope(:PBWDeformations)
+end
 
 include("Util.jl")
 
