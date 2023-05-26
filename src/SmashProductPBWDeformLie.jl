@@ -144,14 +144,11 @@ function all_pbwdeformations(
         ),
     )
 
-    @info "Computing matrix..."
+    @info "Computing reduced row-echelon form..."
     lgs = sparse_matrix(sp.coeff_ring, 0, nvars)
     for v in iter
-        push!(lgs, v)
+        Hecke._add_row_to_rref!(lgs, v)
     end
-
-    @info "Computing reduced row-echelon form..."
-    rref!(lgs; truncate=true)
 
     if special_return <: SMat
         return lgs, vars
