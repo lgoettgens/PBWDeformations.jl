@@ -4,7 +4,7 @@ Each element of the basis is induced by an arc diagram of a suitable size,
 which gets symmetrized and specialised to the given smash product.
 This process is due to [FM22](@cite).
 """
-struct ArcDiagDeformBasis{C <: RingElement} <: DeformBasis{C}
+struct ArcDiagDeformBasis{C <: RingElem} <: DeformBasis{C}
     len::Int
     iter
     extra_data::Dict{DeformationMap{C}, Set{ArcDiagram}}
@@ -14,7 +14,7 @@ struct ArcDiagDeformBasis{C <: RingElement} <: DeformBasis{C}
         sp::SmashProductLie{C},
         degs::AbstractVector{Int};
         no_normalize::Bool=false,
-    ) where {C <: RingElement}
+    ) where {C <: RingElem}
         @req get_attribute(sp.L, :type, nothing) == :special_orthogonal "Only works for so_n."
         @req (is_exterior_power(sp.V) || is_symmetric_power(sp.V)) && is_standard_module(base_module(sp.V)) "Only works for exterior powers of the standard module."
 
@@ -67,7 +67,7 @@ end
 Base.length(basis::ArcDiagDeformBasis) = basis.len
 
 
-function pbw_arc_diagrams__so(V::LieAlgebraModule{C}, d::Int) where {C <: RingElement}
+function pbw_arc_diagrams__so(V::LieAlgebraModule{C}, d::Int) where {C <: RingElem}
     e = arc_diagram_num_points__so(V)
     upper_indep_sets = Vector{Int}[is .+ a * e for a in [0, 1] for is in arc_diagram_indep_sets__so(V)]
     lower_indep_sets = Vector{Int}[[[2i - 1, 2i] for i in 1:d]...]
@@ -75,7 +75,7 @@ function pbw_arc_diagrams__so(V::LieAlgebraModule{C}, d::Int) where {C <: RingEl
     return all_arc_diagrams(2e, 2d; indep_sets)
 end
 
-function arc_diagram_num_points__so(V::LieAlgebraModule{C}) where {C <: RingElement}
+function arc_diagram_num_points__so(V::LieAlgebraModule{C}) where {C <: RingElem}
     if is_standard_module(V)
         return 1
     elseif is_exterior_power(V) || is_symmetric_power(V) || is_tensor_power(V)
@@ -85,7 +85,7 @@ function arc_diagram_num_points__so(V::LieAlgebraModule{C}) where {C <: RingElem
     end
 end
 
-function arc_diagram_indep_sets__so(V::LieAlgebraModule{C}) where {C <: RingElement}
+function arc_diagram_indep_sets__so(V::LieAlgebraModule{C}) where {C <: RingElem}
     if is_standard_module(V)
         return Vector{Int}[]
     elseif is_exterior_power(V) || is_symmetric_power(V) || is_tensor_power(V)
@@ -180,7 +180,7 @@ function arc_diagram_label_permutations__so(V::LieAlgebraModule, label::Abstract
 end
 
 
-function arcdiag_to_deformationmap__so(diag::ArcDiagram, sp::SmashProductLie{C}) where {C <: RingElement}
+function arcdiag_to_deformationmap__so(diag::ArcDiagram, sp::SmashProductLie{C}) where {C <: RingElem}
     d = div(diag.nLower, 2)
     dim_stdmod_V = sp.L.n
 

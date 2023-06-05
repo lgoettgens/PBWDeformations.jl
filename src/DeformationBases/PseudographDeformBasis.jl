@@ -5,7 +5,7 @@ certain properties, which gets transformed to an arc diagram and then handled as
 in [`ArcDiagDeformBasis`](@ref).
 This process is due to [FM22](@cite).
 """
-struct PseudographDeformBasis{C <: RingElement} <: DeformBasis{C}
+struct PseudographDeformBasis{C <: RingElem} <: DeformBasis{C}
     len::Int
     iter
     extra_data::Dict{DeformationMap{C}, Set{Tuple{Pseudograph2, Generic.Partition{Int}}}}
@@ -15,7 +15,7 @@ struct PseudographDeformBasis{C <: RingElement} <: DeformBasis{C}
         sp::SmashProductLie{C},
         degs::AbstractVector{Int};
         no_normalize::Bool=false,
-    ) where {C <: RingElement}
+    ) where {C <: RingElem}
         @req get_attribute(sp.L, :type, nothing) == :special_orthogonal "Only works for so_n."
         @req is_exterior_power(sp.V) && is_standard_module(base_module(sp.V)) "Only works for exterior powers of the standard module."
 

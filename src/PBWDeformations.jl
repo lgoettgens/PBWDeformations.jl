@@ -14,6 +14,7 @@ import AbstractAlgebra:
     FPModuleElem,
     Generic,
     MatElem,
+    NCRing,
     Partition,
     ProductIterator,
     Ring,
@@ -35,11 +36,11 @@ import AbstractAlgebra:
     set_attribute!,
     symbols
 
-import AbstractAlgebra.Generic: _matrix, matrix_repr, rels
+import AbstractAlgebra.Generic: _matrix, rels
 
-import Oscar: action, comm, exterior_power, normal_form, symmetric_power
+import Oscar: action, comm, exterior_power, simplify, simplify!, symmetric_power
 
-import Base: deepcopy_internal, hash, isequal, iszero, length, parent, show, sum, zero, +, -, *, ==
+import Base: deepcopy_internal, hash, isequal, isone, iszero, length, one, parent, show, sum, zero
 
 import Oscar.LieAlgebras:
     AbstractLieAlgebra,
@@ -82,8 +83,8 @@ export LinearLieAlgebra, LinearLieAlgebraElem
 export Pseudograph2
 export PseudographDeformBasis
 export QuadraticRelations
-export SmashProductDeformLie
-export SmashProductLie
+export SmashProductLie, SmashProductLieElem
+export SmashProductLieDeform, SmashProductLieDeformElem
 export StdDeformBasis
 
 export abstract_module
@@ -99,6 +100,7 @@ export highest_weight_module
 export is_crossing_free
 export is_pbwdeformation
 export lie_algebra
+export lie_module
 export lookup_data
 export matrix_repr_basis
 export nedges
@@ -111,6 +113,7 @@ export symmetric_deformation
 export symmetric_power
 export tensor_power
 export to_arcdiag
+export underlying_algebra
 
 function __init__()
     Hecke.add_verbose_scope(:PBWDeformations)
@@ -122,10 +125,11 @@ include("FreeAssAlgQuadraticRelations.jl")
 include("DeformationBases/DeformBasis.jl")
 
 include("SmashProductLie.jl")
-include("SmashProductDeformLie.jl")
+include("SmashProductLieDeform.jl")
 include("SmashProductPBWDeformLie.jl")
 include("ArcDiagram.jl")
 include("Pseudograph.jl")
+include("OldStuff.jl")
 
 include("DeformationBases/ArcDiagDeformBasis.jl")
 include("DeformationBases/PseudographDeformBasis.jl")

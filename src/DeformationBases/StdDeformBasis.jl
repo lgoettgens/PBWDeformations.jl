@@ -4,22 +4,22 @@ Each element of the basis is a skew-symmetric matrix with 2 non-zero entries,
 where one entry is a pure tensor power of degree ∈ `degs` over the Lie algebra part
 of the smash product, and the other entry is its additive inverse.
 """
-struct StdDeformBasis{C <: RingElement} <: DeformBasis{C}
+struct StdDeformBasis{C <: RingElem} <: DeformBasis{C}
     len::Int
     iter
     extra_data::Dict{DeformationMap{C}, Nothing}
     normalize
 
-    function StdDeformBasis{C}(sp::SmashProductLie{C}, degs::AbstractVector{Int}) where {C <: RingElement}
+    function StdDeformBasis{C}(sp::SmashProductLie{C}, degs::AbstractVector{Int}) where {C <: RingElem}
         dimL = dim(sp.L)
         dimV = dim(sp.V)
         R = coefficient_ring(sp.alg)
         iter = (
             begin
                 kappa = fill(sp.alg(0), dimV, dimV)
-                entry = prod(map(k -> gen(sp, k, :L), ind); init=sp.alg(1))
-                kappa[i, j] += entry
-                kappa[j, i] -= entry
+                entry = prod(map(k -> gen(sp, k, :L), ind); init=one(sp))
+                kappa[i, j] += entry.alg_elem
+                kappa[j, i] -= entry.alg_elem
                 kappa
             end for i in 1:dimV for j in i+1:dimV for d in degs for ind in multicombinations(1:dimL, d)
         )

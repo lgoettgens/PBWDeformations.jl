@@ -16,8 +16,8 @@
 
             kappa = fill(zero(sp.alg), 6, 6)
             # some made-up skew-symmetric entries
-            kappa[1, 2] = gen(sp, 2, :L)
-            kappa[2, 1] = -gen(sp, 2, :L)
+            kappa[1, 2] = gen(sp, 2, :L).alg_elem
+            kappa[2, 1] = -gen(sp, 2, :L).alg_elem
             d = deform(sp, kappa)
             @test !is_pbwdeformation(d)
         end

@@ -1,6 +1,6 @@
-QuadraticRelations{C} = Dict{Tuple{Int, Int}, FreeAssAlgElem{C}} where {C <: RingElement}
+QuadraticRelations{C} = Dict{Tuple{Int, Int}, FreeAssAlgElem{C}} where {C <: RingElem}
 
-function normal_form(a::FreeAssAlgElem{C}, rels::QuadraticRelations{C}) where {C <: RingElement}
+function normal_form(a::FreeAssAlgElem{C}, rels::QuadraticRelations{C}) where {C <: RingElem}
     todo = deepcopy(a)
     result = zero(parent(todo))
     CR = base_ring(a)
@@ -24,8 +24,4 @@ function normal_form(a::FreeAssAlgElem{C}, rels::QuadraticRelations{C}) where {C
         end
     end
     return result
-end
-
-function comm(a::FreeAssAlgElem{C}, b::FreeAssAlgElem{C}) where {C <: RingElement}
-    return a * b - b * a
 end
