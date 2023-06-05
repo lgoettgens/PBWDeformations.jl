@@ -16,8 +16,7 @@ struct ArcDiagDeformBasis{C <: RingElement} <: DeformBasis{C}
         no_normalize::Bool=false,
     ) where {C <: RingElement}
         @req get_attribute(sp.L, :type, nothing) == :special_orthogonal "Only works for so_n."
-        @req (is_exterior_power(sp.V) || is_symmetric_power(sp.V)) &&
-             is_standard_module(get_attribute(sp.V, :inner_module)) "Only works for exterior powers of the standard module."
+        @req (is_exterior_power(sp.V) || is_symmetric_power(sp.V)) && is_standard_module(base_module(sp.V)) "Only works for exterior powers of the standard module."
 
         extra_data = Dict{DeformationMap{C}, Set{ArcDiagram}}()
         normalize = no_normalize ? identity : normalize_default
@@ -80,7 +79,7 @@ function arc_diagram_num_points__so(V::LieAlgebraModule{C}) where {C <: RingElem
     if is_standard_module(V)
         return 1
     elseif is_exterior_power(V) || is_symmetric_power(V) || is_tensor_power(V)
-        return arc_diagram_num_points__so(get_attribute(V, :inner_module)) * get_attribute(V, :power)
+        return arc_diagram_num_points__so(base_module(V)) * get_attribute(V, :power)
     else
         error("Not implemented.")
     end
@@ -90,7 +89,7 @@ function arc_diagram_indep_sets__so(V::LieAlgebraModule{C}) where {C <: RingElem
     if is_standard_module(V)
         return Vector{Int}[]
     elseif is_exterior_power(V) || is_symmetric_power(V) || is_tensor_power(V)
-        inner_mod = get_attribute(V, :inner_module)
+        inner_mod = base_module(V)
         power = get_attribute(V, :power)
         if is_standard_module(inner_mod)
             if is_exterior_power(V)
@@ -111,19 +110,19 @@ function arc_diagram_label_iterator__so(V::LieAlgebraModule, base_labels::Abstra
     if is_standard_module(V)
         return [[l] for l in base_labels]
     elseif is_exterior_power(V)
-        inner_mod = get_attribute(V, :inner_module)
+        inner_mod = base_module(V)
         power = get_attribute(V, :power)
         return combinations(collect(arc_diagram_label_iterator__so(inner_mod, base_labels)), power) .|>
                Iterators.flatten .|>
                collect
     elseif is_symmetric_power(V)
-        inner_mod = get_attribute(V, :inner_module)
+        inner_mod = base_module(V)
         power = get_attribute(V, :power)
         return multicombinations(collect(arc_diagram_label_iterator__so(inner_mod, base_labels)), power) .|>
                Iterators.flatten .|>
                collect
     elseif is_tensor_power(V)
-        inner_mod = get_attribute(V, :inner_module)
+        inner_mod = base_module(V)
         power = get_attribute(V, :power)
         return ProductIterator(arc_diagram_label_iterator__so(inner_mod, base_labels), power) .|>
                reverse .|>
@@ -139,7 +138,7 @@ function arc_diagram_label_permutations__so(V::LieAlgebraModule, label::Abstract
         @req length(label) == 1 "Number of labels mistmatch."
         return [(label, 1)]
     elseif is_exterior_power(V) || is_symmetric_power(V) || is_tensor_power(V)
-        inner_mod = get_attribute(V, :inner_module)
+        inner_mod = base_module(V)
         power = get_attribute(V, :power)
         m = arc_diagram_num_points__so(inner_mod)
         @req length(label) == m * power "Number of labels mistmatch."
