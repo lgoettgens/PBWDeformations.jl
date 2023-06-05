@@ -30,7 +30,7 @@ struct ArcDiagDeformBasis{C <: RingElement} <: DeformBasis{C}
             len = length(diag_iter)
             iter = (
                 begin
-                    @debug "Basis generation deg $(d), $(debug_counter = (debug_counter % len) + 1)/$(len), $(floor(Int, 100*debug_counter / len))%"
+                    @vprintln :PBWDeformations 2 "Basis generation deg $(lpad(d, maximum(ndigits, degs))), $(lpad(floor(Int, 100*(debug_counter = (debug_counter % len) + 1) / len), 3))%, $(lpad(debug_counter, ndigits(len)))/$(len)"
                     basis_elem = arcdiag_to_deformationmap__so(diag, sp)
                     if !no_normalize
                         basis_elem = normalize(basis_elem)

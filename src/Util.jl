@@ -18,41 +18,15 @@ function flatten(a::Vector{Vector{T}}) where {T}
     return vcat(a...)
 end
 
-"""
-    groupBy(a::Vector{T}; eq=(==)) where {T}
-
-Returns a vector containing the elements of `a` grouped into subvectors of consecutive equal elements.
-
-# Examples
-```jldoctest
-julia> groupBy([1,1,2,2,2,2,3,1,4,4])
-5-element Vector{Vector{Int64}}:
- [1, 1]
- [2, 2, 2, 2]
- [3]
- [1]
- [4, 4]
-
-julia> groupBy([i for i in -5:5]; eq=((x, y) -> sign(x) == sign(y)))
-3-element Vector{Vector{Int64}}:
- [-5, -4, -3, -2, -1]
- [0]
- [1, 2, 3, 4, 5]
-```
-"""
-function groupBy(a::Vector{T}; eq=(==)) where {T}
-    if isempty(a)
-        return Vector{T}[]
+# remove once https://github.com/thofma/Hecke.jl/pull/1085 is available
+macro vprintln(s, msg)
+    quote
+        @vprint $s ($(esc(msg)) * '\n')
     end
-    v = first(a)
-    r = [[v]]
-    for x in a[2:end]
-        if eq(v, x)
-            push!(r[end], x)
-        else
-            push!(r, [x])
-        end
-        v = x
+end
+
+macro vprintln(s, l::Int, msg)
+    quote
+        @vprint $s $l ($(esc(msg)) * '\n')
     end
-    return r
 end

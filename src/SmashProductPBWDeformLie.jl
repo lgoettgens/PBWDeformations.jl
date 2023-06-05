@@ -110,50 +110,53 @@ function all_pbwdeformations(
 
     nvars = length(deform_basis)
 
-    @info "Constructing MPolyRing..."
+    @vprintln :PBWDeformations 1 "Constructing MPolyRing..."
     R, vars = polynomial_ring(sp.coeff_ring, max(nvars, 1))
     var_lookup = Dict(vars[i] => i for i in 1:nvars)
 
-    @info "Changing SmashProductLie coeffcient type..."
+    @vprintln :PBWDeformations 1 "Changing SmashProductLie coeffcient type..."
     new_sp = change_base_ring(R, sp)
 
-    @info "Constructing kappa..."
+    @vprintln :PBWDeformations 1 "Constructing kappa..."
     kappa = fill(new_sp.alg(0), dimV, dimV)
     for (i, b) in enumerate(deform_basis)
         kappa += vars[i] .* map(e -> change_base_ring(R, e, parent=new_sp.alg), b)
     end
 
-    @info "Constructing deformation..."
+    @vprintln :PBWDeformations 1 "Constructing deformation..."
     d = deform(new_sp, kappa)
 
-    @info "Generating equation iterator..."
+    @vprintln :PBWDeformations 1 "Generating equation iterator..."
     neqs = pbwdeform_neqs(d)
     iter = Iterators.map(
         a -> linpoly_to_spvector(a, var_lookup),
         Iterators.flatten(
-            Iterators.map(function (x)
+            Iterators.map(
+                function (x)
                     i = x[1]
                     a = x[2]
-                    @debug "Equation $i/$(neqs), $(floor(Int, 100*i / neqs))%"
+                    @vprintln :PBWDeformations 2 "Equations $(lpad(floor(Int, 100*i / neqs), 3))%, $(lpad(i, ndigits(neqs)))/$(neqs)"
                     coefficient_comparison(a)
-                end, enumerate(pbwdeform_eqs(d))),
+                end,
+                enumerate(pbwdeform_eqs(d)),
+            ),
         ),
     )
 
-    @info "Computing reduced row-echelon form..."
+    @vprintln :PBWDeformations 1 "Computing reduced row-echelon form..."
     lgs = sparse_matrix(sp.coeff_ring, 0, nvars)
     for v in iter
         Hecke._add_row_to_rref!(lgs, v)
     end
 
-    @info "Computing the kernel..."
+    @vprintln :PBWDeformations 1 "Computing the kernel..."
     kernel_dim, kernel = right_kernel(lgs)
 
     if special_return <: SMat
         return kernel, vars
     end
 
-    @info "Computing a basis..."
+    @vprintln :PBWDeformations 1 "Computing a basis..."
     kappas = Vector{DeformationMap{C}}(undef, kernel_dim)
     for l in 1:kernel_dim
         kappa = fill(sp.alg(0), dimV, dimV)
@@ -180,7 +183,7 @@ function all_pbwdeformations(
     DeformBasisType::Type{<:DeformBasis{C}}=StdDeformBasis{C};
     special_return::Type{T}=Nothing,
 ) where {C <: RingElement, T <: Union{Nothing, SMat}}
-    @info "Computing Deform Basis"
+    @vprintln :PBWDeformations 1 "Computing Deform Basis"
     deform_basis = DeformBasisType(sp, degs)
     return all_pbwdeformations(sp, deform_basis; special_return)
 end

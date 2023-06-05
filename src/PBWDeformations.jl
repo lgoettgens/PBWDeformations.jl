@@ -95,7 +95,6 @@ export deform
 export exterior_power
 export flatten
 export general_linear_lie_algebra
-export groupBy
 export highest_weight_module
 export is_crossing_free
 export is_pbwdeformation
@@ -113,7 +112,9 @@ export symmetric_power
 export tensor_power
 export to_arcdiag
 
-
+function __init__()
+    Hecke.add_verbose_scope(:PBWDeformations)
+end
 
 include("Util.jl")
 
