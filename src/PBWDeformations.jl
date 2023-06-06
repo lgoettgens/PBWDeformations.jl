@@ -40,6 +40,8 @@ import AbstractAlgebra.Generic: _matrix, rels
 
 import Oscar: action, comm, exterior_power, simplify, simplify!, symmetric_power
 
+import Hecke: @vprintln
+
 import Base: deepcopy_internal, hash, isequal, isone, iszero, length, one, parent, show, sum, zero
 
 import Oscar.LieAlgebras:
