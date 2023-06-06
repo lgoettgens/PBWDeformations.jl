@@ -21,7 +21,6 @@ import AbstractAlgebra:
     RingElement,
     base_ring,
     canonical_unit,
-    change_base_ring,
     dim,
     elem_type,
     expressify,
@@ -128,7 +127,6 @@ include("SmashProductLieDeform.jl")
 include("SmashProductPBWDeformLie.jl")
 include("ArcDiagram.jl")
 include("Pseudograph.jl")
-include("OldStuff.jl")
 
 include("DeformationBases/ArcDiagDeformBasis.jl")
 include("DeformationBases/PseudographDeformBasis.jl")

@@ -254,8 +254,25 @@ end
 Construct the smash product ``TV \\rtimes U(L)``.
 """
 function smash_product(L::LieAlgebra{C}, V::LieAlgebraModule{C}) where {C <: RingElem}
+    return smash_product(base_ring(L), L, V)
+end
+
+"""
+    smash_product(R::Ring, L::LieAlgebra{C}, V::LieAlgebraModule{C}) where {C <: RingElem}
+
+Construct the smash product ``TV \\rtimes U(L)`` and extend the coefficients to `R`.
+"""
+function smash_product(R::Ring, L::LieAlgebra{C}, V::LieAlgebraModule{C}) where {C <: RingElem}
     @req L == base_lie_algebra(V) "Incompatible module."
-    R = base_ring(L)::parent_type(C)
+    try
+        R(zero(base_ring(L)))
+    catch e
+        if e isa MethodError
+            error("Coefficient extension from $(base_ring(L)) to $(R) not possible.")
+        else
+            rethrow(e)
+        end
+    end
 
     dimL = dim(L)
     dimV = dim(V)
@@ -264,21 +281,21 @@ function smash_product(L::LieAlgebra{C}, V::LieAlgebraModule{C}) where {C <: Rin
     f_basisL = [gen(f_alg, i) for i in 1:dimL]
     f_basisV = [gen(f_alg, dimL + i) for i in 1:dimV]
 
-    rels = QuadraticRelations{C}()
+    rels = QuadraticRelations{elem_type(R)}()
 
     for (i, xi) in enumerate(basis(L)), (j, xj) in enumerate(basis(L))
-        commutator = sum(c * f_basisL[k] for (k, c) in enumerate(_matrix(xi * xj)) if !iszero(c); init=zero(f_alg))
+        commutator = sum(R(c) * f_basisL[k] for (k, c) in enumerate(_matrix(xi * xj)) if !iszero(c); init=zero(f_alg))
         rels[(i, j)] = f_basisL[j] * f_basisL[i] + commutator
 
     end
 
     for (i, xi) in enumerate(basis(L)), (j, vj) in enumerate(basis(V))
-        commutator = sum(c * f_basisV[k] for (k, c) in enumerate(_matrix(xi * vj)) if !iszero(c); init=zero(f_alg))
+        commutator = sum(R(c) * f_basisV[k] for (k, c) in enumerate(_matrix(xi * vj)) if !iszero(c); init=zero(f_alg))
         rels[(i, dimL + j)] = f_basisV[j] * f_basisL[i] + commutator
         rels[(dimL + j, i)] = f_basisL[i] * f_basisV[j] - commutator
     end
 
-    Sp = SmashProductLie{C, C}(R, L, V, f_alg, rels)
+    Sp = SmashProductLie{elem_type(R), C}(R, L, V, f_alg, rels)
 
     return Sp
 end

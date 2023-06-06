@@ -115,7 +115,7 @@ function all_pbwdeformations(
     var_lookup = Dict(vars[i] => i for i in 1:nvars)
 
     @vprintln :PBWDeformations 1 "Changing SmashProductLie coeffcient type..."
-    new_sp = change_base_ring(R, sp)
+    new_sp = smash_product(R, lie_algebra(sp), lie_module(sp))
 
     @vprintln :PBWDeformations 1 "Constructing kappa..."
     kappa = fill(new_sp.alg(0), dimV, dimV)
