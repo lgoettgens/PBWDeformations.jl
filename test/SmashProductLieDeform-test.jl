@@ -84,7 +84,7 @@
 
                 # Test that the module basis commutes
                 for vi in gens(d, :V), vj in gens(d, :V)
-                    @test iszero(normal_form(comm(vi, vj), d.rels))
+                    @test iszero(comm(vi, vj))
                 end
 
                 showOutput = @test_nowarn sprint(show, d)

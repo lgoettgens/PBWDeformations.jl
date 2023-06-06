@@ -5,13 +5,13 @@ It gets created by calling [`deform`](@ref).
 """
 @attributes mutable struct SmashProductLieDeform{C <: RingElem, CL <: RingElem} <: NCRing
     sp::SmashProductLie{C, CL}
-    rels::QuadraticRelations{C}
+    rels::Matrix{Union{Nothing, FreeAssAlgElem{C}}}
     kappa::DeformationMap{C}
 
     # default constructor for @attributes
     function SmashProductLieDeform{C, CL}(
         sp::SmashProductLie{C, CL},
-        rels::QuadraticRelations{C},
+        rels::Matrix{Union{Nothing, FreeAssAlgElem{C}}},
         kappa::DeformationMap{C},
     ) where {C <: RingElem, CL <: RingElem}
         new{C, CL}(sp, rels, kappa)
@@ -232,7 +232,7 @@ end
 
 function simplify!(e::SmashProductLieDeformElem)
     e.simplified && return e
-    e.alg_elem = normal_form(e.alg_elem, parent(e).rels)
+    e.alg_elem = _normal_form(e.alg_elem, parent(e).rels)
     e.simplified = true
     return e
 end
@@ -273,7 +273,7 @@ function deform(sp::SmashProductLie{C, CL}, kappa::DeformationMap{C}) where {C <
     for i in 1:dimV, j in 1:dimV
         # We have the commutator relation [v_i, v_j] = kappa[i,j]
         # which is equivalent to v_i*v_j = v_j*v_i + kappa[i,j]
-        rels[(dimL + i, dimL + j)] = basisV[j] * basisV[i] + kappa[i, j]
+        rels[dimL+i, dimL+j] = basisV[j] * basisV[i] + kappa[i, j]
         symmetric &= iszero(kappa[i, j])
     end
 

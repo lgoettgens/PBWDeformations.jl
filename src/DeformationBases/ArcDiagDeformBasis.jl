@@ -264,7 +264,7 @@ function arcdiag_to_deformationmap__so(diag::ArcDiagram, sp::SmashProductLie{C})
                             fill(C(1 // factorial(length(basiselem))), factorial(length(basiselem))),
                             [ind for ind in permutations(basiselem)],
                         )
-                        entry += sign_lower_labels * normal_form(symm_basiselem, sp.rels)
+                        entry += sign_lower_labels * _normal_form(symm_basiselem, sp.rels)
                     end
                     # end inner
 

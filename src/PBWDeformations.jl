@@ -83,7 +83,6 @@ export LieAlgebraModule, LieAlgebraModuleElem
 export LinearLieAlgebra, LinearLieAlgebraElem
 export Pseudograph2
 export PseudographDeformBasis
-export QuadraticRelations
 export SmashProductLie, SmashProductLieElem
 export SmashProductLieDeform, SmashProductLieDeformElem
 export StdDeformBasis
@@ -119,7 +118,6 @@ function __init__()
     Hecke.add_verbose_scope(:PBWDeformations)
 end
 
-include("FreeAssAlgQuadraticRelations.jl")
 include("DeformationBases/DeformBasis.jl")
 
 include("SmashProductLie.jl")

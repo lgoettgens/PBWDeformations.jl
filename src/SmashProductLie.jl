@@ -8,7 +8,7 @@ It gets created by calling [`smash_product`](@ref).
     L::LieAlgebra{CL}
     V::LieAlgebraModule{CL}
     alg::FreeAssAlgebra{C}
-    rels::QuadraticRelations{C}
+    rels::Matrix{Union{Nothing, FreeAssAlgElem{C}}}
 
     # default constructor for @attributes
     function SmashProductLie{C, CL}(
@@ -16,7 +16,7 @@ It gets created by calling [`smash_product`](@ref).
         L::LieAlgebra{CL},
         V::LieAlgebraModule{CL},
         alg::FreeAssAlgebra{C},
-        rels::QuadraticRelations{C},
+        rels::Matrix{Union{Nothing, FreeAssAlgElem{C}}},
     ) where {C <: RingElem, CL <: RingElem}
         new{C, CL}(coeff_ring, L, V, alg, rels)
     end
@@ -233,13 +233,39 @@ end
 
 function simplify!(e::SmashProductLieElem)
     e.simplified && return e
-    e.alg_elem = normal_form(e.alg_elem, parent(e).rels)
+    e.alg_elem = _normal_form(e.alg_elem, parent(e).rels)
     e.simplified = true
     return e
 end
 
 function simplify(e::SmashProductLieElem)
     return deepcopy(e) |> simplify!
+end
+
+function _normal_form(a::FreeAssAlgElem{C}, rels::Matrix{Union{Nothing, FreeAssAlgElem{C}}}) where {C <: RingElem}
+    todo = deepcopy(a)
+    result = zero(parent(todo))
+    CR = base_ring(a)
+    A = parent(todo)
+    while todo.length > 0
+        c = leading_coefficient(todo)
+        exp = leading_exponent_word(todo)
+        t = leading_term(todo)
+        todo -= t
+
+        changed = false
+        for i in 1:length(exp)-1
+            if exp[i] > exp[i+1] && !isnothing(rels[exp[i], exp[i+1]])
+                changed = true
+                todo += A([c], [exp[1:i-1]]) * rels[exp[i], exp[i+1]] * A([one(CR)], [exp[i+2:end]])
+                break
+            end
+        end
+        if !changed
+            result += t
+        end
+    end
+    return result
 end
 
 ###############################################################################
@@ -277,22 +303,25 @@ function smash_product(R::Ring, L::LieAlgebra{C}, V::LieAlgebraModule{C}) where 
     dimL = dim(L)
     dimV = dim(V)
 
-    f_alg, _ = free_associative_algebra(R, [symbols(L); symbols(V)])
+    f_alg, _ = free_associative_algebra(
+        R,
+        [symbols(L); is_standard_module(V) ? symbols(V) : (x -> Symbol("($x)")).(symbols(V))],
+    )
     f_basisL = [gen(f_alg, i) for i in 1:dimL]
     f_basisV = [gen(f_alg, dimL + i) for i in 1:dimV]
 
-    rels = QuadraticRelations{elem_type(R)}()
+    rels = Matrix{Union{Nothing, FreeAssAlgElem{elem_type(R)}}}(nothing, dimL + dimV, dimL + dimV)
 
     for (i, xi) in enumerate(basis(L)), (j, xj) in enumerate(basis(L))
         commutator = sum(R(c) * f_basisL[k] for (k, c) in enumerate(_matrix(xi * xj)) if !iszero(c); init=zero(f_alg))
-        rels[(i, j)] = f_basisL[j] * f_basisL[i] + commutator
+        rels[i, j] = f_basisL[j] * f_basisL[i] + commutator
 
     end
 
     for (i, xi) in enumerate(basis(L)), (j, vj) in enumerate(basis(V))
         commutator = sum(R(c) * f_basisV[k] for (k, c) in enumerate(_matrix(xi * vj)) if !iszero(c); init=zero(f_alg))
-        rels[(i, dimL + j)] = f_basisV[j] * f_basisL[i] + commutator
-        rels[(dimL + j, i)] = f_basisL[i] * f_basisV[j] - commutator
+        rels[i, dimL+j] = f_basisV[j] * f_basisL[i] + commutator
+        rels[dimL+j, i] = f_basisL[i] * f_basisV[j] - commutator
     end
 
     Sp = SmashProductLie{elem_type(R), C}(R, L, V, f_alg, rels)
