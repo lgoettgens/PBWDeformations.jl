@@ -145,7 +145,7 @@ function arc_diagram_label_permutations__so(V::LieAlgebraModule, label::Abstract
         if is_exterior_power(V)
             return [
                 begin
-                    inner_label = flatten(first.(inner_iter))
+                    inner_label = vcat(first.(inner_iter)...)
                     inner_sign = prod(last.(inner_iter))
                     (inner_label, inner_sign * outer_sign)
                 end for (outer_perm, outer_sign) in permutations_with_sign(1:power) for inner_iter in ProductIterator([
@@ -156,7 +156,7 @@ function arc_diagram_label_permutations__so(V::LieAlgebraModule, label::Abstract
         elseif is_symmetric_power(V)
             return [
                 begin
-                    inner_label = flatten(first.(inner_iter))
+                    inner_label = vcat(first.(inner_iter)...)
                     inner_sign = prod(last.(inner_iter))
                     (inner_label, inner_sign)
                 end for outer_perm in permutations(1:power) for inner_iter in ProductIterator([

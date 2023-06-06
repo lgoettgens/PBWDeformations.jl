@@ -96,7 +96,6 @@ export all_pseudographs
 export base_lie_algebra
 export deform
 export exterior_power
-export flatten
 export general_linear_lie_algebra
 export highest_weight_module
 export is_crossing_free
@@ -120,8 +119,6 @@ export underlying_algebra
 function __init__()
     Hecke.add_verbose_scope(:PBWDeformations)
 end
-
-include("Util.jl")
 
 include("FreeAssAlgQuadraticRelations.jl")
 include("DeformationBases/DeformBasis.jl")
