@@ -3,43 +3,21 @@ module PBWDeformations
 using Oscar
 
 import AbstractAlgebra:
-    @attributes,
-    @attr,
-    @enable_all_show_via_expressify,
     AllParts,
-    CacheDictType,
-    FreeAssAlgebra,
-    FreeAssAlgElem,
-    FPModule,
-    FPModuleElem,
     Generic,
-    MatElem,
-    NCRing,
+    NCRing, # wait for https://github.com/Nemocas/AbstractAlgebra.jl/pull/1385
     Partition,
     ProductIterator,
-    Ring,
-    RingElement,
     base_ring,
-    canonical_unit,
-    dim,
     elem_type,
-    expressify,
     gen,
     gens,
-    get_attribute,
-    get_attribute!,
-    get_cached!,
-    has_attribute,
     ngens,
-    parent_type,
-    set_attribute!,
-    symbols
+    parent_type
 
 import AbstractAlgebra.Generic: _matrix, rels
 
 import Oscar: action, comm, exterior_power, simplify, symmetric_power
-
-import Hecke: @vprintln
 
 import Base: deepcopy_internal, hash, isequal, isone, iszero, length, one, parent, show, sum, zero
 
@@ -115,7 +93,7 @@ export to_arcdiag
 export underlying_algebra
 
 function __init__()
-    Hecke.add_verbose_scope(:PBWDeformations)
+    add_verbose_scope(:PBWDeformations)
 end
 
 include("DeformationBases/DeformBasis.jl")
