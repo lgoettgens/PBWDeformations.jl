@@ -15,8 +15,9 @@ struct ArcDiagDeformBasis{C <: RingElem} <: DeformBasis{C}
         degs::AbstractVector{Int};
         no_normalize::Bool=false,
     ) where {C <: RingElem}
-        @req get_attribute(sp.L, :type, nothing) == :special_orthogonal "Only works for so_n."
-        @req (is_exterior_power(sp.V) || is_symmetric_power(sp.V)) && is_standard_module(base_module(sp.V)) "Only works for exterior powers of the standard module."
+        @req get_attribute(lie_algebra(sp), :type, nothing) == :special_orthogonal "Only works for so_n."
+        @req (is_exterior_power(lie_module(sp)) || is_symmetric_power(lie_module(sp))) &&
+             is_standard_module(base_module(lie_module(sp))) "Only works for exterior powers of the standard module."
 
         extra_data = Dict{DeformationMap{C}, Set{ArcDiagram}}()
         normalize = no_normalize ? identity : normalize_default
@@ -25,7 +26,7 @@ struct ArcDiagDeformBasis{C <: RingElem} <: DeformBasis{C}
         iters = []
         debug_counter = 0
         for d in degs
-            diag_iter = pbw_arc_diagrams__so(sp.V, d)
+            diag_iter = pbw_arc_diagrams__so(lie_module(sp), d)
             len = length(diag_iter)
             iter = (
                 begin
@@ -182,31 +183,31 @@ end
 
 function arcdiag_to_deformationmap__so(diag::ArcDiagram, sp::SmashProductLie{C}) where {C <: RingElem}
     d = div(diag.nLower, 2)
-    dim_stdmod_V = sp.L.n
+    dim_stdmod_V = lie_algebra(sp).n
 
-    e = arc_diagram_num_points__so(sp.V)
+    e = arc_diagram_num_points__so(lie_module(sp))
 
     iso_wedge2V_g = Dict{Vector{Int}, Int}()
-    for (i, bs) in enumerate(combinations(sp.L.n, 2))
+    for (i, bs) in enumerate(combinations(lie_algebra(sp).n, 2))
         iso_wedge2V_g[bs] = i
     end
 
     index = Dict{Vector{Int}, Int}()
-    for (i, is) in enumerate(arc_diagram_label_iterator__so(sp.V, 1:dim_stdmod_V))
+    for (i, is) in enumerate(arc_diagram_label_iterator__so(lie_module(sp), 1:dim_stdmod_V))
         index[is] = i
     end
 
-    kappa = fill(zero(sp.alg), dim(sp.V), dim(sp.V))
-    for is in arc_diagram_label_iterator__so(sp.V, 1:dim_stdmod_V),
-        js in arc_diagram_label_iterator__so(sp.V, 1:dim_stdmod_V)
+    kappa = fill(zero(underlying_algebra(sp)), dim(lie_module(sp)), dim(lie_module(sp)))
+    for is in arc_diagram_label_iterator__so(lie_module(sp), 1:dim_stdmod_V),
+        js in arc_diagram_label_iterator__so(lie_module(sp), 1:dim_stdmod_V)
 
         i = index[is]
         j = index[js]
         if i >= j
             continue
         end
-        for (is, sgn_left) in arc_diagram_label_permutations__so(sp.V, is),
-            (js, sgn_right) in arc_diagram_label_permutations__so(sp.V, js),
+        for (is, sgn_left) in arc_diagram_label_permutations__so(lie_module(sp), is),
+            (js, sgn_right) in arc_diagram_label_permutations__so(lie_module(sp), js),
             swap in [false, true]
 
             sgn_upper_labels = sgn_left * sgn_right
@@ -238,7 +239,7 @@ function arcdiag_to_deformationmap__so(diag::ArcDiagram, sp::SmashProductLie{C})
                 continue
             end
             unique!(sort!(frees))
-            entry = zero(sp.alg)
+            entry = zero(underlying_algebra(sp))
 
             # iterate over lower point labelings
             nextindex = 1
@@ -260,7 +261,7 @@ function arcdiag_to_deformationmap__so(diag::ArcDiagram, sp::SmashProductLie{C})
                         end
                     end
                     if !zeroelem
-                        symm_basiselem = sp.alg(
+                        symm_basiselem = underlying_algebra(sp)(
                             fill(C(1 // factorial(length(basiselem))), factorial(length(basiselem))),
                             [ind for ind in permutations(basiselem)],
                         )

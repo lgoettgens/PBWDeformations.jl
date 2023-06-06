@@ -14,7 +14,7 @@
             V = exterior_power(standard_module(L), 2)
             sp = smash_product(L, V)
 
-            kappa = fill(zero(sp.alg), 6, 6)
+            kappa = fill(zero(underlying_algebra(sp)), 6, 6)
             # some made-up skew-symmetric entries
             kappa[1, 2] = gen(sp, 2, :L).alg_elem
             kappa[2, 1] = -gen(sp, 2, :L).alg_elem
@@ -41,7 +41,7 @@
                 @test length(basis) == 1 + div(maxdeg, 2)
 
                 for b in basis
-                    for i in 1:dim(sp.V), j in 1:dim(sp.V)
+                    for i in 1:dim(lie_module(sp)), j in 1:dim(lie_module(sp))
                         @test iszero(b[i, j] + b[j, i])
                     end
                 end

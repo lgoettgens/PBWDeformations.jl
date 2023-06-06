@@ -46,9 +46,11 @@ elem_type(::Type{SmashProductLieDeform{C, CL}}) where {C <: RingElem, CL <: Ring
 
 parent(e::SmashProductLieDeformElem) = e.p
 
-base_ring(D::SmashProductLieDeform) = base_ring(lie_algebra(D))
+base_ring(D::SmashProductLieDeform) = base_ring(D.sp)
 
 base_ring(e::SmashProductLieDeformElem) = base_ring(parent(e))
+
+coefficient_ring(D::SmashProductLieDeform) = coefficient_ring(D.sp)
 
 lie_algebra(D::SmashProductLieDeform) = lie_algebra(D.sp)
 
@@ -151,7 +153,7 @@ end
 
 function (D::SmashProductLieDeform{C, CL})(e::SmashProductLieElem{C, CL}) where {C <: RingElem, CL <: RingElem}
     @req parent(e) == D.sp "Incompatible smash products."
-    return D(0) # TODO
+    return D(e.alg_elem)
 end
 
 ###############################################################################
@@ -255,12 +257,12 @@ Constructs the deformation of the smash product `sp` by the deformation map `kap
 Returns a [`SmashProductDeformLie`](@ref) struct and a two-part basis.
 """
 function deform(sp::SmashProductLie{C, CL}, kappa::DeformationMap{C}) where {C <: RingElem, CL <: RingElem}
-    dimL = dim(sp.L)
-    dimV = dim(sp.V)
+    dimL = dim(lie_algebra(sp))
+    dimV = dim(lie_module(sp))
 
     @req size(kappa) == (dimV, dimV) "kappa has wrong dimensions."
 
-    basisV = [gen(sp.alg, dimL + i) for i in 1:dimV]
+    basisV = [gen(underlying_algebra(sp), dimL + i) for i in 1:dimV]
 
     for i in 1:dimV, j in 1:i
         @req kappa[i, j] == -kappa[j, i] "kappa is not skew-symmetric."
@@ -290,7 +292,7 @@ end
 Constructs the symmetric deformation of the smash product `sp`.
 """
 function symmetric_deformation(sp::SmashProductLie{C, CL}) where {C <: RingElem, CL <: RingElem}
-    kappa = fill(zero(sp.alg), dim(sp.V), dim(sp.V))
+    kappa = fill(zero(underlying_algebra(sp)), dim(lie_module(sp)), dim(lie_module(sp)))
     d = deform(sp, kappa)
     return d
 end

@@ -9,8 +9,8 @@ keyword arguments, e.g. `disabled = [:c, :d]`.
 function pbwdeform_eqs(d::SmashProductLieDeform{C}; disabled::Vector{Symbol}=Symbol[]) where {C <: RingElem}
     # Uses Theorem 3.1 of Walton, Witherspoon: Poincare-Birkhoff-Witt deformations of smash product algebras from Hopf actions on Koszul algebras.
     # DOI:	10.2140/ant.2014.8.1701. https://arxiv.org/abs/1308.6011
-    dimL = dim(d.sp.L)
-    dimV = dim(d.sp.V)
+    dimL = dim(lie_algebra(d))
+    dimV = dim(lie_module(d))
 
     x(i) = gen(d, i, :L)
     v(i) = gen(d, i, :V)
@@ -50,8 +50,8 @@ function pbwdeform_eqs(d::SmashProductLieDeform{C}; disabled::Vector{Symbol}=Sym
 end
 
 function pbwdeform_neqs(d::SmashProductLieDeform{C}) where {C <: RingElem}
-    dimL = dim(d.sp.L)
-    dimV = dim(d.sp.V)
+    dimL = dim(lie_algebra(d))
+    dimV = dim(lie_module(d))
 
     num_a = dimL * binomial(dimV, 2)
     num_b = 0
@@ -103,24 +103,24 @@ function all_pbwdeformations(
     deform_basis::DeformBasis{C};
     special_return::Type{T}=Nothing,
 ) where {C <: RingElem, T <: Union{Nothing, SMat}}
-    @req sp.coeff_ring == QQ "Only implemented for QQ coefficients."
+    @req coefficient_ring(sp) == QQ "Only implemented for QQ coefficients."
 
-    dimL = dim(sp.L)
-    dimV = dim(sp.V)
+    dimL = dim(lie_algebra(sp))
+    dimV = dim(lie_module(sp))
 
     nvars = length(deform_basis)
 
     @vprintln :PBWDeformations 1 "Constructing MPolyRing..."
-    R, vars = polynomial_ring(sp.coeff_ring, max(nvars, 1))
+    R, vars = polynomial_ring(coefficient_ring(sp), max(nvars, 1))
     var_lookup = Dict(vars[i] => i for i in 1:nvars)
 
     @vprintln :PBWDeformations 1 "Changing SmashProductLie coeffcient type..."
     new_sp = smash_product(R, lie_algebra(sp), lie_module(sp))
 
     @vprintln :PBWDeformations 1 "Constructing kappa..."
-    kappa = fill(new_sp.alg(0), dimV, dimV)
+    kappa = fill(zero(underlying_algebra(new_sp)), dimV, dimV)
     for (i, b) in enumerate(deform_basis)
-        kappa += vars[i] .* map(e -> change_base_ring(R, e, parent=new_sp.alg), b)
+        kappa += vars[i] .* map(e -> change_base_ring(R, e, parent=underlying_algebra(new_sp)), b)
     end
 
     @vprintln :PBWDeformations 1 "Constructing deformation..."
@@ -144,7 +144,7 @@ function all_pbwdeformations(
     )
 
     @vprintln :PBWDeformations 1 "Computing reduced row-echelon form..."
-    lgs = sparse_matrix(sp.coeff_ring, 0, nvars)
+    lgs = sparse_matrix(coefficient_ring(sp), 0, nvars)
     for v in iter
         Hecke._add_row_to_rref!(lgs, v)
     end
@@ -159,7 +159,7 @@ function all_pbwdeformations(
     @vprintln :PBWDeformations 1 "Computing a basis..."
     kappas = Vector{DeformationMap{C}}(undef, kernel_dim)
     for l in 1:kernel_dim
-        kappa = fill(sp.alg(0), dimV, dimV)
+        kappa = fill(zero(underlying_algebra(sp)), dimV, dimV)
         for (i, b) in enumerate(deform_basis)
             kappa += kernel[i, l] .* b
         end

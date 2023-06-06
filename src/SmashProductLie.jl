@@ -49,9 +49,11 @@ elem_type(::Type{SmashProductLie{C, CL}}) where {C <: RingElem, CL <: RingElem} 
 
 parent(e::SmashProductLieElem) = e.p
 
-base_ring(Sp::SmashProductLie) = base_ring(lie_algebra(Sp))
+base_ring(Sp::SmashProductLie) = Sp.coeff_ring
 
 base_ring(e::SmashProductLieElem) = base_ring(parent(e))
+
+coefficient_ring(Sp::SmashProductLie) = Sp.coeff_ring
 
 lie_algebra(Sp::SmashProductLie) = Sp.L
 
