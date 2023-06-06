@@ -37,7 +37,7 @@ import AbstractAlgebra:
 
 import AbstractAlgebra.Generic: _matrix, rels
 
-import Oscar: action, comm, exterior_power, simplify, simplify!, symmetric_power
+import Oscar: action, comm, exterior_power, simplify, symmetric_power
 
 import Hecke: @vprintln
 

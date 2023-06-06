@@ -68,7 +68,7 @@ end
 Base.length(basis::ArcDiagDeformBasis) = basis.len
 
 
-function pbw_arc_diagrams__so(V::LieAlgebraModule{C}, d::Int) where {C <: RingElem}
+function pbw_arc_diagrams__so(V::LieAlgebraModule, d::Int)
     e = arc_diagram_num_points__so(V)
     upper_indep_sets = Vector{Int}[is .+ a * e for a in [0, 1] for is in arc_diagram_indep_sets__so(V)]
     lower_indep_sets = Vector{Int}[[[2i - 1, 2i] for i in 1:d]...]
@@ -76,7 +76,7 @@ function pbw_arc_diagrams__so(V::LieAlgebraModule{C}, d::Int) where {C <: RingEl
     return all_arc_diagrams(2e, 2d; indep_sets)
 end
 
-function arc_diagram_num_points__so(V::LieAlgebraModule{C}) where {C <: RingElem}
+function arc_diagram_num_points__so(V::LieAlgebraModule)
     if is_standard_module(V)
         return 1
     elseif is_exterior_power(V) || is_symmetric_power(V) || is_tensor_power(V)
@@ -86,7 +86,7 @@ function arc_diagram_num_points__so(V::LieAlgebraModule{C}) where {C <: RingElem
     end
 end
 
-function arc_diagram_indep_sets__so(V::LieAlgebraModule{C}) where {C <: RingElem}
+function arc_diagram_indep_sets__so(V::LieAlgebraModule)
     if is_standard_module(V)
         return Vector{Int}[]
     elseif is_exterior_power(V) || is_symmetric_power(V) || is_tensor_power(V)

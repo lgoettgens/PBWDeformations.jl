@@ -85,7 +85,7 @@ function zero(D::SmashProductLieDeform)
 end
 
 function iszero(e::SmashProductLieDeformElem)
-    return iszero(simplify!(e).alg_elem)
+    return iszero(simplify(e).alg_elem)
 end
 
 function one(D::SmashProductLieDeform)
@@ -93,7 +93,7 @@ function one(D::SmashProductLieDeform)
 end
 
 function isone(e::SmashProductLieDeformElem)
-    return isone(simplify!(e).alg_elem)
+    return isone(simplify(e).alg_elem)
 end
 
 function Base.deepcopy_internal(e::SmashProductLieDeformElem, dict::IdDict)
@@ -215,11 +215,11 @@ end
 ###############################################################################
 
 function Base.:(==)(e1::SmashProductLieDeformElem, e2::SmashProductLieDeformElem)
-    return parent(e1) === parent(e2) && simplify!(e1).alg_elem == simplify!(e2).alg_elem
+    return parent(e1) === parent(e2) && simplify(e1).alg_elem == simplify(e2).alg_elem
 end
 
 function Base.hash(e::SmashProductLieDeformElem, h::UInt)
-    e = simplify!(e)
+    e = simplify(e)
     b = 0x97eb07aa70e4a59c % UInt
     h = hash(parent(e), h)
     h = hash(e.alg_elem, h)
@@ -232,15 +232,11 @@ end
 #
 ###############################################################################
 
-function simplify!(e::SmashProductLieDeformElem)
+function simplify(e::SmashProductLieDeformElem)
     e.simplified && return e
     e.alg_elem = _normal_form(e.alg_elem, parent(e).rels)
     e.simplified = true
     return e
-end
-
-function simplify(e::SmashProductLieDeformElem)
-    return deepcopy(e) |> simplify!
 end
 
 ###############################################################################

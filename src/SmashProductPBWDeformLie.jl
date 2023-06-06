@@ -1,12 +1,12 @@
 """
-    pbwdeform_eqs(d::SmashProductLieDeform{C}; disabled::Vector{Symbol}=Symbol[]) where {C <: RingElem}
+    pbwdeform_eqs(d::SmashProductLieDeform; disabled::Vector{Symbol}=Symbol[])
 
 Returns the equations for `d` being a PBW deformation of a smash product as
 in Theorem 3.1 of [WW14](@cite).
 Subsets of the equations can be disabled by passing the corresponding symbols as
 keyword arguments, e.g. `disabled = [:c, :d]`.
 """
-function pbwdeform_eqs(d::SmashProductLieDeform{C}; disabled::Vector{Symbol}=Symbol[]) where {C <: RingElem}
+function pbwdeform_eqs(d::SmashProductLieDeform; disabled::Vector{Symbol}=Symbol[])
     # Uses Theorem 3.1 of Walton, Witherspoon: Poincare-Birkhoff-Witt deformations of smash product algebras from Hopf actions on Koszul algebras.
     # DOI:	10.2140/ant.2014.8.1701. https://arxiv.org/abs/1308.6011
     dimL = dim(lie_algebra(d))
@@ -15,15 +15,15 @@ function pbwdeform_eqs(d::SmashProductLieDeform{C}; disabled::Vector{Symbol}=Sym
     x(i) = gen(d, i, :L)
     v(i) = gen(d, i, :V)
 
-    nfcomm(a, b) = simplify(comm(a, b))
+    scomm(a, b) = simplify(comm(a, b))
 
     ## (a) κ is H-invariant
     iter_a =
         :a in disabled ? [] :
         (
-            comm(nfcomm(h, v(i)), v(j)) # κ([h⋅v_i,v_j])
-            + comm(v(i), nfcomm(h, v(j))) # κ([v_i,h⋅v_j])
-            - comm(h, nfcomm(v(i), v(j))) # h⋅κ([v_i,v_j])
+            comm(scomm(h, v(i)), v(j))   # κ([h⋅v_i,v_j])
+            + comm(v(i), scomm(h, v(j))) # κ([v_i,h⋅v_j])
+            - comm(h, scomm(v(i), v(j))) # h⋅κ([v_i,v_j])
             for (h, (i, j)) in Iterators.product([x(i) for i in 1:dimL], combinations(dimV, 2))
         )
 
@@ -35,21 +35,21 @@ function pbwdeform_eqs(d::SmashProductLieDeform{C}; disabled::Vector{Symbol}=Sym
     iter_c =
         :c in disabled ? [] :
         (
-            nfcomm(v(i), v(j)) * v(k) - v(i) * nfcomm(v(j), v(k)) + nfcomm(v(j), v(k)) * v(i) -
-            v(j) * nfcomm(v(k), v(i)) + nfcomm(v(k), v(i)) * v(j) - v(k) * nfcomm(v(i), v(j)) -
-            nfcomm(v(k), v(j)) * v(i) + v(k) * nfcomm(v(j), v(i)) - nfcomm(v(j), v(i)) * v(k) +
-            v(j) * nfcomm(v(i), v(k)) - nfcomm(v(i), v(k)) * v(j) + v(i) * nfcomm(v(k), v(j)) for
-            (i, j, k) in combinations(dimV, 3)
+            (scomm(v(i), v(j)) * v(k) - v(i) * scomm(v(j), v(k))) +
+            (scomm(v(j), v(k)) * v(i) - v(j) * scomm(v(k), v(i))) +
+            (scomm(v(k), v(i)) * v(j) - v(k) * scomm(v(i), v(j))) -
+            (scomm(v(k), v(j)) * v(i) - v(k) * scomm(v(j), v(i))) -
+            (scomm(v(j), v(i)) * v(k) - v(j) * scomm(v(i), v(k))) -
+            (scomm(v(i), v(k)) * v(j) - v(i) * scomm(v(k), v(j))) for (i, j, k) in combinations(dimV, 3)
         )
 
     ## (d) trivial
     iter_d = :d in disabled ? [] : []
 
-    iter = Iterators.flatten([iter_a, iter_b, iter_c, iter_d])
-    return Iterators.map(x -> simplify(x), iter)
+    return Iterators.flatten([iter_a, iter_b, iter_c, iter_d])
 end
 
-function pbwdeform_neqs(d::SmashProductLieDeform{C}) where {C <: RingElem}
+function pbwdeform_neqs(d::SmashProductLieDeform)
     dimL = dim(lie_algebra(d))
     dimV = dim(lie_module(d))
 
@@ -62,12 +62,12 @@ function pbwdeform_neqs(d::SmashProductLieDeform{C}) where {C <: RingElem}
 end
 
 """
-    is_pbwdeformation(d::SmashProductLieDeform{C}) where {C <: RingElem}
+    is_pbwdeformation(d::SmashProductLieDeform)
 
 Check if `d` is a Poincare-Birkhoff-Witt deformation of a smash product.
 Uses Theorem 3.1 of [WW14](@cite).
 """
-function is_pbwdeformation(d::SmashProductLieDeform{C}) where {C <: RingElem}
+function is_pbwdeformation(d::SmashProductLieDeform)
     return all(iszero, pbwdeform_eqs(d))
 end
 
@@ -78,14 +78,14 @@ end
 #
 ###############################################################################
 
-@inline function coefficient_comparison(eq::FreeAssAlgElem{C}) where {C <: RingElem}
+function coefficient_comparison(eq::FreeAssAlgElem)
     return collect(coefficients(eq))
 end
 
-@inline function linpoly_to_spvector(a::QQMPolyRingElem, var_lookup::Dict{QQMPolyRingElem, Int})
+function linpoly_to_spvector(a::QQMPolyRingElem)
     @assert total_degree(a) <= 1
 
-    return sparse_row(QQ, [(var_lookup[monomial(a, i)], coeff(a, i)) for i in 1:length(a)])
+    return sparse_row(QQ, [(findfirst(==(1), e), c) for (e, c) in zip(exponents(a), coefficients(a))])
 end
 
 
@@ -112,7 +112,6 @@ function all_pbwdeformations(
 
     @vprintln :PBWDeformations 1 "Constructing MPolyRing..."
     R, vars = polynomial_ring(coefficient_ring(sp), max(nvars, 1))
-    var_lookup = Dict(vars[i] => i for i in 1:nvars)
 
     @vprintln :PBWDeformations 1 "Changing SmashProductLie coeffcient type..."
     new_sp = smash_product(R, lie_algebra(sp), lie_module(sp))
@@ -129,14 +128,14 @@ function all_pbwdeformations(
     @vprintln :PBWDeformations 1 "Generating equation iterator..."
     neqs = pbwdeform_neqs(d)
     iter = Iterators.map(
-        a -> linpoly_to_spvector(a, var_lookup),
+        linpoly_to_spvector,
         Iterators.flatten(
             Iterators.map(
                 function (x)
                     i = x[1]
                     a = x[2]
                     @vprintln :PBWDeformations 2 "Equations $(lpad(floor(Int, 100*i / neqs), 3))%, $(lpad(i, ndigits(neqs)))/$(neqs)"
-                    coefficient_comparison(a.alg_elem)
+                    coefficient_comparison(simplify(a).alg_elem)
                 end,
                 enumerate(pbwdeform_eqs(d)),
             ),

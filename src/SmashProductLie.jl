@@ -88,7 +88,7 @@ function zero(Sp::SmashProductLie)
 end
 
 function iszero(e::SmashProductLieElem)
-    return iszero(simplify!(e).alg_elem)
+    return iszero(simplify(e).alg_elem)
 end
 
 function one(Sp::SmashProductLie)
@@ -96,7 +96,7 @@ function one(Sp::SmashProductLie)
 end
 
 function isone(e::SmashProductLieElem)
-    return isone(simplify!(e).alg_elem)
+    return isone(simplify(e).alg_elem)
 end
 
 function Base.deepcopy_internal(e::SmashProductLieElem, dict::IdDict)
@@ -216,11 +216,11 @@ end
 ###############################################################################
 
 function Base.:(==)(e1::SmashProductLieElem, e2::SmashProductLieElem)
-    return parent(e1) === parent(e2) && simplify!(e1).alg_elem == simplify!(e2).alg_elem
+    return parent(e1) === parent(e2) && simplify(e1).alg_elem == simplify(e2).alg_elem
 end
 
 function Base.hash(e::SmashProductLieElem, h::UInt)
-    e = simplify!(e)
+    e = simplify(e)
     b = 0xdcc11ff793ca4ada % UInt
     h = hash(parent(e), h)
     h = hash(e.alg_elem, h)
@@ -233,15 +233,11 @@ end
 #
 ###############################################################################
 
-function simplify!(e::SmashProductLieElem)
+function simplify(e::SmashProductLieElem)
     e.simplified && return e
     e.alg_elem = _normal_form(e.alg_elem, parent(e).rels)
     e.simplified = true
     return e
-end
-
-function simplify(e::SmashProductLieElem)
-    return deepcopy(e) |> simplify!
 end
 
 function _normal_form(a::FreeAssAlgElem{C}, rels::Matrix{Union{Nothing, FreeAssAlgElem{C}}}) where {C <: RingElem}
