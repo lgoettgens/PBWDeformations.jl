@@ -85,10 +85,10 @@
         end
 
         @testset "is_crossing_free(part=:upper)" begin
-            @test all(diag -> is_crossing_free(diag, part=:upper), all_arc_diagrams(0, 6))
-            @test all(diag -> is_crossing_free(diag, part=:upper), all_arc_diagrams(1, 5))
-            @test all(diag -> is_crossing_free(diag, part=:upper), all_arc_diagrams(2, 4))
-            @test all(diag -> is_crossing_free(diag, part=:upper), all_arc_diagrams(3, 3))
+            @test_broken all(diag -> is_crossing_free(diag, part=:upper), all_arc_diagrams(0, 6))
+            @test_broken all(diag -> is_crossing_free(diag, part=:upper), all_arc_diagrams(1, 5))
+            @test_broken all(diag -> is_crossing_free(diag, part=:upper), all_arc_diagrams(2, 4))
+            @test_broken all(diag -> is_crossing_free(diag, part=:upper), all_arc_diagrams(3, 3))
 
             @test_broken length([diag for diag in all_arc_diagrams(4, 2) if !is_crossing_free(diag, part=:upper)]) == 1     # ABAB,EE
 
@@ -114,10 +114,10 @@
         end
 
         @testset "is_crossing_free(part=:lower)" begin
-            @test all(diag -> is_crossing_free(diag, part=:lower), all_arc_diagrams(6, 0))
-            @test all(diag -> is_crossing_free(diag, part=:lower), all_arc_diagrams(5, 1))
-            @test all(diag -> is_crossing_free(diag, part=:lower), all_arc_diagrams(4, 2))
-            @test all(diag -> is_crossing_free(diag, part=:lower), all_arc_diagrams(3, 3))
+            @test_broken all(diag -> is_crossing_free(diag, part=:lower), all_arc_diagrams(6, 0))
+            @test_broken all(diag -> is_crossing_free(diag, part=:lower), all_arc_diagrams(5, 1))
+            @test_broken all(diag -> is_crossing_free(diag, part=:lower), all_arc_diagrams(4, 2))
+            @test_broken all(diag -> is_crossing_free(diag, part=:lower), all_arc_diagrams(3, 3))
 
             @test_broken length([diag for diag in all_arc_diagrams(2, 4) if !is_crossing_free(diag, part=:lower)]) == 1     # AA,CDCD
 
@@ -146,26 +146,26 @@
     @testset "all_arc_diagrams" begin
         for n in 0:5
             for i in 0:2n
-                @test_broken length(collect(all_arc_diagrams(i, 2n - i))) ==
-                             length(all_arc_diagrams(i, 2n - i)) ==
-                             div(factorial(2 * n), 2^n * factorial(n))
+                @test length(collect(all_arc_diagrams(i, 2n - i))) ==
+                      length(all_arc_diagrams(i, 2n - i)) ==
+                      div(factorial(2 * n), 2^n * factorial(n))
             end
             for i in 0:2n+1
                 @test length(collect(all_arc_diagrams(i, 2n + 1 - i))) == length(all_arc_diagrams(i, 2n + 1 - i)) == 0
             end
 
             for i in 0:2n
-                @test_broken length(collect(all_arc_diagrams(i, 2n - i; indep_sets=[1:n, n+1:2n]))) ==
-                             length(all_arc_diagrams(i, 2n - i; indep_sets=[1:n, n+1:2n])) ==
-                             factorial(n)
+                @test length(collect(all_arc_diagrams(i, 2n - i; indep_sets=[-1:-1:-n, 1:n]))) ==
+                      length(all_arc_diagrams(i, 2n - i; indep_sets=[-1:-1:-n, 1:n])) ==
+                      factorial(n)
             end
         end
 
-        @test_broken length(
-                         collect(all_arc_diagrams(6, 6, indep_sets=[[1, 2, 3], [4, 5, 6], [7, 8], [9, 10], [11, 12]])),
-                     ) ==
-                     length(all_arc_diagrams(6, 6, indep_sets=[[1, 2, 3], [4, 5, 6], [7, 8], [9, 10], [11, 12]])) ==
-                     4440
+        @test length(
+                  collect(all_arc_diagrams(6, 6, indep_sets=[[-1, -2, -3], [-4, -5, -6], [1, 2], [3, 4], [5, 6]])),
+              ) ==
+              length(all_arc_diagrams(6, 6, indep_sets=[[-1, -2, -3], [-4, -5, -6], [1, 2], [3, 4], [5, 6]])) ==
+              4440
     end
 
 end

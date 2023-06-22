@@ -17,7 +17,7 @@ import AbstractAlgebra:
 
 import AbstractAlgebra.Generic: _matrix, rels
 
-import Oscar: action, comm, exterior_power, simplify, symmetric_power
+import Oscar: action, comm, exterior_power, neighbors, simplify, symmetric_power, vertices
 
 import Base: deepcopy_internal, hash, isequal, isone, iszero, length, one, parent, show, sum, zero
 
@@ -54,7 +54,7 @@ import Oscar.LieAlgebras:
 export AbstractLieAlgebra, AbstractLieAlgebraElem
 export ArcDiagDeformBasis
 export ArcDiagram
-export ArcDiagramNode
+export ArcDiagramVertex
 export DeformationMap
 export DeformBasis
 export LieAlgebra, LieAlgebraElem
@@ -76,15 +76,17 @@ export exterior_power
 export general_linear_lie_algebra
 export highest_weight_module
 export is_crossing_free
-export is_lower_node
+export is_lower_vertex
 export is_pbwdeformation
-export is_upper_node
+export is_upper_vertex
 export lie_algebra
 export lie_module
 export lookup_data
+export lower_vertices
 export matrix_repr_basis
+export neighbor
+export neighbors
 export nedges
-export node_index
 export pbwdeform_eqs
 export smash_product
 export special_linear_lie_algebra
@@ -95,6 +97,9 @@ export symmetric_power
 export tensor_power
 export to_arcdiag
 export underlying_algebra
+export upper_vertices
+export vertex_index
+export vertices
 
 function __init__()
     add_verbose_scope(:PBWDeformations)
