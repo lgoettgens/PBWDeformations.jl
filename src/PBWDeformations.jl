@@ -54,6 +54,7 @@ import Oscar.LieAlgebras:
 export AbstractLieAlgebra, AbstractLieAlgebraElem
 export ArcDiagDeformBasis
 export ArcDiagram
+export ArcDiagramNode
 export DeformationMap
 export DeformBasis
 export LieAlgebra, LieAlgebraElem
@@ -75,12 +76,15 @@ export exterior_power
 export general_linear_lie_algebra
 export highest_weight_module
 export is_crossing_free
+export is_lower_node
 export is_pbwdeformation
+export is_upper_node
 export lie_algebra
 export lie_module
 export lookup_data
 export matrix_repr_basis
 export nedges
+export node_index
 export pbwdeform_eqs
 export smash_product
 export special_linear_lie_algebra
