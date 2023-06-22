@@ -34,53 +34,53 @@
 
     @testset "is_crossing_free" begin
         @testset "is_crossing_free(part=:everywhere)" begin
-            @test is_crossing_free(ArcDiagram(2, 4, [-2, -1], [2, 1, 4, 3])) == true      # AA,CCEE
-            @test is_crossing_free(ArcDiagram(2, 4, [-2, -1], [3, 4, 1, 2])) == false     # AA,CDCD
-            @test is_crossing_free(ArcDiagram(2, 4, [-2, -1], [4, 3, 2, 1])) == true      # AA,CDDC
-            @test is_crossing_free(ArcDiagram(2, 4, [1, 2], [-1, -2, 4, 3])) == true      # AB,ABEE
-            @test is_crossing_free(ArcDiagram(2, 4, [1, 3], [-1, 4, -2, 2])) == false     # AB,ADBD
-            @test is_crossing_free(ArcDiagram(2, 4, [1, 4], [-1, 3, 2, -2])) == true      # AB,ADDB
-            @test is_crossing_free(ArcDiagram(2, 4, [2, 1], [-2, -1, 4, 3])) == false     # AB,BAEE
-            @test is_crossing_free(ArcDiagram(2, 4, [2, 3], [4, -1, -2, 1])) == false     # AB,CABC
-            @test is_crossing_free(ArcDiagram(2, 4, [2, 4], [3, -1, 1, -2])) == false     # AB,CACB
-            @test is_crossing_free(ArcDiagram(2, 4, [3, 1], [-2, 4, -1, 2])) == false     # AB,BDAD
-            @test is_crossing_free(ArcDiagram(2, 4, [3, 2], [4, -2, -1, 1])) == false     # AB,CBAC
-            @test is_crossing_free(ArcDiagram(2, 4, [3, 4], [2, 1, -1, -2])) == true      # AB,CCAB
-            @test is_crossing_free(ArcDiagram(2, 4, [4, 1], [-2, 3, 2, -1])) == false     # AB,BDDA
-            @test is_crossing_free(ArcDiagram(2, 4, [4, 2], [3, -2, 1, -1])) == false     # AB,CBCA
-            @test is_crossing_free(ArcDiagram(2, 4, [4, 3], [2, 1, -2, -1])) == false     # AB,CCBA
+            @test is_crossing_free(ArcDiagram("AA,CCEE")) == true
+            @test is_crossing_free(ArcDiagram("AA,CDCD")) == false
+            @test is_crossing_free(ArcDiagram("AA,CDDC")) == true
+            @test is_crossing_free(ArcDiagram("AB,ABEE")) == true
+            @test is_crossing_free(ArcDiagram("AB,ADBD")) == false
+            @test is_crossing_free(ArcDiagram("AB,ADDB")) == true
+            @test is_crossing_free(ArcDiagram("AB,BAEE")) == false
+            @test is_crossing_free(ArcDiagram("AB,CABC")) == false
+            @test is_crossing_free(ArcDiagram("AB,CACB")) == false
+            @test is_crossing_free(ArcDiagram("AB,BDAD")) == false
+            @test is_crossing_free(ArcDiagram("AB,CBAC")) == false
+            @test is_crossing_free(ArcDiagram("AB,CCAB")) == true
+            @test is_crossing_free(ArcDiagram("AB,BDDA")) == false
+            @test is_crossing_free(ArcDiagram("AB,CBCA")) == false
+            @test is_crossing_free(ArcDiagram("AB,CCBA")) == false
 
-            @test is_crossing_free(ArcDiagram(3, 3, [-2, -1, 1], [-3, 3, 2])) == true      # AAC,CEE
-            @test is_crossing_free(ArcDiagram(3, 3, [-2, -1, 2], [3, -3, 1])) == false     # AAC,DCD
-            @test is_crossing_free(ArcDiagram(3, 3, [-2, -1, 3], [2, 1, -3])) == true      # AAC,DDC
-            @test is_crossing_free(ArcDiagram(3, 3, [-3, 1, -1], [-2, 3, 2])) == false     # ABA,BEE
-            @test is_crossing_free(ArcDiagram(3, 3, [-3, 2, -1], [3, -2, 1])) == false     # ABA,DBD
-            @test is_crossing_free(ArcDiagram(3, 3, [-3, 3, -1], [2, 1, -2])) == false     # ABA,DDB
-            @test is_crossing_free(ArcDiagram(3, 3, [1, -3, -2], [-1, 3, 2])) == true      # ABB,AEE
-            @test is_crossing_free(ArcDiagram(3, 3, [1, 2, 3], [-1, -2, -3])) == true      # ABC,ABC
-            @test is_crossing_free(ArcDiagram(3, 3, [1, 3, 2], [-1, -3, -2])) == false     # ABC,ACB
-            @test is_crossing_free(ArcDiagram(3, 3, [2, -3, -2], [3, -1, 1])) == false     # ABB,DAD
-            @test is_crossing_free(ArcDiagram(3, 3, [2, 1, 3], [-2, -1, -3])) == false     # ABC,BAC
-            @test is_crossing_free(ArcDiagram(3, 3, [2, 3, 1], [-3, -1, -2])) == false     # ABC,CAB
-            @test is_crossing_free(ArcDiagram(3, 3, [3, -3, -2], [2, 1, -1])) == true      # ABB,DDA
-            @test is_crossing_free(ArcDiagram(3, 3, [3, 1, 2], [-2, -3, -1])) == false     # ABC,BCA
-            @test is_crossing_free(ArcDiagram(3, 3, [3, 2, 1], [-3, -2, -1])) == false     # ABC,CBA
+            @test is_crossing_free(ArcDiagram("AAC,CEE")) == true
+            @test is_crossing_free(ArcDiagram("AAC,DCD")) == false
+            @test is_crossing_free(ArcDiagram("AAC,DDC")) == true
+            @test is_crossing_free(ArcDiagram("ABA,BEE")) == false
+            @test is_crossing_free(ArcDiagram("ABA,DBD")) == false
+            @test is_crossing_free(ArcDiagram("ABA,DDB")) == false
+            @test is_crossing_free(ArcDiagram("ABB,AEE")) == true
+            @test is_crossing_free(ArcDiagram("ABC,ABC")) == true
+            @test is_crossing_free(ArcDiagram("ABC,ACB")) == false
+            @test is_crossing_free(ArcDiagram("ABB,DAD")) == false
+            @test is_crossing_free(ArcDiagram("ABC,BAC")) == false
+            @test is_crossing_free(ArcDiagram("ABC,CAB")) == false
+            @test is_crossing_free(ArcDiagram("ABB,DDA")) == true
+            @test is_crossing_free(ArcDiagram("ABC,BCA")) == false
+            @test is_crossing_free(ArcDiagram("ABC,CBA")) == false
 
-            @test is_crossing_free(ArcDiagram(4, 2, [-2, -1, -4, -3], [2, 1])) == true      # AACC,EE
-            @test is_crossing_free(ArcDiagram(4, 2, [-2, -1, 1, 2], [-3, -4])) == true      # AACD,CD
-            @test is_crossing_free(ArcDiagram(4, 2, [-2, -1, 2, 1], [-4, -3])) == false     # AACD,DC
-            @test is_crossing_free(ArcDiagram(4, 2, [-3, -4, -1, -2], [2, 1])) == false     # ABAB,EE
-            @test is_crossing_free(ArcDiagram(4, 2, [-3, 1, -1, 2], [-2, -4])) == false     # ABAD,BD
-            @test is_crossing_free(ArcDiagram(4, 2, [-3, 2, -1, 1], [-4, -2])) == false     # ABAD,DB
-            @test is_crossing_free(ArcDiagram(4, 2, [-4, -3, -2, -1], [2, 1])) == true      # ABBA,EE
-            @test is_crossing_free(ArcDiagram(4, 2, [-4, 1, 2, -1], [-2, -3])) == false     # ABCA,BC
-            @test is_crossing_free(ArcDiagram(4, 2, [-4, 2, 1, -1], [-3, -2])) == false     # ABCA,CB
-            @test is_crossing_free(ArcDiagram(4, 2, [1, -3, -2, 2], [-1, -4])) == true      # ABBD,AD
-            @test is_crossing_free(ArcDiagram(4, 2, [1, -4, 2, -2], [-1, -3])) == false     # ABCB,AC
-            @test is_crossing_free(ArcDiagram(4, 2, [1, 2, -4, -3], [-1, -2])) == true      # ABCC,AB
-            @test is_crossing_free(ArcDiagram(4, 2, [2, -3, -2, 1], [-4, -1])) == false     # ABBD,DA
-            @test is_crossing_free(ArcDiagram(4, 2, [2, -4, 1, -2], [-3, -1])) == false     # ABCB,CA
-            @test is_crossing_free(ArcDiagram(4, 2, [2, 1, -4, -3], [-2, -1])) == false     # ABCC,BA
+            @test is_crossing_free(ArcDiagram("AACC,EE")) == true
+            @test is_crossing_free(ArcDiagram("AACD,CD")) == true
+            @test is_crossing_free(ArcDiagram("AACD,DC")) == false
+            @test is_crossing_free(ArcDiagram("ABAB,EE")) == false
+            @test is_crossing_free(ArcDiagram("ABAD,BD")) == false
+            @test is_crossing_free(ArcDiagram("ABAD,DB")) == false
+            @test is_crossing_free(ArcDiagram("ABBA,EE")) == true
+            @test is_crossing_free(ArcDiagram("ABCA,BC")) == false
+            @test is_crossing_free(ArcDiagram("ABCA,CB")) == false
+            @test is_crossing_free(ArcDiagram("ABBD,AD")) == true
+            @test is_crossing_free(ArcDiagram("ABCB,AC")) == false
+            @test is_crossing_free(ArcDiagram("ABCC,AB")) == true
+            @test is_crossing_free(ArcDiagram("ABBD,DA")) == false
+            @test is_crossing_free(ArcDiagram("ABCB,CA")) == false
+            @test is_crossing_free(ArcDiagram("ABCC,BA")) == false
 
         end
 
@@ -90,23 +90,23 @@
             @test all(diag -> is_crossing_free(diag, part=:upper), all_arc_diagrams(2, 4))
             @test all(diag -> is_crossing_free(diag, part=:upper), all_arc_diagrams(3, 3))
 
-            @test length([diag for diag in all_arc_diagrams(4, 2) if !is_crossing_free(diag, part=:upper)]) == 1     # ABAB,EE
+            @test [diag for diag in all_arc_diagrams(4, 2) if !is_crossing_free(diag, part=:upper)] == [ArcDiagram("ABAB,EE")]
 
-            @test is_crossing_free(ArcDiagram(5, 1, [-2, -1, -4, -3, 1], [-5]), part=:upper) == true   # AACCE,E
-            @test is_crossing_free(ArcDiagram(5, 1, [-2, -1, -5, 1, -3], [-4]), part=:upper) == true   # AACDC,D
-            @test is_crossing_free(ArcDiagram(5, 1, [-2, -1, 1, -5, -4], [-3]), part=:upper) == true   # AACDD,C
-            @test is_crossing_free(ArcDiagram(5, 1, [-3, -4, -1, -2, 1], [-5]), part=:upper) == false  # ABABE,E
-            @test is_crossing_free(ArcDiagram(5, 1, [-3, -5, -1, 1, -2], [-4]), part=:upper) == false  # ABADB,D
-            @test is_crossing_free(ArcDiagram(5, 1, [-3, 1, -1, -5, -4], [-2]), part=:upper) == true   # ABADD,B
-            @test is_crossing_free(ArcDiagram(5, 1, [-4, -3, -2, -1, 1], [-5]), part=:upper) == true   # ABBAE,E
-            @test is_crossing_free(ArcDiagram(5, 1, [-4, -5, 1, -1, -2], [-3]), part=:upper) == false  # ABCAB,C
-            @test is_crossing_free(ArcDiagram(5, 1, [-4, 1, -5, -1, -3], [-2]), part=:upper) == false  # ABCAC,B
-            @test is_crossing_free(ArcDiagram(5, 1, [-5, -3, -2, 1, -1], [-4]), part=:upper) == true   # ABBDA,D
-            @test is_crossing_free(ArcDiagram(5, 1, [-5, -4, 1, -2, -1], [-3]), part=:upper) == true   # ABCBA,C
-            @test is_crossing_free(ArcDiagram(5, 1, [-5, 1, -4, -3, -1], [-2]), part=:upper) == true   # ABCCA,B
-            @test is_crossing_free(ArcDiagram(5, 1, [1, -3, -2, -5, -4], [-1]), part=:upper) == true   # ABBDD,A
-            @test is_crossing_free(ArcDiagram(5, 1, [1, -4, -5, -2, -3], [-1]), part=:upper) == false  # ABCBC,A
-            @test is_crossing_free(ArcDiagram(5, 1, [1, -5, -4, -3, -2], [-1]), part=:upper) == true   # ABCCB,A
+            @test is_crossing_free(ArcDiagram("AACCE,E"), part=:upper) == true
+            @test is_crossing_free(ArcDiagram("AACDC,D"), part=:upper) == true
+            @test is_crossing_free(ArcDiagram("AACDD,C"), part=:upper) == true
+            @test is_crossing_free(ArcDiagram("ABABE,E"), part=:upper) == false
+            @test is_crossing_free(ArcDiagram("ABADB,D"), part=:upper) == false
+            @test is_crossing_free(ArcDiagram("ABADD,B"), part=:upper) == true
+            @test is_crossing_free(ArcDiagram("ABBAE,E"), part=:upper) == true
+            @test is_crossing_free(ArcDiagram("ABCAB,C"), part=:upper) == false
+            @test is_crossing_free(ArcDiagram("ABCAC,B"), part=:upper) == false
+            @test is_crossing_free(ArcDiagram("ABBDA,D"), part=:upper) == true
+            @test is_crossing_free(ArcDiagram("ABCBA,C"), part=:upper) == true
+            @test is_crossing_free(ArcDiagram("ABCCA,B"), part=:upper) == true
+            @test is_crossing_free(ArcDiagram("ABBDD,A"), part=:upper) == true
+            @test is_crossing_free(ArcDiagram("ABCBC,A"), part=:upper) == false
+            @test is_crossing_free(ArcDiagram("ABCCB,A"), part=:upper) == true
 
             for diag in all_arc_diagrams(6, 0)
                 @test is_crossing_free(diag, part=:upper) == is_crossing_free(diag)
@@ -119,23 +119,23 @@
             @test all(diag -> is_crossing_free(diag, part=:lower), all_arc_diagrams(4, 2))
             @test all(diag -> is_crossing_free(diag, part=:lower), all_arc_diagrams(3, 3))
 
-            @test length([diag for diag in all_arc_diagrams(2, 4) if !is_crossing_free(diag, part=:lower)]) == 1     # AA,CDCD
+            @test [diag for diag in all_arc_diagrams(2, 4) if !is_crossing_free(diag, part=:lower)] == [ArcDiagram("AA,CDCD")]
 
-            @test is_crossing_free(ArcDiagram(1, 5, [1], [-1, 3, 2, 5, 4]), part=:lower) == true   # A,ACCEE
-            @test is_crossing_free(ArcDiagram(1, 5, [1], [-1, 4, 5, 2, 3]), part=:lower) == false  # A,ACDCD
-            @test is_crossing_free(ArcDiagram(1, 5, [1], [-1, 5, 4, 3, 2]), part=:lower) == true   # A,ACDDC
-            @test is_crossing_free(ArcDiagram(1, 5, [2], [3, -1, 1, 5, 4]), part=:lower) == true   # A,BABEE
-            @test is_crossing_free(ArcDiagram(1, 5, [2], [4, -1, 5, 1, 3]), part=:lower) == false  # A,BADBD
-            @test is_crossing_free(ArcDiagram(1, 5, [2], [5, -1, 4, 3, 1]), part=:lower) == true   # A,BADDB
-            @test is_crossing_free(ArcDiagram(1, 5, [3], [2, 1, -1, 5, 4]), part=:lower) == true   # A,BBAEE
-            @test is_crossing_free(ArcDiagram(1, 5, [3], [4, 5, -1, 1, 2]), part=:lower) == false  # A,BCABC
-            @test is_crossing_free(ArcDiagram(1, 5, [3], [5, 4, -1, 2, 1]), part=:lower) == true   # A,BCACB
-            @test is_crossing_free(ArcDiagram(1, 5, [4], [2, 1, 5, -1, 3]), part=:lower) == true   # A,BBDAD
-            @test is_crossing_free(ArcDiagram(1, 5, [4], [3, 5, 1, -1, 2]), part=:lower) == false  # A,BCBAC
-            @test is_crossing_free(ArcDiagram(1, 5, [4], [5, 3, 2, -1, 1]), part=:lower) == true   # A,BCCAB
-            @test is_crossing_free(ArcDiagram(1, 5, [5], [2, 1, 4, 3, -1]), part=:lower) == true   # A,BBDDA
-            @test is_crossing_free(ArcDiagram(1, 5, [5], [3, 4, 1, 2, -1]), part=:lower) == false  # A,BCBCA
-            @test is_crossing_free(ArcDiagram(1, 5, [5], [4, 3, 2, 1, -1]), part=:lower) == true   # A,BCCBA
+            @test is_crossing_free(ArcDiagram("A,ACCEE"), part=:lower) == true
+            @test is_crossing_free(ArcDiagram("A,ACDCD"), part=:lower) == false
+            @test is_crossing_free(ArcDiagram("A,ACDDC"), part=:lower) == true
+            @test is_crossing_free(ArcDiagram("A,BABEE"), part=:lower) == true
+            @test is_crossing_free(ArcDiagram("A,BADBD"), part=:lower) == false
+            @test is_crossing_free(ArcDiagram("A,BADDB"), part=:lower) == true
+            @test is_crossing_free(ArcDiagram("A,BBAEE"), part=:lower) == true
+            @test is_crossing_free(ArcDiagram("A,BCABC"), part=:lower) == false
+            @test is_crossing_free(ArcDiagram("A,BCACB"), part=:lower) == true
+            @test is_crossing_free(ArcDiagram("A,BBDAD"), part=:lower) == true
+            @test is_crossing_free(ArcDiagram("A,BCBAC"), part=:lower) == false
+            @test is_crossing_free(ArcDiagram("A,BCCAB"), part=:lower) == true
+            @test is_crossing_free(ArcDiagram("A,BBDDA"), part=:lower) == true
+            @test is_crossing_free(ArcDiagram("A,BCBCA"), part=:lower) == false
+            @test is_crossing_free(ArcDiagram("A,BCCBA"), part=:lower) == true
 
             for diag in all_arc_diagrams(0, 6)
                 @test is_crossing_free(diag, part=:lower) == is_crossing_free(diag)
