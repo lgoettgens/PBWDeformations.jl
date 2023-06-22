@@ -70,27 +70,31 @@ function all_pseudographs(reg::Int, sumtotal::Int; upto_iso::Bool=false)
 end
 
 function to_arcdiag(pg::Pseudograph2, part::Generic.Partition=Partition(Int[]))
-    nUpper = 2 * nedges(pg)
-    nLower = 2 * (sum(pg) + part.n)
+    num_upper_verts = 2 * nedges(pg)
+    num_lower_verts = 2 * (sum(pg) + part.n)
 
-    adj = zeros(Int, nUpper + nLower)
-    addarc(i, j) = (adj[i] = j; adj[j] = i)
+    upper_adj = zeros(Int, num_upper_verts)
+    lower_adj = zeros(Int, num_lower_verts)
+    addarc_uu(i, j) = (upper_adj[i] = -j; upper_adj[j] = -i)
+    addarc_ll(i, j) = (lower_adj[i] = j; lower_adj[j] = i)
+    addarc_ul(i, j) = (upper_adj[i] = j; lower_adj[j] = -i)
+    addarc_lu(i, j) = (lower_adj[i] = -j; upper_adj[j] = i)
     i = 1
-    j = div(nUpper, 2) + 1
-    k = nUpper + 1
+    j = div(num_upper_verts, 2) + 1
+    k = 1
     for l1 in pg.loops1
         if l1 == 0
-            addarc(i, i + 1)
+            addarc_uu(i, i + 1)
             i += 2
         else
-            addarc(i, k)
+            addarc_ul(i, k)
             i += 1
             k += 1
             for _ in 2:l1
-                addarc(k, k + 1)
+                addarc_ll(k, k + 1)
                 k += 2
             end
-            addarc(k, i)
+            addarc_lu(k, i)
             i += 1
             k += 1
         end
@@ -98,18 +102,18 @@ function to_arcdiag(pg::Pseudograph2, part::Generic.Partition=Partition(Int[]))
 
     for e in pg.edges
         if e == 0
-            addarc(i, j)
+            addarc_uu(i, j)
             i += 1
             j += 1
         else
-            addarc(i, k)
+            addarc_ul(i, k)
             i += 1
             k += 1
             for _ in 2:e
-                addarc(k, k + 1)
+                addarc_ll(k, k + 1)
                 k += 2
             end
-            addarc(k, j)
+            addarc_lu(k, j)
             j += 1
             k += 1
         end
@@ -117,17 +121,17 @@ function to_arcdiag(pg::Pseudograph2, part::Generic.Partition=Partition(Int[]))
 
     for l2 in pg.loops2
         if l2 == 0
-            addarc(j, j + 1)
+            addarc_uu(j, j + 1)
             j += 2
         else
-            addarc(j, k)
+            addarc_ul(j, k)
             j += 1
             k += 1
             for _ in 2:l2
-                addarc(k, k + 1)
+                addarc_ll(k, k + 1)
                 k += 2
             end
-            addarc(k, j)
+            addarc_lu(k, j)
             j += 1
             k += 1
         end
@@ -137,12 +141,12 @@ function to_arcdiag(pg::Pseudograph2, part::Generic.Partition=Partition(Int[]))
         start = k
         k += 1
         for _ in 2:p
-            addarc(k, k + 1)
+            addarc_ll(k, k + 1)
             k += 2
         end
-        addarc(k, start)
+        addarc_ll(k, start)
         k += 1
     end
 
-    return ArcDiagram(nUpper, nLower, adj)
+    return ArcDiagram(num_upper_verts, num_lower_verts, upper_adj, lower_adj)
 end

@@ -72,7 +72,7 @@ function pbw_arc_diagrams__so(V::LieAlgebraModule, d::Int)
     e = arc_diagram_num_points__so(V)
     upper_indep_sets = Vector{Int}[is .+ a * e for a in [0, 1] for is in arc_diagram_indep_sets__so(V)]
     lower_indep_sets = Vector{Int}[[[2i - 1, 2i] for i in 1:d]...]
-    indep_sets = Vector{Int}[upper_indep_sets..., [is .+ 2e for is in lower_indep_sets]...]
+    indep_sets = Vector{Int}[[(-1) .* is for is in upper_indep_sets]; [is for is in lower_indep_sets]]
     return all_arc_diagrams(2e, 2d; indep_sets)
 end
 
@@ -182,7 +182,7 @@ end
 
 
 function arcdiag_to_deformationmap__so(diag::ArcDiagram, sp::SmashProductLie{C}) where {C <: RingElem}
-    d = div(diag.nLower, 2)
+    d = div(diag.num_lower_verts, 2)
     dim_stdmod_V = lie_algebra(sp).n
 
     e = arc_diagram_num_points__so(lie_module(sp))
@@ -217,28 +217,28 @@ function arcdiag_to_deformationmap__so(diag::ArcDiagram, sp::SmashProductLie{C})
             end
 
             zeroprod = false
-            labeled_diag = [is..., js..., [0 for _ in 1:2d]...]
+            upper_labels = vcat(is, js)
+            lower_labels = [0 for _ in 1:2d]
             frees = Int[]
-            for k in 1:length(labeled_diag)
-                if labeled_diag[k] != 0
-                    if labeled_diag[diag.adjacency[k]] == 0
-                        labeled_diag[diag.adjacency[k]] = labeled_diag[k]
-                    else
-                        if labeled_diag[k] != labeled_diag[diag.adjacency[k]]
-                            zeroprod = true
-                            break
-                        end
-                    end
-                else
-                    if labeled_diag[diag.adjacency[k]] == 0
-                        append!(frees, min(k, diag.adjacency[k]))
-                    end
+            for v in upper_vertices(diag)
+                nv = neighbor(diag, v)
+                if is_upper_vertex(nv) && upper_labels[vertex_index(v)] != upper_labels[vertex_index(nv)]
+                    zeroprod = true
+                    break
+                elseif is_lower_vertex(nv)
+                    lower_labels[vertex_index(nv)] = upper_labels[vertex_index(v)]
                 end
             end
             if zeroprod
                 continue
             end
-            unique!(sort!(frees))
+            for v in lower_vertices(diag)
+                nv = neighbor(diag, v)
+                if is_lower_vertex(nv) && vertex_index(v) < vertex_index(nv)
+                    push!(frees, vertex_index(v))
+                end
+            end
+
             entry = zero(underlying_algebra(sp))
 
             # iterate over lower point labelings
@@ -249,15 +249,15 @@ function arcdiag_to_deformationmap__so(diag::ArcDiagram, sp::SmashProductLie{C})
                     zeroelem = false
                     sign_lower_labels = 1
                     basiselem = Int[]
-                    for k in 2*e+1:2:length(labeled_diag)
-                        if labeled_diag[k] == labeled_diag[k+1]
+                    for k in 1:2:length(lower_labels)
+                        if lower_labels[k] == lower_labels[k+1]
                             zeroelem = true
                             break
-                        elseif labeled_diag[k] > labeled_diag[k+1]
+                        elseif lower_labels[k] > lower_labels[k+1]
                             sign_lower_labels *= -1
-                            append!(basiselem, iso_wedge2V_g[[labeled_diag[k+1], labeled_diag[k]]])
+                            append!(basiselem, iso_wedge2V_g[[lower_labels[k+1], lower_labels[k]]])
                         else
-                            append!(basiselem, iso_wedge2V_g[[labeled_diag[k], labeled_diag[k+1]]])
+                            append!(basiselem, iso_wedge2V_g[[lower_labels[k], lower_labels[k+1]]])
                         end
                     end
                     if !zeroelem
@@ -272,18 +272,20 @@ function arcdiag_to_deformationmap__so(diag::ArcDiagram, sp::SmashProductLie{C})
                     nextindex -= 1
                 end
 
-                while nextindex >= 1 && labeled_diag[frees[nextindex]] == dim_stdmod_V
-                    labeled_diag[frees[nextindex]] = 0
-                    labeled_diag[diag.adjacency[frees[nextindex]]] = 0
+                while nextindex >= 1 && lower_labels[frees[nextindex]] == dim_stdmod_V
+                    lower_labels[frees[nextindex]] = 0
+                    lower_labels[vertex_index(neighbor(diag, lower_vertex(ArcDiagramVertex, frees[nextindex])))] = 0
                     nextindex -= 1
                 end
                 if nextindex == 0
                     break
                 end
-                labeled_diag[frees[nextindex]] += 1
-                labeled_diag[diag.adjacency[frees[nextindex]]] += 1
-                if ispairgood(labeled_diag, frees[nextindex]) &&
-                   ispairgood(labeled_diag, diag.adjacency[frees[nextindex]])
+                lower_labels[frees[nextindex]] += 1
+                lower_labels[vertex_index(neighbor(diag, lower_vertex(ArcDiagramVertex, frees[nextindex])))] += 1
+                if ispairgood(lower_labels, frees[nextindex]) && ispairgood(
+                    lower_labels,
+                    vertex_index(neighbor(diag, lower_vertex(ArcDiagramVertex, frees[nextindex]))),
+                )
                     nextindex += 1
                 end
             end

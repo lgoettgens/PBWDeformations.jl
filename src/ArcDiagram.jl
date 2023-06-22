@@ -86,10 +86,10 @@ struct ArcDiagram
         return ArcDiagram(num_upper_verts, num_lower_verts, upper_neighbors, lower_neighbors; check)
     end
 
-    function ArcDiagram(upper_neighbors::Vector{Int}, lower_neighbors::Vector{Int}; check::Bool=true)
-        num_upper_verts = length(upper_neighbors)
-        num_lower_verts = length(lower_neighbors)
-        return ArcDiagram(num_upper_verts, num_lower_verts, upper_neighbors, lower_neighbors; check)
+    function ArcDiagram(upper_neighbor_inds::Vector{Int}, lower_neighbor_inds::Vector{Int}; check::Bool=true)
+        num_upper_verts = length(upper_neighbor_inds)
+        num_lower_verts = length(lower_neighbor_inds)
+        return ArcDiagram(num_upper_verts, num_lower_verts, upper_neighbor_inds, lower_neighbor_inds; check)
     end
 
     function ArcDiagram(upper::AbstractString, lower::AbstractString)
