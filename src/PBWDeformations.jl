@@ -76,17 +76,16 @@ export exterior_power
 export general_linear_lie_algebra
 export highest_weight_module
 export is_crossing_free
-export is_lower_vertex
 export is_pbwdeformation
-export is_upper_vertex
 export lie_algebra
 export lie_module
 export lookup_data
+export lower_vertex, is_lower_vertex
 export lower_vertices
 export matrix_repr_basis
+export nedges
 export neighbor
 export neighbors
-export nedges
 export pbwdeform_eqs
 export smash_product
 export special_linear_lie_algebra
@@ -97,6 +96,7 @@ export symmetric_power
 export tensor_power
 export to_arcdiag
 export underlying_algebra
+export upper_vertex, is_upper_vertex
 export upper_vertices
 export vertex_index
 export vertices

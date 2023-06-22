@@ -1,7 +1,15 @@
 const ArcDiagramVertex = Tuple{Symbol, Int}
 
+function upper_vertex(::Type{ArcDiagramVertex}, i::Int)
+    return (:upper, i)::ArcDiagramVertex
+end
+
 function is_upper_vertex(p::ArcDiagramVertex)
     return p[1] == :upper
+end
+
+function lower_vertex(::Type{ArcDiagramVertex}, i::Int)
+    return (:lower, i)::ArcDiagramVertex
 end
 
 function is_lower_vertex(p::ArcDiagramVertex)
@@ -69,8 +77,12 @@ struct ArcDiagram
         lower_neighbor_inds::Vector{Int};
         check::Bool=true,
     )
-        upper_neighbors = [i < 0 ? (:upper, -i) : (:lower, i) for i in upper_neighbor_inds]
-        lower_neighbors = [i < 0 ? (:upper, -i) : (:lower, i) for i in lower_neighbor_inds]
+        upper_neighbors = [
+            i < 0 ? upper_vertex(ArcDiagramVertex, -i) : lower_vertex(ArcDiagramVertex, i) for i in upper_neighbor_inds
+        ]
+        lower_neighbors = [
+            i < 0 ? upper_vertex(ArcDiagramVertex, -i) : lower_vertex(ArcDiagramVertex, i) for i in lower_neighbor_inds
+        ]
         return ArcDiagram(num_upper_verts, num_lower_verts, upper_neighbors, lower_neighbors; check)
     end
 
@@ -110,14 +122,22 @@ struct ArcDiagram
                 i, j = findall(string(s), str)
             end
             if i <= num_upper_verts
-                upper_neighbors[i] = j <= num_upper_verts ? (:upper, j) : (:lower, j - num_upper_verts)
+                upper_neighbors[i] =
+                    j <= num_upper_verts ? upper_vertex(ArcDiagramVertex, j) :
+                    lower_vertex(ArcDiagramVertex, j - num_upper_verts)
             else
-                lower_neighbors[i-num_upper_verts] = j <= num_upper_verts ? (:upper, j) : (:lower, j - num_upper_verts)
+                lower_neighbors[i-num_upper_verts] =
+                    j <= num_upper_verts ? upper_vertex(ArcDiagramVertex, j) :
+                    lower_vertex(ArcDiagramVertex, j - num_upper_verts)
             end
             if j <= num_upper_verts
-                upper_neighbors[j] = i <= num_upper_verts ? (:upper, i) : (:lower, i - num_upper_verts)
+                upper_neighbors[j] =
+                    i <= num_upper_verts ? upper_vertex(ArcDiagramVertex, i) :
+                    lower_vertex(ArcDiagramVertex, i - num_upper_verts)
             else
-                lower_neighbors[j-num_upper_verts] = i <= num_upper_verts ? (:upper, i) : (:lower, i - num_upper_verts)
+                lower_neighbors[j-num_upper_verts] =
+                    i <= num_upper_verts ? upper_vertex(ArcDiagramVertex, i) :
+                    lower_vertex(ArcDiagramVertex, i - num_upper_verts)
             end
         end
         return new(num_upper_verts, num_lower_verts, upper_neighbors, lower_neighbors)
@@ -178,11 +198,11 @@ function vertices(a::ArcDiagram)
 end
 
 function upper_vertices(a::ArcDiagram)
-    return ArcDiagramVertex[(:upper, i) for i in 1:a.num_upper_verts]
+    return ArcDiagramVertex[upper_vertex(ArcDiagramVertex, i) for i in 1:a.num_upper_verts]
 end
 
 function lower_vertices(a::ArcDiagram)
-    return ArcDiagramVertex[(:lower, i) for i in 1:a.num_lower_verts]
+    return ArcDiagramVertex[lower_vertex(ArcDiagramVertex, i) for i in 1:a.num_lower_verts]
 end
 
 function neighbor(a::ArcDiagram, v::ArcDiagramVertex)
@@ -202,71 +222,106 @@ function neighbors(a::ArcDiagram, v::ArcDiagramVertex)
 end
 
 function is_crossing_free(a::ArcDiagram; part=:everything::Symbol)
-    return false # TODO: fixme
     if part == :everything
-        for i in 1:a.num_upper_verts+a.num_lower_verts, j in 1:a.num_upper_verts+a.num_lower_verts
-            if i == j
+        for v1 in vertices(a), v2 in vertices(a)
+            if v1 == v2
                 continue
-            elseif i >= a.adjacency[i]
+                # symmetry of v1 and v2
+            elseif is_upper_vertex(v1) == is_upper_vertex(v2) && vertex_index(v1) > vertex_index(v2)
                 continue
-            elseif j >= a.adjacency[j]
+            elseif is_lower_vertex(v1) && is_upper_vertex(v2)
+                # symmetry of v1 and v2
                 continue
             end
-            i, j = min(i, j), max(i, j)
-            # now i < j
-            if a.adjacency[i] <= a.num_upper_verts
-                if (j < a.adjacency[i]) != (a.adjacency[j] < a.adjacency[i])
-                    return false
-                end
-            elseif i > a.num_upper_verts
-                if (j < a.adjacency[i]) != (a.adjacency[j] < a.adjacency[i])
-                    return false
-                end
-            elseif a.adjacency[j] <= a.num_upper_verts
+            nv1 = neighbor(a, v1)
+            nv2 = neighbor(a, v2)
+            if is_upper_vertex(v1) == is_upper_vertex(nv1) && vertex_index(v1) > vertex_index(nv1)
+                # symmetry of v1 and nv1
                 continue
-            elseif a.num_upper_verts < j
-                if j < a.adjacency[i] < a.adjacency[j]
+            elseif is_lower_vertex(v1) && is_upper_vertex(nv1)
+                # symmetry of v1 and nv1
+                continue
+            elseif is_upper_vertex(v2) == is_upper_vertex(nv2) && vertex_index(v2) > vertex_index(nv2)
+                # symmetry of v2 and nv2
+                continue
+            elseif is_lower_vertex(v2) && is_upper_vertex(nv2)
+                # symmetry of v2 and nv2
+                continue
+            elseif is_upper_vertex(v1) && is_upper_vertex(v2)
+                if is_upper_vertex(nv1)
+                    if is_upper_vertex(nv2)
+                        if vertex_index(v2) < vertex_index(nv1) && vertex_index(nv1) < vertex_index(nv2)
+                            return false
+                        end
+                    else
+                        if vertex_index(v2) < vertex_index(nv1)
+                            return false
+                        end
+                    end
+                else
+                    if is_upper_vertex(nv2)
+                        continue
+                    else
+                        if vertex_index(nv2) < vertex_index(nv1)
+                            return false
+                        end
+                    end
+                end
+            elseif is_upper_vertex(v1) && is_lower_vertex(v2)
+                if is_upper_vertex(nv1)
+                    continue
+                else
+                    if vertex_index(v2) < vertex_index(nv1) && vertex_index(nv1) < vertex_index(nv2)
+                        return false
+                    end
+                end
+            else # is_lower_vertex(v1) && is_lower_vertex(v2)
+                if vertex_index(v2) < vertex_index(nv1) && vertex_index(nv1) < vertex_index(nv2)
                     return false
                 end
-            elseif a.adjacency[i] > a.adjacency[j]
-                return false
             end
         end
         return true
     elseif part == :upper
-        for i in 1:a.num_upper_verts, j in 1:a.num_upper_verts
-            if i == j
-                continue
-            elseif i >= a.adjacency[i]
-                continue
-            elseif j >= a.adjacency[j]
-                continue
-            elseif a.adjacency[i] > a.num_upper_verts
-                continue
-            elseif a.adjacency[j] > a.num_upper_verts
+        for v1 in upper_vertices(a), v2 in upper_vertices(a)
+            # symmetry of v1 and v2
+            if v1 >= v2
                 continue
             end
-            i, j = min(i, j), max(i, j)
-            # now i < j
-            if (j < a.adjacency[i]) != (a.adjacency[j] < a.adjacency[i])
+            nv1 = neighbor(a, v1)
+            nv2 = neighbor(a, v2)
+            if is_lower_vertex(nv1) || is_lower_vertex(nv2)
+                # not all are upper
+                continue
+            elseif vertex_index(v1) > vertex_index(nv1)
+                # symmetry of v1 and nv1
+                continue
+            elseif vertex_index(v2) > vertex_index(nv2)
+                # symmetry of v2 and nv2
+                continue
+            elseif vertex_index(v2) < vertex_index(nv1) && vertex_index(nv1) < vertex_index(nv2)
                 return false
             end
         end
         return true
     elseif part == :lower
-        for i in 1:a.num_lower_verts, j in 1:a.num_lower_verts
-            i += a.num_upper_verts
-            j += a.num_upper_verts
-            if i == j
-                continue
-            elseif i >= a.adjacency[i]
-                continue
-            elseif j >= a.adjacency[j]
+        for v1 in lower_vertices(a), v2 in lower_vertices(a)
+            if v1 >= v2
+                # symmetry of v1 and v2
                 continue
             end
-            i, j = min(i, j), max(i, j)
-            # now i < j
-            if (j < a.adjacency[i]) != (a.adjacency[j] < a.adjacency[i])
+            nv1 = neighbor(a, v1)
+            nv2 = neighbor(a, v2)
+            if is_upper_vertex(nv1) || is_upper_vertex(nv2)
+                # not all are lower
+                continue
+            elseif vertex_index(v1) > vertex_index(nv1)
+                # symmetry of v1 and nv1
+                continue
+            elseif vertex_index(v2) > vertex_index(nv2)
+                # symmetry of v2 and nv2
+                continue
+            elseif vertex_index(v2) < vertex_index(nv1) && vertex_index(nv1) < vertex_index(nv2)
                 return false
             end
         end
