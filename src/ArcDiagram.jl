@@ -113,7 +113,7 @@ struct ArcDiagram
             @static if VERSION >= v"1.7"
                 i, j = findall(s, str)
             else
-                i, j = findall(string(s), str)
+                i, j = findall(==(s), str)
             end
             if i <= num_upper_verts
                 upper_neighbors[i] =
