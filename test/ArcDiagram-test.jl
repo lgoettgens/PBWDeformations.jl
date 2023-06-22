@@ -155,8 +155,10 @@
             end
 
             for i in 0:2n
-                @test length(collect(all_arc_diagrams(i, 2n - i; indep_sets=[-1:-1:-n, 1:n]))) ==
-                      length(all_arc_diagrams(i, 2n - i; indep_sets=[-1:-1:-n, 1:n])) ==
+                # two disjoint independent sets of size n each -> matchings on a bipartite graph
+                indep_sets = [[-1:-1:-min(i, n); 1:n-min(i, n)], [-n-1:-1:-max(i, n); n-min(i, n)+1:2n-i]]
+                @test length(collect(all_arc_diagrams(i, 2n - i; indep_sets))) ==
+                      length(all_arc_diagrams(i, 2n - i; indep_sets)) ==
                       factorial(n)
             end
         end

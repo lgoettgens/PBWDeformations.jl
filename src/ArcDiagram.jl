@@ -86,12 +86,6 @@ struct ArcDiagram
         return ArcDiagram(num_upper_verts, num_lower_verts, upper_neighbors, lower_neighbors; check)
     end
 
-    function ArcDiagram(upper_neighbor_inds::Vector{Int}, lower_neighbor_inds::Vector{Int}; check::Bool=true)
-        num_upper_verts = length(upper_neighbor_inds)
-        num_lower_verts = length(lower_neighbor_inds)
-        return ArcDiagram(num_upper_verts, num_lower_verts, upper_neighbor_inds, lower_neighbor_inds; check)
-    end
-
     function ArcDiagram(upper_neighbors::Vector{Int}, lower_neighbors::Vector{Int}; check::Bool=true)
         num_upper_verts = length(upper_neighbors)
         num_lower_verts = length(lower_neighbors)
@@ -354,7 +348,13 @@ function all_arc_diagrams(
     num_upper_verts::Int,
     num_lower_verts::Int;
     indep_sets::AbstractVector{<:AbstractVector{Int}}=Vector{Int}[],
+    check::Bool=true,
 )
+    if check
+        for is in indep_sets
+            @req all(i -> i < 0 ? -i <= num_upper_verts : i <= num_lower_verts, is) "Out of bounds independent sets"
+        end
+    end
     iter, len = iter_possible_adjacencies(
         num_upper_verts,
         num_lower_verts,
@@ -403,7 +403,7 @@ function iter_possible_adjacencies(
             end
             return Iterators.flatten(Iterators.map(c -> c[1], choices)), sum(c -> c[2], choices; init=0)
         else
-            return [ArcDiagram(num_upper_verts, num_lower_verts, partial_upper, partial_lower)], 1
+            return [ArcDiagram(num_upper_verts, num_lower_verts, partial_upper, partial_lower; check=false)], 1
         end
     end
 end
