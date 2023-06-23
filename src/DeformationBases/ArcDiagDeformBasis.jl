@@ -274,18 +274,16 @@ function arcdiag_to_deformationmap__so(diag::ArcDiagram, sp::SmashProductLie{C})
 
                 while nextindex >= 1 && lower_labels[frees[nextindex]] == dim_stdmod_V
                     lower_labels[frees[nextindex]] = 0
-                    lower_labels[vertex_index(neighbor(diag, lower_vertex(ArcDiagramVertex, frees[nextindex])))] = 0
+                    lower_labels[vertex_index(_neighbor_of_lower_vertex(diag, frees[nextindex]))] = 0
                     nextindex -= 1
                 end
                 if nextindex == 0
                     break
                 end
                 lower_labels[frees[nextindex]] += 1
-                lower_labels[vertex_index(neighbor(diag, lower_vertex(ArcDiagramVertex, frees[nextindex])))] += 1
-                if ispairgood(lower_labels, frees[nextindex]) && ispairgood(
-                    lower_labels,
-                    vertex_index(neighbor(diag, lower_vertex(ArcDiagramVertex, frees[nextindex]))),
-                )
+                lower_labels[vertex_index(_neighbor_of_lower_vertex(diag, frees[nextindex]))] += 1
+                if ispairgood(lower_labels, frees[nextindex]) &&
+                   ispairgood(lower_labels, vertex_index(_neighbor_of_lower_vertex(diag, frees[nextindex])))
                     nextindex += 1
                 end
             end

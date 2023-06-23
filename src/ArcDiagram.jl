@@ -1,25 +1,5 @@
 const ArcDiagramVertex = Tuple{Symbol, Int}
 
-function upper_vertex(::Type{ArcDiagramVertex}, i::Int)
-    return (:upper, i)::ArcDiagramVertex
-end
-
-function is_upper_vertex(p::ArcDiagramVertex)
-    return p[1] == :upper
-end
-
-function lower_vertex(::Type{ArcDiagramVertex}, i::Int)
-    return (:lower, i)::ArcDiagramVertex
-end
-
-function is_lower_vertex(p::ArcDiagramVertex)
-    return p[1] == :lower
-end
-
-function vertex_index(p::ArcDiagramVertex)
-    return p[2]
-end
-
 struct ArcDiagram
     num_upper_verts::Int
     num_lower_verts::Int
@@ -195,8 +175,38 @@ function upper_vertices(a::ArcDiagram)
     return ArcDiagramVertex[upper_vertex(ArcDiagramVertex, i) for i in 1:a.num_upper_verts]
 end
 
+function upper_vertex(a::ArcDiagram, i::Int)
+    @req 1 <= i <= a.num_upper_verts "Invalid index"
+    return (:upper, i)::ArcDiagramVertex
+end
+
+function upper_vertex(::Type{ArcDiagramVertex}, i::Int)
+    return (:upper, i)::ArcDiagramVertex
+end
+
+function is_upper_vertex(p::ArcDiagramVertex)
+    return p[1] == :upper
+end
+
 function lower_vertices(a::ArcDiagram)
     return ArcDiagramVertex[lower_vertex(ArcDiagramVertex, i) for i in 1:a.num_lower_verts]
+end
+
+function lower_vertex(a::ArcDiagram, i::Int)
+    @req 1 <= i <= a.num_lower_verts "Invalid index"
+    return (:lower, i)::ArcDiagramVertex
+end
+
+function lower_vertex(::Type{ArcDiagramVertex}, i::Int)
+    return (:lower, i)::ArcDiagramVertex
+end
+
+function is_lower_vertex(p::ArcDiagramVertex)
+    return p[1] == :lower
+end
+
+function vertex_index(p::ArcDiagramVertex)
+    return p[2]
 end
 
 function neighbor(a::ArcDiagram, v::ArcDiagramVertex)
@@ -213,6 +223,14 @@ end
 
 function neighbors(a::ArcDiagram, v::ArcDiagramVertex)
     return [neighbor(a, v)]
+end
+
+function _neighbor_of_upper_vertex(a::ArcDiagram, i::Int)
+    return a.upper_neighbors[i]
+end
+
+function _neighbor_of_lower_vertex(a::ArcDiagram, i::Int)
+    return a.lower_neighbors[i]
 end
 
 function is_crossing_free(a::ArcDiagram; part=:everything::Symbol)
