@@ -112,11 +112,11 @@ function all_pseudographs(nv::Int, degree::Int, sumtotal::Int; upto_iso::Bool=fa
     return result
 end
 
-function to_arcdiag(pg::PseudographLabelled{Int}, part::Generic.Partition=Partition(Int[]))
+function to_arcdiag(pg::PseudographLabelled{Int}, part::Partition{Int}=Partition(Int[]))
     @req nvertices(pg) == 2 "Only implemented for 2 vertices"
 
     num_upper_verts = 2 * nedges(pg)
-    num_lower_verts = 2 * (sum(pg) + part.n)
+    num_lower_verts = 2 * (sum(pg) + sum(part))
 
     upper_adj = zeros(Int, num_upper_verts)
     lower_adj = zeros(Int, num_lower_verts)
@@ -182,7 +182,7 @@ function to_arcdiag(pg::PseudographLabelled{Int}, part::Generic.Partition=Partit
         end
     end
 
-    for p in part.part
+    for p in part
         start = k
         k += 1
         for _ in 2:p

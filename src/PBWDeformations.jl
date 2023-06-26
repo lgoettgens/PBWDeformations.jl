@@ -5,10 +5,8 @@ using Oscar
 using Hecke: multiplicity
 
 import AbstractAlgebra:
-    AllParts,
     Generic,
     NCRing, # wait for https://github.com/Nemocas/AbstractAlgebra.jl/pull/1385
-    Partition,
     ProductIterator,
     base_ring,
     elem_type,

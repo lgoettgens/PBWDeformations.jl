@@ -1,6 +1,6 @@
 """
 Concrete subtype of [`DeformBasis`](@ref).
-Each element of the basis is induced by pseudograph with two vertices and
+Each element of the basis is induced by a pseudograph with two vertices and
 certain properties, which gets transformed to an arc diagram and then handled as
 in [`ArcDiagDeformBasis`](@ref).
 This process is due to [FM22](@cite).
@@ -8,7 +8,7 @@ This process is due to [FM22](@cite).
 struct PseudographDeformBasis{C <: RingElem} <: DeformBasis{C}
     len::Int
     iter
-    extra_data::Dict{DeformationMap{C}, Set{Tuple{PseudographLabelled{Int}, Generic.Partition{Int}}}}
+    extra_data::Dict{DeformationMap{C}, Set{Tuple{PseudographLabelled{Int}, Partition{Int}}}}
     normalize
 
     function PseudographDeformBasis{C}(
@@ -21,7 +21,7 @@ struct PseudographDeformBasis{C <: RingElem} <: DeformBasis{C}
 
         e = get_attribute(lie_module(sp), :power)
 
-        extra_data = Dict{DeformationMap{C}, Set{Tuple{PseudographLabelled{Int}, Generic.Partition{Int}}}}()
+        extra_data = Dict{DeformationMap{C}, Set{Tuple{PseudographLabelled{Int}, Partition{Int}}}}()
         normalize = no_normalize ? identity : normalize_default
 
         lens = []
@@ -73,9 +73,9 @@ Base.length(basis::PseudographDeformBasis) = basis.len
 function pseudographs_with_partitions__so_extpowers_stdmod(deg::Int, sumtotal::Int)
     iter = (
         begin
-            (pg, Partition(copy(part)))
+            (pg, part)
         end for sumpg in 0:sumtotal for pg in all_pseudographs(2, deg, sumpg; upto_iso=true) for
-        part in AllParts(sumtotal - sumpg) if all(iseven, part) &&
+        part in partitions(sumtotal - sumpg) if all(iseven, part) &&
         all(isodd, edge_labels(pg, MSet([1, 1]))) &&
         all(isodd, edge_labels(pg, MSet([2, 2]))) &&
         (edges(pg, MSet([1, 1])) != edges(pg, MSet([1, 1])) || isodd(sum(pg, MSet([1, 2]))))
