@@ -2,6 +2,8 @@ module PBWDeformations
 
 using Oscar
 
+using Hecke: multiplicity
+
 import AbstractAlgebra:
     AllParts,
     Generic,
@@ -17,7 +19,7 @@ import AbstractAlgebra:
 
 import AbstractAlgebra.Generic: _matrix, rels
 
-import Oscar: action, comm, exterior_power, neighbors, simplify, symmetric_power, vertices
+import Oscar: action, comm, edges, exterior_power, neighbors, nvertices, simplify, symmetric_power, vertices
 
 import Base: deepcopy_internal, hash, isequal, isone, iszero, length, one, parent, show, sum, zero
 
@@ -60,8 +62,8 @@ export DeformBasis
 export LieAlgebra, LieAlgebraElem
 export LieAlgebraModule, LieAlgebraModuleElem
 export LinearLieAlgebra, LinearLieAlgebraElem
-export Pseudograph2
 export PseudographDeformBasis
+export PseudographLabelled
 export SmashProductLie, SmashProductLieElem
 export SmashProductLieDeform, SmashProductLieDeformElem
 export StdDeformBasis
@@ -72,6 +74,8 @@ export all_pbwdeformations
 export all_pseudographs
 export base_lie_algebra
 export deform
+export edge_labels
+export edges
 export exterior_power
 export general_linear_lie_algebra
 export highest_weight_module
@@ -86,6 +90,7 @@ export matrix_repr_basis
 export nedges
 export neighbor
 export neighbors
+export nvertices
 export pbwdeform_eqs
 export smash_product
 export special_linear_lie_algebra
@@ -117,5 +122,15 @@ include("DeformationBases/ArcDiagDeformBasis.jl")
 include("DeformationBases/PseudographDeformBasis.jl")
 include("DeformationBases/StdDeformBasis.jl")
 
+
+function Base.filter(pred, s::MSet) # stays until https://github.com/thofma/Hecke.jl/pull/1135 is available
+    t = similar(s)
+    for (x, m) in s.dict
+        if pred(x)
+            push!(t, x, m)
+        end
+    end
+    return t
+end
 
 end
