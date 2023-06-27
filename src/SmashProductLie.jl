@@ -311,13 +311,13 @@ function smash_product(R::Ring, L::LieAlgebra{C}, V::LieAlgebraModule{C}) where 
     rels = Matrix{Union{Nothing, FreeAssAlgElem{elem_type(R)}}}(nothing, dimL + dimV, dimL + dimV)
 
     for (i, xi) in enumerate(basis(L)), (j, xj) in enumerate(basis(L))
-        commutator = sum(R(c) * f_basisL[k] for (k, c) in enumerate(_matrix(xi * xj)) if !iszero(c); init=zero(f_alg))
+        commutator = sum(R(c) * f_basisL[k] for (k, c) in enumerate(coefficients(xi * xj)) if !iszero(c); init=zero(f_alg))
         rels[i, j] = f_basisL[j] * f_basisL[i] + commutator
 
     end
 
     for (i, xi) in enumerate(basis(L)), (j, vj) in enumerate(basis(V))
-        commutator = sum(R(c) * f_basisV[k] for (k, c) in enumerate(_matrix(xi * vj)) if !iszero(c); init=zero(f_alg))
+        commutator = sum(R(c) * f_basisV[k] for (k, c) in enumerate(coefficients(xi * vj)) if !iszero(c); init=zero(f_alg))
         rels[i, dimL+j] = f_basisV[j] * f_basisL[i] + commutator
         rels[dimL+j, i] = f_basisL[i] * f_basisV[j] - commutator
     end

@@ -2,26 +2,7 @@ module PBWDeformations
 
 using Oscar
 
-using Hecke: multiplicity
-
-import AbstractAlgebra:
-    Generic,
-    NCRing, # wait for https://github.com/Nemocas/AbstractAlgebra.jl/pull/1385
-    ProductIterator,
-    base_ring,
-    elem_type,
-    gen,
-    gens,
-    ngens,
-    parent_type
-
-import AbstractAlgebra.Generic: _matrix, rels
-
-import Oscar: action, comm, edges, exterior_power, neighbors, nvertices, simplify, symmetric_power, vertices
-
-import Base: deepcopy_internal, hash, isequal, isone, iszero, length, one, parent, show, sum, zero
-
-import Oscar.LieAlgebras:
+using Oscar.LieAlgebras:
     AbstractLieAlgebra,
     AbstractLieAlgebraElem,
     LieAlgebra,
@@ -50,6 +31,25 @@ import Oscar.LieAlgebras:
     standard_module,
     symmetric_power,
     tensor_power
+
+using Hecke: multiplicity # wait for https://github.com/thofma/Hecke.jl/pull/1135
+
+import AbstractAlgebra:
+    NCRing, # wait for https://github.com/Nemocas/AbstractAlgebra.jl/pull/1385
+    ProductIterator,
+    base_ring,
+    elem_type,
+    gen,
+    gens,
+    ngens,
+    parent_type
+
+import Oscar: comm, edges, neighbors, nvertices, simplify, vertices
+
+import Oscar.LieAlgebras: lie_algebra
+
+import Base: deepcopy_internal, hash, isequal, isone, iszero, length, one, parent, show, sum, zero
+
 
 export AbstractLieAlgebra, AbstractLieAlgebraElem
 export ArcDiagDeformBasis
