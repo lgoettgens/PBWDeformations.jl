@@ -1,15 +1,15 @@
-@testset "SmashProductDeformLie.jl tests" begin
+@testset "SmashProductLieDeform.jl tests" begin
 
-    @testset "SmashProductDeformLie constructor" begin
+    @testset "SmashProductLieDeform constructor" begin
         @testset "R = $R" for R in [QQ, polynomial_ring(QQ, ["x", "y", "z"])[1]]
             L = special_orthogonal_lie_algebra(R, 4)
             V = exterior_power(standard_module(L), 2)
             sp = smash_product(L, V)
 
-            kappa = fill(zero(sp.alg), dim(sp.V), dim(sp.V))
-            kappa[1, 2] = gen(sp, 1, :L)
+            kappa = fill(zero(underlying_algebra(sp)), dim(lie_module(sp)), dim(lie_module(sp)))
+            kappa[1, 2] = gen(sp, 1, :L).alg_elem
             kappa[2, 1] = -kappa[1, 2]
-            kappa[3, 4] = gen(sp, 2, :L)
+            kappa[3, 4] = gen(sp, 2, :L).alg_elem
             kappa[4, 3] = -kappa[3, 4]
             d = deform(sp, kappa)
 
@@ -32,15 +32,15 @@
             # Test the module basis relations
             for i in 1:ngens(d, :V), j in 1:ngens(d, :V)
                 if i == 1 && j == 2
-                    @test normal_form(comm(gen(d, i, :V), gen(d, j, :V)), d.rels) == gen(d, 1, :L)
+                    @test comm(gen(d, i, :V), gen(d, j, :V)) == gen(d, 1, :L)
                 elseif i == 2 && j == 1
-                    @test normal_form(comm(gen(d, i, :V), gen(d, j, :V)), d.rels) == -gen(d, 1, :L)
+                    @test comm(gen(d, i, :V), gen(d, j, :V)) == -gen(d, 1, :L)
                 elseif i == 3 && j == 4
-                    @test normal_form(comm(gen(d, i, :V), gen(d, j, :V)), d.rels) == gen(d, 2, :L)
+                    @test comm(gen(d, i, :V), gen(d, j, :V)) == gen(d, 2, :L)
                 elseif i == 4 && j == 3
-                    @test normal_form(comm(gen(d, i, :V), gen(d, j, :V)), d.rels) == -gen(d, 2, :L)
+                    @test comm(gen(d, i, :V), gen(d, j, :V)) == -gen(d, 2, :L)
                 else
-                    @test iszero(normal_form(comm(gen(d, i, :V), gen(d, j, :V)), d.rels))
+                    @test iszero(comm(gen(d, i, :V), gen(d, j, :V)))
                 end
             end
 
@@ -84,7 +84,7 @@
 
                 # Test that the module basis commutes
                 for vi in gens(d, :V), vj in gens(d, :V)
-                    @test iszero(normal_form(comm(vi, vj), d.rels))
+                    @test iszero(comm(vi, vj))
                 end
 
                 showOutput = @test_nowarn sprint(show, d)
@@ -93,7 +93,7 @@
         end
     end
 
-    @testset "SmashProductDeformLie sanitize checks" begin
+    @testset "SmashProductLieDeform sanitize checks" begin
         @testset "R = $R" for R in [QQ, polynomial_ring(QQ, ["x", "y", "z"])[1]]
 
             L = special_orthogonal_lie_algebra(R, 4)
@@ -102,54 +102,54 @@
 
             @testset "check dimensions of kappa" begin
                 for eps in [-1, 1]
-                    kappa = fill(zero(sp.alg), dim(sp.V) + eps, dim(sp.V))
+                    kappa = fill(zero(underlying_algebra(sp)), dim(lie_module(sp)) + eps, dim(lie_module(sp)))
                     @test_throws ArgumentError("kappa has wrong dimensions.") deform(sp, kappa)
 
-                    kappa = fill(zero(sp.alg), dim(sp.V), dim(sp.V) + eps)
+                    kappa = fill(zero(underlying_algebra(sp)), dim(lie_module(sp)), dim(lie_module(sp)) + eps)
                     @test_throws ArgumentError("kappa has wrong dimensions.") deform(sp, kappa)
 
-                    kappa = fill(zero(sp.alg), dim(sp.V) + eps, dim(sp.V) + eps)
+                    kappa = fill(zero(underlying_algebra(sp)), dim(lie_module(sp)) + eps, dim(lie_module(sp)) + eps)
                     @test_throws ArgumentError("kappa has wrong dimensions.") deform(sp, kappa)
 
-                    kappa = fill(zero(sp.alg), dim(sp.V) + eps, dim(sp.V) - eps)
+                    kappa = fill(zero(underlying_algebra(sp)), dim(lie_module(sp)) + eps, dim(lie_module(sp)) - eps)
                     @test_throws ArgumentError("kappa has wrong dimensions.") deform(sp, kappa)
                 end
             end
 
             @testset "check kappa is skew symmetric" begin
-                kappa = fill(zero(sp.alg), dim(sp.V), dim(sp.V))
+                kappa = fill(zero(underlying_algebra(sp)), dim(lie_module(sp)), dim(lie_module(sp)))
                 kappa[1, 1] = gen(sp, 1, :L)
                 @test_throws ArgumentError("kappa is not skew-symmetric.") deform(sp, kappa)
 
-                kappa = fill(zero(sp.alg), dim(sp.V), dim(sp.V))
+                kappa = fill(zero(underlying_algebra(sp)), dim(lie_module(sp)), dim(lie_module(sp)))
                 kappa[1, 2] = gen(sp, 1, :L)
                 @test_throws ArgumentError("kappa is not skew-symmetric.") deform(sp, kappa)
 
-                kappa = fill(zero(sp.alg), dim(sp.V), dim(sp.V))
+                kappa = fill(zero(underlying_algebra(sp)), dim(lie_module(sp)), dim(lie_module(sp)))
                 kappa[1, 2] = gen(sp, 1, :L)
                 kappa[2, 1] = -2 * gen(sp, 1, :L)
                 @test_throws ArgumentError("kappa is not skew-symmetric.") deform(sp, kappa)
             end
 
             @testset "check entries of kappa contained in Hopf algebra of smash product" begin
-                kappa = fill(zero(sp.alg), dim(sp.V), dim(sp.V))
+                kappa = fill(zero(underlying_algebra(sp)), dim(lie_module(sp)), dim(lie_module(sp)))
                 kappa[1, 2] = gen(sp, 1, :V)
                 kappa[2, 1] = -kappa[1, 2]
                 @test_throws ArgumentError("kappa does not only take values in the hopf algebra") deform(sp, kappa)
 
-                kappa = fill(zero(sp.alg), dim(sp.V), dim(sp.V))
+                kappa = fill(zero(underlying_algebra(sp)), dim(lie_module(sp)), dim(lie_module(sp)))
                 kappa[1, 2] = gen(sp, 1, :V) * gen(sp, 1, :L)
                 kappa[2, 1] = -kappa[1, 2]
                 @test_throws ArgumentError("kappa does not only take values in the hopf algebra") deform(sp, kappa)
             end
 
             @testset "correct input" begin
-                kappa = fill(zero(sp.alg), dim(sp.V), dim(sp.V))
-                kappa[1, 2] = sp.alg(2)
+                kappa = fill(zero(underlying_algebra(sp)), dim(lie_module(sp)), dim(lie_module(sp)))
+                kappa[1, 2] = underlying_algebra(sp)(2)
                 kappa[2, 1] = -kappa[1, 2]
                 @test_nowarn deform(sp, kappa)
 
-                kappa = fill(zero(sp.alg), dim(sp.V), dim(sp.V))
+                kappa = fill(zero(underlying_algebra(sp)), dim(lie_module(sp)), dim(lie_module(sp)))
                 kappa[1, 2] = gen(sp, 1, :L) * gen(sp, 2, :L) - 3 * gen(sp, 3, :L)
                 kappa[2, 1] = -kappa[1, 2]
                 @test_nowarn deform(sp, kappa)

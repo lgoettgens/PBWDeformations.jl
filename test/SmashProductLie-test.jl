@@ -25,23 +25,23 @@
             v2 = gen(sp, 2, :V)
 
             # sl_2 relations
-            @test normal_form(comm(x, x), sp.rels) == 0
-            @test normal_form(comm(x, y), sp.rels) == h
-            @test normal_form(comm(x, h), sp.rels) == -2x
-            @test normal_form(comm(y, x), sp.rels) == -h
-            @test normal_form(comm(y, y), sp.rels) == 0
-            @test normal_form(comm(y, h), sp.rels) == 2y
-            @test normal_form(comm(h, x), sp.rels) == 2x
-            @test normal_form(comm(h, y), sp.rels) == -2y
-            @test normal_form(comm(h, h), sp.rels) == 0
+            @test comm(x, x) == 0
+            @test comm(x, y) == h
+            @test comm(x, h) == -2x
+            @test comm(y, x) == -h
+            @test comm(y, y) == 0
+            @test comm(y, h) == 2y
+            @test comm(h, x) == 2x
+            @test comm(h, y) == -2y
+            @test comm(h, h) == 0
 
             # natural representation relations
-            @test normal_form(comm(x, v1), sp.rels) == 0
-            @test normal_form(comm(x, v2), sp.rels) == v1
-            @test normal_form(comm(y, v1), sp.rels) == v2
-            @test normal_form(comm(y, v2), sp.rels) == 0
-            @test normal_form(comm(h, v1), sp.rels) == v1
-            @test normal_form(comm(h, v2), sp.rels) == -v2
+            @test comm(x, v1) == 0
+            @test comm(x, v2) == v1
+            @test comm(y, v1) == v2
+            @test comm(y, v2) == 0
+            @test comm(h, v1) == v1
+            @test comm(h, v2) == -v2
         end
 
         @testset "so_4(QQ) ⋉ ⋀^2 V" begin

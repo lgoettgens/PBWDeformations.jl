@@ -7,9 +7,9 @@ using Aqua
         unbound_args=true,
         undefined_exports=true,
         project_extras=true,
-        stale_deps=false,           # some weird error with GAP_lib_jll
+        stale_deps=true,
         deps_compat=true,
         project_toml_formatting=true,
-        piracy=false,               # ignored for now
+        piracy=(treat_as_own=[MSet],), # until https://github.com/thofma/Hecke.jl/pull/1135 is available
     )
 end

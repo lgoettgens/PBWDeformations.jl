@@ -25,6 +25,5 @@ The [`SmashProductDeformLie`](@ref) struct can be used as an argument for the fo
 - `gen`
 - `gens`
 - `ngens`
-- `change_base_ring`
 
 For `gen`, `gens`, and `ngens`, on can supply a symbol to choose the part of the smash product to use: `:L` for the Lie algebra, and `:V` for the module.

@@ -2,46 +2,7 @@ module PBWDeformations
 
 using Oscar
 
-import AbstractAlgebra:
-    @attributes,
-    @attr,
-    @enable_all_show_via_expressify,
-    AllParts,
-    CacheDictType,
-    FreeAssAlgebra,
-    FreeAssAlgElem,
-    FPModule,
-    FPModuleElem,
-    Generic,
-    MatElem,
-    Partition,
-    ProductIterator,
-    Ring,
-    RingElement,
-    base_ring,
-    canonical_unit,
-    change_base_ring,
-    dim,
-    elem_type,
-    expressify,
-    gen,
-    gens,
-    get_attribute,
-    get_attribute!,
-    get_cached!,
-    has_attribute,
-    ngens,
-    parent_type,
-    set_attribute!,
-    symbols
-
-import AbstractAlgebra.Generic: _matrix, matrix_repr, rels
-
-import Oscar: action, comm, exterior_power, normal_form, symmetric_power
-
-import Base: deepcopy_internal, hash, isequal, iszero, length, parent, show, sum, zero, +, -, *, ==
-
-import Oscar.LieAlgebras:
+using Oscar.LieAlgebras:
     AbstractLieAlgebra,
     AbstractLieAlgebraElem,
     LieAlgebra,
@@ -71,19 +32,38 @@ import Oscar.LieAlgebras:
     symmetric_power,
     tensor_power
 
+using Hecke: multiplicity # wait for https://github.com/thofma/Hecke.jl/pull/1135
+
+import AbstractAlgebra:
+    NCRing, # wait for https://github.com/Nemocas/AbstractAlgebra.jl/pull/1385
+    ProductIterator,
+    base_ring,
+    elem_type,
+    gen,
+    gens,
+    ngens,
+    parent_type
+
+import Oscar: comm, edges, neighbors, nvertices, simplify, vertices
+
+import Oscar.LieAlgebras: lie_algebra
+
+import Base: deepcopy_internal, hash, isequal, isone, iszero, length, one, parent, show, sum, zero
+
+
 export AbstractLieAlgebra, AbstractLieAlgebraElem
 export ArcDiagDeformBasis
 export ArcDiagram
+export ArcDiagramVertex
 export DeformationMap
 export DeformBasis
 export LieAlgebra, LieAlgebraElem
 export LieAlgebraModule, LieAlgebraModuleElem
 export LinearLieAlgebra, LinearLieAlgebraElem
-export Pseudograph2
 export PseudographDeformBasis
-export QuadraticRelations
-export SmashProductDeformLie
-export SmashProductLie
+export PseudographLabelled
+export SmashProductLie, SmashProductLieElem
+export SmashProductLieDeform, SmashProductLieDeformElem
 export StdDeformBasis
 
 export abstract_module
@@ -92,16 +72,23 @@ export all_pbwdeformations
 export all_pseudographs
 export base_lie_algebra
 export deform
+export edge_labels
+export edges
 export exterior_power
-export flatten
 export general_linear_lie_algebra
 export highest_weight_module
 export is_crossing_free
 export is_pbwdeformation
 export lie_algebra
+export lie_module
 export lookup_data
+export lower_vertex, is_lower_vertex
+export lower_vertices
 export matrix_repr_basis
 export nedges
+export neighbor
+export neighbors
+export nvertices
 export pbwdeform_eqs
 export smash_product
 export special_linear_lie_algebra
@@ -111,18 +98,20 @@ export symmetric_deformation
 export symmetric_power
 export tensor_power
 export to_arcdiag
+export underlying_algebra
+export upper_vertex, is_upper_vertex
+export upper_vertices
+export vertex_index
+export vertices
 
 function __init__()
-    Hecke.add_verbose_scope(:PBWDeformations)
+    add_verbose_scope(:PBWDeformations)
 end
 
-include("Util.jl")
-
-include("FreeAssAlgQuadraticRelations.jl")
 include("DeformationBases/DeformBasis.jl")
 
 include("SmashProductLie.jl")
-include("SmashProductDeformLie.jl")
+include("SmashProductLieDeform.jl")
 include("SmashProductPBWDeformLie.jl")
 include("ArcDiagram.jl")
 include("Pseudograph.jl")
@@ -131,5 +120,15 @@ include("DeformationBases/ArcDiagDeformBasis.jl")
 include("DeformationBases/PseudographDeformBasis.jl")
 include("DeformationBases/StdDeformBasis.jl")
 
+
+function Base.filter(pred, s::MSet) # stays until https://github.com/thofma/Hecke.jl/pull/1135 is available
+    t = similar(s)
+    for (x, m) in s.dict
+        if pred(x)
+            push!(t, x, m)
+        end
+    end
+    return t
+end
 
 end

@@ -4,7 +4,7 @@ Each element of the basis is induced by an arc diagram of a suitable size,
 which gets symmetrized and specialised to the given smash product.
 This process is due to [FM22](@cite).
 """
-struct ArcDiagDeformBasis{C <: RingElement} <: DeformBasis{C}
+struct ArcDiagDeformBasis{C <: RingElem} <: DeformBasis{C}
     len::Int
     iter
     extra_data::Dict{DeformationMap{C}, Set{ArcDiagram}}
@@ -14,9 +14,10 @@ struct ArcDiagDeformBasis{C <: RingElement} <: DeformBasis{C}
         sp::SmashProductLie{C},
         degs::AbstractVector{Int};
         no_normalize::Bool=false,
-    ) where {C <: RingElement}
-        @req get_attribute(sp.L, :type, nothing) == :special_orthogonal "Only works for so_n."
-        @req (is_exterior_power(sp.V) || is_symmetric_power(sp.V)) && is_standard_module(base_module(sp.V)) "Only works for exterior powers of the standard module."
+    ) where {C <: RingElem}
+        @req get_attribute(lie_algebra(sp), :type, nothing) == :special_orthogonal "Only works for so_n."
+        @req (is_exterior_power(lie_module(sp)) || is_symmetric_power(lie_module(sp))) &&
+             is_standard_module(base_module(lie_module(sp))) "Only works for exterior powers of the standard module."
 
         extra_data = Dict{DeformationMap{C}, Set{ArcDiagram}}()
         normalize = no_normalize ? identity : normalize_default
@@ -25,7 +26,7 @@ struct ArcDiagDeformBasis{C <: RingElement} <: DeformBasis{C}
         iters = []
         debug_counter = 0
         for d in degs
-            diag_iter = pbw_arc_diagrams__so(sp.V, d)
+            diag_iter = pbw_arc_diagrams__so(lie_module(sp), d)
             len = length(diag_iter)
             iter = (
                 begin
@@ -67,15 +68,15 @@ end
 Base.length(basis::ArcDiagDeformBasis) = basis.len
 
 
-function pbw_arc_diagrams__so(V::LieAlgebraModule{C}, d::Int) where {C <: RingElement}
+function pbw_arc_diagrams__so(V::LieAlgebraModule, d::Int)
     e = arc_diagram_num_points__so(V)
     upper_indep_sets = Vector{Int}[is .+ a * e for a in [0, 1] for is in arc_diagram_indep_sets__so(V)]
     lower_indep_sets = Vector{Int}[[[2i - 1, 2i] for i in 1:d]...]
-    indep_sets = Vector{Int}[upper_indep_sets..., [is .+ 2e for is in lower_indep_sets]...]
+    indep_sets = Vector{Int}[[(-1) .* is for is in upper_indep_sets]; [is for is in lower_indep_sets]]
     return all_arc_diagrams(2e, 2d; indep_sets)
 end
 
-function arc_diagram_num_points__so(V::LieAlgebraModule{C}) where {C <: RingElement}
+function arc_diagram_num_points__so(V::LieAlgebraModule)
     if is_standard_module(V)
         return 1
     elseif is_exterior_power(V) || is_symmetric_power(V) || is_tensor_power(V)
@@ -85,7 +86,7 @@ function arc_diagram_num_points__so(V::LieAlgebraModule{C}) where {C <: RingElem
     end
 end
 
-function arc_diagram_indep_sets__so(V::LieAlgebraModule{C}) where {C <: RingElement}
+function arc_diagram_indep_sets__so(V::LieAlgebraModule)
     if is_standard_module(V)
         return Vector{Int}[]
     elseif is_exterior_power(V) || is_symmetric_power(V) || is_tensor_power(V)
@@ -145,7 +146,7 @@ function arc_diagram_label_permutations__so(V::LieAlgebraModule, label::Abstract
         if is_exterior_power(V)
             return [
                 begin
-                    inner_label = flatten(first.(inner_iter))
+                    inner_label = vcat(first.(inner_iter)...)
                     inner_sign = prod(last.(inner_iter))
                     (inner_label, inner_sign * outer_sign)
                 end for (outer_perm, outer_sign) in permutations_with_sign(1:power) for inner_iter in ProductIterator([
@@ -156,7 +157,7 @@ function arc_diagram_label_permutations__so(V::LieAlgebraModule, label::Abstract
         elseif is_symmetric_power(V)
             return [
                 begin
-                    inner_label = flatten(first.(inner_iter))
+                    inner_label = vcat(first.(inner_iter)...)
                     inner_sign = prod(last.(inner_iter))
                     (inner_label, inner_sign)
                 end for outer_perm in permutations(1:power) for inner_iter in ProductIterator([
@@ -180,33 +181,33 @@ function arc_diagram_label_permutations__so(V::LieAlgebraModule, label::Abstract
 end
 
 
-function arcdiag_to_deformationmap__so(diag::ArcDiagram, sp::SmashProductLie{C}) where {C <: RingElement}
-    d = div(diag.nLower, 2)
-    dim_stdmod_V = sp.L.n
+function arcdiag_to_deformationmap__so(diag::ArcDiagram, sp::SmashProductLie{C}) where {C <: RingElem}
+    d = div(diag.num_lower_verts, 2)
+    dim_stdmod_V = lie_algebra(sp).n
 
-    e = arc_diagram_num_points__so(sp.V)
+    e = arc_diagram_num_points__so(lie_module(sp))
 
     iso_wedge2V_g = Dict{Vector{Int}, Int}()
-    for (i, bs) in enumerate(combinations(sp.L.n, 2))
+    for (i, bs) in enumerate(combinations(lie_algebra(sp).n, 2))
         iso_wedge2V_g[bs] = i
     end
 
     index = Dict{Vector{Int}, Int}()
-    for (i, is) in enumerate(arc_diagram_label_iterator__so(sp.V, 1:dim_stdmod_V))
+    for (i, is) in enumerate(arc_diagram_label_iterator__so(lie_module(sp), 1:dim_stdmod_V))
         index[is] = i
     end
 
-    kappa = fill(zero(sp.alg), dim(sp.V), dim(sp.V))
-    for is in arc_diagram_label_iterator__so(sp.V, 1:dim_stdmod_V),
-        js in arc_diagram_label_iterator__so(sp.V, 1:dim_stdmod_V)
+    kappa = fill(zero(underlying_algebra(sp)), dim(lie_module(sp)), dim(lie_module(sp)))
+    for is in arc_diagram_label_iterator__so(lie_module(sp), 1:dim_stdmod_V),
+        js in arc_diagram_label_iterator__so(lie_module(sp), 1:dim_stdmod_V)
 
         i = index[is]
         j = index[js]
         if i >= j
             continue
         end
-        for (is, sgn_left) in arc_diagram_label_permutations__so(sp.V, is),
-            (js, sgn_right) in arc_diagram_label_permutations__so(sp.V, js),
+        for (is, sgn_left) in arc_diagram_label_permutations__so(lie_module(sp), is),
+            (js, sgn_right) in arc_diagram_label_permutations__so(lie_module(sp), js),
             swap in [false, true]
 
             sgn_upper_labels = sgn_left * sgn_right
@@ -216,29 +217,29 @@ function arcdiag_to_deformationmap__so(diag::ArcDiagram, sp::SmashProductLie{C})
             end
 
             zeroprod = false
-            labeled_diag = [is..., js..., [0 for _ in 1:2d]...]
+            upper_labels = vcat(is, js)
+            lower_labels = [0 for _ in 1:2d]
             frees = Int[]
-            for k in 1:length(labeled_diag)
-                if labeled_diag[k] != 0
-                    if labeled_diag[diag.adjacency[k]] == 0
-                        labeled_diag[diag.adjacency[k]] = labeled_diag[k]
-                    else
-                        if labeled_diag[k] != labeled_diag[diag.adjacency[k]]
-                            zeroprod = true
-                            break
-                        end
-                    end
-                else
-                    if labeled_diag[diag.adjacency[k]] == 0
-                        append!(frees, min(k, diag.adjacency[k]))
-                    end
+            for v in upper_vertices(diag)
+                nv = neighbor(diag, v)
+                if is_upper_vertex(nv) && upper_labels[vertex_index(v)] != upper_labels[vertex_index(nv)]
+                    zeroprod = true
+                    break
+                elseif is_lower_vertex(nv)
+                    lower_labels[vertex_index(nv)] = upper_labels[vertex_index(v)]
                 end
             end
             if zeroprod
                 continue
             end
-            unique!(sort!(frees))
-            entry = zero(sp.alg)
+            for v in lower_vertices(diag)
+                nv = neighbor(diag, v)
+                if is_lower_vertex(nv) && vertex_index(v) < vertex_index(nv)
+                    push!(frees, vertex_index(v))
+                end
+            end
+
+            entry = zero(underlying_algebra(sp))
 
             # iterate over lower point labelings
             nextindex = 1
@@ -248,41 +249,41 @@ function arcdiag_to_deformationmap__so(diag::ArcDiagram, sp::SmashProductLie{C})
                     zeroelem = false
                     sign_lower_labels = 1
                     basiselem = Int[]
-                    for k in 2*e+1:2:length(labeled_diag)
-                        if labeled_diag[k] == labeled_diag[k+1]
+                    for k in 1:2:length(lower_labels)
+                        if lower_labels[k] == lower_labels[k+1]
                             zeroelem = true
                             break
-                        elseif labeled_diag[k] > labeled_diag[k+1]
+                        elseif lower_labels[k] > lower_labels[k+1]
                             sign_lower_labels *= -1
-                            append!(basiselem, iso_wedge2V_g[[labeled_diag[k+1], labeled_diag[k]]])
+                            append!(basiselem, iso_wedge2V_g[[lower_labels[k+1], lower_labels[k]]])
                         else
-                            append!(basiselem, iso_wedge2V_g[[labeled_diag[k], labeled_diag[k+1]]])
+                            append!(basiselem, iso_wedge2V_g[[lower_labels[k], lower_labels[k+1]]])
                         end
                     end
                     if !zeroelem
-                        symm_basiselem = sp.alg(
+                        symm_basiselem = underlying_algebra(sp)(
                             fill(C(1 // factorial(length(basiselem))), factorial(length(basiselem))),
                             [ind for ind in permutations(basiselem)],
                         )
-                        entry += sign_lower_labels * normal_form(symm_basiselem, sp.rels)
+                        entry += sign_lower_labels * _normal_form(symm_basiselem, sp.rels)
                     end
                     # end inner
 
                     nextindex -= 1
                 end
 
-                while nextindex >= 1 && labeled_diag[frees[nextindex]] == dim_stdmod_V
-                    labeled_diag[frees[nextindex]] = 0
-                    labeled_diag[diag.adjacency[frees[nextindex]]] = 0
+                while nextindex >= 1 && lower_labels[frees[nextindex]] == dim_stdmod_V
+                    lower_labels[frees[nextindex]] = 0
+                    lower_labels[vertex_index(_neighbor_of_lower_vertex(diag, frees[nextindex]))] = 0
                     nextindex -= 1
                 end
                 if nextindex == 0
                     break
                 end
-                labeled_diag[frees[nextindex]] += 1
-                labeled_diag[diag.adjacency[frees[nextindex]]] += 1
-                if ispairgood(labeled_diag, frees[nextindex]) &&
-                   ispairgood(labeled_diag, diag.adjacency[frees[nextindex]])
+                lower_labels[frees[nextindex]] += 1
+                lower_labels[vertex_index(_neighbor_of_lower_vertex(diag, frees[nextindex]))] += 1
+                if ispairgood(lower_labels, frees[nextindex]) &&
+                   ispairgood(lower_labels, vertex_index(_neighbor_of_lower_vertex(diag, frees[nextindex])))
                     nextindex += 1
                 end
             end

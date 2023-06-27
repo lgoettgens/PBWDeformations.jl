@@ -6,7 +6,7 @@
             sp = smash_product(L, V)
 
             @testset "not all specialisations are zero" begin
-                diag = ArcDiagram(4, 2, [5, 3, 2, 6, 1, 4])
+                diag = ArcDiagram("ABBD,AD")
                 dm = PD.arcdiag_to_deformationmap__so(diag, sp)
                 @test !iszero(dm)
             end
