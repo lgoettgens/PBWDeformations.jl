@@ -44,6 +44,7 @@ import Base: deepcopy_internal, hash, isequal, isone, iszero, length, one, paren
 export AbstractLieAlgebra, AbstractLieAlgebraElem
 export ArcDiagDeformBasis
 export ArcDiagram
+export ArcDiagramUndirected
 export ArcDiagramVertex
 export DeformationMap
 export DeformBasis

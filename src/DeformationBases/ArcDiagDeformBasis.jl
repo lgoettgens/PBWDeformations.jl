@@ -181,8 +181,9 @@ function arc_diagram_label_permutations__so(V::LieAlgebraModule, label::Abstract
 end
 
 
-function arcdiag_to_deformationmap__so(diag::ArcDiagram, sp::SmashProductLie{C}) where {C <: RingElem}
-    d = div(diag.num_lower_verts, 2)
+function arcdiag_to_deformationmap__so(diag::ArcDiagramUndirected, sp::SmashProductLie{C}) where {C <: RingElem}
+    # TODO: allow for genereal ArcDiagrams
+    d = div(n_lower_vertices(diag), 2)
     dim_stdmod_V = lie_algebra(sp).n
 
     e = arc_diagram_num_points__so(lie_module(sp))
