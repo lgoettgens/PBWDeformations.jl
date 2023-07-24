@@ -557,10 +557,6 @@ function neighbors(a::ArcDiagramDirected, v::ArcDiagramVertex)
     return [inneighbors(a, v); outneighbors(a, v)]
 end
 
-function ArcDiagramUndirected(a::ArcDiagramDirected)
-    return ArcDiagramUndirected(a.n_upper_verts, a.n_lower_verts, a.upper_neighbors, a.lower_neighbors)
-end
-
 ################################################################################
 #
 # Constructors
@@ -718,15 +714,19 @@ function arc_diagram(::Type{Directed}, upper::AbstractString, lower::AbstractStr
     parity_upper_verts = BitVector([islowercase(s) for s in upper])
     parity_lower_verts = BitVector([isuppercase(s) for s in lower])
 
-    str = upper * lower
-    @req all(isletter, str) "Invalid symbol."
-    str = uppercase(str)
+    str_cased = upper * lower
+    @req all(isletter, str_cased) "Invalid symbol."
+    str = uppercase(str_cased)
     symbols = unique(str)
     for s in symbols
         @static if VERSION >= v"1.7"
             @req count(s, str) == 2 "Symbol $s does not appear exactly twice."
+            @req count(s, str_cased) == 1 "Symbol $s does not appear exactly once uppercase."
+            @req count(lowercase(s), str_cased) == 1 "Symbol $s does not appear exactly once lowercase."
         else
             @req count(string(s), str) == 2 "Symbol $s does not appear exactly twice."
+            @req count(string(s), str_cased) == 1 "Symbol $s does not appear exactly once uppercase."
+            @req count(string(lowercase(s)), str_cased) == 1 "Symbol $s does not appear exactly once lowercase."
         end
     end
     upper_neighbors = [(:none, 0) for _ in 1:n_upper_verts]
@@ -772,6 +772,9 @@ function arc_diagram(T::Type{<:Union{Directed, Undirected}}, s::AbstractString)
     return arc_diagram(T, upper, lower)
 end
 
+function arc_diagram(::Type{Undirected}, a::ArcDiagramDirected)
+    return ArcDiagramUndirected(a.n_upper_verts, a.n_lower_verts, a.upper_neighbors, a.lower_neighbors)
+end
 
 ################################################################################
 #
@@ -902,11 +905,12 @@ end
 
 function all_arc_diagrams(
     ::Type{Directed},
-    parity_upper_verts::BitVector,
+    parity_upper_verts::Union{BitVector, Vector{<:Number}},
     n_lower_verts::Int;
     indep_sets::AbstractVector{<:AbstractVector{Int}}=Vector{Int}[],
     check::Bool=true,
 )
+    parity_upper_verts = BitVector(parity_upper_verts)
     n_upper_verts = length(parity_upper_verts)
     if check
         for is in indep_sets
@@ -936,11 +940,13 @@ end
 
 function all_arc_diagrams(
     ::Type{Directed},
-    parity_upper_verts::BitVector,
-    parity_lower_verts::BitVector;
+    parity_upper_verts::Union{BitVector, Vector{<:Number}},
+    parity_lower_verts::Union{BitVector, Vector{<:Number}};
     indep_sets::AbstractVector{<:AbstractVector{Int}}=Vector{Int}[],
     check::Bool=true,
 )
+    parity_upper_verts = BitVector(parity_upper_verts)
+    parity_lower_verts = BitVector(parity_lower_verts)
     n_upper_verts = length(parity_upper_verts)
     n_lower_verts = length(parity_lower_verts)
     if check
