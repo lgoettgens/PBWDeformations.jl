@@ -44,6 +44,7 @@ import Base: deepcopy_internal, hash, isequal, isone, iszero, length, one, paren
 export AbstractLieAlgebra, AbstractLieAlgebraElem
 export ArcDiagDeformBasis
 export ArcDiagram
+export ArcDiagramDirected
 export ArcDiagramUndirected
 export ArcDiagramVertex
 export DeformationMap
@@ -68,6 +69,8 @@ export edges
 export exterior_power
 export general_linear_lie_algebra
 export highest_weight_module
+export inneighbor
+export inneighbors
 export is_crossing_free
 export is_pbwdeformation
 export lie_algebra
@@ -80,6 +83,8 @@ export nedges
 export neighbor
 export neighbors
 export nvertices
+export outneighbor
+export outneighbors
 export pbwdeform_eqs
 export smash_product
 export special_linear_lie_algebra
