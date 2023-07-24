@@ -121,7 +121,7 @@ include("DeformationBases/PseudographDeformBasis.jl")
 include("DeformationBases/StdDeformBasis.jl")
 
 
-function Base.filter(pred, s::MSet) # stays until https://github.com/thofma/Hecke.jl/pull/1135 is available
+function Base.filter(pred, s::MSet) # wait for https://github.com/thofma/Hecke.jl/pull/1135 being available
     t = similar(s)
     for (x, m) in s.dict
         if pred(x)
@@ -130,5 +130,7 @@ function Base.filter(pred, s::MSet) # stays until https://github.com/thofma/Heck
     end
     return t
 end
+
+Base.:^(V::LieAlgebraModule, ::typeof(Base.:*)) = dual(V) # wait for https://github.com/oscar-system/Oscar.jl/pull/2528 being available
 
 end
