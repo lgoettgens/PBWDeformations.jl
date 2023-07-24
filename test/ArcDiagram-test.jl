@@ -89,12 +89,12 @@
         end
 
         @testset "is_crossing_free(part=:upper)" begin
-            @test all(diag -> is_crossing_free(diag, part=:upper), all_arc_diagrams(0, 6))
-            @test all(diag -> is_crossing_free(diag, part=:upper), all_arc_diagrams(1, 5))
-            @test all(diag -> is_crossing_free(diag, part=:upper), all_arc_diagrams(2, 4))
-            @test all(diag -> is_crossing_free(diag, part=:upper), all_arc_diagrams(3, 3))
+            @test all(diag -> is_crossing_free(diag, part=:upper), all_arc_diagrams(Undirected, 0, 6))
+            @test all(diag -> is_crossing_free(diag, part=:upper), all_arc_diagrams(Undirected, 1, 5))
+            @test all(diag -> is_crossing_free(diag, part=:upper), all_arc_diagrams(Undirected, 2, 4))
+            @test all(diag -> is_crossing_free(diag, part=:upper), all_arc_diagrams(Undirected, 3, 3))
 
-            @test [diag for diag in all_arc_diagrams(4, 2) if !is_crossing_free(diag, part=:upper)] == [ArcDiagramUndirected("ABAB,EE")]
+            @test [diag for diag in all_arc_diagrams(Undirected, 4, 2) if !is_crossing_free(diag, part=:upper)] == [ArcDiagramUndirected("ABAB,EE")]
 
             @test is_crossing_free(ArcDiagramUndirected("AACCE,E"), part=:upper) == true
             @test is_crossing_free(ArcDiagramUndirected("AACDC,D"), part=:upper) == true
@@ -112,18 +112,18 @@
             @test is_crossing_free(ArcDiagramUndirected("ABCBC,A"), part=:upper) == false
             @test is_crossing_free(ArcDiagramUndirected("ABCCB,A"), part=:upper) == true
 
-            for diag in all_arc_diagrams(6, 0)
+            for diag in all_arc_diagrams(Undirected, 6, 0)
                 @test is_crossing_free(diag, part=:upper) == is_crossing_free(diag)
             end
         end
 
         @testset "is_crossing_free(part=:lower)" begin
-            @test all(diag -> is_crossing_free(diag, part=:lower), all_arc_diagrams(6, 0))
-            @test all(diag -> is_crossing_free(diag, part=:lower), all_arc_diagrams(5, 1))
-            @test all(diag -> is_crossing_free(diag, part=:lower), all_arc_diagrams(4, 2))
-            @test all(diag -> is_crossing_free(diag, part=:lower), all_arc_diagrams(3, 3))
+            @test all(diag -> is_crossing_free(diag, part=:lower), all_arc_diagrams(Undirected, 6, 0))
+            @test all(diag -> is_crossing_free(diag, part=:lower), all_arc_diagrams(Undirected, 5, 1))
+            @test all(diag -> is_crossing_free(diag, part=:lower), all_arc_diagrams(Undirected, 4, 2))
+            @test all(diag -> is_crossing_free(diag, part=:lower), all_arc_diagrams(Undirected, 3, 3))
 
-            @test [diag for diag in all_arc_diagrams(2, 4) if !is_crossing_free(diag, part=:lower)] == [ArcDiagramUndirected("AA,CDCD")]
+            @test [diag for diag in all_arc_diagrams(Undirected, 2, 4) if !is_crossing_free(diag, part=:lower)] == [ArcDiagramUndirected("AA,CDCD")]
 
             @test is_crossing_free(ArcDiagramUndirected("A,ACCEE"), part=:lower) == true
             @test is_crossing_free(ArcDiagramUndirected("A,ACDCD"), part=:lower) == false
@@ -141,36 +141,47 @@
             @test is_crossing_free(ArcDiagramUndirected("A,BCBCA"), part=:lower) == false
             @test is_crossing_free(ArcDiagramUndirected("A,BCCBA"), part=:lower) == true
 
-            for diag in all_arc_diagrams(0, 6)
+            for diag in all_arc_diagrams(Undirected, 0, 6)
                 @test is_crossing_free(diag, part=:lower) == is_crossing_free(diag)
             end
         end
     end
 
-    @testset "all_arc_diagrams" begin
+    @testset "all_arc_diagrams(Undirected, ...)" begin
         for n in 0:5
             for i in 0:2n
-                @test length(collect(all_arc_diagrams(i, 2n - i))) ==
-                      length(all_arc_diagrams(i, 2n - i)) ==
+                @test length(collect(all_arc_diagrams(Undirected, i, 2n - i))) ==
+                      length(all_arc_diagrams(Undirected, i, 2n - i)) ==
                       div(factorial(2 * n), 2^n * factorial(n))
             end
             for i in 0:2n+1
-                @test length(collect(all_arc_diagrams(i, 2n + 1 - i))) == length(all_arc_diagrams(i, 2n + 1 - i)) == 0
+                @test length(collect(all_arc_diagrams(Undirected, i, 2n + 1 - i))) ==
+                      length(all_arc_diagrams(Undirected, i, 2n + 1 - i)) ==
+                      0
             end
 
             for i in 0:2n
                 # two disjoint independent sets of size n each -> matchings on a bipartite graph
                 indep_sets = [[-1:-1:-min(i, n); 1:n-min(i, n)], [-n-1:-1:-max(i, n); n-min(i, n)+1:2n-i]]
-                @test length(collect(all_arc_diagrams(i, 2n - i; indep_sets))) ==
-                      length(all_arc_diagrams(i, 2n - i; indep_sets)) ==
+                @test length(collect(all_arc_diagrams(Undirected, i, 2n - i; indep_sets))) ==
+                      length(all_arc_diagrams(Undirected, i, 2n - i; indep_sets)) ==
                       factorial(n)
             end
         end
 
         @test length(
-                  collect(all_arc_diagrams(6, 6, indep_sets=[[-1, -2, -3], [-4, -5, -6], [1, 2], [3, 4], [5, 6]])),
+                  collect(
+                      all_arc_diagrams(
+                          Undirected,
+                          6,
+                          6,
+                          indep_sets=[[-1, -2, -3], [-4, -5, -6], [1, 2], [3, 4], [5, 6]],
+                      ),
+                  ),
               ) ==
-              length(all_arc_diagrams(6, 6, indep_sets=[[-1, -2, -3], [-4, -5, -6], [1, 2], [3, 4], [5, 6]])) ==
+              length(
+                  all_arc_diagrams(Undirected, 6, 6, indep_sets=[[-1, -2, -3], [-4, -5, -6], [1, 2], [3, 4], [5, 6]]),
+              ) ==
               4440
     end
 
