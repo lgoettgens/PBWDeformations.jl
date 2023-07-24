@@ -62,6 +62,7 @@ export abstract_module
 export all_arc_diagrams
 export all_pbwdeformations
 export all_pseudographs
+export arc_diagram
 export base_lie_algebra
 export deform
 export edge_labels

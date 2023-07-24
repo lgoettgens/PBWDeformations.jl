@@ -1,90 +1,84 @@
 @testset "ArcDiagram.jl tests" begin
     @testset "numeric constructor" begin
-        # wrong length
-        @test_throws ArgumentError ArcDiagramUndirected(5, 5, [-2, -1, -4, -3, 1], [-5, 3, 2])
-        @test_throws ArgumentError ArcDiagramUndirected(5, 5, [-2, -1, -4, -3], [1, -5, 3, 2, 5])
-        @test_throws ArgumentError ArcDiagramUndirected(5, 5, [-2, -1, -4, -3], [1, -5, 3, 2, 5, 4])
-        @test_throws ArgumentError ArcDiagramUndirected(5, 5, [-2, -1, -4, -3, 1], [-5, 3, 2, 5, 4, -1])
-
         # out of bounds
-        @test_throws ArgumentError ArcDiagramUndirected(5, 5, [-6, -1, -4, -3, 2], [-5, 3, 2, 5, 4])
-        @test_throws ArgumentError ArcDiagramUndirected(5, 5, [7, -1, -4, -3, 2], [-5, 3, 2, 5, 4])
+        @test_throws ArgumentError arc_diagram(Undirected, [-6, -1, -4, -3, 2], [-5, 3, 2, 5, 4])
+        @test_throws ArgumentError arc_diagram(Undirected, [7, -1, -4, -3, 2], [-5, 3, 2, 5, 4])
 
         # self-loops
-        @test_throws ArgumentError ArcDiagramUndirected(5, 5, [-1, -2, -4, -3, 1], [-5, 3, 2, 5, 4])
-        @test_throws ArgumentError ArcDiagramUndirected(5, 5, [5, -1, -2, -3, -4], [-5, 1, 2, 3, 4])
+        @test_throws ArgumentError arc_diagram(Undirected, [-1, -2, -4, -3, 1], [-5, 3, 2, 5, 4])
+        @test_throws ArgumentError arc_diagram(Undirected, [5, -1, -2, -3, -4], [-5, 1, 2, 3, 4])
 
         # correct
-        @test ArcDiagramUndirected(5, 5, [-2, -1, -4, -3, 1], [-5, 3, 2, 5, 4]) !== nothing
+        @test arc_diagram(Undirected, [-2, -1, -4, -3, 1], [-5, 3, 2, 5, 4]) !== nothing
     end
 
     @testset "string constructor" begin
         # not all symbols twice
-        @test_throws ArgumentError ArcDiagramUndirected("ABC,ABD")
-        @test_throws ArgumentError ArcDiagramUndirected("ABCD,ABDD")
-        @test_throws ArgumentError ArcDiagramUndirected("ABDD,ABDD")
+        @test_throws ArgumentError arc_diagram(Undirected, "ABC,ABD")
+        @test_throws ArgumentError arc_diagram(Undirected, "ABCD,ABDD")
+        @test_throws ArgumentError arc_diagram(Undirected, "ABDD,ABDD")
 
         # correct
-        @test ArcDiagramUndirected("AACCE,EGGII") ==
-              ArcDiagramUndirected("AACCE", "EGGII") ==
-              ArcDiagramUndirected(5, 5, [-2, -1, -4, -3, 1], [-5, 3, 2, 5, 4])
-        @test ArcDiagramUndirected("ABCD,ABCD") ==
-              ArcDiagramUndirected("ABCD", "ABCD") ==
-              ArcDiagramUndirected(4, 4, [1, 2, 3, 4], [-1, -2, -3, -4])
-        @test ArcDiagramUndirected("ABBD,AD") ==
-              ArcDiagramUndirected("ABBD", "AD") ==
-              ArcDiagramUndirected(4, 2, [1, -3, -2, 2], [-1, -4])
+        @test arc_diagram(Undirected, "AACCE,EGGII") ==
+              arc_diagram(Undirected, "AACCE", "EGGII") ==
+              arc_diagram(Undirected, [-2, -1, -4, -3, 1], [-5, 3, 2, 5, 4])
+        @test arc_diagram(Undirected, "ABCD,ABCD") ==
+              arc_diagram(Undirected, "ABCD", "ABCD") ==
+              arc_diagram(Undirected, [1, 2, 3, 4], [-1, -2, -3, -4])
+        @test arc_diagram(Undirected, "ABBD,AD") ==
+              arc_diagram(Undirected, "ABBD", "AD") ==
+              arc_diagram(Undirected, [1, -3, -2, 2], [-1, -4])
     end
 
     @testset "is_crossing_free" begin
         @testset "is_crossing_free(part=:everywhere)" begin
-            @test is_crossing_free(ArcDiagramUndirected("AA,CCEE")) == true
-            @test is_crossing_free(ArcDiagramUndirected("AA,CDCD")) == false
-            @test is_crossing_free(ArcDiagramUndirected("AA,CDDC")) == true
-            @test is_crossing_free(ArcDiagramUndirected("AB,ABEE")) == true
-            @test is_crossing_free(ArcDiagramUndirected("AB,ADBD")) == false
-            @test is_crossing_free(ArcDiagramUndirected("AB,ADDB")) == true
-            @test is_crossing_free(ArcDiagramUndirected("AB,BAEE")) == false
-            @test is_crossing_free(ArcDiagramUndirected("AB,CABC")) == false
-            @test is_crossing_free(ArcDiagramUndirected("AB,CACB")) == false
-            @test is_crossing_free(ArcDiagramUndirected("AB,BDAD")) == false
-            @test is_crossing_free(ArcDiagramUndirected("AB,CBAC")) == false
-            @test is_crossing_free(ArcDiagramUndirected("AB,CCAB")) == true
-            @test is_crossing_free(ArcDiagramUndirected("AB,BDDA")) == false
-            @test is_crossing_free(ArcDiagramUndirected("AB,CBCA")) == false
-            @test is_crossing_free(ArcDiagramUndirected("AB,CCBA")) == false
+            @test is_crossing_free(arc_diagram(Undirected, "AA,CCEE")) == true
+            @test is_crossing_free(arc_diagram(Undirected, "AA,CDCD")) == false
+            @test is_crossing_free(arc_diagram(Undirected, "AA,CDDC")) == true
+            @test is_crossing_free(arc_diagram(Undirected, "AB,ABEE")) == true
+            @test is_crossing_free(arc_diagram(Undirected, "AB,ADBD")) == false
+            @test is_crossing_free(arc_diagram(Undirected, "AB,ADDB")) == true
+            @test is_crossing_free(arc_diagram(Undirected, "AB,BAEE")) == false
+            @test is_crossing_free(arc_diagram(Undirected, "AB,CABC")) == false
+            @test is_crossing_free(arc_diagram(Undirected, "AB,CACB")) == false
+            @test is_crossing_free(arc_diagram(Undirected, "AB,BDAD")) == false
+            @test is_crossing_free(arc_diagram(Undirected, "AB,CBAC")) == false
+            @test is_crossing_free(arc_diagram(Undirected, "AB,CCAB")) == true
+            @test is_crossing_free(arc_diagram(Undirected, "AB,BDDA")) == false
+            @test is_crossing_free(arc_diagram(Undirected, "AB,CBCA")) == false
+            @test is_crossing_free(arc_diagram(Undirected, "AB,CCBA")) == false
 
-            @test is_crossing_free(ArcDiagramUndirected("AAC,CEE")) == true
-            @test is_crossing_free(ArcDiagramUndirected("AAC,DCD")) == false
-            @test is_crossing_free(ArcDiagramUndirected("AAC,DDC")) == true
-            @test is_crossing_free(ArcDiagramUndirected("ABA,BEE")) == false
-            @test is_crossing_free(ArcDiagramUndirected("ABA,DBD")) == false
-            @test is_crossing_free(ArcDiagramUndirected("ABA,DDB")) == false
-            @test is_crossing_free(ArcDiagramUndirected("ABB,AEE")) == true
-            @test is_crossing_free(ArcDiagramUndirected("ABC,ABC")) == true
-            @test is_crossing_free(ArcDiagramUndirected("ABC,ACB")) == false
-            @test is_crossing_free(ArcDiagramUndirected("ABB,DAD")) == false
-            @test is_crossing_free(ArcDiagramUndirected("ABC,BAC")) == false
-            @test is_crossing_free(ArcDiagramUndirected("ABC,CAB")) == false
-            @test is_crossing_free(ArcDiagramUndirected("ABB,DDA")) == true
-            @test is_crossing_free(ArcDiagramUndirected("ABC,BCA")) == false
-            @test is_crossing_free(ArcDiagramUndirected("ABC,CBA")) == false
+            @test is_crossing_free(arc_diagram(Undirected, "AAC,CEE")) == true
+            @test is_crossing_free(arc_diagram(Undirected, "AAC,DCD")) == false
+            @test is_crossing_free(arc_diagram(Undirected, "AAC,DDC")) == true
+            @test is_crossing_free(arc_diagram(Undirected, "ABA,BEE")) == false
+            @test is_crossing_free(arc_diagram(Undirected, "ABA,DBD")) == false
+            @test is_crossing_free(arc_diagram(Undirected, "ABA,DDB")) == false
+            @test is_crossing_free(arc_diagram(Undirected, "ABB,AEE")) == true
+            @test is_crossing_free(arc_diagram(Undirected, "ABC,ABC")) == true
+            @test is_crossing_free(arc_diagram(Undirected, "ABC,ACB")) == false
+            @test is_crossing_free(arc_diagram(Undirected, "ABB,DAD")) == false
+            @test is_crossing_free(arc_diagram(Undirected, "ABC,BAC")) == false
+            @test is_crossing_free(arc_diagram(Undirected, "ABC,CAB")) == false
+            @test is_crossing_free(arc_diagram(Undirected, "ABB,DDA")) == true
+            @test is_crossing_free(arc_diagram(Undirected, "ABC,BCA")) == false
+            @test is_crossing_free(arc_diagram(Undirected, "ABC,CBA")) == false
 
-            @test is_crossing_free(ArcDiagramUndirected("AACC,EE")) == true
-            @test is_crossing_free(ArcDiagramUndirected("AACD,CD")) == true
-            @test is_crossing_free(ArcDiagramUndirected("AACD,DC")) == false
-            @test is_crossing_free(ArcDiagramUndirected("ABAB,EE")) == false
-            @test is_crossing_free(ArcDiagramUndirected("ABAD,BD")) == false
-            @test is_crossing_free(ArcDiagramUndirected("ABAD,DB")) == false
-            @test is_crossing_free(ArcDiagramUndirected("ABBA,EE")) == true
-            @test is_crossing_free(ArcDiagramUndirected("ABCA,BC")) == false
-            @test is_crossing_free(ArcDiagramUndirected("ABCA,CB")) == false
-            @test is_crossing_free(ArcDiagramUndirected("ABBD,AD")) == true
-            @test is_crossing_free(ArcDiagramUndirected("ABCB,AC")) == false
-            @test is_crossing_free(ArcDiagramUndirected("ABCC,AB")) == true
-            @test is_crossing_free(ArcDiagramUndirected("ABBD,DA")) == false
-            @test is_crossing_free(ArcDiagramUndirected("ABCB,CA")) == false
-            @test is_crossing_free(ArcDiagramUndirected("ABCC,BA")) == false
+            @test is_crossing_free(arc_diagram(Undirected, "AACC,EE")) == true
+            @test is_crossing_free(arc_diagram(Undirected, "AACD,CD")) == true
+            @test is_crossing_free(arc_diagram(Undirected, "AACD,DC")) == false
+            @test is_crossing_free(arc_diagram(Undirected, "ABAB,EE")) == false
+            @test is_crossing_free(arc_diagram(Undirected, "ABAD,BD")) == false
+            @test is_crossing_free(arc_diagram(Undirected, "ABAD,DB")) == false
+            @test is_crossing_free(arc_diagram(Undirected, "ABBA,EE")) == true
+            @test is_crossing_free(arc_diagram(Undirected, "ABCA,BC")) == false
+            @test is_crossing_free(arc_diagram(Undirected, "ABCA,CB")) == false
+            @test is_crossing_free(arc_diagram(Undirected, "ABBD,AD")) == true
+            @test is_crossing_free(arc_diagram(Undirected, "ABCB,AC")) == false
+            @test is_crossing_free(arc_diagram(Undirected, "ABCC,AB")) == true
+            @test is_crossing_free(arc_diagram(Undirected, "ABBD,DA")) == false
+            @test is_crossing_free(arc_diagram(Undirected, "ABCB,CA")) == false
+            @test is_crossing_free(arc_diagram(Undirected, "ABCC,BA")) == false
 
         end
 
@@ -94,23 +88,23 @@
             @test all(diag -> is_crossing_free(diag, part=:upper), all_arc_diagrams(Undirected, 2, 4))
             @test all(diag -> is_crossing_free(diag, part=:upper), all_arc_diagrams(Undirected, 3, 3))
 
-            @test [diag for diag in all_arc_diagrams(Undirected, 4, 2) if !is_crossing_free(diag, part=:upper)] == [ArcDiagramUndirected("ABAB,EE")]
+            @test [diag for diag in all_arc_diagrams(Undirected, 4, 2) if !is_crossing_free(diag, part=:upper)] == [arc_diagram(Undirected, "ABAB,EE")]
 
-            @test is_crossing_free(ArcDiagramUndirected("AACCE,E"), part=:upper) == true
-            @test is_crossing_free(ArcDiagramUndirected("AACDC,D"), part=:upper) == true
-            @test is_crossing_free(ArcDiagramUndirected("AACDD,C"), part=:upper) == true
-            @test is_crossing_free(ArcDiagramUndirected("ABABE,E"), part=:upper) == false
-            @test is_crossing_free(ArcDiagramUndirected("ABADB,D"), part=:upper) == false
-            @test is_crossing_free(ArcDiagramUndirected("ABADD,B"), part=:upper) == true
-            @test is_crossing_free(ArcDiagramUndirected("ABBAE,E"), part=:upper) == true
-            @test is_crossing_free(ArcDiagramUndirected("ABCAB,C"), part=:upper) == false
-            @test is_crossing_free(ArcDiagramUndirected("ABCAC,B"), part=:upper) == false
-            @test is_crossing_free(ArcDiagramUndirected("ABBDA,D"), part=:upper) == true
-            @test is_crossing_free(ArcDiagramUndirected("ABCBA,C"), part=:upper) == true
-            @test is_crossing_free(ArcDiagramUndirected("ABCCA,B"), part=:upper) == true
-            @test is_crossing_free(ArcDiagramUndirected("ABBDD,A"), part=:upper) == true
-            @test is_crossing_free(ArcDiagramUndirected("ABCBC,A"), part=:upper) == false
-            @test is_crossing_free(ArcDiagramUndirected("ABCCB,A"), part=:upper) == true
+            @test is_crossing_free(arc_diagram(Undirected, "AACCE,E"), part=:upper) == true
+            @test is_crossing_free(arc_diagram(Undirected, "AACDC,D"), part=:upper) == true
+            @test is_crossing_free(arc_diagram(Undirected, "AACDD,C"), part=:upper) == true
+            @test is_crossing_free(arc_diagram(Undirected, "ABABE,E"), part=:upper) == false
+            @test is_crossing_free(arc_diagram(Undirected, "ABADB,D"), part=:upper) == false
+            @test is_crossing_free(arc_diagram(Undirected, "ABADD,B"), part=:upper) == true
+            @test is_crossing_free(arc_diagram(Undirected, "ABBAE,E"), part=:upper) == true
+            @test is_crossing_free(arc_diagram(Undirected, "ABCAB,C"), part=:upper) == false
+            @test is_crossing_free(arc_diagram(Undirected, "ABCAC,B"), part=:upper) == false
+            @test is_crossing_free(arc_diagram(Undirected, "ABBDA,D"), part=:upper) == true
+            @test is_crossing_free(arc_diagram(Undirected, "ABCBA,C"), part=:upper) == true
+            @test is_crossing_free(arc_diagram(Undirected, "ABCCA,B"), part=:upper) == true
+            @test is_crossing_free(arc_diagram(Undirected, "ABBDD,A"), part=:upper) == true
+            @test is_crossing_free(arc_diagram(Undirected, "ABCBC,A"), part=:upper) == false
+            @test is_crossing_free(arc_diagram(Undirected, "ABCCB,A"), part=:upper) == true
 
             for diag in all_arc_diagrams(Undirected, 6, 0)
                 @test is_crossing_free(diag, part=:upper) == is_crossing_free(diag)
@@ -123,23 +117,23 @@
             @test all(diag -> is_crossing_free(diag, part=:lower), all_arc_diagrams(Undirected, 4, 2))
             @test all(diag -> is_crossing_free(diag, part=:lower), all_arc_diagrams(Undirected, 3, 3))
 
-            @test [diag for diag in all_arc_diagrams(Undirected, 2, 4) if !is_crossing_free(diag, part=:lower)] == [ArcDiagramUndirected("AA,CDCD")]
+            @test [diag for diag in all_arc_diagrams(Undirected, 2, 4) if !is_crossing_free(diag, part=:lower)] == [arc_diagram(Undirected, "AA,CDCD")]
 
-            @test is_crossing_free(ArcDiagramUndirected("A,ACCEE"), part=:lower) == true
-            @test is_crossing_free(ArcDiagramUndirected("A,ACDCD"), part=:lower) == false
-            @test is_crossing_free(ArcDiagramUndirected("A,ACDDC"), part=:lower) == true
-            @test is_crossing_free(ArcDiagramUndirected("A,BABEE"), part=:lower) == true
-            @test is_crossing_free(ArcDiagramUndirected("A,BADBD"), part=:lower) == false
-            @test is_crossing_free(ArcDiagramUndirected("A,BADDB"), part=:lower) == true
-            @test is_crossing_free(ArcDiagramUndirected("A,BBAEE"), part=:lower) == true
-            @test is_crossing_free(ArcDiagramUndirected("A,BCABC"), part=:lower) == false
-            @test is_crossing_free(ArcDiagramUndirected("A,BCACB"), part=:lower) == true
-            @test is_crossing_free(ArcDiagramUndirected("A,BBDAD"), part=:lower) == true
-            @test is_crossing_free(ArcDiagramUndirected("A,BCBAC"), part=:lower) == false
-            @test is_crossing_free(ArcDiagramUndirected("A,BCCAB"), part=:lower) == true
-            @test is_crossing_free(ArcDiagramUndirected("A,BBDDA"), part=:lower) == true
-            @test is_crossing_free(ArcDiagramUndirected("A,BCBCA"), part=:lower) == false
-            @test is_crossing_free(ArcDiagramUndirected("A,BCCBA"), part=:lower) == true
+            @test is_crossing_free(arc_diagram(Undirected, "A,ACCEE"), part=:lower) == true
+            @test is_crossing_free(arc_diagram(Undirected, "A,ACDCD"), part=:lower) == false
+            @test is_crossing_free(arc_diagram(Undirected, "A,ACDDC"), part=:lower) == true
+            @test is_crossing_free(arc_diagram(Undirected, "A,BABEE"), part=:lower) == true
+            @test is_crossing_free(arc_diagram(Undirected, "A,BADBD"), part=:lower) == false
+            @test is_crossing_free(arc_diagram(Undirected, "A,BADDB"), part=:lower) == true
+            @test is_crossing_free(arc_diagram(Undirected, "A,BBAEE"), part=:lower) == true
+            @test is_crossing_free(arc_diagram(Undirected, "A,BCABC"), part=:lower) == false
+            @test is_crossing_free(arc_diagram(Undirected, "A,BCACB"), part=:lower) == true
+            @test is_crossing_free(arc_diagram(Undirected, "A,BBDAD"), part=:lower) == true
+            @test is_crossing_free(arc_diagram(Undirected, "A,BCBAC"), part=:lower) == false
+            @test is_crossing_free(arc_diagram(Undirected, "A,BCCAB"), part=:lower) == true
+            @test is_crossing_free(arc_diagram(Undirected, "A,BBDDA"), part=:lower) == true
+            @test is_crossing_free(arc_diagram(Undirected, "A,BCBCA"), part=:lower) == false
+            @test is_crossing_free(arc_diagram(Undirected, "A,BCCBA"), part=:lower) == true
 
             for diag in all_arc_diagrams(Undirected, 0, 6)
                 @test is_crossing_free(diag, part=:lower) == is_crossing_free(diag)
