@@ -15,9 +15,9 @@ struct ArcDiagDeformBasis{C <: RingElem} <: DeformBasis{C}
         degs::AbstractVector{Int};
         no_normalize::Bool=false,
     ) where {C <: RingElem}
-        @req get_attribute(lie_algebra(sp), :type, nothing) == :special_orthogonal "Only works for so_n."
-        @req (is_exterior_power(lie_module(sp)) || is_symmetric_power(lie_module(sp))) &&
-             is_standard_module(base_module(lie_module(sp))) "Only works for exterior powers of the standard module."
+        @req get_attribute(base_lie_algebra(sp), :type, nothing) == :special_orthogonal "Only works for so_n."
+        @req (is_exterior_power(base_module(sp)) || is_symmetric_power(base_module(sp))) &&
+             is_standard_module(base_module(base_module(sp))) "Only works for exterior powers of the standard module."
 
         extra_data = Dict{DeformationMap{C}, Set{ArcDiagram}}()
         normalize = no_normalize ? identity : normalize_default
@@ -26,7 +26,7 @@ struct ArcDiagDeformBasis{C <: RingElem} <: DeformBasis{C}
         iters = []
         debug_counter = 0
         for d in degs
-            diag_iter = pbw_arc_diagrams__so(lie_module(sp), d)
+            diag_iter = pbw_arc_diagrams__so(base_module(sp), d)
             len = length(diag_iter)
             iter = (
                 begin
@@ -184,31 +184,31 @@ end
 function arcdiag_to_deformationmap__so(diag::ArcDiagramUndirected, sp::SmashProductLie{C}) where {C <: RingElem}
     # TODO: allow for genereal ArcDiagrams
     d = div(n_lower_vertices(diag), 2)
-    dim_stdmod_V = lie_algebra(sp).n
+    dim_stdmod_V = base_lie_algebra(sp).n
 
-    e = arc_diagram_num_points__so(lie_module(sp))
+    e = arc_diagram_num_points__so(base_module(sp))
 
     iso_wedge2V_g = Dict{Vector{Int}, Int}()
-    for (i, bs) in enumerate(combinations(lie_algebra(sp).n, 2))
+    for (i, bs) in enumerate(combinations(base_lie_algebra(sp).n, 2))
         iso_wedge2V_g[bs] = i
     end
 
     index = Dict{Vector{Int}, Int}()
-    for (i, is) in enumerate(arc_diagram_label_iterator__so(lie_module(sp), 1:dim_stdmod_V))
+    for (i, is) in enumerate(arc_diagram_label_iterator__so(base_module(sp), 1:dim_stdmod_V))
         index[is] = i
     end
 
-    kappa = fill(zero(underlying_algebra(sp)), dim(lie_module(sp)), dim(lie_module(sp)))
-    for is in arc_diagram_label_iterator__so(lie_module(sp), 1:dim_stdmod_V),
-        js in arc_diagram_label_iterator__so(lie_module(sp), 1:dim_stdmod_V)
+    kappa = fill(zero(underlying_algebra(sp)), dim(base_module(sp)), dim(base_module(sp)))
+    for is in arc_diagram_label_iterator__so(base_module(sp), 1:dim_stdmod_V),
+        js in arc_diagram_label_iterator__so(base_module(sp), 1:dim_stdmod_V)
 
         i = index[is]
         j = index[js]
         if i >= j
             continue
         end
-        for (is, sgn_left) in arc_diagram_label_permutations__so(lie_module(sp), is),
-            (js, sgn_right) in arc_diagram_label_permutations__so(lie_module(sp), js),
+        for (is, sgn_left) in arc_diagram_label_permutations__so(base_module(sp), is),
+            (js, sgn_right) in arc_diagram_label_permutations__so(base_module(sp), js),
             swap in [false, true]
 
             sgn_upper_labels = sgn_left * sgn_right

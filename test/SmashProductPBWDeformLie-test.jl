@@ -41,7 +41,7 @@
                 @test length(basis) == 1 + div(maxdeg, 2)
 
                 for b in basis
-                    for i in 1:dim(lie_module(sp)), j in 1:dim(lie_module(sp))
+                    for i in 1:dim(base_module(sp)), j in 1:dim(base_module(sp))
                         @test iszero(b[i, j] + b[j, i])
                     end
                 end

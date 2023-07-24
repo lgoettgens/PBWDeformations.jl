@@ -11,8 +11,8 @@ struct StdDeformBasis{C <: RingElem} <: DeformBasis{C}
     normalize
 
     function StdDeformBasis{C}(sp::SmashProductLie{C}, degs::AbstractVector{Int}) where {C <: RingElem}
-        dimL = dim(lie_algebra(sp))
-        dimV = dim(lie_module(sp))
+        dimL = dim(base_lie_algebra(sp))
+        dimV = dim(base_module(sp))
         iter = (
             begin
                 kappa = fill(zero(underlying_algebra(sp)), dimV, dimV)

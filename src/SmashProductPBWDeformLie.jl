@@ -9,8 +9,8 @@ keyword arguments, e.g. `disabled = [:c, :d]`.
 function pbwdeform_eqs(d::SmashProductLieDeform; disabled::Vector{Symbol}=Symbol[])
     # Uses Theorem 3.1 of Walton, Witherspoon: Poincare-Birkhoff-Witt deformations of smash product algebras from Hopf actions on Koszul algebras.
     # DOI:	10.2140/ant.2014.8.1701. https://arxiv.org/abs/1308.6011
-    dimL = dim(lie_algebra(d))
-    dimV = dim(lie_module(d))
+    dimL = dim(base_lie_algebra(d))
+    dimV = dim(base_module(d))
 
     x(i) = gen(d, i, :L)
     v(i) = gen(d, i, :V)
@@ -50,8 +50,8 @@ function pbwdeform_eqs(d::SmashProductLieDeform; disabled::Vector{Symbol}=Symbol
 end
 
 function pbwdeform_neqs(d::SmashProductLieDeform)
-    dimL = dim(lie_algebra(d))
-    dimV = dim(lie_module(d))
+    dimL = dim(base_lie_algebra(d))
+    dimV = dim(base_module(d))
 
     num_a = dimL * binomial(dimV, 2)
     num_b = 0
@@ -105,8 +105,8 @@ function all_pbwdeformations(
 ) where {C <: RingElem, T <: Union{Nothing, SMat}}
     @req coefficient_ring(sp) == QQ "Only implemented for QQ coefficients."
 
-    dimL = dim(lie_algebra(sp))
-    dimV = dim(lie_module(sp))
+    dimL = dim(base_lie_algebra(sp))
+    dimV = dim(base_module(sp))
 
     nvars = length(deform_basis)
 
@@ -114,7 +114,7 @@ function all_pbwdeformations(
     R, vars = polynomial_ring(coefficient_ring(sp), max(nvars, 1))
 
     @vprintln :PBWDeformations 1 "Changing SmashProductLie coeffcient type..."
-    new_sp = smash_product(R, lie_algebra(sp), lie_module(sp))
+    new_sp = smash_product(R, base_lie_algebra(sp), base_module(sp))
 
     @vprintln :PBWDeformations 1 "Constructing kappa..."
     kappa = fill(zero(underlying_algebra(new_sp)), dimV, dimV)
