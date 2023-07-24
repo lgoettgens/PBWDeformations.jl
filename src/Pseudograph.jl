@@ -193,5 +193,5 @@ function to_arcdiag(pg::PseudographLabelled{Int}, part::Partition{Int}=Partition
         k += 1
     end
 
-    return ArcDiagramUndirected(n_upper_verts, n_lower_verts, upper_adj, lower_adj)
+    return arc_diagram(Undirected, upper_adj, lower_adj)
 end
