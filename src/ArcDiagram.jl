@@ -706,25 +706,27 @@ end
 #
 ################################################################################
 
-struct ArcDiagramUndirectedIterator
+struct ArcDiagramIterator{T <: Union{Directed, Undirected}}
     iter
     len::Int
 end
 
-function Base.iterate(i::ArcDiagramUndirectedIterator)
+function Base.iterate(i::ArcDiagramIterator)
     return iterate(i.iter)
 end
 
-function Base.iterate(i::ArcDiagramUndirectedIterator, s)
+function Base.iterate(i::ArcDiagramIterator, s)
     return iterate(i.iter, s)
 end
 
-Base.length(i::ArcDiagramUndirectedIterator) = i.len
+Base.length(i::ArcDiagramIterator) = i.len
 
-Base.eltype(::Type{ArcDiagramUndirectedIterator}) = ArcDiagramUndirected
+Base.eltype(::Type{ArcDiagramIterator{Undirected}}) = ArcDiagramUndirected
+Base.eltype(::Type{ArcDiagramIterator{Directed}}) = ArcDiagramDirected
 
 
 function all_arc_diagrams(
+    ::Type{Undirected},
     n_upper_verts::Int,
     n_lower_verts::Int;
     indep_sets::AbstractVector{<:AbstractVector{Int}}=Vector{Int}[],
@@ -735,17 +737,20 @@ function all_arc_diagrams(
             @req all(i -> i < 0 ? -i <= n_upper_verts : i <= n_lower_verts, is) "Out of bounds independent sets"
         end
     end
-    iter, len = iter_possible_adjacencies(
+    if isodd(n_upper_verts + n_lower_verts)
+        return ArcDiagramIterator{Undirected}([], 0)
+    end
+    iter, len = iter_possible_adjacencies_undir(
         n_upper_verts,
         n_lower_verts,
         [0 for _ in 1:n_upper_verts],
         [0 for _ in 1:n_lower_verts],
         indep_sets,
     )
-    return ArcDiagramUndirectedIterator(iter, len)
+    return ArcDiagramIterator{Undirected}(iter, len)
 end
 
-function iter_possible_adjacencies(
+function iter_possible_adjacencies_undir(
     n_upper_verts::Int,
     n_lower_verts::Int,
     partial_upper::Vector{Int},
@@ -767,9 +772,9 @@ function iter_possible_adjacencies(
             else
                 partial_lower2[j] = i
             end
-            iter_possible_adjacencies(n_upper_verts, n_lower_verts, partial_upper2, partial_lower2, indep_sets)
+            iter_possible_adjacencies_undir(n_upper_verts, n_lower_verts, partial_upper2, partial_lower2, indep_sets)
         end
-        return Iterators.flatten(Iterators.map(c -> c[1], choices)), sum(c -> c[2], choices; init=0)
+        return Iterators.flatten(Iterators.map(first, choices)), sum(last, choices; init=0)
     else
         i = findfirst(==(0), partial_lower)
         if !isnothing(i)
@@ -779,11 +784,192 @@ function iter_possible_adjacencies(
                 partial_lower2 = deepcopy(partial_lower)
                 partial_lower2[i] = j
                 partial_lower2[j] = i
-                iter_possible_adjacencies(n_upper_verts, n_lower_verts, partial_upper, partial_lower2, indep_sets)
+                iter_possible_adjacencies_undir(n_upper_verts, n_lower_verts, partial_upper, partial_lower2, indep_sets)
             end
-            return Iterators.flatten(Iterators.map(c -> c[1], choices)), sum(c -> c[2], choices; init=0)
+            return Iterators.flatten(Iterators.map(first, choices)), sum(last, choices; init=0)
         else
             return [ArcDiagramUndirected(n_upper_verts, n_lower_verts, partial_upper, partial_lower; check=false)], 1
+        end
+    end
+end
+
+
+function parity_diff(v::BitVector)
+    return 2 * sum(v) - length(v)
+end
+
+function all_arc_diagrams(
+    ::Type{Directed},
+    n_upper_verts::Int,
+    n_lower_verts::Int;
+    indep_sets::AbstractVector{<:AbstractVector{Int}}=Vector{Int}[],
+    check::Bool=true,
+)
+    if check
+        for is in indep_sets
+            @req all(i -> i < 0 ? -i <= n_upper_verts : i <= n_lower_verts, is) "Out of bounds independent sets"
+        end
+    end
+    if isodd(n_upper_verts + n_lower_verts)
+        return ArcDiagramIterator{Directed}([], 0)
+    end
+    rets = if n_upper_verts == 0
+        [all_arc_diagrams(Directed, BitVector([]), n_lower_verts; indep_sets, check=false)]
+    else
+        [
+            all_arc_diagrams(Directed, parity_upper_verts, n_lower_verts; indep_sets, check=false) for
+            parity_upper_verts in
+            Iterators.map(BitVector, AbstractAlgebra.ProductIterator([false, true], n_upper_verts))
+        ]
+    end
+    iter = Iterators.flatten(rets)
+    len = sum(Iterators.map(length, rets))
+    return ArcDiagramIterator{Directed}(iter, len)
+end
+
+function all_arc_diagrams(
+    ::Type{Directed},
+    parity_upper_verts::BitVector,
+    n_lower_verts::Int;
+    indep_sets::AbstractVector{<:AbstractVector{Int}}=Vector{Int}[],
+    check::Bool=true,
+)
+    n_upper_verts = length(parity_upper_verts)
+    if check
+        for is in indep_sets
+            @req all(i -> i < 0 ? -i <= n_upper_verts : i <= n_lower_verts, is) "Out of bounds independent sets"
+        end
+    end
+    if isodd(n_upper_verts + n_lower_verts)
+        return ArcDiagramIterator{Directed}([], 0)
+    end
+    if abs(parity_diff(parity_upper_verts)) > n_lower_verts
+        return ArcDiagramIterator{Directed}([], 0)
+    end
+    rets = if n_lower_verts == 0
+        [all_arc_diagrams(Directed, parity_upper_verts, BitVector([]); indep_sets, check=false)]
+    else
+        [
+            all_arc_diagrams(Directed, parity_upper_verts, parity_lower_verts; indep_sets, check=false) for
+            parity_lower_verts in
+            Iterators.map(BitVector, AbstractAlgebra.ProductIterator([false, true], n_lower_verts)) if
+            parity_diff(parity_upper_verts) == parity_diff(parity_lower_verts)
+        ]
+    end
+    iter = Iterators.flatten(rets)
+    len = sum(Iterators.map(length, rets))
+    return ArcDiagramIterator{Directed}(iter, len)
+end
+
+function all_arc_diagrams(
+    ::Type{Directed},
+    parity_upper_verts::BitVector,
+    parity_lower_verts::BitVector;
+    indep_sets::AbstractVector{<:AbstractVector{Int}}=Vector{Int}[],
+    check::Bool=true,
+)
+    n_upper_verts = length(parity_upper_verts)
+    n_lower_verts = length(parity_lower_verts)
+    if check
+        for is in indep_sets
+            @req all(i -> i < 0 ? -i <= n_upper_verts : i <= n_lower_verts, is) "Out of bounds independent sets"
+        end
+    end
+    if isodd(n_upper_verts + n_lower_verts)
+        return ArcDiagramIterator{Directed}([], 0)
+    end
+    if parity_diff(parity_upper_verts) != parity_diff(parity_lower_verts)
+        return ArcDiagramIterator{Directed}([], 0)
+    end
+    iter, len = iter_possible_adjacencies_dir(
+        n_upper_verts,
+        n_lower_verts,
+        parity_upper_verts,
+        parity_lower_verts,
+        [0 for _ in 1:n_upper_verts],
+        [0 for _ in 1:n_lower_verts],
+        indep_sets,
+    )
+    return ArcDiagramIterator{Directed}(iter, len)
+end
+
+function iter_possible_adjacencies_dir(
+    n_upper_verts::Int,
+    n_lower_verts::Int,
+    parity_upper_verts::BitVector,
+    parity_lower_verts::BitVector,
+    partial_upper::Vector{Int},
+    partial_lower::Vector{Int},
+    indep_sets::AbstractVector{<:AbstractVector{Int}},
+)
+    i = findfirst(==(0), partial_upper)
+    if !isnothing(i)
+        i = -i
+        relevant_indep_sets = filter(is -> i in is, indep_sets)
+        poss_upper_adjs = [
+            j for j in setdiff(setdiff(map(j -> -j, findall(==(0), partial_upper)), i), relevant_indep_sets...) if
+            parity_upper_verts[-i] != parity_upper_verts[-j]
+        ]
+        poss_lower_adjs = [
+            j for j in setdiff(findall(==(0), partial_lower), relevant_indep_sets...) if
+            parity_upper_verts[-i] == parity_lower_verts[j]
+        ]
+        choices = Iterators.map([poss_upper_adjs; poss_lower_adjs]) do j
+            partial_upper2 = deepcopy(partial_upper)
+            partial_lower2 = deepcopy(partial_lower)
+            partial_upper2[-i] = j
+            if j < 0
+                partial_upper2[-j] = i
+            else
+                partial_lower2[j] = i
+            end
+            iter_possible_adjacencies_dir(
+                n_upper_verts,
+                n_lower_verts,
+                parity_upper_verts,
+                parity_lower_verts,
+                partial_upper2,
+                partial_lower2,
+                indep_sets,
+            )
+        end
+        return Iterators.flatten(Iterators.map(first, choices)), sum(last, choices; init=0)
+    else
+        i = findfirst(==(0), partial_lower)
+        if !isnothing(i)
+            relevant_indep_sets = filter(is -> i in is, indep_sets)
+            poss_lower_adjs = [
+                j for j in setdiff(setdiff(findall(==(0), partial_lower), i), relevant_indep_sets...) if
+                parity_lower_verts[i] != parity_lower_verts[j]
+            ]
+            choices = Iterators.map(poss_lower_adjs) do j
+                partial_lower2 = deepcopy(partial_lower)
+                partial_lower2[i] = j
+                partial_lower2[j] = i
+                iter_possible_adjacencies_dir(
+                    n_upper_verts,
+                    n_lower_verts,
+                    parity_upper_verts,
+                    parity_lower_verts,
+                    partial_upper,
+                    partial_lower2,
+                    indep_sets,
+                )
+            end
+            return Iterators.flatten(Iterators.map(first, choices)), sum(last, choices; init=0)
+        else
+            return [
+                ArcDiagramDirected(
+                    n_upper_verts,
+                    n_lower_verts,
+                    parity_upper_verts,
+                    parity_lower_verts,
+                    partial_upper,
+                    partial_lower;
+                    check=true,# TODO check=false
+                ),
+            ],
+            1
         end
     end
 end
