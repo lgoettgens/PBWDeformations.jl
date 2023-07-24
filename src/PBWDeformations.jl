@@ -2,6 +2,8 @@ module PBWDeformations
 
 using Oscar
 
+using Oscar: IntegerUnion
+
 using Oscar.LieAlgebras:
     AbstractLieAlgebra,
     AbstractLieAlgebraElem,
@@ -12,7 +14,6 @@ using Oscar.LieAlgebras:
     LinearLieAlgebra,
     LinearLieAlgebraElem,
     abstract_module,
-    base_lie_algebra,
     combinations,
     exterior_power,
     general_linear_lie_algebra,
@@ -36,7 +37,7 @@ import AbstractAlgebra: ProductIterator, coefficient_ring, elem_type, gen, gens,
 
 import Oscar: comm, edges, nedges, neighbors, nvertices, simplify, vertices
 
-import Oscar.LieAlgebras: lie_algebra
+import Oscar.LieAlgebras: base_lie_algebra, base_module
 
 import Base: deepcopy_internal, hash, isequal, isone, iszero, length, one, parent, show, sum, zero
 
@@ -64,6 +65,7 @@ export all_pbwdeformations
 export all_pseudographs
 export arc_diagram
 export base_lie_algebra
+export base_module
 export deform
 export edge_labels
 export edges
@@ -74,8 +76,6 @@ export inneighbor
 export inneighbors
 export is_crossing_free
 export is_pbwdeformation
-export lie_algebra
-export lie_module
 export lookup_data
 export lower_vertex, is_lower_vertex
 export lower_vertices

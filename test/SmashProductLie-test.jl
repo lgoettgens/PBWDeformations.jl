@@ -4,7 +4,11 @@
             L = special_linear_lie_algebra(QQ, 2)
             V = standard_module(L)
 
-            sp = smash_product(L, V)
+            sp = smash_product(R, L, V)
+
+            @test (@inferred coefficient_ring(sp)) == R
+            @test (@inferred base_lie_algebra(sp)) == L
+            @test (@inferred base_module(sp)) == V
 
             @test dim(L) == ngens(sp, :L)
             @test dim(L) == length(gens(sp, :L))
@@ -48,7 +52,11 @@
             L = special_orthogonal_lie_algebra(QQ, 4)
             V = exterior_power(standard_module(L), 2)
 
-            sp = smash_product(L, V)
+            sp = smash_product(R, L, V)
+
+            @test (@inferred coefficient_ring(sp)) == R
+            @test (@inferred base_lie_algebra(sp)) == L
+            @test (@inferred base_module(sp)) == V
 
             @test dim(L) == ngens(sp, :L)
             @test dim(L) == length(gens(sp, :L))
