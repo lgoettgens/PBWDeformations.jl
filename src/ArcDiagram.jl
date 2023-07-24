@@ -227,63 +227,6 @@ struct ArcDiagramUndirected <: ArcDiagram
         ]
         return ArcDiagramUndirected(n_upper_verts, n_lower_verts, upper_neighbors, lower_neighbors; check)
     end
-
-    function ArcDiagramUndirected(upper_neighbor_inds::Vector{Int}, lower_neighbor_inds::Vector{Int}; check::Bool=true)
-        n_upper_verts = length(upper_neighbor_inds)
-        n_lower_verts = length(lower_neighbor_inds)
-        return ArcDiagramUndirected(n_upper_verts, n_lower_verts, upper_neighbor_inds, lower_neighbor_inds; check)
-    end
-
-    function ArcDiagramUndirected(upper::AbstractString, lower::AbstractString)
-        upper = strip(upper)
-        lower = strip(lower)
-        n_upper_verts = length(upper)
-        n_lower_verts = length(lower)
-
-        str = upper * lower
-        symbols = unique(str)
-        for s in symbols
-            @req isletter(s) && isuppercase(s) "Invalid symbol $s."
-            @static if VERSION >= v"1.7"
-                @req count(s, str) == 2 "Symbol $s does not appear exactly twice."
-            else
-                @req count(string(s), str) == 2 "Symbol $s does not appear exactly twice."
-            end
-        end
-        upper_neighbors = [(:none, 0) for _ in 1:n_upper_verts]
-        lower_neighbors = [(:none, 0) for _ in 1:n_lower_verts]
-        for s in symbols
-            @static if VERSION >= v"1.7"
-                i, j = findall(s, str)
-            else
-                i, j = findall(==(s), str)
-            end
-            if i <= n_upper_verts
-                upper_neighbors[i] =
-                    j <= n_upper_verts ? upper_vertex(ArcDiagramVertex, j) :
-                    lower_vertex(ArcDiagramVertex, j - n_upper_verts)
-            else
-                lower_neighbors[i-n_upper_verts] =
-                    j <= n_upper_verts ? upper_vertex(ArcDiagramVertex, j) :
-                    lower_vertex(ArcDiagramVertex, j - n_upper_verts)
-            end
-            if j <= n_upper_verts
-                upper_neighbors[j] =
-                    i <= n_upper_verts ? upper_vertex(ArcDiagramVertex, i) :
-                    lower_vertex(ArcDiagramVertex, i - n_upper_verts)
-            else
-                lower_neighbors[j-n_upper_verts] =
-                    i <= n_upper_verts ? upper_vertex(ArcDiagramVertex, i) :
-                    lower_vertex(ArcDiagramVertex, i - n_upper_verts)
-            end
-        end
-        return new(n_upper_verts, n_lower_verts, upper_neighbors, lower_neighbors)
-    end
-
-    function ArcDiagramUndirected(s::AbstractString)
-        upper, lower = split(s, ",")
-        return ArcDiagramUndirected(upper, lower)
-    end
 end
 
 function Base.:(==)(a1::ArcDiagramUndirected, a2::ArcDiagramUndirected)
@@ -462,87 +405,6 @@ struct ArcDiagramDirected <: ArcDiagram
             check,
         )
     end
-
-    function ArcDiagramDirected(
-        parity_upper_verts::Union{BitVector, Vector{<:Number}},
-        parity_lower_verts::Union{BitVector, Vector{<:Number}},
-        upper_neighbor_inds::Vector{Int},
-        lower_neighbor_inds::Vector{Int};
-        check::Bool=true,
-    )
-        n_upper_verts = length(parity_upper_verts)
-        n_lower_verts = length(parity_lower_verts)
-        return ArcDiagramDirected(
-            n_upper_verts,
-            n_lower_verts,
-            BitVector(parity_upper_verts),
-            BitVector(parity_lower_verts),
-            upper_neighbor_inds,
-            lower_neighbor_inds;
-            check,
-        )
-    end
-
-    function ArcDiagramDirected(upper::AbstractString, lower::AbstractString)
-        upper = strip(upper)
-        lower = strip(lower)
-        n_upper_verts = length(upper)
-        n_lower_verts = length(lower)
-        parity_upper_verts = BitVector([islowercase(s) for s in upper])
-        parity_lower_verts = BitVector([isuppercase(s) for s in lower])
-
-        str = upper * lower
-        @req all(isletter, str) "Invalid symbol."
-        str = uppercase(str)
-        symbols = unique(str)
-        for s in symbols
-            @static if VERSION >= v"1.7"
-                @req count(s, str) == 2 "Symbol $s does not appear exactly twice."
-            else
-                @req count(string(s), str) == 2 "Symbol $s does not appear exactly twice."
-            end
-        end
-        upper_neighbors = [(:none, 0) for _ in 1:n_upper_verts]
-        lower_neighbors = [(:none, 0) for _ in 1:n_lower_verts]
-        for s in symbols
-            @static if VERSION >= v"1.7"
-                i, j = findall(s, str)
-            else
-                i, j = findall(==(s), str)
-            end
-            if i <= n_upper_verts
-                upper_neighbors[i] =
-                    j <= n_upper_verts ? upper_vertex(ArcDiagramVertex, j) :
-                    lower_vertex(ArcDiagramVertex, j - n_upper_verts)
-            else
-                lower_neighbors[i-n_upper_verts] =
-                    j <= n_upper_verts ? upper_vertex(ArcDiagramVertex, j) :
-                    lower_vertex(ArcDiagramVertex, j - n_upper_verts)
-            end
-            if j <= n_upper_verts
-                upper_neighbors[j] =
-                    i <= n_upper_verts ? upper_vertex(ArcDiagramVertex, i) :
-                    lower_vertex(ArcDiagramVertex, i - n_upper_verts)
-            else
-                lower_neighbors[j-n_upper_verts] =
-                    i <= n_upper_verts ? upper_vertex(ArcDiagramVertex, i) :
-                    lower_vertex(ArcDiagramVertex, i - n_upper_verts)
-            end
-        end
-        return new(
-            n_upper_verts,
-            n_lower_verts,
-            parity_upper_verts,
-            parity_lower_verts,
-            upper_neighbors,
-            lower_neighbors,
-        )
-    end
-
-    function ArcDiagramDirected(s::AbstractString)
-        upper, lower = split(s, ",")
-        return ArcDiagramDirected(upper, lower)
-    end
 end
 
 function Base.:(==)(a1::ArcDiagramDirected, a2::ArcDiagramDirected)
@@ -697,6 +559,217 @@ end
 
 function ArcDiagramUndirected(a::ArcDiagramDirected)
     return ArcDiagramUndirected(a.n_upper_verts, a.n_lower_verts, a.upper_neighbors, a.lower_neighbors)
+end
+
+################################################################################
+#
+# Constructors
+#
+################################################################################
+
+function arc_diagram(
+    ::Type{Undirected},
+    n_upper_verts::Int,
+    n_lower_verts::Int,
+    upper_neighbors::Vector{ArcDiagramVertex},
+    lower_neighbors::Vector{ArcDiagramVertex};
+    check::Bool=true,
+)
+    return ArcDiagramUndirected(n_upper_verts, n_lower_verts, upper_neighbors, lower_neighbors; check)
+end
+
+function arc_diagram(
+    ::Type{Undirected},
+    upper_neighbors::Vector{ArcDiagramVertex},
+    lower_neighbors::Vector{ArcDiagramVertex};
+    check::Bool=true,
+)
+    n_upper_verts = length(upper_neighbors)
+    n_lower_verts = length(lower_neighbors)
+    return ArcDiagramUndirected(n_upper_verts, n_lower_verts, upper_neighbors, lower_neighbors; check)
+end
+
+function arc_diagram(
+    ::Type{Undirected},
+    upper_neighbor_inds::Vector{Int},
+    lower_neighbor_inds::Vector{Int};
+    check::Bool=true,
+)
+    n_upper_verts = length(upper_neighbor_inds)
+    n_lower_verts = length(lower_neighbor_inds)
+    return ArcDiagramUndirected(n_upper_verts, n_lower_verts, upper_neighbor_inds, lower_neighbor_inds; check)
+end
+
+function arc_diagram(::Type{Undirected}, upper::AbstractString, lower::AbstractString)
+    upper = strip(upper)
+    lower = strip(lower)
+    n_upper_verts = length(upper)
+    n_lower_verts = length(lower)
+
+    str = upper * lower
+    symbols = unique(str)
+    for s in symbols
+        @req isletter(s) && isuppercase(s) "Invalid symbol $s."
+        @static if VERSION >= v"1.7"
+            @req count(s, str) == 2 "Symbol $s does not appear exactly twice."
+        else
+            @req count(string(s), str) == 2 "Symbol $s does not appear exactly twice."
+        end
+    end
+    upper_neighbors = [(:none, 0) for _ in 1:n_upper_verts]
+    lower_neighbors = [(:none, 0) for _ in 1:n_lower_verts]
+    for s in symbols
+        @static if VERSION >= v"1.7"
+            i, j = findall(s, str)
+        else
+            i, j = findall(==(s), str)
+        end
+        if i <= n_upper_verts
+            upper_neighbors[i] =
+                j <= n_upper_verts ? upper_vertex(ArcDiagramVertex, j) :
+                lower_vertex(ArcDiagramVertex, j - n_upper_verts)
+        else
+            lower_neighbors[i-n_upper_verts] =
+                j <= n_upper_verts ? upper_vertex(ArcDiagramVertex, j) :
+                lower_vertex(ArcDiagramVertex, j - n_upper_verts)
+        end
+        if j <= n_upper_verts
+            upper_neighbors[j] =
+                i <= n_upper_verts ? upper_vertex(ArcDiagramVertex, i) :
+                lower_vertex(ArcDiagramVertex, i - n_upper_verts)
+        else
+            lower_neighbors[j-n_upper_verts] =
+                i <= n_upper_verts ? upper_vertex(ArcDiagramVertex, i) :
+                lower_vertex(ArcDiagramVertex, i - n_upper_verts)
+        end
+    end
+    return ArcDiagramUndirected(n_upper_verts, n_lower_verts, upper_neighbors, lower_neighbors)
+end
+
+
+function arc_diagram(
+    ::Type{Directed},
+    n_upper_verts::Int,
+    n_lower_verts::Int,
+    parity_upper_verts::BitVector,
+    parity_lower_verts::BitVector,
+    upper_neighbors::Vector{ArcDiagramVertex},
+    lower_neighbors::Vector{ArcDiagramVertex};
+    check::Bool=true,
+)
+    return ArcDiagramDirected(
+        n_upper_verts,
+        n_lower_verts,
+        parity_upper_verts,
+        parity_lower_verts,
+        upper_neighbors,
+        lower_neighbors;
+        check,
+    )
+end
+
+function arc_diagram(
+    ::Type{Directed},
+    parity_upper_verts::Union{BitVector, Vector{<:Number}},
+    parity_lower_verts::Union{BitVector, Vector{<:Number}},
+    upper_neighbors::Vector{ArcDiagramVertex},
+    lower_neighbors::Vector{ArcDiagramVertex};
+    check::Bool=true,
+)
+    n_upper_verts = length(upper_neighbors)
+    n_lower_verts = length(lower_neighbors)
+    return ArcDiagramDirected(
+        n_upper_verts,
+        n_lower_verts,
+        BitVector(parity_upper_verts),
+        BitVector(parity_lower_verts),
+        upper_neighbors,
+        lower_neighbors;
+        check,
+    )
+end
+
+function arc_diagram(
+    ::Type{Directed},
+    parity_upper_verts::Union{BitVector, Vector{<:Number}},
+    parity_lower_verts::Union{BitVector, Vector{<:Number}},
+    upper_neighbor_inds::Vector{Int},
+    lower_neighbor_inds::Vector{Int};
+    check::Bool=true,
+)
+    n_upper_verts = length(parity_upper_verts)
+    n_lower_verts = length(parity_lower_verts)
+    return ArcDiagramDirected(
+        n_upper_verts,
+        n_lower_verts,
+        BitVector(parity_upper_verts),
+        BitVector(parity_lower_verts),
+        upper_neighbor_inds,
+        lower_neighbor_inds;
+        check,
+    )
+end
+
+function arc_diagram(::Type{Directed}, upper::AbstractString, lower::AbstractString)
+    upper = strip(upper)
+    lower = strip(lower)
+    n_upper_verts = length(upper)
+    n_lower_verts = length(lower)
+    parity_upper_verts = BitVector([islowercase(s) for s in upper])
+    parity_lower_verts = BitVector([isuppercase(s) for s in lower])
+
+    str = upper * lower
+    @req all(isletter, str) "Invalid symbol."
+    str = uppercase(str)
+    symbols = unique(str)
+    for s in symbols
+        @static if VERSION >= v"1.7"
+            @req count(s, str) == 2 "Symbol $s does not appear exactly twice."
+        else
+            @req count(string(s), str) == 2 "Symbol $s does not appear exactly twice."
+        end
+    end
+    upper_neighbors = [(:none, 0) for _ in 1:n_upper_verts]
+    lower_neighbors = [(:none, 0) for _ in 1:n_lower_verts]
+    for s in symbols
+        @static if VERSION >= v"1.7"
+            i, j = findall(s, str)
+        else
+            i, j = findall(==(s), str)
+        end
+        if i <= n_upper_verts
+            upper_neighbors[i] =
+                j <= n_upper_verts ? upper_vertex(ArcDiagramVertex, j) :
+                lower_vertex(ArcDiagramVertex, j - n_upper_verts)
+        else
+            lower_neighbors[i-n_upper_verts] =
+                j <= n_upper_verts ? upper_vertex(ArcDiagramVertex, j) :
+                lower_vertex(ArcDiagramVertex, j - n_upper_verts)
+        end
+        if j <= n_upper_verts
+            upper_neighbors[j] =
+                i <= n_upper_verts ? upper_vertex(ArcDiagramVertex, i) :
+                lower_vertex(ArcDiagramVertex, i - n_upper_verts)
+        else
+            lower_neighbors[j-n_upper_verts] =
+                i <= n_upper_verts ? upper_vertex(ArcDiagramVertex, i) :
+                lower_vertex(ArcDiagramVertex, i - n_upper_verts)
+        end
+    end
+    return ArcDiagramDirected(
+        n_upper_verts,
+        n_lower_verts,
+        parity_upper_verts,
+        parity_lower_verts,
+        upper_neighbors,
+        lower_neighbors,
+    )
+end
+
+
+function arc_diagram(T::Type{<:Union{Directed, Undirected}}, s::AbstractString)
+    upper, lower = split(s, ",")
+    return arc_diagram(T, upper, lower)
 end
 
 
