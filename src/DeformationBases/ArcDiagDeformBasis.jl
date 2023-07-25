@@ -16,8 +16,10 @@ struct ArcDiagDeformBasis{C <: RingElem} <: DeformBasis{C}
         no_normalize::Bool=false,
     ) where {C <: RingElem}
         @req get_attribute(base_lie_algebra(sp), :type, nothing) == :special_orthogonal "Only works for so_n."
-        @req (is_exterior_power(base_module(sp)) || is_symmetric_power(base_module(sp))) &&
-             is_standard_module(base_module(base_module(sp))) "Only works for exterior powers of the standard module."
+        V = base_module(sp)
+        @req (is_exterior_power(V) || is_symmetric_power(V)) && is_standard_module(base_module(V)) "Only works for exterior powers of the standard module."
+
+        upper_module = exterior_power(V, 2)
 
         extra_data = Dict{DeformationMap{C}, Set{ArcDiagram}}()
         normalize = no_normalize ? identity : normalize_default
@@ -26,7 +28,7 @@ struct ArcDiagDeformBasis{C <: RingElem} <: DeformBasis{C}
         iters = []
         debug_counter = 0
         for d in degs
-            diag_iter = pbw_arc_diagrams__so(base_module(sp), d)
+            diag_iter = pbw_arc_diagrams__so(upper_module, d)
             len = length(diag_iter)
             iter = (
                 begin
@@ -69,11 +71,12 @@ Base.length(basis::ArcDiagDeformBasis) = basis.len
 
 
 function pbw_arc_diagrams__so(V::LieAlgebraModule, d::Int)
-    e = arc_diagram_num_points__so(V)
-    upper_indep_sets = Vector{Int}[is .+ a * e for a in [0, 1] for is in arc_diagram_indep_sets__so(V)]
-    lower_indep_sets = Vector{Int}[[[2i - 1, 2i] for i in 1:d]...]
+    n_upper_vertices = arc_diagram_num_points__so(V)
+    n_lower_vertices = 2d
+    upper_indep_sets = arc_diagram_indep_sets__so(V)
+    lower_indep_sets = Vector{Int}[[[2i - 1, 2i] for i in 1:div(n_lower_vertices, 2)]...]
     indep_sets = Vector{Int}[[(-1) .* is for is in upper_indep_sets]; [is for is in lower_indep_sets]]
-    return all_arc_diagrams(Undirected, 2e, 2d; indep_sets)
+    return all_arc_diagrams(Undirected, n_upper_vertices, n_lower_vertices; indep_sets)
 end
 
 function arc_diagram_num_points__so(V::LieAlgebraModule)
@@ -99,8 +102,8 @@ function arc_diagram_indep_sets__so(V::LieAlgebraModule)
                 return Vector{Int}[]
             end
         else
-            is = arc_diagram_indep_sets__so(inner_mod)
-            return [map(i -> i + k * arc_diagram_num_points__so(inner_mod), is) for k in 0:power-1, is in is]
+            iss = arc_diagram_indep_sets__so(inner_mod)
+            return [map(i -> i + k * arc_diagram_num_points__so(inner_mod), is) for k in 0:power-1 for is in iss]
         end
     else
         error("Not implemented.")
@@ -182,43 +185,26 @@ end
 
 
 function arcdiag_to_deformationmap__so(diag::ArcDiagramUndirected, sp::SmashProductLie{C}) where {C <: RingElem}
+    upper_module = exterior_power(base_module(sp), 2)
+    ind_map = get_attribute(upper_module, :ind_map)
+
     # TODO: allow for genereal ArcDiagrams
     d = div(n_lower_vertices(diag), 2)
     dim_stdmod_V = base_lie_algebra(sp).n
 
-    e = arc_diagram_num_points__so(base_module(sp))
-
     iso_wedge2V_g = Dict{Vector{Int}, Int}()
-    for (i, bs) in enumerate(combinations(base_lie_algebra(sp).n, 2))
+    for (i, bs) in enumerate(combinations(dim_stdmod_V, 2))
         iso_wedge2V_g[bs] = i
     end
 
-    index = Dict{Vector{Int}, Int}()
-    for (i, is) in enumerate(arc_diagram_label_iterator__so(base_module(sp), 1:dim_stdmod_V))
-        index[is] = i
-    end
-
     kappa = fill(zero(underlying_algebra(sp)), dim(base_module(sp)), dim(base_module(sp)))
-    for is in arc_diagram_label_iterator__so(base_module(sp), 1:dim_stdmod_V),
-        js in arc_diagram_label_iterator__so(base_module(sp), 1:dim_stdmod_V)
+    for (label_index, upper_labels) in enumerate(arc_diagram_label_iterator__so(upper_module, 1:dim_stdmod_V))
 
-        i = index[is]
-        j = index[js]
-        if i >= j
-            continue
-        end
-        for (is, sgn_left) in arc_diagram_label_permutations__so(base_module(sp), is),
-            (js, sgn_right) in arc_diagram_label_permutations__so(base_module(sp), js),
-            swap in [false, true]
+        i, j = ind_map[label_index]
 
-            sgn_upper_labels = sgn_left * sgn_right
-            if swap
-                is, js = js, is
-                sgn_upper_labels *= -1
-            end
+        for (upper_labels, sgn_upper_labels) in arc_diagram_label_permutations__so(upper_module, upper_labels)
 
             zeroprod = false
-            upper_labels = vcat(is, js)
             lower_labels = [0 for _ in 1:2d]
             frees = Int[]
             for v in upper_vertices(diag)
@@ -266,7 +252,7 @@ function arcdiag_to_deformationmap__so(diag::ArcDiagramUndirected, sp::SmashProd
                             fill(C(1 // factorial(length(basiselem))), factorial(length(basiselem))),
                             [ind for ind in permutations(basiselem)],
                         )
-                        entry += sign_lower_labels * _normal_form(symm_basiselem, sp.rels)
+                        entry += sign_lower_labels * _normal_form(symm_basiselem, sp.rels) # TODO: benchmark removal of normal_form
                     end
                     # end inner
 
