@@ -189,12 +189,11 @@ function arcdiag_to_deformationmap__so(diag::ArcDiagramUndirected, sp::SmashProd
     ind_map = get_attribute(upper_module, :ind_map)
 
     # TODO: allow for genereal ArcDiagrams
-    d = div(n_lower_vertices(diag), 2)
     dim_stdmod_V = base_lie_algebra(sp).n
 
-    iso_wedge2V_g = Dict{Vector{Int}, Int}()
+    iso_wedge2V_to_L = Dict{Vector{Int}, Int}()
     for (i, bs) in enumerate(combinations(dim_stdmod_V, 2))
-        iso_wedge2V_g[bs] = i
+        iso_wedge2V_to_L[bs] = i
     end
 
     kappa = fill(zero(underlying_algebra(sp)), dim(base_module(sp)), dim(base_module(sp)))
@@ -202,86 +201,108 @@ function arcdiag_to_deformationmap__so(diag::ArcDiagramUndirected, sp::SmashProd
 
         i, j = ind_map[label_index]
 
-        for (upper_labels, sgn_upper_labels) in arc_diagram_label_permutations__so(upper_module, upper_labels)
+        entry = arcdiag_to_deformationmap_entry__so(
+            diag,
+            upper_module,
+            upper_labels,
+            underlying_algebra(sp),
+            iso_wedge2V_to_L,
+            dim_stdmod_V,
+        )
 
-            zeroprod = false
-            lower_labels = [0 for _ in 1:2d]
-            frees = Int[]
-            for v in upper_vertices(diag)
-                nv = neighbor(diag, v)
-                if is_upper_vertex(nv) && upper_labels[vertex_index(v)] != upper_labels[vertex_index(nv)]
-                    zeroprod = true
-                    break
-                elseif is_lower_vertex(nv)
-                    lower_labels[vertex_index(nv)] = upper_labels[vertex_index(v)]
-                end
-            end
-            if zeroprod
-                continue
-            end
-            for v in lower_vertices(diag)
-                nv = neighbor(diag, v)
-                if is_lower_vertex(nv) && vertex_index(v) < vertex_index(nv)
-                    push!(frees, vertex_index(v))
-                end
-            end
+        entry = _normal_form(entry, sp.rels)
 
-            entry = zero(underlying_algebra(sp))
-
-            # iterate over lower point labelings
-            nextindex = 1
-            while true
-                if nextindex > length(frees)
-                    # begin inner
-                    zeroelem = false
-                    sign_lower_labels = 1
-                    basiselem = Int[]
-                    for k in 1:2:length(lower_labels)
-                        if lower_labels[k] == lower_labels[k+1]
-                            zeroelem = true
-                            break
-                        elseif lower_labels[k] > lower_labels[k+1]
-                            sign_lower_labels *= -1
-                            append!(basiselem, iso_wedge2V_g[[lower_labels[k+1], lower_labels[k]]])
-                        else
-                            append!(basiselem, iso_wedge2V_g[[lower_labels[k], lower_labels[k+1]]])
-                        end
-                    end
-                    if !zeroelem
-                        symm_basiselem = underlying_algebra(sp)(
-                            fill(C(1 // factorial(length(basiselem))), factorial(length(basiselem))),
-                            [ind for ind in permutations(basiselem)],
-                        )
-                        entry += sign_lower_labels * _normal_form(symm_basiselem, sp.rels) # TODO: benchmark removal of normal_form
-                    end
-                    # end inner
-
-                    nextindex -= 1
-                end
-
-                while nextindex >= 1 && lower_labels[frees[nextindex]] == dim_stdmod_V
-                    lower_labels[frees[nextindex]] = 0
-                    lower_labels[vertex_index(_neighbor_of_lower_vertex(diag, frees[nextindex]))] = 0
-                    nextindex -= 1
-                end
-                if nextindex == 0
-                    break
-                end
-                lower_labels[frees[nextindex]] += 1
-                lower_labels[vertex_index(_neighbor_of_lower_vertex(diag, frees[nextindex]))] += 1
-                if ispairgood(lower_labels, frees[nextindex]) &&
-                   ispairgood(lower_labels, vertex_index(_neighbor_of_lower_vertex(diag, frees[nextindex])))
-                    nextindex += 1
-                end
-            end
-
-            entry *= sgn_upper_labels
-
-            kappa[i, j] += entry
-            kappa[j, i] -= entry
-        end
+        kappa[i, j] += entry
+        kappa[j, i] -= entry
     end
     return kappa
+end
+
+function arcdiag_to_deformationmap_entry__so(
+    diag::ArcDiagramUndirected,
+    upper_module::LieAlgebraModule{C},
+    upper_labels::AbstractVector{Int},
+    sp_alg::FreeAssAlgebra{C},
+    iso_pair_to_L::Dict{Vector{Int}, Int},
+    max_label::Int,
+) where {C <: RingElem}
+    entry = zero(sp_alg)
+
+    for (upper_labels, sgn_upper_labels) in arc_diagram_label_permutations__so(upper_module, upper_labels)
+        zeroprod = false
+        lower_labels = [0 for _ in 1:n_lower_vertices(diag)]
+        frees = Int[]
+        for v in upper_vertices(diag)
+            nv = neighbor(diag, v)
+            if is_upper_vertex(nv) && upper_labels[vertex_index(v)] != upper_labels[vertex_index(nv)]
+                zeroprod = true
+                break
+            elseif is_lower_vertex(nv)
+                lower_labels[vertex_index(nv)] = upper_labels[vertex_index(v)]
+            end
+        end
+        if zeroprod
+            continue
+        end
+        for v in lower_vertices(diag)
+            nv = neighbor(diag, v)
+            if is_lower_vertex(nv) && vertex_index(v) < vertex_index(nv)
+                push!(frees, vertex_index(v))
+            end
+        end
+
+        entry_summand = zero(sp_alg)
+
+        # iterate over lower point labelings
+        nextindex = 1
+        while true
+            if nextindex > length(frees)
+                # begin inner
+                zeroelem = false
+                sign_lower_labels = 1
+                basiselem = Int[]
+                for k in 1:2:length(lower_labels)
+                    if lower_labels[k] == lower_labels[k+1]
+                        zeroelem = true
+                        break
+                    elseif lower_labels[k] > lower_labels[k+1]
+                        sign_lower_labels *= -1
+                        append!(basiselem, iso_pair_to_L[[lower_labels[k+1], lower_labels[k]]])
+                    else
+                        append!(basiselem, iso_pair_to_L[[lower_labels[k], lower_labels[k+1]]])
+                    end
+                end
+                if !zeroelem
+                    symm_basiselem = sp_alg(
+                        fill(C(1 // factorial(length(basiselem))), factorial(length(basiselem))),
+                        [ind for ind in permutations(basiselem)],
+                    )
+                    entry_summand += sign_lower_labels * symm_basiselem # TODO: benchmark removal of normal_form
+                end
+                # end inner
+
+                nextindex -= 1
+            end
+
+            while nextindex >= 1 && lower_labels[frees[nextindex]] == max_label
+                lower_labels[frees[nextindex]] = 0
+                lower_labels[vertex_index(_neighbor_of_lower_vertex(diag, frees[nextindex]))] = 0
+                nextindex -= 1
+            end
+            if nextindex == 0
+                break
+            end
+            lower_labels[frees[nextindex]] += 1
+            lower_labels[vertex_index(_neighbor_of_lower_vertex(diag, frees[nextindex]))] += 1
+            if ispairgood(lower_labels, frees[nextindex]) &&
+               ispairgood(lower_labels, vertex_index(_neighbor_of_lower_vertex(diag, frees[nextindex])))
+                nextindex += 1
+            end
+        end
+
+        entry += sgn_upper_labels * entry_summand
+    end
+    return entry
 end
 
 function ispairgood(labeled_diag::Vector{Int}, k::Int)
