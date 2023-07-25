@@ -17,7 +17,6 @@ struct ArcDiagDeformBasis{C <: RingElem} <: DeformBasis{C}
     ) where {C <: RingElem}
         @req get_attribute(base_lie_algebra(sp), :type, nothing) == :special_orthogonal "Only works for so_n."
         V = base_module(sp)
-        @req (is_exterior_power(V) || is_symmetric_power(V)) && is_standard_module(base_module(V)) "Only works for exterior powers of the standard module."
 
         upper_module = exterior_power(V, 2)
 
