@@ -168,7 +168,7 @@ function arc_diagram_label_permutations__so(V::LieAlgebraModule, label::Abstract
         elseif is_tensor_power(V)
             return [
                 begin
-                    inner_label = flatten(first.(inner_iter))
+                    inner_label = vcat(first.(inner_iter)...)
                     inner_sign = prod(last.(inner_iter))
                     (inner_label, inner_sign)
                 end for inner_iter in
