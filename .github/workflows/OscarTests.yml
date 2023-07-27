@@ -59,17 +59,13 @@ jobs:
         with:
           cache-name: 'oscartest-${{ matrix.julia-version }}-${{ matrix.os }}-${{ matrix.julia-arch }}'
 
-      - name: "Clone Oscar.jl"
-        run: |
-          git clone --branch master-pbwdeformations https://github.com/lgoettgens/Oscar.jl oscar-dev/Oscar.jl
-          echo "Checking out Oscar.jl commit:"
-          git show --oneline -s
-
-      - name: "Dev Oscar.jl"
+      - name: "Dev Oscar.jl master"
+        shell: julia --color=yes --project=. {0}
         run: |
           using Pkg
-          Pkg.develop(PackageSpec(path="oscar-dev/Oscar.jl"))
-        shell: julia --color=yes --project=. {0}
+          Pkg.add(url="https://github.com/lgoettgens/Oscar.jl", rev="master-pbwdeformations")
+        env:
+          JULIA_PKG_PRECOMPILE_AUTO: no
 
       - name: "Build package"
         uses: julia-actions/julia-buildpkg@latest
