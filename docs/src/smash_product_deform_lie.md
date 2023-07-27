@@ -15,13 +15,13 @@ deform
 symmetric_deformation
 ```
 
-## SmashProductDeformLie struct
+## SmashProductLieDeform struct
 ```@docs
-SmashProductDeformLie
+SmashProductLieDeform
 ```
 
 ## Functions
-The [`SmashProductDeformLie`](@ref) struct can be used as an argument for the following functions:
+The [`SmashProductLieDeform`](@ref) struct can be used as an argument for the following functions:
 - `gen`
 - `gens`
 - `ngens`

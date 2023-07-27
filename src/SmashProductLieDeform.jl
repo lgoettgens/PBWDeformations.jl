@@ -248,7 +248,7 @@ end
 
 Constructs the deformation of the smash product `sp` by the deformation map `kappa`.
 
-Returns a [`SmashProductDeformLie`](@ref) struct and a two-part basis.
+Returns a [`SmashProductLieDeform`](@ref) struct and a two-part basis.
 """
 function deform(sp::SmashProductLie{C, CL}, kappa::DeformationMap{C}) where {C <: RingElem, CL <: RingElem}
     dimL = dim(lie_algebra(sp))

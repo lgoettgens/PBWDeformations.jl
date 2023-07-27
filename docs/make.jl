@@ -11,7 +11,7 @@ DocMeta.setdocmeta!(
     recursive = true,
 )
 
-bib = CitationBibliography("docs/references.bib", sorting = :nyt)
+bib = CitationBibliography(joinpath(@__DIR__, "references.bib"); style=:alpha)
 
 makedocs(
     bib,

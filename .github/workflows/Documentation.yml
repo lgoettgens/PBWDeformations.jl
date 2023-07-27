@@ -5,6 +5,8 @@ on:
     branches:
       - master
     tags: '*'
+  pull_request:
+  workflow_dispatch:
 
 concurrency:
   # group by workflow and ref; the last slightly strange component ensures that for pull
@@ -22,18 +24,31 @@ jobs:
       - name: "Set up Julia"
         uses: julia-actions/setup-julia@latest
         with:
-          version: '1.8'
+          version: '1.9'
 
       - name: Restore cache
         uses: julia-actions/cache@v1
         with:
-          cache-name: 'docs-1.8'
+          cache-name: 'docs-1.9'
+
+      - name: "Dev Oscar.jl master"
+        shell: julia --project=. --color=yes {0}
+        run: |
+          using Pkg
+          Pkg.add(url="https://github.com/lgoettgens/Oscar.jl", rev="master-pbwdeformations")
+        env:
+          JULIA_PKG_PRECOMPILE_AUTO: no
 
       - name: Build package
         uses: julia-actions/julia-buildpkg@latest
 
       - name: Install dependencies
-        run: julia --project=docs/ --color=yes -e 'using Pkg; Pkg.develop(PackageSpec(path=pwd())); Pkg.instantiate()'
+        shell: julia --project=docs/ --color=yes {0}
+        run: |
+          using Pkg
+          Pkg.add(url="https://github.com/lgoettgens/Oscar.jl", rev="master-pbwdeformations")
+          Pkg.develop(PackageSpec(path=pwd()))
+          Pkg.instantiate()
 
       - name: Build and deploy
         env:
