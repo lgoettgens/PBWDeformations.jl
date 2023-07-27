@@ -61,7 +61,7 @@ jobs:
           cache-compiled: "true"
 
       - name: "Dev Oscar.jl master"
-        shell: julia --color=yes --project=. {0}
+        shell: julia --project=. --color=yes {0}
         run: |
           using Pkg
           Pkg.add(url="https://github.com/lgoettgens/Oscar.jl", rev="master-pbwdeformations")
