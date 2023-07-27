@@ -32,19 +32,9 @@ using Oscar.LieAlgebras:
     symmetric_power,
     tensor_power
 
-using Hecke: multiplicity # wait for https://github.com/thofma/Hecke.jl/pull/1135
+import AbstractAlgebra: ProductIterator, coefficient_ring, elem_type, gen, gens, ngens, parent_type
 
-import AbstractAlgebra:
-    NCRing, # wait for https://github.com/Nemocas/AbstractAlgebra.jl/pull/1385
-    ProductIterator,
-    base_ring,
-    elem_type,
-    gen,
-    gens,
-    ngens,
-    parent_type
-
-import Oscar: comm, edges, neighbors, nvertices, simplify, vertices
+import Oscar: comm, edges, nedges, neighbors, nvertices, simplify, vertices
 
 import Oscar.LieAlgebras: lie_algebra
 
@@ -119,18 +109,5 @@ include("Pseudograph.jl")
 include("DeformationBases/ArcDiagDeformBasis.jl")
 include("DeformationBases/PseudographDeformBasis.jl")
 include("DeformationBases/StdDeformBasis.jl")
-
-
-function Base.filter(pred, s::MSet) # wait for https://github.com/thofma/Hecke.jl/pull/1135 being available
-    t = similar(s)
-    for (x, m) in s.dict
-        if pred(x)
-            push!(t, x, m)
-        end
-    end
-    return t
-end
-
-Base.:^(V::LieAlgebraModule, ::typeof(Base.:*)) = dual(V) # wait for https://github.com/oscar-system/Oscar.jl/pull/2528 being available
 
 end

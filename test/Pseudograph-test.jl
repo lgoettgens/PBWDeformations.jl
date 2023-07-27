@@ -59,7 +59,7 @@
             @test nedges(pg) ==
                   2 * numloops + numedges ==
                   length(loop1_weights) + length(loop2_weights) + length(edge_weights)
-            @test sum(pg) == sum(loop1_weights) + sum(loop2_weights) + sum(edge_weights)
+            @test sum(pg) == sum(loop1_weights; init=0) + sum(loop2_weights; init=0) + sum(edge_weights; init=0)
         end
     end
 

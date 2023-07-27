@@ -65,11 +65,11 @@ function edge_labels(pg::PseudographLabelled, verts::MSet{Int})
 end
 
 function Base.sum(pg::PseudographLabelled{T}) where {T <: Number}
-    return sum(last, edges(pg))
+    return sum(last, edges(pg); init=0)
 end
 
 function Base.sum(pg::PseudographLabelled{T}, verts::MSet{Int}) where {T <: Number}
-    return sum(edge_labels(pg, verts))
+    return sum(edge_labels(pg, verts); init=0)
 end
 
 function all_pseudographs(nv::Int, degree::Int, sumtotal::Int; upto_iso::Bool=false)

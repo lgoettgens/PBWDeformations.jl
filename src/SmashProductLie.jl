@@ -49,11 +49,9 @@ elem_type(::Type{SmashProductLie{C, CL}}) where {C <: RingElem, CL <: RingElem} 
 
 parent(e::SmashProductLieElem) = e.p
 
-base_ring(Sp::SmashProductLie) = Sp.coeff_ring
-
-base_ring(e::SmashProductLieElem) = base_ring(parent(e))
-
 coefficient_ring(Sp::SmashProductLie) = Sp.coeff_ring
+
+coefficient_ring(e::SmashProductLieElem) = coefficient_ring(parent(e))
 
 lie_algebra(Sp::SmashProductLie) = Sp.L
 
@@ -117,7 +115,7 @@ function show(io::IO, Sp::SmashProductLie{C, CL}) where {C <: RingElem, CL <: Ri
     print(io, "Smash Product")
     if CL != C
         print(io, " over ")
-        print(IOContext(io, :supercompact => true), base_ring(underlying_algebra(Sp)))
+        print(IOContext(io, :supercompact => true), coefficient_ring(underlying_algebra(Sp)))
     end
     print(io, " of ")
     print(IOContext(io, :compact => true), lie_algebra(Sp))
@@ -183,7 +181,7 @@ function Base.:*(e1::SmashProductLieElem{C}, e2::SmashProductLieElem{C}) where {
 end
 
 function Base.:*(e::SmashProductLieElem{C}, c::C) where {C <: RingElem}
-    base_ring(e) != parent(c) && error("Incompatible rings.")
+    coefficient_ring(e) != parent(c) && error("Incompatible rings.")
     return parent(e)(e.alg_elem * c)
 end
 
@@ -192,7 +190,7 @@ function Base.:*(e::SmashProductLieElem{C}, c::U) where {C <: RingElem, U <: Uni
 end
 
 function Base.:*(c::C, e::SmashProductLieElem{C}) where {C <: RingElem}
-    base_ring(e) != parent(c) && error("Incompatible rings.")
+    coefficient_ring(e) != parent(c) && error("Incompatible rings.")
     return parent(e)(c * e.alg_elem)
 end
 
@@ -243,7 +241,7 @@ end
 function _normal_form(a::FreeAssAlgElem{C}, rels::Matrix{Union{Nothing, FreeAssAlgElem{C}}}) where {C <: RingElem}
     todo = deepcopy(a)
     result = zero(parent(todo))
-    CR = base_ring(a)
+    CR = coefficient_ring(a)
     A = parent(todo)
     while todo.length > 0
         c = leading_coefficient(todo)
@@ -278,7 +276,7 @@ end
 Construct the smash product ``TV \\rtimes U(L)``.
 """
 function smash_product(L::LieAlgebra{C}, V::LieAlgebraModule{C}) where {C <: RingElem}
-    return smash_product(base_ring(L), L, V)
+    return smash_product(coefficient_ring(L), L, V)
 end
 
 """
@@ -289,10 +287,10 @@ Construct the smash product ``TV \\rtimes U(L)`` and extend the coefficients to 
 function smash_product(R::Ring, L::LieAlgebra{C}, V::LieAlgebraModule{C}) where {C <: RingElem}
     @req L == base_lie_algebra(V) "Incompatible module."
     try
-        R(zero(base_ring(L)))
+        R(zero(coefficient_ring(L)))
     catch e
         if e isa MethodError
-            error("Coefficient extension from $(base_ring(L)) to $(R) not possible.")
+            error("Coefficient extension from $(coefficient_ring(L)) to $(R) not possible.")
         else
             rethrow(e)
         end
@@ -311,13 +309,15 @@ function smash_product(R::Ring, L::LieAlgebra{C}, V::LieAlgebraModule{C}) where 
     rels = Matrix{Union{Nothing, FreeAssAlgElem{elem_type(R)}}}(nothing, dimL + dimV, dimL + dimV)
 
     for (i, xi) in enumerate(basis(L)), (j, xj) in enumerate(basis(L))
-        commutator = sum(R(c) * f_basisL[k] for (k, c) in enumerate(coefficients(xi * xj)) if !iszero(c); init=zero(f_alg))
+        commutator =
+            sum(R(c) * f_basisL[k] for (k, c) in enumerate(coefficients(xi * xj)) if !iszero(c); init=zero(f_alg))
         rels[i, j] = f_basisL[j] * f_basisL[i] + commutator
 
     end
 
     for (i, xi) in enumerate(basis(L)), (j, vj) in enumerate(basis(V))
-        commutator = sum(R(c) * f_basisV[k] for (k, c) in enumerate(coefficients(xi * vj)) if !iszero(c); init=zero(f_alg))
+        commutator =
+            sum(R(c) * f_basisV[k] for (k, c) in enumerate(coefficients(xi * vj)) if !iszero(c); init=zero(f_alg))
         rels[i, dimL+j] = f_basisV[j] * f_basisL[i] + commutator
         rels[dimL+j, i] = f_basisL[i] * f_basisV[j] - commutator
     end
