@@ -34,7 +34,7 @@ using Oscar.LieAlgebras:
 
 import AbstractAlgebra: ProductIterator, coefficient_ring, elem_type, gen, gens, ngens, parent_type
 
-import Oscar: comm, edges, neighbors, nvertices, simplify, vertices
+import Oscar: comm, edges, nedges, neighbors, nvertices, simplify, vertices
 
 import Oscar.LieAlgebras: lie_algebra
 
