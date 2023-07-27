@@ -46,11 +46,9 @@ elem_type(::Type{SmashProductLieDeform{C, CL}}) where {C <: RingElem, CL <: Ring
 
 parent(e::SmashProductLieDeformElem) = e.p
 
-base_ring(D::SmashProductLieDeform) = base_ring(D.sp)
-
-base_ring(e::SmashProductLieDeformElem) = base_ring(parent(e))
-
 coefficient_ring(D::SmashProductLieDeform) = coefficient_ring(D.sp)
+
+coefficient_ring(e::SmashProductLieDeformElem) = coefficient_ring(parent(e))
 
 lie_algebra(D::SmashProductLieDeform) = lie_algebra(D.sp)
 
@@ -182,7 +180,7 @@ function Base.:*(e1::SmashProductLieDeformElem{C}, e2::SmashProductLieDeformElem
 end
 
 function Base.:*(e::SmashProductLieDeformElem{C}, c::C) where {C <: RingElem}
-    base_ring(e) != parent(c) && error("Incompatible rings.")
+    coefficient_ring(e) != parent(c) && error("Incompatible rings.")
     return parent(e)(e.alg_elem * c)
 end
 
@@ -191,7 +189,7 @@ function Base.:*(e::SmashProductLieDeformElem{C}, c::U) where {C <: RingElem, U 
 end
 
 function Base.:*(c::C, e::SmashProductLieDeformElem{C}) where {C <: RingElem}
-    base_ring(e) != parent(c) && error("Incompatible rings.")
+    coefficient_ring(e) != parent(c) && error("Incompatible rings.")
     return parent(e)(c * e.alg_elem)
 end
 

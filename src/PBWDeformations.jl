@@ -32,7 +32,7 @@ using Oscar.LieAlgebras:
     symmetric_power,
     tensor_power
 
-import AbstractAlgebra: ProductIterator, base_ring, elem_type, gen, gens, ngens, parent_type
+import AbstractAlgebra: ProductIterator, coefficient_ring, elem_type, gen, gens, ngens, parent_type
 
 import Oscar: comm, edges, neighbors, nvertices, simplify, vertices
 
