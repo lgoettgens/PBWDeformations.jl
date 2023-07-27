@@ -28,6 +28,7 @@ jobs:
         uses: julia-actions/cache@v1
         with:
           cache-name: 'docs-1.8'
+          cache-compiled: "true"
 
       - name: Build package
         uses: julia-actions/julia-buildpkg@latest

@@ -58,6 +58,7 @@ jobs:
         uses: julia-actions/cache@v1
         with:
           cache-name: 'test-${{ matrix.julia-version }}-${{ matrix.os }}-${{ matrix.julia-arch }}'
+          cache-compiled: "true"
 
       - name: "Build package"
         uses: julia-actions/julia-buildpkg@latest

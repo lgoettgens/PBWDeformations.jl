@@ -58,6 +58,7 @@ jobs:
         uses: julia-actions/cache@v1
         with:
           cache-name: 'oscartest-${{ matrix.julia-version }}-${{ matrix.os }}-${{ matrix.julia-arch }}'
+          cache-compiled: "true"
 
       - name: "Dev Oscar.jl master"
         shell: julia --color=yes --project=. {0}
