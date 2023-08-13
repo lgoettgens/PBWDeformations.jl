@@ -16,13 +16,13 @@ bib = CitationBibliography(joinpath(@__DIR__, "references.bib"); style=:alpha)
 makedocs(
     bib,
     modules = [PBWDeformations],
-    repo = "https://github.com/PBWDeformations/PBWDeformations.jl/blob/{commit}{path}#{line}",
+    repo = "https://github.com/lgoettgens/PBWDeformations.jl/blob/{commit}{path}#{line}",
     sitename = "PBWDeformations.jl",
     checkdocs = :none, #:all, :exports
     strict = true,
     format = Documenter.HTML(;
         prettyurls = get(ENV, "CI", nothing) == "true",
-        canonical = "https://pbwdeformations.github.io/PBWDeformations.jl/",
+        canonical = "https://lgoettgens.github.io/PBWDeformations.jl/",
     ),
     pages = [
         "PBWDeformations.jl" => "index.md",
@@ -38,7 +38,7 @@ makedocs(
 )
 
 deploydocs(
-    repo = "github.com/PBWDeformations/PBWDeformations.jl.git",
+    repo = "github.com/lgoettgens/PBWDeformations.jl.git",
     deploy_config = Documenter.GitHubActions(),
     branch = "gh-pages",
 )
