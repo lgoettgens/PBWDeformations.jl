@@ -76,6 +76,7 @@ export inneighbor
 export inneighbors
 export is_crossing_free
 export is_pbwdeformation
+export isomorphic_module_with_simple_structure
 export lookup_data
 export lower_vertex, is_lower_vertex
 export lower_vertices
@@ -104,6 +105,8 @@ export vertices
 function __init__()
     add_verbose_scope(:PBWDeformations)
 end
+
+include("ModuleSimpleStructure.jl")
 
 include("DeformationBases/DeformBasis.jl")
 
