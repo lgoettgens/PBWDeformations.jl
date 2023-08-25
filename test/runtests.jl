@@ -2,6 +2,7 @@ include("setup.jl")
 
 include("Aqua.jl")
 
+include("ModuleSimpleStructure-test.jl")
 include("ArcDiagram-test.jl")
 include("DeformationBases-test.jl")
 include("Pseudograph-test.jl")
