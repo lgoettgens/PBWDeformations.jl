@@ -1,4 +1,4 @@
-function isomorphic_module_with_simple_structure(V::LieAlgebraModule)
+function isomorphic_module_with_simple_structure(V::LieAlgebraModule; check::Bool=true)
     if is_standard_module(V)
         return V, identity_map(V)
     elseif is_dual(V)
@@ -8,30 +8,40 @@ function isomorphic_module_with_simple_structure(V::LieAlgebraModule)
         end
         if is_dual(B)
             U = base_module(B)
+            V_to_U = hom(V, U, identity_matrix(coefficient_ring(V), dim(V)); check)
         elseif is_direct_sum(B)
             U = direct_sum(dual.(base_modules(B))...)
+            V_to_U = hom(V, U, identity_matrix(coefficient_ring(V), dim(V)); check)
         elseif is_tensor_product(B)
             U = tensor_product(dual.(base_modules(B))...)
+            V_to_U = hom(V, U, identity_matrix(coefficient_ring(V), dim(V)); check)
         elseif is_exterior_power(B)
             C = base_module(B)
             k = get_attribute(B, :power)
             U = exterior_power(dual(base_module(B)), k)
+            V_to_U = hom(V, U, identity_matrix(coefficient_ring(V), dim(V)); check)
         elseif is_symmetric_power(B)
             C = base_module(B)
             k = get_attribute(B, :power)
+            ind_map = get_attribute(B, :ind_map)
             U = symmetric_power(dual(base_module(B)), k)
+            mat = zero_matrix(coefficient_ring(V), dim(V), dim(V))
+            for i in 1:dim(B)
+                mat[i, i] = div(factorial(k), prod(factorial(count(==(j), ind_map[i])) for j in 1:dim(C)))
+            end
+            V_to_U = hom(V, U, mat; check)
         elseif is_tensor_power(B)
             C = base_module(B)
             k = get_attribute(B, :power)
             U = tensor_power(dual(base_module(B)), k)
+            V_to_U = hom(V, U, identity_matrix(coefficient_ring(V), dim(V)); check)
         end
-        V_to_U = hom(V, U, identity_matrix(coefficient_ring(V), dim(V)))
-        W, U_to_W = isomorphic_module_with_simple_structure(U)
+        W, U_to_W = isomorphic_module_with_simple_structure(U; check)
         V_to_W = compose(V_to_U, U_to_W)
         return W, V_to_W
     elseif is_direct_sum(V)
         Bs = base_modules(V)
-        Cs_with_hom = [isomorphic_module_with_simple_structure(B) for B in Bs]
+        Cs_with_hom = [isomorphic_module_with_simple_structure(B; check) for B in Bs]
         Ds = []
         for (C, _) in Cs_with_hom
             if is_direct_sum(C)
@@ -43,16 +53,16 @@ function isomorphic_module_with_simple_structure(V::LieAlgebraModule)
         if length(Ds) == 1
             W = Ds[1]
             B_to_W = Cs_with_hom[1][2]
-            h = hom(V, W, matrix(B_to_W))
+            h = hom(V, W, matrix(B_to_W); check)
             return W, h
         else
             W = direct_sum(Ds...)
-            h = hom(V, W, diagonal_matrix([matrix(B_to_C) for (_, B_to_C) in Cs_with_hom]))
+            h = hom(V, W, diagonal_matrix([matrix(B_to_C) for (_, B_to_C) in Cs_with_hom]); check)
             return W, h
         end
     elseif is_tensor_product(V)
         Bs = base_modules(V)
-        Cs_with_hom = [isomorphic_module_with_simple_structure(B) for B in Bs]
+        Cs_with_hom = [isomorphic_module_with_simple_structure(B; check) for B in Bs]
         Ds = []
         for (C, _) in Cs_with_hom
             if is_tensor_product(C)
@@ -64,11 +74,11 @@ function isomorphic_module_with_simple_structure(V::LieAlgebraModule)
         if length(Ds) == 1
             W = Ds[1]
             B_to_W = Cs_with_hom[1][2]
-            h = hom(V, W, matrix(B_to_W))
+            h = hom(V, W, matrix(B_to_W); check)
             return W, h
         end
         U = tensor_product(Ds...)
-        V_to_U = hom(V, U, reduce(kronecker_product, [matrix(B_to_C) for (_, B_to_C) in Cs_with_hom]))
+        V_to_U = hom(V, U, reduce(kronecker_product, [matrix(B_to_C) for (_, B_to_C) in Cs_with_hom]); check)
         if all(!is_direct_sum, Ds)
             W = U
             U_to_W = identity_map(U)
@@ -81,7 +91,6 @@ function isomorphic_module_with_simple_structure(V::LieAlgebraModule)
             dim_accum = 0
             for summ_comb in reverse.(ProductIterator(reverse([1:length(base_modules(E)) for E in Es])))
                 F = tensor_product([base_modules(E)[i] for (E, i) in zip(Es, summ_comb)]...)
-                println(base_modules(F))
                 for i in 1:dim(U)
                     inds = ind_map[i]
                     if [direct_summand_mappings[j][ind][1] for (j, ind) in enumerate(inds)] == summ_comb
@@ -94,22 +103,22 @@ function isomorphic_module_with_simple_structure(V::LieAlgebraModule)
                 push!(Fs, F)
             end
             W = direct_sum(Fs...)
-            U_to_W = hom(U, W, mat)
+            U_to_W = hom(U, W, mat; check)
         end
         V_to_W = compose(V_to_U, U_to_W)
         return W, V_to_W
     elseif is_exterior_power(V)
         B = base_module(V)
         k = get_attribute(V, :power)
-        C, B_to_C = isomorphic_module_with_simple_structure(B)
+        C, B_to_C = isomorphic_module_with_simple_structure(B; check)
         if k == 1
             U = C
-            V_to_B = hom(V, B, identity_matrix(coefficient_ring(V), dim(V)))
+            V_to_B = hom(V, B, identity_matrix(coefficient_ring(V), dim(V)); check)
             V_to_U = compose(V_to_B, B_to_C)
             return U, V_to_U
         end
         U = exterior_power(C, k)
-        V_to_U = hom(V, U, [U(B_to_C.(_basis_repres(V, i))) for i in 1:dim(V)])
+        V_to_U = hom(V, U, [U(B_to_C.(_basis_repres(V, i))) for i in 1:dim(V)]; check)
         if is_direct_sum(C)
             direct_summand_mapping = _direct_summand_mapping(C)
             ind_map = get_attribute(U, :ind_map)
@@ -128,7 +137,7 @@ function isomorphic_module_with_simple_structure(V::LieAlgebraModule)
                     if [direct_summand_mapping[ind][1] for ind in inds] == summ_comb
                         dsmap = [direct_summand_mapping[ind] for ind in inds]
                         img = E([
-                            factors[j]([basis(Ds[j], dsmap[k][2]) for k in 1:m if dsmap[k][1] == j]) for
+                            factors[j]([basis(Ds[j], dsmap[l][2]) for l in 1:k if dsmap[l][1] == j]) for
                             j in 1:m if lambda[j] != 0
                         ])
                         mat[i, dim_accum+1:dim_accum+dim(E)] = Oscar.LieAlgebras._matrix(img)
@@ -142,8 +151,8 @@ function isomorphic_module_with_simple_structure(V::LieAlgebraModule)
             end
             F = direct_sum(Es...)
             @assert dim(U) == dim_accum == dim(F)
-            U_to_F = hom(U, F, mat)
-            W, F_to_W = isomorphic_module_with_simple_structure(F)
+            U_to_F = hom(U, F, mat; check)
+            W, F_to_W = isomorphic_module_with_simple_structure(F; check)
             U_to_W = compose(U_to_F, F_to_W)
         else
             W = U
@@ -154,15 +163,15 @@ function isomorphic_module_with_simple_structure(V::LieAlgebraModule)
     elseif is_symmetric_power(V)
         B = base_module(V)
         k = get_attribute(V, :power)
-        C, B_to_C = isomorphic_module_with_simple_structure(B)
+        C, B_to_C = isomorphic_module_with_simple_structure(B; check)
         if k == 1
             U = C
-            V_to_B = hom(V, B, identity_matrix(coefficient_ring(V), dim(V)))
+            V_to_B = hom(V, B, identity_matrix(coefficient_ring(V), dim(V)); check)
             V_to_U = compose(V_to_B, B_to_C)
             return U, V_to_U
         end
         U = symmetric_power(C, k)
-        V_to_U = hom(V, U, [U(B_to_C.(_basis_repres(V, i))) for i in 1:dim(V)])
+        V_to_U = hom(V, U, [U(B_to_C.(_basis_repres(V, i))) for i in 1:dim(V)]; check)
         if is_direct_sum(C)
             direct_summand_mapping = _direct_summand_mapping(C)
             ind_map = get_attribute(U, :ind_map)
@@ -181,7 +190,7 @@ function isomorphic_module_with_simple_structure(V::LieAlgebraModule)
                     if [direct_summand_mapping[ind][1] for ind in inds] == summ_comb
                         dsmap = [direct_summand_mapping[ind] for ind in inds]
                         img = E([
-                            factors[j]([basis(Ds[j], dsmap[k][2]) for k in 1:m if dsmap[k][1] == j]) for
+                            factors[j]([basis(Ds[j], dsmap[l][2]) for l in 1:k if dsmap[l][1] == j]) for
                             j in 1:m if lambda[j] != 0
                         ])
                         mat[i, dim_accum+1:dim_accum+dim(E)] = Oscar.LieAlgebras._matrix(img)
@@ -195,8 +204,8 @@ function isomorphic_module_with_simple_structure(V::LieAlgebraModule)
             end
             F = direct_sum(Es...)
             @assert dim(U) == dim_accum == dim(F)
-            U_to_F = hom(U, F, mat)
-            W, F_to_W = isomorphic_module_with_simple_structure(F)
+            U_to_F = hom(U, F, mat; check)
+            W, F_to_W = isomorphic_module_with_simple_structure(F; check)
             U_to_W = compose(U_to_F, F_to_W)
         else
             W = U
@@ -207,15 +216,15 @@ function isomorphic_module_with_simple_structure(V::LieAlgebraModule)
     elseif is_tensor_power(V)
         B = base_module(V)
         k = get_attribute(V, :power)
-        C, B_to_C = isomorphic_module_with_simple_structure(B)
+        C, B_to_C = isomorphic_module_with_simple_structure(B; check)
         if k == 1
             U = C
-            V_to_B = hom(V, B, identity_matrix(coefficient_ring(V), dim(V)))
+            V_to_B = hom(V, B, identity_matrix(coefficient_ring(V), dim(V)); check)
             V_to_U = compose(V_to_B, B_to_C)
             return U, V_to_U
         end
         U = tensor_power(C, k)
-        V_to_U = hom(V, U, [U(B_to_C.(_basis_repres(V, i))) for i in 1:dim(V)])
+        V_to_U = hom(V, U, [U(B_to_C.(_basis_repres(V, i))) for i in 1:dim(V)]; check)
         if is_direct_sum(C)
             direct_summand_mapping = _direct_summand_mapping(C)
             ind_map = get_attribute(U, :ind_map)
@@ -234,7 +243,7 @@ function isomorphic_module_with_simple_structure(V::LieAlgebraModule)
                     if [direct_summand_mapping[ind][1] for ind in inds] == summ_comb
                         dsmap = [direct_summand_mapping[ind] for ind in inds]
                         img = E([
-                            factors[j]([basis(Ds[j], dsmap[k][2]) for k in 1:m if dsmap[k][1] == j]) for
+                            factors[j]([basis(Ds[j], dsmap[l][2]) for l in 1:k if dsmap[l][1] == j]) for
                             j in 1:m if lambda[j] != 0
                         ])
                         mat[i, dim_accum+1:dim_accum+dim(E)] = Oscar.LieAlgebras._matrix(img)
@@ -248,8 +257,8 @@ function isomorphic_module_with_simple_structure(V::LieAlgebraModule)
             end
             F = direct_sum(Es...)
             @assert dim(U) == dim_accum == dim(F)
-            U_to_F = hom(U, F, mat)
-            W, F_to_W = isomorphic_module_with_simple_structure(F)
+            U_to_F = hom(U, F, mat; check)
+            W, F_to_W = isomorphic_module_with_simple_structure(F; check)
             U_to_W = compose(U_to_F, F_to_W)
         else
             W = U
