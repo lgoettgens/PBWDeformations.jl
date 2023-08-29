@@ -50,6 +50,7 @@ function isomorphic_module_with_simple_structure(V::LieAlgebraModule; check::Boo
                 push!(Ds, C)
             end
         end
+        filter!(D -> dim(D) > 0, Ds)
         if length(Ds) == 1
             W = Ds[1]
             B_to_W = Cs_with_hom[1][2]
@@ -71,6 +72,7 @@ function isomorphic_module_with_simple_structure(V::LieAlgebraModule; check::Boo
                 push!(Ds, C)
             end
         end
+        filter!(D -> dim(D) != 1 || any(!iszero, D.transformation_matrices), Ds)
         if length(Ds) == 1
             W = Ds[1]
             B_to_W = Cs_with_hom[1][2]

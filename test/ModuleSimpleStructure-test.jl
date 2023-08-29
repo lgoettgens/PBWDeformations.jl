@@ -90,6 +90,21 @@
             @test sprint(show, h.(basis(V))) == "LieAlgebraModuleElem{QQFieldElem}[v_1 ∧ v_2, v_1 ∧ v_3, v_2 ∧ v_3]"
         end
 
+        @testset "Direct sum: 0-dim summand" begin
+            V1 = dual(stdV)
+            V3 = exterior_power(stdV, 2)
+            for V2 in [trivial_module(L, 0), exterior_power(stdV, dim(stdV) + 1)]
+                V = direct_sum(V1, V2, V3)
+                W, h = isomorphic_module_with_simple_structure(V)
+                @test is_isomorphism(h)
+                @test W == direct_sum(V1, V3)
+                @test sprint(show, basis(V)) ==
+                      "LieAlgebraModuleElem{QQFieldElem}[(v_1*)^(1), (v_2*)^(1), (v_3*)^(1), (v_1 ∧ v_2)^(3), (v_1 ∧ v_3)^(3), (v_2 ∧ v_3)^(3)]"
+                @test sprint(show, h.(basis(V))) ==
+                      "LieAlgebraModuleElem{QQFieldElem}[(v_1*)^(1), (v_2*)^(1), (v_3*)^(1), (v_1 ∧ v_2)^(3), (v_1 ∧ v_3)^(3), (v_2 ∧ v_3)^(3)]"
+            end
+        end
+
         @testset "Direct sum: nested" begin
             V = direct_sum(direct_sum(stdV, exterior_power(stdV, 2)), dual(stdV))
             W, h = isomorphic_module_with_simple_structure(V)
@@ -108,6 +123,17 @@
             @test W == exterior_power(stdV, 2)
             @test sprint(show, basis(V)) == "LieAlgebraModuleElem{QQFieldElem}[v_1 ∧ v_2, v_1 ∧ v_3, v_2 ∧ v_3]"
             @test sprint(show, h.(basis(V))) == "LieAlgebraModuleElem{QQFieldElem}[v_1 ∧ v_2, v_1 ∧ v_3, v_2 ∧ v_3]"
+        end
+
+        @testset "Tensor product: trivial 1-dim factor" begin
+            V1 = dual(stdV)
+            V3 = exterior_power(stdV, 2)
+            for V2 in [tensor_power(stdV, 0), exterior_power(stdV, dim(stdV))]
+                V = tensor_product(V1, V2, V3)
+                W, h = isomorphic_module_with_simple_structure(V)
+                @test is_isomorphism(h)
+                @test W == tensor_product(V1, V3)
+            end
         end
 
         @testset "Tensor product: nested" begin
