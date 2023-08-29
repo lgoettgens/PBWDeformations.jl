@@ -118,7 +118,7 @@ function isomorphic_module_with_simple_structure(V::LieAlgebraModule; check::Boo
             return U, V_to_U
         end
         U = exterior_power(C, k)
-        V_to_U = hom(V, U, [U(B_to_C.(_basis_repres(V, i))) for i in 1:dim(V)]; check)
+        V_to_U = hom(V, U, elem_type(U)[U(B_to_C.(_basis_repres(V, i))) for i in 1:dim(V)]; check)
         if is_direct_sum(C)
             direct_summand_mapping = _direct_summand_mapping(C)
             ind_map = get_attribute(U, :ind_map)
@@ -144,9 +144,6 @@ function isomorphic_module_with_simple_structure(V::LieAlgebraModule; check::Boo
                     end
                 end
                 dim_accum += dim(E)
-                if length(factors_cleaned) == 1
-                    E = base_modules(E)[1]
-                end
                 push!(Es, E)
             end
             F = direct_sum(Es...)
@@ -171,7 +168,7 @@ function isomorphic_module_with_simple_structure(V::LieAlgebraModule; check::Boo
             return U, V_to_U
         end
         U = symmetric_power(C, k)
-        V_to_U = hom(V, U, [U(B_to_C.(_basis_repres(V, i))) for i in 1:dim(V)]; check)
+        V_to_U = hom(V, U, elem_type(U)[U(B_to_C.(_basis_repres(V, i))) for i in 1:dim(V)]; check)
         if is_direct_sum(C)
             direct_summand_mapping = _direct_summand_mapping(C)
             ind_map = get_attribute(U, :ind_map)
@@ -197,9 +194,6 @@ function isomorphic_module_with_simple_structure(V::LieAlgebraModule; check::Boo
                     end
                 end
                 dim_accum += dim(E)
-                if length(factors_cleaned) == 1
-                    E = base_modules(E)[1]
-                end
                 push!(Es, E)
             end
             F = direct_sum(Es...)
@@ -224,7 +218,7 @@ function isomorphic_module_with_simple_structure(V::LieAlgebraModule; check::Boo
             return U, V_to_U
         end
         U = tensor_power(C, k)
-        V_to_U = hom(V, U, [U(B_to_C.(_basis_repres(V, i))) for i in 1:dim(V)]; check)
+        V_to_U = hom(V, U, elem_type(U)[U(B_to_C.(_basis_repres(V, i))) for i in 1:dim(V)]; check)
         if is_direct_sum(C)
             direct_summand_mapping = _direct_summand_mapping(C)
             ind_map = get_attribute(U, :ind_map)
@@ -250,9 +244,6 @@ function isomorphic_module_with_simple_structure(V::LieAlgebraModule; check::Boo
                     end
                 end
                 dim_accum += dim(E)
-                if length(factors_cleaned) == 1
-                    E = base_modules(E)[1]
-                end
                 push!(Es, E)
             end
             F = direct_sum(Es...)
@@ -274,7 +265,7 @@ end
 function _basis_repres(V::LieAlgebraModule, i::Int)
     @req is_exterior_power(V) || is_symmetric_power(V) || is_tensor_power(V) "Not a power module."
     B = base_module(V)
-    ind_map = get_attribute(V, :ind_map)
+    ind_map = get_attribute(V, :ind_map)::Vector{Vector{Int}}
     js = ind_map[i]
     return map(j -> basis(B, j), js)
 end
