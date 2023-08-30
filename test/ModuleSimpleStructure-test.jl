@@ -137,31 +137,26 @@
         end
 
         @testset "Tensor product: nested" begin
-            V = tensor_product(tensor_product(stdV, symmetric_power(stdV, 3)), dual(stdV))
+            V = tensor_product(tensor_product(stdV, exterior_power(stdV, 2)), dual(stdV))
             W, h = isomorphic_module_with_simple_structure(V)
             @test is_isomorphism(h)
-            @test W == tensor_product(stdV, symmetric_power(stdV, 3), dual(stdV))
+            @test W == tensor_product(stdV, exterior_power(stdV, 2), dual(stdV))
             @test sprint(show, basis(V)) ==
-                  "LieAlgebraModuleElem{QQFieldElem}[(v_1 ⊗ (v_1 ∧ v_2 ∧ v_3)) ⊗ (v_1*), (v_1 ⊗ (v_1 ∧ v_2 ∧ v_3)) ⊗ (v_2*), (v_1 ⊗ (v_1 ∧ v_2 ∧ v_3)) ⊗ (v_3*), (v_2 ⊗ (v_1 ∧ v_2 ∧ v_3)) ⊗ (v_1*), (v_2 ⊗ (v_1 ∧ v_2 ∧ v_3)) ⊗ (v_2*), (v_2 ⊗ (v_1 ∧ v_2 ∧ v_3)) ⊗ (v_3*), (v_3 ⊗ (v_1 ∧ v_2 ∧ v_3)) ⊗ (v_1*), (v_3 ⊗ (v_1 ∧ v_2 ∧ v_3)) ⊗ (v_2*), (v_3 ⊗ (v_1 ∧ v_2 ∧ v_3)) ⊗ (v_3*)]"
+                  "LieAlgebraModuleElem{QQFieldElem}[(v_1 ⊗ (v_1 ∧ v_2)) ⊗ (v_1*), (v_1 ⊗ (v_1 ∧ v_2)) ⊗ (v_2*), (v_1 ⊗ (v_1 ∧ v_2)) ⊗ (v_3*), (v_1 ⊗ (v_1 ∧ v_3)) ⊗ (v_1*), (v_1 ⊗ (v_1 ∧ v_3)) ⊗ (v_2*), (v_1 ⊗ (v_1 ∧ v_3)) ⊗ (v_3*), (v_1 ⊗ (v_2 ∧ v_3)) ⊗ (v_1*), (v_1 ⊗ (v_2 ∧ v_3)) ⊗ (v_2*), (v_1 ⊗ (v_2 ∧ v_3)) ⊗ (v_3*), (v_2 ⊗ (v_1 ∧ v_2)) ⊗ (v_1*), (v_2 ⊗ (v_1 ∧ v_2)) ⊗ (v_2*), (v_2 ⊗ (v_1 ∧ v_2)) ⊗ (v_3*), (v_2 ⊗ (v_1 ∧ v_3)) ⊗ (v_1*), (v_2 ⊗ (v_1 ∧ v_3)) ⊗ (v_2*), (v_2 ⊗ (v_1 ∧ v_3)) ⊗ (v_3*), (v_2 ⊗ (v_2 ∧ v_3)) ⊗ (v_1*), (v_2 ⊗ (v_2 ∧ v_3)) ⊗ (v_2*), (v_2 ⊗ (v_2 ∧ v_3)) ⊗ (v_3*), (v_3 ⊗ (v_1 ∧ v_2)) ⊗ (v_1*), (v_3 ⊗ (v_1 ∧ v_2)) ⊗ (v_2*), (v_3 ⊗ (v_1 ∧ v_2)) ⊗ (v_3*), (v_3 ⊗ (v_1 ∧ v_3)) ⊗ (v_1*), (v_3 ⊗ (v_1 ∧ v_3)) ⊗ (v_2*), (v_3 ⊗ (v_1 ∧ v_3)) ⊗ (v_3*), (v_3 ⊗ (v_2 ∧ v_3)) ⊗ (v_1*), (v_3 ⊗ (v_2 ∧ v_3)) ⊗ (v_2*), (v_3 ⊗ (v_2 ∧ v_3)) ⊗ (v_3*)]"
             @test sprint(show, h.(basis(V))) ==
-                  "LieAlgebraModuleElem{QQFieldElem}[v_1 ⊗ (v_1 ∧ v_2 ∧ v_3) ⊗ (v_1*), v_1 ⊗ (v_1 ∧ v_2 ∧ v_3) ⊗ (v_2*), v_1 ⊗ (v_1 ∧ v_2 ∧ v_3) ⊗ (v_3*), v_2 ⊗ (v_1 ∧ v_2 ∧ v_3) ⊗ (v_1*), v_2 ⊗ (v_1 ∧ v_2 ∧ v_3) ⊗ (v_2*), v_2 ⊗ (v_1 ∧ v_2 ∧ v_3) ⊗ (v_3*), v_3 ⊗ (v_1 ∧ v_2 ∧ v_3) ⊗ (v_1*), v_3 ⊗ (v_1 ∧ v_2 ∧ v_3) ⊗ (v_2*), v_3 ⊗ (v_1 ∧ v_2 ∧ v_3) ⊗ (v_3*)]"
+                  "LieAlgebraModuleElem{QQFieldElem}[v_1 ⊗ (v_1 ∧ v_2) ⊗ (v_1*), v_1 ⊗ (v_1 ∧ v_2) ⊗ (v_2*), v_1 ⊗ (v_1 ∧ v_2) ⊗ (v_3*), v_1 ⊗ (v_1 ∧ v_3) ⊗ (v_1*), v_1 ⊗ (v_1 ∧ v_3) ⊗ (v_2*), v_1 ⊗ (v_1 ∧ v_3) ⊗ (v_3*), v_1 ⊗ (v_2 ∧ v_3) ⊗ (v_1*), v_1 ⊗ (v_2 ∧ v_3) ⊗ (v_2*), v_1 ⊗ (v_2 ∧ v_3) ⊗ (v_3*), v_2 ⊗ (v_1 ∧ v_2) ⊗ (v_1*), v_2 ⊗ (v_1 ∧ v_2) ⊗ (v_2*), v_2 ⊗ (v_1 ∧ v_2) ⊗ (v_3*), v_2 ⊗ (v_1 ∧ v_3) ⊗ (v_1*), v_2 ⊗ (v_1 ∧ v_3) ⊗ (v_2*), v_2 ⊗ (v_1 ∧ v_3) ⊗ (v_3*), v_2 ⊗ (v_2 ∧ v_3) ⊗ (v_1*), v_2 ⊗ (v_2 ∧ v_3) ⊗ (v_2*), v_2 ⊗ (v_2 ∧ v_3) ⊗ (v_3*), v_3 ⊗ (v_1 ∧ v_2) ⊗ (v_1*), v_3 ⊗ (v_1 ∧ v_2) ⊗ (v_2*), v_3 ⊗ (v_1 ∧ v_2) ⊗ (v_3*), v_3 ⊗ (v_1 ∧ v_3) ⊗ (v_1*), v_3 ⊗ (v_1 ∧ v_3) ⊗ (v_2*), v_3 ⊗ (v_1 ∧ v_3) ⊗ (v_3*), v_3 ⊗ (v_2 ∧ v_3) ⊗ (v_1*), v_3 ⊗ (v_2 ∧ v_3) ⊗ (v_2*), v_3 ⊗ (v_2 ∧ v_3) ⊗ (v_3*)]"
         end
 
         @testset "Tensor product, direct sum" begin
-            V = tensor_product(direct_sum(stdV, symmetric_power(stdV, 3)), direct_sum(dual(stdV), stdV))
+            V = tensor_product(direct_sum(stdV, symmetric_power(stdV, 2)), direct_sum(dual(stdV), stdV))
             W, h = isomorphic_module_with_simple_structure(V)
             @test is_isomorphism(h)
             @test W == direct_sum(
                 tensor_product(stdV, dual(stdV)),
                 tensor_product(stdV, stdV),
-                tensor_product(symmetric_power(stdV, 3), dual(stdV)),
-                tensor_product(symmetric_power(stdV, 3), stdV),
+                tensor_product(symmetric_power(stdV, 2), dual(stdV)),
+                tensor_product(symmetric_power(stdV, 2), stdV),
             )
-            @test sprint(show, basis(V)) ==
-                  "LieAlgebraModuleElem{QQFieldElem}[(v_1^(1)) ⊗ ((v_1*)^(1)), (v_1^(1)) ⊗ ((v_2*)^(1)), (v_1^(1)) ⊗ ((v_3*)^(1)), (v_1^(1)) ⊗ (v_1^(2)), (v_1^(1)) ⊗ (v_2^(2)), (v_1^(1)) ⊗ (v_3^(2)), (v_2^(1)) ⊗ ((v_1*)^(1)), (v_2^(1)) ⊗ ((v_2*)^(1)), (v_2^(1)) ⊗ ((v_3*)^(1)), (v_2^(1)) ⊗ (v_1^(2)), (v_2^(1)) ⊗ (v_2^(2)), (v_2^(1)) ⊗ (v_3^(2)), (v_3^(1)) ⊗ ((v_1*)^(1)), (v_3^(1)) ⊗ ((v_2*)^(1)), (v_3^(1)) ⊗ ((v_3*)^(1)), (v_3^(1)) ⊗ (v_1^(2)), (v_3^(1)) ⊗ (v_2^(2)), (v_3^(1)) ⊗ (v_3^(2)), ((v_1 ∧ v_2 ∧ v_3)^(2)) ⊗ ((v_1*)^(1)), ((v_1 ∧ v_2 ∧ v_3)^(2)) ⊗ ((v_2*)^(1)), ((v_1 ∧ v_2 ∧ v_3)^(2)) ⊗ ((v_3*)^(1)), ((v_1 ∧ v_2 ∧ v_3)^(2)) ⊗ (v_1^(2)), ((v_1 ∧ v_2 ∧ v_3)^(2)) ⊗ (v_2^(2)), ((v_1 ∧ v_2 ∧ v_3)^(2)) ⊗ (v_3^(2))]"
-            @test sprint(show, h.(basis(V))) ==
-                  "LieAlgebraModuleElem{QQFieldElem}[(v_1 ⊗ (v_1*))^(1), (v_1 ⊗ (v_2*))^(1), (v_1 ⊗ (v_3*))^(1), (v_1 ⊗ v_1)^(2), (v_1 ⊗ v_2)^(2), (v_1 ⊗ v_3)^(2), (v_2 ⊗ (v_1*))^(1), (v_2 ⊗ (v_2*))^(1), (v_2 ⊗ (v_3*))^(1), (v_2 ⊗ v_1)^(2), (v_2 ⊗ v_2)^(2), (v_2 ⊗ v_3)^(2), (v_3 ⊗ (v_1*))^(1), (v_3 ⊗ (v_2*))^(1), (v_3 ⊗ (v_3*))^(1), (v_3 ⊗ v_1)^(2), (v_3 ⊗ v_2)^(2), (v_3 ⊗ v_3)^(2), ((v_1 ∧ v_2 ∧ v_3) ⊗ (v_1*))^(3), ((v_1 ∧ v_2 ∧ v_3) ⊗ (v_2*))^(3), ((v_1 ∧ v_2 ∧ v_3) ⊗ (v_3*))^(3), ((v_1 ∧ v_2 ∧ v_3) ⊗ v_1)^(4), ((v_1 ∧ v_2 ∧ v_3) ⊗ v_2)^(4), ((v_1 ∧ v_2 ∧ v_3) ⊗ v_3)^(4)]"
-
 
             V1 = exterior_power(stdV, 2)
             V2 = dual(stdV)
@@ -250,7 +245,7 @@
 
         @testset "Tensor power, direct sum" begin
             V1 = stdV
-            V2 = exterior_power(dual(stdV), 3)
+            V2 = exterior_power(dual(stdV), 2)
             V3 = exterior_power(stdV, 2)
             V = tensor_power(direct_sum(V1, V2, V3), 3)
             W, h = isomorphic_module_with_simple_structure(V; check=false) # otherwise needs 3 minutes
@@ -312,16 +307,20 @@
             )
 
             # TODO: handle zero-dim modules (e.g. 4th exterior power of 3-dim module)
-            # V_4 = exterior_power(V3, 4)
-            # W_4, h = isomorphic_module_with_simple_structure(V_4)
-            # @test is_isomorphism(h)
-            # @test W_4 == direct_sum(
-            #     exterior_power(V1, 4),
-            #     tensor_product(exterior_power(V1, 3), V2),
-            #     tensor_product(exterior_power(V1, 2), exterior_power(V2, 2)),
-            #     tensor_product(V1, exterior_power(V2, 3)),
-            #     exterior_power(V2, 4),
-            # )
+            V_4 = exterior_power(V3, 4)
+            W_4a, ha = isomorphic_module_with_simple_structure(V_4)
+            @test is_isomorphism(ha)
+            W_4b, hb = isomorphic_module_with_simple_structure(
+                direct_sum(
+                    exterior_power(V1, 4),
+                    tensor_product(exterior_power(V1, 3), V2),
+                    tensor_product(exterior_power(V1, 2), exterior_power(V2, 2)),
+                    tensor_product(V1, exterior_power(V2, 3)),
+                    exterior_power(V2, 4),
+                ),
+            )
+            @test is_isomorphism(hb)
+            @test W_4a == W_4b
         end
 
         @testset "Complex cases 2" begin

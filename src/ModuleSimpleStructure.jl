@@ -50,10 +50,12 @@ function isomorphic_module_with_simple_structure(V::LieAlgebraModule; check::Boo
                 push!(Ds, C)
             end
         end
-        filter!(D -> dim(D) > 0, Ds)
+        Ds_filtered = filter(D -> dim(D) > 0, Ds)
+        Ds = length(Ds_filtered) > 0 ? Ds_filtered : [Ds[1]]
         if length(Ds) == 1
             W = Ds[1]
-            B_to_W = Cs_with_hom[1][2]
+            i = findfirst(C_with_hom -> C_with_hom[1] == W, Cs_with_hom)
+            B_to_W = Cs_with_hom[i][2]
             h = hom(V, W, matrix(B_to_W); check)
             return W, h
         else
@@ -72,10 +74,12 @@ function isomorphic_module_with_simple_structure(V::LieAlgebraModule; check::Boo
                 push!(Ds, C)
             end
         end
-        filter!(D -> dim(D) != 1 || any(!iszero, D.transformation_matrices), Ds)
+        Ds_filtered = filter(D -> dim(D) != 1 || any(!iszero, D.transformation_matrices), Ds)
+        Ds = length(Ds_filtered) > 0 ? Ds_filtered : [Ds[1]]
         if length(Ds) == 1
             W = Ds[1]
-            B_to_W = Cs_with_hom[1][2]
+            i = findfirst(C_with_hom -> C_with_hom[1] == W, Cs_with_hom)
+            B_to_W = Cs_with_hom[i][2]
             h = hom(V, W, matrix(B_to_W); check)
             return W, h
         end
