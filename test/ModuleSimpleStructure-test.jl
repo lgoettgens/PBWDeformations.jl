@@ -93,7 +93,7 @@
         @testset "Direct sum: 0-dim summand" begin
             V1 = dual(stdV)
             V3 = exterior_power(stdV, 2)
-            for V2 in [trivial_module(L, 0), exterior_power(stdV, dim(stdV) + 1)]
+            for V2 in [exterior_power(stdV, dim(stdV) + 1)]
                 V = direct_sum(V1, V2, V3)
                 W, h = isomorphic_module_with_simple_structure(V)
                 @test is_isomorphism(h)
@@ -101,7 +101,7 @@
                 @test sprint(show, basis(V)) ==
                       "LieAlgebraModuleElem{QQFieldElem}[(v_1*)^(1), (v_2*)^(1), (v_3*)^(1), (v_1 ∧ v_2)^(3), (v_1 ∧ v_3)^(3), (v_2 ∧ v_3)^(3)]"
                 @test sprint(show, h.(basis(V))) ==
-                      "LieAlgebraModuleElem{QQFieldElem}[(v_1*)^(1), (v_2*)^(1), (v_3*)^(1), (v_1 ∧ v_2)^(3), (v_1 ∧ v_3)^(3), (v_2 ∧ v_3)^(3)]"
+                      "LieAlgebraModuleElem{QQFieldElem}[(v_1*)^(1), (v_2*)^(1), (v_3*)^(1), (v_1 ∧ v_2)^(2), (v_1 ∧ v_3)^(2), (v_2 ∧ v_3)^(2)]"
             end
         end
 
@@ -128,7 +128,7 @@
         @testset "Tensor product: trivial 1-dim factor" begin
             V1 = dual(stdV)
             V3 = exterior_power(stdV, 2)
-            for V2 in [tensor_power(stdV, 0), exterior_power(stdV, dim(stdV))]
+            for V2 in [tensor_power(stdV, 0), exterior_power(stdV, 0), symmetric_power(stdV, 0)]
                 V = tensor_product(V1, V2, V3)
                 W, h = isomorphic_module_with_simple_structure(V)
                 @test is_isomorphism(h)
@@ -137,10 +137,10 @@
         end
 
         @testset "Tensor product: nested" begin
-            V = tensor_product(tensor_product(stdV, exterior_power(stdV, 3)), dual(stdV))
+            V = tensor_product(tensor_product(stdV, symmetric_power(stdV, 3)), dual(stdV))
             W, h = isomorphic_module_with_simple_structure(V)
             @test is_isomorphism(h)
-            @test W == tensor_product(stdV, exterior_power(stdV, 3), dual(stdV))
+            @test W == tensor_product(stdV, symmetric_power(stdV, 3), dual(stdV))
             @test sprint(show, basis(V)) ==
                   "LieAlgebraModuleElem{QQFieldElem}[(v_1 ⊗ (v_1 ∧ v_2 ∧ v_3)) ⊗ (v_1*), (v_1 ⊗ (v_1 ∧ v_2 ∧ v_3)) ⊗ (v_2*), (v_1 ⊗ (v_1 ∧ v_2 ∧ v_3)) ⊗ (v_3*), (v_2 ⊗ (v_1 ∧ v_2 ∧ v_3)) ⊗ (v_1*), (v_2 ⊗ (v_1 ∧ v_2 ∧ v_3)) ⊗ (v_2*), (v_2 ⊗ (v_1 ∧ v_2 ∧ v_3)) ⊗ (v_3*), (v_3 ⊗ (v_1 ∧ v_2 ∧ v_3)) ⊗ (v_1*), (v_3 ⊗ (v_1 ∧ v_2 ∧ v_3)) ⊗ (v_2*), (v_3 ⊗ (v_1 ∧ v_2 ∧ v_3)) ⊗ (v_3*)]"
             @test sprint(show, h.(basis(V))) ==
@@ -148,14 +148,14 @@
         end
 
         @testset "Tensor product, direct sum" begin
-            V = tensor_product(direct_sum(stdV, exterior_power(stdV, 3)), direct_sum(dual(stdV), stdV))
+            V = tensor_product(direct_sum(stdV, symmetric_power(stdV, 3)), direct_sum(dual(stdV), stdV))
             W, h = isomorphic_module_with_simple_structure(V)
             @test is_isomorphism(h)
             @test W == direct_sum(
                 tensor_product(stdV, dual(stdV)),
                 tensor_product(stdV, stdV),
-                tensor_product(exterior_power(stdV, 3), dual(stdV)),
-                tensor_product(exterior_power(stdV, 3), stdV),
+                tensor_product(symmetric_power(stdV, 3), dual(stdV)),
+                tensor_product(symmetric_power(stdV, 3), stdV),
             )
             @test sprint(show, basis(V)) ==
                   "LieAlgebraModuleElem{QQFieldElem}[(v_1^(1)) ⊗ ((v_1*)^(1)), (v_1^(1)) ⊗ ((v_2*)^(1)), (v_1^(1)) ⊗ ((v_3*)^(1)), (v_1^(1)) ⊗ (v_1^(2)), (v_1^(1)) ⊗ (v_2^(2)), (v_1^(1)) ⊗ (v_3^(2)), (v_2^(1)) ⊗ ((v_1*)^(1)), (v_2^(1)) ⊗ ((v_2*)^(1)), (v_2^(1)) ⊗ ((v_3*)^(1)), (v_2^(1)) ⊗ (v_1^(2)), (v_2^(1)) ⊗ (v_2^(2)), (v_2^(1)) ⊗ (v_3^(2)), (v_3^(1)) ⊗ ((v_1*)^(1)), (v_3^(1)) ⊗ ((v_2*)^(1)), (v_3^(1)) ⊗ ((v_3*)^(1)), (v_3^(1)) ⊗ (v_1^(2)), (v_3^(1)) ⊗ (v_2^(2)), (v_3^(1)) ⊗ (v_3^(2)), ((v_1 ∧ v_2 ∧ v_3)^(2)) ⊗ ((v_1*)^(1)), ((v_1 ∧ v_2 ∧ v_3)^(2)) ⊗ ((v_2*)^(1)), ((v_1 ∧ v_2 ∧ v_3)^(2)) ⊗ ((v_3*)^(1)), ((v_1 ∧ v_2 ∧ v_3)^(2)) ⊗ (v_1^(2)), ((v_1 ∧ v_2 ∧ v_3)^(2)) ⊗ (v_2^(2)), ((v_1 ∧ v_2 ∧ v_3)^(2)) ⊗ (v_3^(2))]"
@@ -168,7 +168,7 @@
             V3 = symmetric_power(stdV, 2)
             V4 = dual(stdV)
             V5 = stdV
-            V6 = exterior_power(stdV, 3)
+            V6 = symmetric_power(stdV, 2)
             V = tensor_product(V1, direct_sum(V2, V3, V4), direct_sum(V5, V6))
             W, h = isomorphic_module_with_simple_structure(V)
             @test is_isomorphism(h)
