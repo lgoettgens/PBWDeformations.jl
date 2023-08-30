@@ -73,7 +73,7 @@ function pbw_arc_diagrams__so(V::LieAlgebraModule, d::Int)
     upper_indep_sets = Vector{Int}[is .+ a * e for a in [0, 1] for is in arc_diagram_indep_sets__so(V)]
     lower_indep_sets = Vector{Int}[[[2i - 1, 2i] for i in 1:d]...]
     indep_sets = Vector{Int}[[(-1) .* is for is in upper_indep_sets]; [is for is in lower_indep_sets]]
-    return all_arc_diagrams(2e, 2d; indep_sets)
+    return all_arc_diagrams(Undirected, 2e, 2d; indep_sets)
 end
 
 function arc_diagram_num_points__so(V::LieAlgebraModule)
@@ -181,8 +181,9 @@ function arc_diagram_label_permutations__so(V::LieAlgebraModule, label::Abstract
 end
 
 
-function arcdiag_to_deformationmap__so(diag::ArcDiagram, sp::SmashProductLie{C}) where {C <: RingElem}
-    d = div(diag.num_lower_verts, 2)
+function arcdiag_to_deformationmap__so(diag::ArcDiagramUndirected, sp::SmashProductLie{C}) where {C <: RingElem}
+    # TODO: allow for genereal ArcDiagrams
+    d = div(n_lower_vertices(diag), 2)
     dim_stdmod_V = lie_algebra(sp).n
 
     e = arc_diagram_num_points__so(lie_module(sp))

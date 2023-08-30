@@ -115,17 +115,17 @@ end
 function to_arcdiag(pg::PseudographLabelled{Int}, part::Partition{Int}=Partition(Int[]))
     @req nvertices(pg) == 2 "Only implemented for 2 vertices"
 
-    num_upper_verts = 2 * nedges(pg)
-    num_lower_verts = 2 * (sum(pg) + sum(part))
+    n_upper_verts = 2 * nedges(pg)
+    n_lower_verts = 2 * (sum(pg) + sum(part))
 
-    upper_adj = zeros(Int, num_upper_verts)
-    lower_adj = zeros(Int, num_lower_verts)
+    upper_adj = zeros(Int, n_upper_verts)
+    lower_adj = zeros(Int, n_lower_verts)
     addarc_uu(i, j) = (upper_adj[i] = -j; upper_adj[j] = -i)
     addarc_ll(i, j) = (lower_adj[i] = j; lower_adj[j] = i)
     addarc_ul(i, j) = (upper_adj[i] = j; lower_adj[j] = -i)
     addarc_lu(i, j) = (lower_adj[i] = -j; upper_adj[j] = i)
     i = 1
-    j = div(num_upper_verts, 2) + 1
+    j = div(n_upper_verts, 2) + 1
     k = 1
     for l1 in edge_labels(pg, MSet([1, 1]))
         if l1 == 0
@@ -193,5 +193,5 @@ function to_arcdiag(pg::PseudographLabelled{Int}, part::Partition{Int}=Partition
         k += 1
     end
 
-    return ArcDiagram(num_upper_verts, num_lower_verts, upper_adj, lower_adj)
+    return arc_diagram(Undirected, upper_adj, lower_adj)
 end
