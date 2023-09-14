@@ -1,4 +1,4 @@
-function isomorphic_module_with_simple_structure(V::LieAlgebraModule; check::Bool=true)
+function isomorphic_module_with_simple_structure(V::LieAlgebraModule)
     if is_standard_module(V)
         return V, identity_map(V)
     elseif is_dual(V)
@@ -8,18 +8,18 @@ function isomorphic_module_with_simple_structure(V::LieAlgebraModule; check::Boo
         end
         if is_dual(B)
             U = base_module(B)
-            V_to_U = hom(V, U, identity_matrix(coefficient_ring(V), dim(V)); check)
+            V_to_U = hom(V, U, identity_matrix(coefficient_ring(V), dim(V)); check=false)
         elseif is_direct_sum(B)
             U = direct_sum(dual.(base_modules(B))...)
-            V_to_U = hom(V, U, identity_matrix(coefficient_ring(V), dim(V)); check)
+            V_to_U = hom(V, U, identity_matrix(coefficient_ring(V), dim(V)); check=false)
         elseif is_tensor_product(B)
             U = tensor_product(dual.(base_modules(B))...)
-            V_to_U = hom(V, U, identity_matrix(coefficient_ring(V), dim(V)); check)
+            V_to_U = hom(V, U, identity_matrix(coefficient_ring(V), dim(V)); check=false)
         elseif is_exterior_power(B)
             C = base_module(B)
             k = get_attribute(B, :power)
             U = exterior_power(dual(base_module(B)), k)
-            V_to_U = hom(V, U, identity_matrix(coefficient_ring(V), dim(V)); check)
+            V_to_U = hom(V, U, identity_matrix(coefficient_ring(V), dim(V)); check=false)
         elseif is_symmetric_power(B)
             C = base_module(B)
             k = get_attribute(B, :power)
@@ -31,19 +31,19 @@ function isomorphic_module_with_simple_structure(V::LieAlgebraModule; check::Boo
                 mat[i, i] =
                     div(factorial(k), prod(factorial(count(==(xj), pure_factors)) for xj in unique(pure_factors)))
             end
-            V_to_U = hom(V, U, mat; check)
+            V_to_U = hom(V, U, mat; check=false)
         elseif is_tensor_power(B)
             C = base_module(B)
             k = get_attribute(B, :power)
             U = tensor_power(dual(base_module(B)), k)
-            V_to_U = hom(V, U, identity_matrix(coefficient_ring(V), dim(V)); check)
+            V_to_U = hom(V, U, identity_matrix(coefficient_ring(V), dim(V)); check=false)
         end
-        W, U_to_W = isomorphic_module_with_simple_structure(U; check)
+        W, U_to_W = isomorphic_module_with_simple_structure(U)
         V_to_W = compose(V_to_U, U_to_W)
         return W, V_to_W
     elseif is_direct_sum(V)
         Bs = base_modules(V)
-        Cs_with_hom = [isomorphic_module_with_simple_structure(B; check) for B in Bs]
+        Cs_with_hom = [isomorphic_module_with_simple_structure(B) for B in Bs]
         Ds = []
         for (C, _) in Cs_with_hom
             if is_direct_sum(C)
@@ -58,16 +58,16 @@ function isomorphic_module_with_simple_structure(V::LieAlgebraModule; check::Boo
             W = Ds[1]
             i = findfirst(C_with_hom -> C_with_hom[1] == W, Cs_with_hom)
             B_to_W = Cs_with_hom[i][2]
-            h = hom(V, W, matrix(B_to_W); check)
+            h = hom(V, W, matrix(B_to_W); check=false)
             return W, h
         else
             W = direct_sum(Ds...)
-            h = hom(V, W, diagonal_matrix([matrix(B_to_C) for (_, B_to_C) in Cs_with_hom]); check)
+            h = hom(V, W, diagonal_matrix([matrix(B_to_C) for (_, B_to_C) in Cs_with_hom]); check=false)
             return W, h
         end
     elseif is_tensor_product(V)
         Bs = base_modules(V)
-        Cs_with_hom = [isomorphic_module_with_simple_structure(B; check) for B in Bs]
+        Cs_with_hom = [isomorphic_module_with_simple_structure(B) for B in Bs]
         Ds = []
         for (C, _) in Cs_with_hom
             if is_tensor_product(C)
@@ -82,11 +82,11 @@ function isomorphic_module_with_simple_structure(V::LieAlgebraModule; check::Boo
             W = Ds[1]
             i = findfirst(C_with_hom -> C_with_hom[1] == W, Cs_with_hom)
             B_to_W = Cs_with_hom[i][2]
-            h = hom(V, W, matrix(B_to_W); check)
+            h = hom(V, W, matrix(B_to_W); check=false)
             return W, h
         end
         U = tensor_product(Ds...)
-        V_to_U = hom(V, U, reduce(kronecker_product, [matrix(B_to_C) for (_, B_to_C) in Cs_with_hom]); check)
+        V_to_U = hom(V, U, reduce(kronecker_product, [matrix(B_to_C) for (_, B_to_C) in Cs_with_hom]); check=false)
         if all(!is_direct_sum, Ds)
             W = U
             U_to_W = identity_map(U)
@@ -125,22 +125,22 @@ function isomorphic_module_with_simple_structure(V::LieAlgebraModule; check::Boo
                 push!(Fs, F)
             end
             W = direct_sum(Fs...)
-            U_to_W = hom(U, W, mat; check)
+            U_to_W = hom(U, W, mat; check=false)
         end
         V_to_W = compose(V_to_U, U_to_W)
         return W, V_to_W
     elseif is_exterior_power(V)
         B = base_module(V)
         k = get_attribute(V, :power)
-        C, B_to_C = isomorphic_module_with_simple_structure(B; check)
+        C, B_to_C = isomorphic_module_with_simple_structure(B)
         if k == 1
             U = C
-            V_to_B = hom(V, B, identity_matrix(coefficient_ring(V), dim(V)); check)
+            V_to_B = hom(V, B, identity_matrix(coefficient_ring(V), dim(V)); check=false)
             V_to_U = compose(V_to_B, B_to_C)
             return U, V_to_U
         end
         U = exterior_power(C, k)
-        V_to_U = hom(V, U, elem_type(U)[U(B_to_C.(_basis_repres(V, i))) for i in 1:dim(V)]; check)
+        V_to_U = hom(V, U, elem_type(U)[U(B_to_C.(_basis_repres(V, i))) for i in 1:dim(V)]; check=false)
         if is_direct_sum(C)
             Ds = base_modules(C)
             m = length(Ds)
@@ -180,8 +180,8 @@ function isomorphic_module_with_simple_structure(V::LieAlgebraModule; check::Boo
             end
             F = direct_sum(Es...)
             @assert dim(U) == dim_accum == dim(F)
-            U_to_F = hom(U, F, mat; check)
-            W, F_to_W = isomorphic_module_with_simple_structure(F; check)
+            U_to_F = hom(U, F, mat; check=false)
+            W, F_to_W = isomorphic_module_with_simple_structure(F)
             U_to_W = compose(U_to_F, F_to_W)
         else
             W = U
@@ -192,15 +192,15 @@ function isomorphic_module_with_simple_structure(V::LieAlgebraModule; check::Boo
     elseif is_symmetric_power(V)
         B = base_module(V)
         k = get_attribute(V, :power)
-        C, B_to_C = isomorphic_module_with_simple_structure(B; check)
+        C, B_to_C = isomorphic_module_with_simple_structure(B)
         if k == 1
             U = C
-            V_to_B = hom(V, B, identity_matrix(coefficient_ring(V), dim(V)); check)
+            V_to_B = hom(V, B, identity_matrix(coefficient_ring(V), dim(V)); check=false)
             V_to_U = compose(V_to_B, B_to_C)
             return U, V_to_U
         end
         U = symmetric_power(C, k)
-        V_to_U = hom(V, U, elem_type(U)[U(B_to_C.(_basis_repres(V, i))) for i in 1:dim(V)]; check)
+        V_to_U = hom(V, U, elem_type(U)[U(B_to_C.(_basis_repres(V, i))) for i in 1:dim(V)]; check=false)
         if is_direct_sum(C)
             Ds = base_modules(C)
             m = length(Ds)
@@ -240,8 +240,8 @@ function isomorphic_module_with_simple_structure(V::LieAlgebraModule; check::Boo
             end
             F = direct_sum(Es...)
             @assert dim(U) == dim_accum == dim(F)
-            U_to_F = hom(U, F, mat; check)
-            W, F_to_W = isomorphic_module_with_simple_structure(F; check)
+            U_to_F = hom(U, F, mat; check=false)
+            W, F_to_W = isomorphic_module_with_simple_structure(F)
             U_to_W = compose(U_to_F, F_to_W)
         else
             W = U
@@ -252,15 +252,15 @@ function isomorphic_module_with_simple_structure(V::LieAlgebraModule; check::Boo
     elseif is_tensor_power(V)
         B = base_module(V)
         k = get_attribute(V, :power)
-        C, B_to_C = isomorphic_module_with_simple_structure(B; check)
+        C, B_to_C = isomorphic_module_with_simple_structure(B)
         if k == 1
             U = C
-            V_to_B = hom(V, B, identity_matrix(coefficient_ring(V), dim(V)); check)
+            V_to_B = hom(V, B, identity_matrix(coefficient_ring(V), dim(V)); check=false)
             V_to_U = compose(V_to_B, B_to_C)
             return U, V_to_U
         end
         U = tensor_power(C, k)
-        V_to_U = hom(V, U, elem_type(U)[U(B_to_C.(_basis_repres(V, i))) for i in 1:dim(V)]; check)
+        V_to_U = hom(V, U, elem_type(U)[U(B_to_C.(_basis_repres(V, i))) for i in 1:dim(V)]; check=false)
         if is_direct_sum(C)
             Ds = base_modules(C)
             m = length(Ds)
@@ -300,8 +300,8 @@ function isomorphic_module_with_simple_structure(V::LieAlgebraModule; check::Boo
             end
             F = direct_sum(Es...)
             @assert dim(U) == dim_accum == dim(F)
-            U_to_F = hom(U, F, mat; check)
-            W, F_to_W = isomorphic_module_with_simple_structure(F; check)
+            U_to_F = hom(U, F, mat; check=false)
+            W, F_to_W = isomorphic_module_with_simple_structure(F)
             U_to_W = compose(U_to_F, F_to_W)
         else
             W = U
