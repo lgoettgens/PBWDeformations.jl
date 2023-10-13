@@ -1,5 +1,5 @@
 @testset "SmashProductLie.jl tests" begin
-    @testset "smash_product; R = $R" for R in [QQ, polynomial_ring(QQ, ["x", "y", "z"])[1]]
+    @testset "smash_product; R = $R" for R in [QQ, cyclotomic_field(4)[1]]
         @testset "sl_2(QQ) ⋉ V" begin
             L = special_linear_lie_algebra(QQ, 2)
             V = standard_module(L)
