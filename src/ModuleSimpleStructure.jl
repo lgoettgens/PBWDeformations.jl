@@ -44,6 +44,8 @@ function isomorphic_module_with_simple_structure(V::LieAlgebraModule)
     elseif is_direct_sum(V)
         Bs = base_modules(V)
         Cs_with_hom = [isomorphic_module_with_simple_structure(B) for B in Bs]
+        Csum = direct_sum([C for (C, _) in Cs_with_hom]...)
+        V_to_Csum = hom_direct_sum(V, Csum, [B_to_C for (_, B_to_C) in Cs_with_hom])
         Ds = []
         for (C, _) in Cs_with_hom
             if is_direct_sum(C)
@@ -56,18 +58,17 @@ function isomorphic_module_with_simple_structure(V::LieAlgebraModule)
         Ds = length(Ds_filtered) > 0 ? Ds_filtered : [Ds[1]]
         if length(Ds) == 1
             W = Ds[1]
-            i = findfirst(C_with_hom -> C_with_hom[1] == W, Cs_with_hom)
-            B_to_W = Cs_with_hom[i][2]
-            h = hom(V, W, matrix(B_to_W); check=false)
-            return W, h
         else
             W = direct_sum(Ds...)
-            h = hom(V, W, diagonal_matrix([matrix(B_to_C) for (_, B_to_C) in Cs_with_hom]); check=false)
-            return W, h
         end
+        Csum_to_W = hom(Csum, W, identity_matrix(coefficient_ring(V), dim(Csum)); check=false)
+        V_to_W = compose(V_to_Csum, Csum_to_W)
+        return W, V_to_W
     elseif is_tensor_product(V)
         Bs = base_modules(V)
         Cs_with_hom = [isomorphic_module_with_simple_structure(B) for B in Bs]
+        Cprod = tensor_product([C for (C, _) in Cs_with_hom]...)
+        V_to_Cprod = hom_tensor(V, Cprod, [B_to_C for (_, B_to_C) in Cs_with_hom])
         Ds = []
         for (C, _) in Cs_with_hom
             if is_tensor_product(C)
@@ -79,14 +80,16 @@ function isomorphic_module_with_simple_structure(V::LieAlgebraModule)
         Ds_filtered = filter(D -> dim(D) != 1 || any(!iszero, D.transformation_matrices), Ds)
         Ds = length(Ds_filtered) > 0 ? Ds_filtered : [Ds[1]]
         if length(Ds) == 1
-            W = Ds[1]
-            i = findfirst(C_with_hom -> C_with_hom[1] == W, Cs_with_hom)
-            B_to_W = Cs_with_hom[i][2]
-            h = hom(V, W, matrix(B_to_W); check=false)
-            return W, h
+            U = Ds[1]
+        else
+            U = tensor_product(Ds...)
         end
-        U = tensor_product(Ds...)
-        V_to_U = hom(V, U, reduce(kronecker_product, [matrix(B_to_C) for (_, B_to_C) in Cs_with_hom]); check=false)
+        Cprod_to_U = hom(Cprod, U, identity_matrix(coefficient_ring(V), dim(Cprod)); check=false)
+        V_to_U = compose(V_to_Cprod, Cprod_to_U)
+
+        if length(Ds) == 1
+            return U, V_to_U
+        end
         if all(!is_direct_sum, Ds)
             W = U
             U_to_W = identity_map(U)
@@ -140,7 +143,7 @@ function isomorphic_module_with_simple_structure(V::LieAlgebraModule)
             return U, V_to_U
         end
         U = exterior_power(C, k)
-        V_to_U = hom(V, U, elem_type(U)[U(B_to_C.(_basis_repres(V, i))) for i in 1:dim(V)]; check=false)
+        V_to_U = hom_power(V, U, B_to_C)
         if is_direct_sum(C)
             Ds = base_modules(C)
             m = length(Ds)
@@ -200,7 +203,7 @@ function isomorphic_module_with_simple_structure(V::LieAlgebraModule)
             return U, V_to_U
         end
         U = symmetric_power(C, k)
-        V_to_U = hom(V, U, elem_type(U)[U(B_to_C.(_basis_repres(V, i))) for i in 1:dim(V)]; check=false)
+        V_to_U = hom_power(V, U, B_to_C)
         if is_direct_sum(C)
             Ds = base_modules(C)
             m = length(Ds)
@@ -260,7 +263,7 @@ function isomorphic_module_with_simple_structure(V::LieAlgebraModule)
             return U, V_to_U
         end
         U = tensor_power(C, k)
-        V_to_U = hom(V, U, elem_type(U)[U(B_to_C.(_basis_repres(V, i))) for i in 1:dim(V)]; check=false)
+        V_to_U = hom_power(V, U, B_to_C)
         if is_direct_sum(C)
             Ds = base_modules(C)
             m = length(Ds)
@@ -311,17 +314,4 @@ function isomorphic_module_with_simple_structure(V::LieAlgebraModule)
         return W, V_to_W
     end
     error("not implemented for this type of module")
-end
-
-
-function _basis_repres(V::LieAlgebraModule, i::Int)
-    @req is_exterior_power(V) || is_symmetric_power(V) || is_tensor_power(V) "Not a power module."
-    inv_pure = if is_exterior_power(V)
-        get_attribute(V, :exterior_pure_preimage_function)
-    elseif is_symmetric_power(V)
-        get_attribute(V, :symmetric_pure_preimage_function)
-    elseif is_tensor_power(V)
-        get_attribute(V, :tensor_pure_preimage_function)
-    end
-    return inv_pure(basis(V, i))
 end
