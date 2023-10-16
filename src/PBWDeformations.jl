@@ -18,6 +18,9 @@ using Oscar.LieAlgebras:
     exterior_power,
     general_linear_lie_algebra,
     highest_weight_module,
+    hom_direct_sum,
+    hom_power,
+    hom_tensor,
     is_exterior_power,
     is_standard_module,
     is_symmetric_power,
@@ -76,6 +79,7 @@ export inneighbor
 export inneighbors
 export is_crossing_free
 export is_pbwdeformation
+export isomorphic_module_with_simple_structure
 export lookup_data
 export lower_vertex, is_lower_vertex
 export lower_vertices
@@ -104,6 +108,8 @@ export vertices
 function __init__()
     add_verbose_scope(:PBWDeformations)
 end
+
+include("ModuleSimpleStructure.jl")
 
 include("DeformationBases/DeformBasis.jl")
 
