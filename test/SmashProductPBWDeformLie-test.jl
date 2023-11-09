@@ -32,7 +32,7 @@
         end
 
         @testset "all_pbwdeformations tests" begin
-            L = lie_algebra(QQ, ('A', 1))
+            L = lie_algebra(QQ, :A, 1)
             V = highest_weight_module(L, [1])
             sp = smash_product(L, V)
             @testset "A_1 with hw [1], maxdeg = $maxdeg" for maxdeg in 0:8
@@ -48,15 +48,15 @@
 
                 @test repr("text/plain", basis[1][1, 2]) == "1"
                 if length(basis) >= 2
-                    @test repr("text/plain", basis[2][1, 2]) == "4*x_1*x_2 + x_3^2 - 2*x_3"
+                    @test repr("text/plain", basis[2][1, 2]) == "4*x_1*y_1 + h_1^2 - 2*h_1"
                 end
                 if length(basis) >= 3
                     @test repr("text/plain", basis[3][1, 2]) ==
-                          "16*x_1^2*x_2^2 + 8*x_1*x_2*x_3^2 + x_3^4 - 32*x_1*x_2*x_3 - 4*x_3^3 + 16*x_1*x_2 + 8*x_3"
+                          "16*x_1^2*y_1^2 + 8*x_1*y_1*h_1^2 + h_1^4 - 32*x_1*y_1*h_1 - 4*h_1^3 + 16*x_1*y_1 + 8*h_1"
                 end
                 if length(basis) >= 4
                     @test repr("text/plain", basis[4][1, 2]) ==
-                          "64*x_1^3*x_2^3 + 48*x_1^2*x_2^2*x_3^2 + 12*x_1*x_2*x_3^4 + x_3^6 - 288*x_1^2*x_2^2*x_3 - 96*x_1*x_2*x_3^3 - 6*x_3^5 + 320*x_1^2*x_2^2 + 208*x_1*x_2*x_3^2 - 64*x_1*x_2*x_3 + 40*x_3^3 + 64*x_1*x_2 - 96*x_3"
+                          "64*x_1^3*y_1^3 + 48*x_1^2*y_1^2*h_1^2 + 12*x_1*y_1*h_1^4 + h_1^6 - 288*x_1^2*y_1^2*h_1 - 96*x_1*y_1*h_1^3 - 6*h_1^5 + 320*x_1^2*y_1^2 + 208*x_1*y_1*h_1^2 - 64*x_1*y_1*h_1 + 40*h_1^3 + 64*x_1*y_1 - 96*h_1"
                 end
             end
         end
