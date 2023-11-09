@@ -14,7 +14,7 @@
             V = exterior_power(standard_module(L), 2)
             sp = smash_product(L, V)
 
-            kappa = fill(zero(underlying_algebra(sp)), 6, 6)
+            kappa = zero_matrix(underlying_algebra(sp), 6, 6)
             # some made-up skew-symmetric entries
             kappa[1, 2] = gen(sp, 2, :L).alg_elem
             kappa[2, 1] = -gen(sp, 2, :L).alg_elem

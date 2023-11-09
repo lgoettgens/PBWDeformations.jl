@@ -15,7 +15,7 @@ struct StdDeformBasis{C <: RingElem} <: DeformBasis{C}
         dimV = dim(base_module(sp))
         iter = (
             begin
-                kappa = fill(zero(underlying_algebra(sp)), dimV, dimV)
+                kappa = zero_matrix(underlying_algebra(sp), dimV, dimV)
                 entry = prod(map(k -> gen(sp, k, :L), ind); init=one(sp))
                 kappa[i, j] += entry.alg_elem
                 kappa[j, i] -= entry.alg_elem

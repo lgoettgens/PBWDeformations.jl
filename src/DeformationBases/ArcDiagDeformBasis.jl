@@ -198,7 +198,7 @@ function arcdiag_to_deformationmap__so(diag::ArcDiagramUndirected, sp::SmashProd
         index[is] = i
     end
 
-    kappa = fill(zero(underlying_algebra(sp)), dim(base_module(sp)), dim(base_module(sp)))
+    kappa = zero_matrix(underlying_algebra(sp), dim(base_module(sp)), dim(base_module(sp)))
     for is in arc_diagram_label_iterator__so(base_module(sp), 1:dim_stdmod_V),
         js in arc_diagram_label_iterator__so(base_module(sp), 1:dim_stdmod_V)
 

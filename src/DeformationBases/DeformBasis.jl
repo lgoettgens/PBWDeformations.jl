@@ -1,11 +1,11 @@
 """
-    DeformationMap{C} = Matrix{FreeAssAlgElem{C}} where {C <: RingElem}
+    DeformationMap{C} = MatElem{FreeAssAlgElem{C}} where {C <: RingElem}
 
 The type for deformation maps of a Lie algebra smash product.
 The entry `kappa[i,j]` should be the image of ``v_i \\wedge v_j`` under the deformation map, i.e. ``κ(v_i,v_j)``.
 Deformation maps are always assumed to be quadratic and skew-symmetric.
 """
-const DeformationMap{C} = Matrix{<:FreeAssAlgElem{C}} where {C <: RingElem}
+const DeformationMap{C} = MatElem{<:FreeAssAlgElem{C}} where {C <: RingElem} # TODO: make concrete type
 
 
 """
@@ -20,7 +20,7 @@ For a reference implementation, we refer to [`StdDeformBasis`](@ref).
 """
 abstract type DeformBasis{C <: RingElem} end
 
-Base.eltype(::Type{DeformBasis{C}}) where {C <: RingElem} = DeformationMap{C}
+Base.eltype(::Type{<:DeformBasis{C}}) where {C <: RingElem} = DeformationMap{C}
 
 Base.length(basis::DeformBasis) = error("length not implemented for $(typeof(basis))")
 

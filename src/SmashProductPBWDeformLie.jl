@@ -117,9 +117,9 @@ function all_pbwdeformations(
     new_sp = smash_product(R, base_lie_algebra(sp), base_module(sp))
 
     @vprintln :PBWDeformations 1 "Constructing kappa..."
-    kappa = fill(zero(underlying_algebra(new_sp)), dimV, dimV)
+    kappa = zero_matrix(underlying_algebra(new_sp), dimV, dimV)
     for (i, b) in enumerate(deform_basis)
-        kappa += vars[i] .* map(e -> change_base_ring(R, e, parent=underlying_algebra(new_sp)), b)
+        kappa += vars[i] * map_entries(e -> change_base_ring(R, e; parent=underlying_algebra(new_sp)), b)
     end
 
     @vprintln :PBWDeformations 1 "Constructing deformation..."
@@ -158,9 +158,9 @@ function all_pbwdeformations(
     @vprintln :PBWDeformations 1 "Computing a basis..."
     kappas = Vector{DeformationMap{C}}(undef, kernel_dim)
     for l in 1:kernel_dim
-        kappa = fill(zero(underlying_algebra(sp)), dimV, dimV)
+        kappa = zero_matrix(underlying_algebra(sp), dimV, dimV)
         for (i, b) in enumerate(deform_basis)
-            kappa += kernel[i, l] .* b
+            kappa += kernel[i, l] * b
         end
         kappas[l] = kappa
     end
