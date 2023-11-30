@@ -33,7 +33,7 @@
 
         @testset "all_pbwdeformations tests" begin
             L = lie_algebra(QQ, :A, 1)
-            V = highest_weight_module(L, [1])
+            V = simple_module(L, [1])
             sp = smash_product(L, V)
             @testset "A_1 with hw [1], maxdeg = $maxdeg" for maxdeg in 0:8
                 basis = all_pbwdeformations(sp, 0:maxdeg)
