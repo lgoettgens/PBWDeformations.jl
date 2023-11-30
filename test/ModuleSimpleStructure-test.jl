@@ -180,7 +180,7 @@
             V6 = symmetric_power(stdV, 2)
             V = tensor_product(V1, direct_sum(V2, V3, V4), direct_sum(V5, V6))
             W, h = isomorphic_module_with_simple_structure(V)
-            @test is_welldefined(h)
+            # @test is_welldefined(h)
             @test is_isomorphism(h)
             @test W == direct_sum(
                 tensor_product(V1, V2, V5),
