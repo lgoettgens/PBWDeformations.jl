@@ -17,7 +17,6 @@ using Oscar.LieAlgebras:
     combinations,
     exterior_power,
     general_linear_lie_algebra,
-    highest_weight_module,
     hom_direct_sum,
     hom_power,
     hom_tensor,
@@ -30,6 +29,7 @@ using Oscar.LieAlgebras:
     multicombinations,
     permutations,
     permutations_with_sign,
+    simple_module,
     special_linear_lie_algebra,
     special_orthogonal_lie_algebra,
     standard_module,
@@ -74,7 +74,6 @@ export edge_labels
 export edges
 export exterior_power
 export general_linear_lie_algebra
-export highest_weight_module
 export inneighbor
 export inneighbors
 export is_crossing_free
@@ -91,6 +90,7 @@ export nvertices
 export outneighbor
 export outneighbors
 export pbwdeform_eqs
+export simple_module
 export smash_product
 export special_linear_lie_algebra
 export special_orthogonal_lie_algebra
