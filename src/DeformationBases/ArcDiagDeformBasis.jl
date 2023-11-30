@@ -41,8 +41,6 @@ struct ArcDiagDeformBasis{C <: RingElem} <: DeformBasis{C}
 
                 proj_to_summand_l = compose(h, canonical_projection(V_nice, i_l))
                 proj_to_summand_r = compose(h, canonical_projection(V_nice, i_r))
-                println(matrix(proj_to_summand_l))
-                println(matrix(proj_to_summand_r))
 
                 W = if i_l == i_r
                     exterior_power(V_nice_summand_i_l, 2)
@@ -57,6 +55,10 @@ struct ArcDiagDeformBasis{C <: RingElem} <: DeformBasis{C}
                         @vprintln :PBWDeformations 2 "Basis generation deg $(lpad(d, maximum(ndigits, degs))), $(lpad(floor(Int, 100*(debug_counter = (debug_counter % len) + 1) / len), 3))%, $(lpad(debug_counter, ndigits(len)))/$(len)"
                         _basis_elem = arcdiag_to_deformationmap__so(diag, sp, W)
                         basis_elem = matrix(proj_to_summand_l) * _basis_elem * transpose(matrix(proj_to_summand_r))
+                        if i_l != i_r
+                            basis_elem -= transpose(basis_elem)
+                        end
+                        @assert is_skew_symmetric(basis_elem)
 
                         if !no_normalize
                             basis_elem = normalize(basis_elem)
@@ -200,6 +202,25 @@ function arc_diagram_label_permutations__so(V::LieAlgebraModule, label::Abstract
     if is_standard_module(V)
         @req length(label) == 1 "Number of labels mismatch."
         return [(label, 1)]
+    elseif is_tensor_product(V)
+        inner_mods = base_modules(V)
+        @req length(label) == sum(arc_diagram_num_points__so.(inner_mods)) "Number of labels mismatch."
+        return [
+            begin
+                inner_label = vcat(first.(inner_iter)...)
+                inner_sign = prod(last.(inner_iter))
+                (inner_label, inner_sign)
+            end for inner_iter in ProductIterator([
+                arc_diagram_label_permutations__so(
+                    inner_mod,
+                    label[sum(arc_diagram_num_points__so, inner_mods[1:i-1]; init=0)+1:sum(
+                        arc_diagram_num_points__so,
+                        inner_mods[1:i];
+                        init=0,
+                    )],
+                ) for (i, inner_mod) in enumerate(inner_mods)
+            ])
+        ]
     elseif is_exterior_power(V) || is_symmetric_power(V) || is_tensor_power(V)
         inner_mod = base_module(V)
         power = get_attribute(V, :power)
@@ -284,7 +305,9 @@ function arcdiag_to_deformationmap__so(
         entry = _normal_form(entry, sp.rels)
 
         kappa[i, j] += entry
-        kappa[j, i] -= entry
+        if is_exterior_power(W)
+            kappa[j, i] -= entry
+        end
     end
     return kappa
 end
