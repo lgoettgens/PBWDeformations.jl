@@ -18,12 +18,11 @@ struct ArcDiagDeformBasis{C <: RingElem} <: DeformBasis{C}
         @req get_attribute(base_lie_algebra(sp), :type, nothing) == :special_orthogonal "Only works for so_n."
         V = base_module(sp)
 
-        up_mod = exterior_power(V, 2)
-        up_mod_nice, h = isomorphic_module_with_simple_structure(up_mod)
-        if !is_direct_sum(up_mod_nice)
-            temp = direct_sum(up_mod_nice)
-            h = compose(h, hom(up_mod_nice, temp, identity_matrix(coefficient_ring(temp), dim(temp))))
-            up_mod_nice = temp
+        V_nice, h = isomorphic_module_with_simple_structure(V)
+        if !is_direct_sum(V_nice)
+            temp = direct_sum(V_nice)
+            h = compose(h, hom(V_nice, temp, identity_matrix(coefficient_ring(temp), dim(temp))))
+            V_nice = temp
         end
 
         extra_data = Dict{DeformationMap{C}, Set{ArcDiagram}}()
@@ -33,90 +32,32 @@ struct ArcDiagDeformBasis{C <: RingElem} <: DeformBasis{C}
         iters = []
         debug_counter = 0
         for d in degs
-            for (i_up_mod_summand, up_mod_summand) in enumerate(base_modules(up_mod_nice))
-                if is_exterior_power(up_mod_summand)
-                    nrows_kappa = dim(base_module(up_mod_summand))
-                    ncols_kappa = nrows_kappa
-                elseif is_tensor_product(up_mod_summand)
-                    nrows_kappa = dim(base_modules(up_mod_summand)[1])
-                    ncols_kappa = dim(base_modules(up_mod_summand)[2])
+            for (i_l, V_nice_summand_i_l) in enumerate(base_modules(V_nice)),
+                (i_r, V_nice_summand_i_r) in enumerate(base_modules(V_nice))
+
+                if i_l > i_r
+                    continue
+                end
+
+                proj_to_summand_l = compose(h, canonical_projection(V_nice, i_l))
+                proj_to_summand_r = compose(h, canonical_projection(V_nice, i_r))
+                println(matrix(proj_to_summand_l))
+                println(matrix(proj_to_summand_r))
+
+                W = if i_l == i_r
+                    exterior_power(V_nice_summand_i_l, 2)
                 else
-                    error("Unreachable.")
+                    tensor_product(V_nice_summand_i_l, V_nice_summand_i_r)
                 end
 
-
-                proj_to_summand_l = zero_matrix(underlying_algebra(sp), dim(V), nrows_kappa)
-                proj_to_summand_r = zero_matrix(underlying_algebra(sp), ncols_kappa, dim(V))
-
-                inv_pure_up_mod = get_attribute(up_mod, :exterior_pure_preimage_function)
-                inv_pure_up_mod_summand = get_attribute(up_mod_summand, :exterior_pure_preimage_function)
-
-                # x = basis(up_mod_summand, 1)
-                # bj_l, bj_r = inv_pure_up_mod(inv(h)(canonical_injection(up_mod_nice, i_up_mod_summand)(x)))
-                # j_l = findfirst(==(bj_l), basis(V))
-                # j_r = findfirst(==(bj_r), basis(V))
-                # @assert !isnothing(j_l)
-                # @assert !isnothing(j_r)
-
-                for b in basis(up_mod_summand)
-                    bi_l, bi_r = inv_pure_up_mod_summand(b)
-                    i_l = findfirst(==(bi_l), basis(base_module(up_mod_summand)))
-                    i_r = findfirst(==(bi_r), basis(base_module(up_mod_summand)))
-                    @assert !isnothing(i_l)
-                    @assert !isnothing(i_r)
-                    bj_l, bj_r = inv_pure_up_mod(inv(h)(canonical_injection(up_mod_nice, i_up_mod_summand)(b)))
-                    j_l = findfirst(==(bj_l), basis(V))
-                    j_r = findfirst(==(bj_r), basis(V))
-                    @assert !isnothing(j_l)
-                    @assert !isnothing(j_r)
-                    # println("$(i_l) $(i_r) $(j_l) $(j_r)")
-                    proj_to_summand_l[j_l, i_l] = 1
-                    proj_to_summand_l[j_r, i_r] = 1
-                end
-                proj_to_summand_r = transpose(proj_to_summand_l)
-                # proj_to_summand_l = identity_matrix(underlying_algebra(sp), nrows_kappa)
-                # proj_to_summand_r = identity_matrix(underlying_algebra(sp), ncols_kappa)
-
-                # V_i → ⨁ V_i →
-                # ⋀² ⨁ V_i → ⨁ W_j                  ⋀² (V_1 ⊕ V_2) -> ⋀² V_1 ⊕ ⋀² V_2 ⊕ (V_1 ⊗ V_2)
-                # W_j = ⋀² W'_j oder W_j = W'_j ⊗ W''_j
-                # gesucht: ⨁ V_i → W'_j ≅ V_i
-
-                # dim V_i = 2, i = 1,2, V := V_1 ⊕ V_2
-
-                # kappa: V ∧ V → L
-                # ⋀² V_1: [0 x]
-                #         [-x 0]
-
-                # V → V_1
-
-                # [1 0]
-                # [0 1]
-                # [0 0] * [0 x]   * [1 0 0 0]
-                # [0 0]   [-x 0]    [0 1 0 0]
-
-                #           [0  x  0  0]
-                #           [-x 0  0  0]
-                #           [0  0  0  0]
-                #           [0  0  0  0]
-
-                # println(proj_to_summand_l)
-                # println(proj_to_summand_r)
-
-                diag_iter = pbw_arc_diagrams__so(up_mod_summand, d)
+                diag_iter = pbw_arc_diagrams__so(W, d)
                 len = length(diag_iter)
                 iter = (
                     begin
                         @vprintln :PBWDeformations 2 "Basis generation deg $(lpad(d, maximum(ndigits, degs))), $(lpad(floor(Int, 100*(debug_counter = (debug_counter % len) + 1) / len), 3))%, $(lpad(debug_counter, ndigits(len)))/$(len)"
-                        _basis_elem =
-                            arcdiag_to_deformationmap__so(diag, sp, up_mod_summand, nrows_kappa, ncols_kappa)
-                        # println(size(proj_to_summand_l))
-                        # println(size(_basis_elem))
-                        # println(size(proj_to_summand_r))
-                        basis_elem = proj_to_summand_l * _basis_elem * proj_to_summand_r
+                        _basis_elem = arcdiag_to_deformationmap__so(diag, sp, W)
+                        basis_elem = matrix(proj_to_summand_l) * _basis_elem * transpose(matrix(proj_to_summand_r))
 
-                        # kappa: V ∧ V → L
-                        # kappa(v_i ∧ v_j) := kappa[i,j]
                         if !no_normalize
                             basis_elem = normalize(basis_elem)
                         end
@@ -257,13 +198,13 @@ end
 
 function arc_diagram_label_permutations__so(V::LieAlgebraModule, label::AbstractVector{Int})
     if is_standard_module(V)
-        @req length(label) == 1 "Number of labels mistmatch."
+        @req length(label) == 1 "Number of labels mismatch."
         return [(label, 1)]
     elseif is_exterior_power(V) || is_symmetric_power(V) || is_tensor_power(V)
         inner_mod = base_module(V)
         power = get_attribute(V, :power)
         m = arc_diagram_num_points__so(inner_mod)
-        @req length(label) == m * power "Number of labels mistmatch."
+        @req length(label) == m * power "Number of labels mismatch."
         if is_exterior_power(V)
             return [
                 begin
@@ -296,8 +237,10 @@ function arc_diagram_label_permutations__so(V::LieAlgebraModule, label::Abstract
                 ProductIterator([arc_diagram_label_permutations__so(inner_mod, label[(i-1)*m+1:i*m]) for i in 1:power])
             ]
         else
-            error("Not implemented.")
+            error("Unreachable.")
         end
+    else
+        error("Not implemented.")
     end
 end
 
@@ -306,8 +249,6 @@ function arcdiag_to_deformationmap__so(
     diag::ArcDiagramUndirected,
     sp::SmashProductLie{C},
     W::LieAlgebraModule=exterior_power(base_module(sp), 2),
-    nrows_kappa::Int=dim(base_module(sp)),
-    ncols_kappa::Int=dim(base_module(sp)),
 ) where {C <: RingElem}
     @req !is_direct_sum(W) "Not permitted for direct sums."
     ind_map = basis_index_mapping(W)
@@ -320,8 +261,12 @@ function arcdiag_to_deformationmap__so(
         iso_wedge2V_to_L[bs] = i
     end
 
+    if is_exterior_power(W)
+        nrows_kappa = ncols_kappa = dim(base_module(W))
+    elseif is_tensor_product(W)
+        nrows_kappa, ncols_kappa = dim.(base_modules(W))
+    end
 
-    @req binomial(nrows_kappa, 2) == dim(W) "Dimension of W does not match."
     kappa = zero_matrix(underlying_algebra(sp), nrows_kappa, ncols_kappa)
     for (label_index, upper_labels) in enumerate(arc_diagram_label_iterator__so(W, 1:dim_stdmod_V))
 
