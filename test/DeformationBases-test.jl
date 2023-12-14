@@ -52,7 +52,7 @@
                 @test ms[1] == collect(b)[1]
                 @test 2 * ms[2] == -3 * collect(b)[2] + 2 * collect(b)[3]
                 @test 2 * ms[3] == 1 * collect(b)[2] + 2 * collect(b)[4]
-                @test iszero(ms[2] + ms[3])
+                @test iszero(ms[2] + ms[3]) # TODO: Check result for linear independence
             end
 
             @testset "SO_5, ⋀²V" begin

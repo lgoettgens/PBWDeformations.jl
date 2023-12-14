@@ -46,7 +46,7 @@ function pbwdeform_eqs(d::SmashProductLieDeform; disabled::Vector{Symbol}=Symbol
     ## (d) trivial
     iter_d = :d in disabled ? [] : []
 
-    return Iterators.flatten([iter_a, iter_b, iter_c, iter_d])
+    return Iterators.map(simplify, Iterators.flatten([iter_a, iter_b, iter_c, iter_d]))
 end
 
 function pbwdeform_neqs(d::SmashProductLieDeform)
@@ -164,7 +164,7 @@ function all_pbwdeformations(
         end
         kappas[l] = kappa
     end
-    return kappas
+    return filter(!is_zero, kappas)
 end
 
 """
