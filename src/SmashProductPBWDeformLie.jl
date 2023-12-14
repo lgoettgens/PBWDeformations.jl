@@ -164,7 +164,7 @@ function all_pbwdeformations(
         end
         kappas[l] = kappa
     end
-    return kappas
+    return filter(!is_zero, kappas)
 end
 
 """
