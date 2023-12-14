@@ -6,7 +6,7 @@
             V = exterior_power(standard_module(L), 2)
             sp = smash_product(L, V)
 
-            kappa = fill(zero(underlying_algebra(sp)), dim(base_module(sp)), dim(base_module(sp)))
+            kappa = zero_matrix(underlying_algebra(sp), dim(base_module(sp)), dim(base_module(sp)))
             kappa[1, 2] = gen(sp, 1, :L).alg_elem
             kappa[2, 1] = -kappa[1, 2]
             kappa[3, 4] = gen(sp, 2, :L).alg_elem
@@ -106,54 +106,54 @@
 
             @testset "check dimensions of kappa" begin
                 for eps in [-1, 1]
-                    kappa = fill(zero(underlying_algebra(sp)), dim(base_module(sp)) + eps, dim(base_module(sp)))
+                    kappa = zero_matrix(underlying_algebra(sp), dim(base_module(sp)) + eps, dim(base_module(sp)))
                     @test_throws ArgumentError("kappa has wrong dimensions.") deform(sp, kappa)
 
-                    kappa = fill(zero(underlying_algebra(sp)), dim(base_module(sp)), dim(base_module(sp)) + eps)
+                    kappa = zero_matrix(underlying_algebra(sp), dim(base_module(sp)), dim(base_module(sp)) + eps)
                     @test_throws ArgumentError("kappa has wrong dimensions.") deform(sp, kappa)
 
-                    kappa = fill(zero(underlying_algebra(sp)), dim(base_module(sp)) + eps, dim(base_module(sp)) + eps)
+                    kappa = zero_matrix(underlying_algebra(sp), dim(base_module(sp)) + eps, dim(base_module(sp)) + eps)
                     @test_throws ArgumentError("kappa has wrong dimensions.") deform(sp, kappa)
 
-                    kappa = fill(zero(underlying_algebra(sp)), dim(base_module(sp)) + eps, dim(base_module(sp)) - eps)
+                    kappa = zero_matrix(underlying_algebra(sp), dim(base_module(sp)) + eps, dim(base_module(sp)) - eps)
                     @test_throws ArgumentError("kappa has wrong dimensions.") deform(sp, kappa)
                 end
             end
 
             @testset "check kappa is skew symmetric" begin
-                kappa = fill(zero(underlying_algebra(sp)), dim(base_module(sp)), dim(base_module(sp)))
+                kappa = zero_matrix(underlying_algebra(sp), dim(base_module(sp)), dim(base_module(sp)))
                 kappa[1, 1] = gen(sp, 1, :L)
                 @test_throws ArgumentError("kappa is not skew-symmetric.") deform(sp, kappa)
 
-                kappa = fill(zero(underlying_algebra(sp)), dim(base_module(sp)), dim(base_module(sp)))
+                kappa = zero_matrix(underlying_algebra(sp), dim(base_module(sp)), dim(base_module(sp)))
                 kappa[1, 2] = gen(sp, 1, :L)
                 @test_throws ArgumentError("kappa is not skew-symmetric.") deform(sp, kappa)
 
-                kappa = fill(zero(underlying_algebra(sp)), dim(base_module(sp)), dim(base_module(sp)))
+                kappa = zero_matrix(underlying_algebra(sp), dim(base_module(sp)), dim(base_module(sp)))
                 kappa[1, 2] = gen(sp, 1, :L)
                 kappa[2, 1] = -2 * gen(sp, 1, :L)
                 @test_throws ArgumentError("kappa is not skew-symmetric.") deform(sp, kappa)
             end
 
             @testset "check entries of kappa contained in Hopf algebra of smash product" begin
-                kappa = fill(zero(underlying_algebra(sp)), dim(base_module(sp)), dim(base_module(sp)))
+                kappa = zero_matrix(underlying_algebra(sp), dim(base_module(sp)), dim(base_module(sp)))
                 kappa[1, 2] = gen(sp, 1, :V)
                 kappa[2, 1] = -kappa[1, 2]
                 @test_throws ArgumentError("kappa does not only take values in the hopf algebra") deform(sp, kappa)
 
-                kappa = fill(zero(underlying_algebra(sp)), dim(base_module(sp)), dim(base_module(sp)))
+                kappa = zero_matrix(underlying_algebra(sp), dim(base_module(sp)), dim(base_module(sp)))
                 kappa[1, 2] = gen(sp, 1, :V) * gen(sp, 1, :L)
                 kappa[2, 1] = -kappa[1, 2]
                 @test_throws ArgumentError("kappa does not only take values in the hopf algebra") deform(sp, kappa)
             end
 
             @testset "correct input" begin
-                kappa = fill(zero(underlying_algebra(sp)), dim(base_module(sp)), dim(base_module(sp)))
+                kappa = zero_matrix(underlying_algebra(sp), dim(base_module(sp)), dim(base_module(sp)))
                 kappa[1, 2] = underlying_algebra(sp)(2)
                 kappa[2, 1] = -kappa[1, 2]
                 @test_nowarn deform(sp, kappa)
 
-                kappa = fill(zero(underlying_algebra(sp)), dim(base_module(sp)), dim(base_module(sp)))
+                kappa = zero_matrix(underlying_algebra(sp), dim(base_module(sp)), dim(base_module(sp)))
                 kappa[1, 2] = gen(sp, 1, :L) * gen(sp, 2, :L) - 3 * gen(sp, 3, :L)
                 kappa[2, 1] = -kappa[1, 2]
                 @test_nowarn deform(sp, kappa)

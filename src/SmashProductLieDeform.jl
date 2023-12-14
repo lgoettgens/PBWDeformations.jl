@@ -319,7 +319,7 @@ Constructs the symmetric deformation of the smash product `sp`.
 function symmetric_deformation(
     sp::SmashProductLie{C, LieC, LieT},
 ) where {C <: RingElem, LieC <: RingElem, LieT <: LieAlgebraElem{LieC}}
-    kappa = fill(zero(underlying_algebra(sp)), dim(base_module(sp)), dim(base_module(sp)))
+    kappa = zero_matrix(underlying_algebra(sp), dim(base_module(sp)), dim(base_module(sp)))
     d = deform(sp, kappa)
     return d
 end
