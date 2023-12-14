@@ -10,10 +10,12 @@ include("SmashProductLieDeform-test.jl")
 include("SmashProductPBWDeformLie-test.jl")
 include("ModuleSimpleStructure-test.jl")
 
-DocMeta.setdocmeta!(
-    PBWDeformations,
-    :DocTestSetup,
-    :(using PBWDeformations; using PBWDeformations.Oscar);
-    recursive=true,
-)
-doctest(PBWDeformations)
+if VERSION >= v"1.7-"
+    DocMeta.setdocmeta!(
+        PBWDeformations,
+        :DocTestSetup,
+        :(using PBWDeformations; using PBWDeformations.Oscar);
+        recursive=true,
+    )
+    doctest(PBWDeformations)
+end
