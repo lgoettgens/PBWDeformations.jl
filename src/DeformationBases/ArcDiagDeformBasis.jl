@@ -111,43 +111,50 @@ Base.length(basis::ArcDiagDeformBasis) = basis.len
 
 
 function pbw_arc_diagrams(T::SO, V::LieAlgebraModule, d::Int)
-    n_upper_vertices = arc_diagram_num_points(T, V)
-    n_lower_vertices = 2d
-    upper_indep_sets = arc_diagram_indep_sets(T, V)
-    lower_indep_sets = Vector{Int}[[[2i - 1, 2i] for i in 1:div(n_lower_vertices, 2)]...]
-    indep_sets = Vector{Int}[[(-1) .* is for is in upper_indep_sets]; [is for is in lower_indep_sets]]
-    return all_arc_diagrams(Undirected, n_upper_vertices, n_lower_vertices; indep_sets)
+    n_upper_verts = arc_diagram_upper_points(T, V)
+    n_lower_verts = 2d
+    upper_iss = arc_diagram_upper_iss(T, V)
+    lower_iss = Vector{Int}[[[2i - 1, 2i] for i in 1:div(n_lower_verts, 2)]...]
+    indep_sets = Vector{Int}[[(-1) .* is for is in upper_iss]; [is for is in lower_iss]]
+    return all_arc_diagrams(Undirected, n_upper_verts, n_lower_verts; indep_sets)
 end
 
-function arc_diagram_num_points(T::SO, V::LieAlgebraModule)
+function arc_diagram_upper_points(T::SO, V::LieAlgebraModule)
     if is_standard_module(V)
         return 1
     elseif is_tensor_product(V)
-        return sum(arc_diagram_num_points(T, W) for W in base_modules(V))
+        return sum(arc_diagram_upper_points(T, W) for W in base_modules(V))
     elseif is_exterior_power(V) || is_symmetric_power(V) || is_tensor_power(V)
-        return arc_diagram_num_points(T, base_module(V)) * get_attribute(V, :power)
+        return arc_diagram_upper_points(T, base_module(V)) * get_attribute(V, :power)
     else
         error("Not implemented.")
     end
 end
 
-function arc_diagram_indep_sets(T::SO, V::LieAlgebraModule)
+function arc_diagram_upper_iss(T::SO, V::LieAlgebraModule)
     if is_standard_module(V)
         return Vector{Int}[]
     elseif is_tensor_product(V)
-        return Vector{Int}[] # TODO: proper implementation
+        inner_mods = base_modules(V)
+        offset = 0
+        iss = Vector{Int}[]
+        for mod in inner_mods
+            append!(iss, [is .+ offset for is in arc_diagram_upper_iss(T, mod)])
+            offset += arc_diagram_upper_points(T, mod)
+        end
+        return iss
     elseif is_exterior_power(V) || is_symmetric_power(V) || is_tensor_power(V)
         inner_mod = base_module(V)
         power = get_attribute(V, :power)
         if is_standard_module(inner_mod)
             if is_exterior_power(V)
-                return [1:power]
+                return [collect(1:power)]
             else
                 return Vector{Int}[]
             end
         else
-            iss = arc_diagram_indep_sets(T, inner_mod)
-            return [map(i -> i + k * arc_diagram_num_points(T, inner_mod), is) for k in 0:power-1 for is in iss]
+            iss = arc_diagram_upper_iss(T, inner_mod)
+            return [is .+ k * arc_diagram_upper_points(T, inner_mod) for k in 0:power-1 for is in iss]
         end
     else
         error("Not implemented.")
@@ -216,7 +223,7 @@ function arc_diagram_label_permutations(T::SO, V::LieAlgebraModule, label::Abstr
         return [(label, 1)]
     elseif is_tensor_product(V)
         inner_mods = base_modules(V)
-        @req length(label) == sum(mod -> arc_diagram_num_points(T, mod), inner_mods) "Number of labels mismatch."
+        @req length(label) == sum(mod -> arc_diagram_upper_points(T, mod), inner_mods) "Number of labels mismatch."
         return [
             begin
                 inner_label = vcat(first.(inner_iter)...)
@@ -226,8 +233,8 @@ function arc_diagram_label_permutations(T::SO, V::LieAlgebraModule, label::Abstr
                 arc_diagram_label_permutations(
                     T,
                     inner_mod,
-                    label[sum(mod -> arc_diagram_num_points(T, mod), inner_mods[1:i-1]; init=0)+1:sum(
-                        mod -> arc_diagram_num_points(T, mod),
+                    label[sum(mod -> arc_diagram_upper_points(T, mod), inner_mods[1:i-1]; init=0)+1:sum(
+                        mod -> arc_diagram_upper_points(T, mod),
                         inner_mods[1:i];
                         init=0,
                     )],
@@ -237,7 +244,7 @@ function arc_diagram_label_permutations(T::SO, V::LieAlgebraModule, label::Abstr
     elseif is_exterior_power(V) || is_symmetric_power(V) || is_tensor_power(V)
         inner_mod = base_module(V)
         power = get_attribute(V, :power)
-        m = arc_diagram_num_points(T, inner_mod)
+        m = arc_diagram_upper_points(T, inner_mod)
         @req length(label) == m * power "Number of labels mismatch."
         if is_exterior_power(V)
             return [
