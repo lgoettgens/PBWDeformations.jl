@@ -1,4 +1,5 @@
 const SO = Val{:special_orthogonal}
+const GL = Val{:general_linear}
 
 """
 Concrete subtype of [`DeformBasis`](@ref).
@@ -110,14 +111,29 @@ end
 Base.length(basis::ArcDiagDeformBasis) = basis.len
 
 
-function pbw_arc_diagrams(T::SO, V::LieAlgebraModule, d::Int)
-    n_upper_verts = arc_diagram_upper_points(T, V)
-    n_lower_verts = 2d
+function pbw_arc_diagrams(T::Union{SO, GL}, V::LieAlgebraModule, d::Int)
+    upper_verts = arc_diagram_upper_points(T, V)
+    lower_verts = arc_diagram_lower_points(T, V, d)
     upper_iss = arc_diagram_upper_iss(T, V)
-    lower_iss = Vector{Int}[[[2i - 1, 2i] for i in 1:div(n_lower_verts, 2)]...]
+    lower_iss = arc_diagram_lower_iss(T, V, d)
     indep_sets = Vector{Int}[[(-1) .* is for is in upper_iss]; [is for is in lower_iss]]
-    return all_arc_diagrams(Undirected, n_upper_verts, n_lower_verts; indep_sets)
+    return all_arc_diagrams(arc_diagram_type(T), upper_verts, lower_verts; indep_sets)
 end
+
+
+arc_diagram_type(::SO) = Undirected
+
+arc_diagram_type(::GL) = Directed
+
+
+function is_basic_building_block(::SO, V::LieAlgebraModule)
+    return is_standard_module(V)
+end
+
+function is_basic_building_block(::GL, V::LieAlgebraModule)
+    return is_standard_module(V) || (is_dual(V) && is_standard_module(base_module(V)))
+end
+
 
 function arc_diagram_upper_points(T::SO, V::LieAlgebraModule)
     if is_standard_module(V)
@@ -131,8 +147,23 @@ function arc_diagram_upper_points(T::SO, V::LieAlgebraModule)
     end
 end
 
-function arc_diagram_upper_iss(T::SO, V::LieAlgebraModule)
+function arc_diagram_upper_points(T::GL, V::LieAlgebraModule)
     if is_standard_module(V)
+        return 1
+    elseif is_dual(V) && is_standard_module(base_module(V))
+        return 0
+    elseif is_tensor_product(V)
+        return reduce(vcat, arc_diagram_upper_points(T, W) for W in base_modules(V))
+    elseif is_exterior_power(V) || is_symmetric_power(V) || is_tensor_power(V)
+        return reduce(vcat, [arc_diagram_upper_points(T, base_module(V)) for _ in 1:get_attribute(V, :power)])
+    else
+        error("Not implemented.")
+    end
+end
+
+
+function arc_diagram_upper_iss(T::Union{SO, GL}, V::LieAlgebraModule)
+    if is_basic_building_block(T, V)
         return Vector{Int}[]
     elseif is_tensor_product(V)
         inner_mods = base_modules(V)
@@ -146,7 +177,7 @@ function arc_diagram_upper_iss(T::SO, V::LieAlgebraModule)
     elseif is_exterior_power(V) || is_symmetric_power(V) || is_tensor_power(V)
         inner_mod = base_module(V)
         power = get_attribute(V, :power)
-        if is_standard_module(inner_mod)
+        if is_basic_building_block(T, inner_mod)
             if is_exterior_power(V)
                 return [collect(1:power)]
             else
@@ -161,8 +192,27 @@ function arc_diagram_upper_iss(T::SO, V::LieAlgebraModule)
     end
 end
 
-function arc_diagram_label_iterator(T::SO, V::LieAlgebraModule, base_labels::AbstractVector{Int})
-    if is_standard_module(V)
+
+function arc_diagram_lower_points(::SO, _::LieAlgebraModule, d::Int)
+    return 2d
+end
+
+function arc_diagram_lower_points(::GL, _::LieAlgebraModule, d::Int)
+    return reduce(vcat, ([1, 0] for _ in 1:d))
+end
+
+
+function arc_diagram_lower_iss(::SO, _::LieAlgebraModule, d::Int)
+    return Vector{Int}[[[2i - 1, 2i] for i in 1:d]...]
+end
+
+function arc_diagram_lower_iss(::GL, _::LieAlgebraModule, _::Int)
+    return Vector{Int}[]
+end
+
+
+function arc_diagram_label_iterator(T::Union{SO, GL}, V::LieAlgebraModule, base_labels::AbstractVector{Int})
+    if is_basic_building_block(T, V)
         return [[l] for l in base_labels]
     elseif is_tensor_product(V)
         inner_mods = base_modules(V)
@@ -196,6 +246,7 @@ function arc_diagram_label_iterator(T::SO, V::LieAlgebraModule, base_labels::Abs
     end
 end
 
+
 function basis_index_mapping(V::LieAlgebraModule)
     if is_tensor_product(V)
         inner_mods = base_modules(V)
@@ -217,8 +268,9 @@ function basis_index_mapping(V::LieAlgebraModule)
     end
 end
 
-function arc_diagram_label_permutations(T::SO, V::LieAlgebraModule, label::AbstractVector{Int})
-    if is_standard_module(V)
+
+function arc_diagram_label_permutations(T::Union{SO, GL}, V::LieAlgebraModule, label::AbstractVector{Int})
+    if is_basic_building_block(T, V)
         @req length(label) == 1 "Number of labels mismatch."
         return [(label, 1)]
     elseif is_tensor_product(V)
@@ -334,6 +386,7 @@ function arcdiag_to_deformationmap(
     return kappa
 end
 
+
 function arcdiag_to_deformationmap_entry(
     T::SO,
     diag::ArcDiagramUndirected,
@@ -421,6 +474,7 @@ function arcdiag_to_deformationmap_entry(
     end
     return entry
 end
+
 
 function ispairgood(labeled_diag::Vector{Int}, k::Int)
     left_k = k % 2 == 1 ? k : k - 1
