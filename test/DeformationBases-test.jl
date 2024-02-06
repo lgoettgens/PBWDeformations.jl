@@ -2,18 +2,19 @@
     @testset "ArcDiagDeformBasis.jl" begin
         @testset "arcdiag_to_deformationmap__so(:exterior)" begin
             L = special_orthogonal_lie_algebra(QQ, 4)
+            T = Val(:special_orthogonal)
             V = exterior_power(standard_module(L), 2)
             sp = smash_product(L, V)
 
             @testset "not all specialisations are zero" begin
                 diag = arc_diagram(Undirected, "ABBD,AD")
-                dm = PD.arcdiag_to_deformationmap__so(diag, sp)
+                dm = PD.arcdiag_to_deformationmap__so(T, diag, sp)
                 @test !iszero(dm)
             end
 
             @testset "deformation is equivariant, d = $deg" for deg in 1:3
-                for diag in PD.pbw_arc_diagrams__so(V, deg)
-                    dm = PD.arcdiag_to_deformationmap__so(diag, sp)
+                for diag in PD.pbw_arc_diagrams__so(T, V, deg)
+                    dm = PD.arcdiag_to_deformationmap__so(T, diag, sp)
                     d = deform(sp, dm)
                     @test all(iszero, pbwdeform_eqs(d, disabled=[:b, :c, :d]))
                 end

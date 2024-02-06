@@ -16,7 +16,17 @@ struct PseudographDeformBasis{C <: RingElem} <: DeformBasis{C}
         degs::AbstractVector{Int};
         no_normalize::Bool=false,
     ) where {C <: RingElem}
-        @req get_attribute(base_lie_algebra(sp), :type, nothing) == :special_orthogonal "Only works for so_n."
+        T = get_attribute(base_lie_algebra(sp), :type, nothing)
+        @req T == :special_orthogonal "Only works for so_n."
+        return PseudographDeformBasis{C}(Val(T), sp, degs; no_normalize)
+    end
+
+    function PseudographDeformBasis{C}(
+        T::Union{Val{:special_orthogonal}},
+        sp::SmashProductLie{C},
+        degs::AbstractVector{Int};
+        no_normalize::Bool=false,
+    ) where {C <: RingElem}
         @req is_exterior_power(base_module(sp)) && is_standard_module(base_module(base_module(sp))) "Only works for exterior powers of the standard module."
 
         e = get_attribute(base_module(sp), :power)
@@ -34,7 +44,7 @@ struct PseudographDeformBasis{C <: RingElem} <: DeformBasis{C}
                 begin
                     @vprintln :PBWDeformations 2 "Basis generation deg $(lpad(d, maximum(ndigits, degs))), $(lpad(floor(Int, 100*(debug_counter = (debug_counter % len) + 1) / len), 3))%, $(lpad(debug_counter, ndigits(len)))/$(len)"
                     diag = to_arcdiag(pg, part)
-                    basis_elem = arcdiag_to_deformationmap__so(diag, sp)
+                    basis_elem = arcdiag_to_deformationmap__so(T, diag, sp)
                     if !no_normalize
                         basis_elem = normalize(basis_elem)
                     end

@@ -1,3 +1,5 @@
+const SO = Val{:special_orthogonal}
+
 """
 Concrete subtype of [`DeformBasis`](@ref).
 Each element of the basis is induced by an arc diagram of a suitable size,
@@ -15,7 +17,17 @@ struct ArcDiagDeformBasis{C <: RingElem} <: DeformBasis{C}
         degs::AbstractVector{Int};
         no_normalize::Bool=false,
     ) where {C <: RingElem}
-        @req get_attribute(base_lie_algebra(sp), :type, nothing) == :special_orthogonal "Only works for so_n."
+        T = get_attribute(base_lie_algebra(sp), :type, nothing)
+        @req T == :special_orthogonal "Only works for so_n."
+        return ArcDiagDeformBasis{C}(Val(T), sp, degs; no_normalize)
+    end
+
+    function ArcDiagDeformBasis{C}(
+        T::Union{SO},
+        sp::SmashProductLie{C},
+        degs::AbstractVector{Int};
+        no_normalize::Bool=false,
+    ) where {C <: RingElem}
         V = base_module(sp)
 
         V_nice, h = isomorphic_module_with_simple_structure(V)
@@ -48,12 +60,12 @@ struct ArcDiagDeformBasis{C <: RingElem} <: DeformBasis{C}
                     tensor_product(V_nice_summand_i_l, V_nice_summand_i_r)
                 end
 
-                diag_iter = pbw_arc_diagrams__so(W, d)
+                diag_iter = pbw_arc_diagrams__so(T, W, d)
                 len = length(diag_iter)
                 iter = (
                     begin
                         @vprintln :PBWDeformations 2 "Basis generation deg $(lpad(d, maximum(ndigits, degs))), $(lpad(floor(Int, 100*(debug_counter = (debug_counter % len) + 1) / len), 3))%, $(lpad(debug_counter, ndigits(len)))/$(len)"
-                        _basis_elem = arcdiag_to_deformationmap__so(diag, sp, W)
+                        _basis_elem = arcdiag_to_deformationmap__so(T, diag, sp, W)
                         basis_elem = matrix(proj_to_summand_l) * _basis_elem * transpose(matrix(proj_to_summand_r))
                         if i_l != i_r
                             basis_elem -= transpose(basis_elem)
@@ -98,28 +110,28 @@ end
 Base.length(basis::ArcDiagDeformBasis) = basis.len
 
 
-function pbw_arc_diagrams__so(V::LieAlgebraModule, d::Int)
-    n_upper_vertices = arc_diagram_num_points__so(V)
+function pbw_arc_diagrams__so(T::SO, V::LieAlgebraModule, d::Int)
+    n_upper_vertices = arc_diagram_num_points__so(T, V)
     n_lower_vertices = 2d
-    upper_indep_sets = arc_diagram_indep_sets__so(V)
+    upper_indep_sets = arc_diagram_indep_sets__so(T, V)
     lower_indep_sets = Vector{Int}[[[2i - 1, 2i] for i in 1:div(n_lower_vertices, 2)]...]
     indep_sets = Vector{Int}[[(-1) .* is for is in upper_indep_sets]; [is for is in lower_indep_sets]]
     return all_arc_diagrams(Undirected, n_upper_vertices, n_lower_vertices; indep_sets)
 end
 
-function arc_diagram_num_points__so(V::LieAlgebraModule)
+function arc_diagram_num_points__so(T::SO, V::LieAlgebraModule)
     if is_standard_module(V)
         return 1
     elseif is_tensor_product(V)
-        return sum(arc_diagram_num_points__so(W) for W in base_modules(V))
+        return sum(arc_diagram_num_points__so(T, W) for W in base_modules(V))
     elseif is_exterior_power(V) || is_symmetric_power(V) || is_tensor_power(V)
-        return arc_diagram_num_points__so(base_module(V)) * get_attribute(V, :power)
+        return arc_diagram_num_points__so(T, base_module(V)) * get_attribute(V, :power)
     else
         error("Not implemented.")
     end
 end
 
-function arc_diagram_indep_sets__so(V::LieAlgebraModule)
+function arc_diagram_indep_sets__so(T::SO, V::LieAlgebraModule)
     if is_standard_module(V)
         return Vector{Int}[]
     elseif is_tensor_product(V)
@@ -134,21 +146,21 @@ function arc_diagram_indep_sets__so(V::LieAlgebraModule)
                 return Vector{Int}[]
             end
         else
-            iss = arc_diagram_indep_sets__so(inner_mod)
-            return [map(i -> i + k * arc_diagram_num_points__so(inner_mod), is) for k in 0:power-1 for is in iss]
+            iss = arc_diagram_indep_sets__so(T, inner_mod)
+            return [map(i -> i + k * arc_diagram_num_points__so(T, inner_mod), is) for k in 0:power-1 for is in iss]
         end
     else
         error("Not implemented.")
     end
 end
 
-function arc_diagram_label_iterator__so(V::LieAlgebraModule, base_labels::AbstractVector{Int})
+function arc_diagram_label_iterator__so(T::SO, V::LieAlgebraModule, base_labels::AbstractVector{Int})
     if is_standard_module(V)
         return [[l] for l in base_labels]
     elseif is_tensor_product(V)
         inner_mods = base_modules(V)
         return ProductIterator([
-                   arc_diagram_label_iterator__so(inner_mod, base_labels) for inner_mod in reverse(inner_mods)
+                   arc_diagram_label_iterator__so(T, inner_mod, base_labels) for inner_mod in reverse(inner_mods)
                ]) .|>
                reverse .|>
                Iterators.flatten .|>
@@ -156,19 +168,19 @@ function arc_diagram_label_iterator__so(V::LieAlgebraModule, base_labels::Abstra
     elseif is_exterior_power(V)
         inner_mod = base_module(V)
         power = get_attribute(V, :power)
-        return combinations(collect(arc_diagram_label_iterator__so(inner_mod, base_labels)), power) .|>
+        return combinations(collect(arc_diagram_label_iterator__so(T, inner_mod, base_labels)), power) .|>
                Iterators.flatten .|>
                collect
     elseif is_symmetric_power(V)
         inner_mod = base_module(V)
         power = get_attribute(V, :power)
-        return multicombinations(collect(arc_diagram_label_iterator__so(inner_mod, base_labels)), power) .|>
+        return multicombinations(collect(arc_diagram_label_iterator__so(T, inner_mod, base_labels)), power) .|>
                Iterators.flatten .|>
                collect
     elseif is_tensor_power(V)
         inner_mod = base_module(V)
         power = get_attribute(V, :power)
-        return ProductIterator(arc_diagram_label_iterator__so(inner_mod, base_labels), power) .|>
+        return ProductIterator(arc_diagram_label_iterator__so(T, inner_mod, base_labels), power) .|>
                reverse .|>
                Iterators.flatten .|>
                collect
@@ -198,13 +210,13 @@ function basis_index_mapping(V::LieAlgebraModule)
     end
 end
 
-function arc_diagram_label_permutations__so(V::LieAlgebraModule, label::AbstractVector{Int})
+function arc_diagram_label_permutations__so(T::SO, V::LieAlgebraModule, label::AbstractVector{Int})
     if is_standard_module(V)
         @req length(label) == 1 "Number of labels mismatch."
         return [(label, 1)]
     elseif is_tensor_product(V)
         inner_mods = base_modules(V)
-        @req length(label) == sum(arc_diagram_num_points__so.(inner_mods)) "Number of labels mismatch."
+        @req length(label) == sum(mod -> arc_diagram_num_points__so(T, mod), inner_mods) "Number of labels mismatch."
         return [
             begin
                 inner_label = vcat(first.(inner_iter)...)
@@ -212,9 +224,10 @@ function arc_diagram_label_permutations__so(V::LieAlgebraModule, label::Abstract
                 (inner_label, inner_sign)
             end for inner_iter in ProductIterator([
                 arc_diagram_label_permutations__so(
+                    T,
                     inner_mod,
-                    label[sum(arc_diagram_num_points__so, inner_mods[1:i-1]; init=0)+1:sum(
-                        arc_diagram_num_points__so,
+                    label[sum(mod -> arc_diagram_num_points__so(T, mod), inner_mods[1:i-1]; init=0)+1:sum(
+                        mod -> arc_diagram_num_points__so(T, mod),
                         inner_mods[1:i];
                         init=0,
                     )],
@@ -224,7 +237,7 @@ function arc_diagram_label_permutations__so(V::LieAlgebraModule, label::Abstract
     elseif is_exterior_power(V) || is_symmetric_power(V) || is_tensor_power(V)
         inner_mod = base_module(V)
         power = get_attribute(V, :power)
-        m = arc_diagram_num_points__so(inner_mod)
+        m = arc_diagram_num_points__so(T, inner_mod)
         @req length(label) == m * power "Number of labels mismatch."
         if is_exterior_power(V)
             return [
@@ -233,7 +246,7 @@ function arc_diagram_label_permutations__so(V::LieAlgebraModule, label::Abstract
                     inner_sign = prod(last.(inner_iter))
                     (inner_label, inner_sign * outer_sign)
                 end for (outer_perm, outer_sign) in permutations_with_sign(1:power) for inner_iter in ProductIterator([
-                    arc_diagram_label_permutations__so(inner_mod, label[(outer_perm[i]-1)*m+1:outer_perm[i]*m]) for
+                    arc_diagram_label_permutations__so(T, inner_mod, label[(outer_perm[i]-1)*m+1:outer_perm[i]*m]) for
                     i in 1:power
                 ])
             ]
@@ -244,7 +257,7 @@ function arc_diagram_label_permutations__so(V::LieAlgebraModule, label::Abstract
                     inner_sign = prod(last.(inner_iter))
                     (inner_label, inner_sign)
                 end for outer_perm in permutations(1:power) for inner_iter in ProductIterator([
-                    arc_diagram_label_permutations__so(inner_mod, label[(outer_perm[i]-1)*m+1:outer_perm[i]*m]) for
+                    arc_diagram_label_permutations__so(T, inner_mod, label[(outer_perm[i]-1)*m+1:outer_perm[i]*m]) for
                     i in 1:power
                 ])
             ]
@@ -254,8 +267,9 @@ function arc_diagram_label_permutations__so(V::LieAlgebraModule, label::Abstract
                     inner_label = vcat(first.(inner_iter)...)
                     inner_sign = prod(last.(inner_iter))
                     (inner_label, inner_sign)
-                end for inner_iter in
-                ProductIterator([arc_diagram_label_permutations__so(inner_mod, label[(i-1)*m+1:i*m]) for i in 1:power])
+                end for inner_iter in ProductIterator([
+                    arc_diagram_label_permutations__so(T, inner_mod, label[(i-1)*m+1:i*m]) for i in 1:power
+                ])
             ]
         else
             error("Unreachable.")
@@ -267,6 +281,7 @@ end
 
 
 function arcdiag_to_deformationmap__so(
+    T::SO,
     diag::ArcDiagramUndirected,
     sp::SmashProductLie{C},
     W::LieAlgebraModule=exterior_power(base_module(sp), 2),
@@ -289,11 +304,12 @@ function arcdiag_to_deformationmap__so(
     end
 
     kappa = zero_matrix(underlying_algebra(sp), nrows_kappa, ncols_kappa)
-    for (label_index, upper_labels) in enumerate(arc_diagram_label_iterator__so(W, 1:dim_stdmod_V))
+    for (label_index, upper_labels) in enumerate(arc_diagram_label_iterator__so(T, W, 1:dim_stdmod_V))
 
         i, j = ind_map[label_index]
 
         entry = arcdiag_to_deformationmap_entry__so(
+            T,
             diag,
             W,
             upper_labels,
@@ -313,6 +329,7 @@ function arcdiag_to_deformationmap__so(
 end
 
 function arcdiag_to_deformationmap_entry__so(
+    T::SO,
     diag::ArcDiagramUndirected,
     W::LieAlgebraModule{C},
     upper_labels::AbstractVector{Int},
@@ -322,7 +339,7 @@ function arcdiag_to_deformationmap_entry__so(
 ) where {C <: RingElem}
     entry = zero(sp_alg)
 
-    for (upper_labels, sgn_upper_labels) in arc_diagram_label_permutations__so(W, upper_labels)
+    for (upper_labels, sgn_upper_labels) in arc_diagram_label_permutations__so(T, W, upper_labels)
         zeroprod = false
         lower_labels = [0 for _ in 1:n_lower_vertices(diag)]
         frees = Int[]
