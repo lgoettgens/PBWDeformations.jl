@@ -198,12 +198,12 @@ function arc_diagram_lower_points(::SO, _::LieAlgebraModule, d::Int)
 end
 
 function arc_diagram_lower_points(::GL, _::LieAlgebraModule, d::Int)
-    return reduce(vcat, ([1, 0] for _ in 1:d))
+    return reduce(vcat, ([1, 0] for _ in 1:d); init=Int[])
 end
 
 
 function arc_diagram_lower_iss(::SO, _::LieAlgebraModule, d::Int)
-    return Vector{Int}[[[2i - 1, 2i] for i in 1:d]...]
+    return collect([2i - 1, 2i] for i in 1:d)
 end
 
 function arc_diagram_lower_iss(::GL, _::LieAlgebraModule, _::Int)
@@ -278,7 +278,7 @@ function arc_diagram_label_permutations(T::Union{SO, GL}, V::LieAlgebraModule, l
         @req length(label) == sum(mod -> arc_diagram_upper_points(T, mod), inner_mods) "Number of labels mismatch."
         return [
             begin
-                inner_label = vcat(first.(inner_iter)...)
+                inner_label = reduce(vcat, first.(inner_iter))
                 inner_sign = prod(last.(inner_iter))
                 (inner_label, inner_sign)
             end for inner_iter in ProductIterator([
@@ -301,7 +301,7 @@ function arc_diagram_label_permutations(T::Union{SO, GL}, V::LieAlgebraModule, l
         if is_exterior_power(V)
             return [
                 begin
-                    inner_label = vcat(first.(inner_iter)...)
+                    inner_label = reduce(vcat, first.(inner_iter))
                     inner_sign = prod(last.(inner_iter))
                     (inner_label, inner_sign * outer_sign)
                 end for (outer_perm, outer_sign) in permutations_with_sign(1:power) for inner_iter in ProductIterator([
@@ -312,7 +312,7 @@ function arc_diagram_label_permutations(T::Union{SO, GL}, V::LieAlgebraModule, l
         elseif is_symmetric_power(V)
             return [
                 begin
-                    inner_label = vcat(first.(inner_iter)...)
+                    inner_label = reduce(vcat, first.(inner_iter))
                     inner_sign = prod(last.(inner_iter))
                     (inner_label, inner_sign)
                 end for outer_perm in permutations(1:power) for inner_iter in ProductIterator([
@@ -323,7 +323,7 @@ function arc_diagram_label_permutations(T::Union{SO, GL}, V::LieAlgebraModule, l
         elseif is_tensor_power(V)
             return [
                 begin
-                    inner_label = vcat(first.(inner_iter)...)
+                    inner_label = reduce(vcat, first.(inner_iter))
                     inner_sign = prod(last.(inner_iter))
                     (inner_label, inner_sign)
                 end for inner_iter in
