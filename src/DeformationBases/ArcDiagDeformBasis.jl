@@ -194,19 +194,23 @@ end
 
 
 function arc_diagram_lower_points(::SO, _::LieAlgebraModule, d::Int)
+    # L ≅ Sᵈ ⋀² V
     return 2d
 end
 
 function arc_diagram_lower_points(::GL, _::LieAlgebraModule, d::Int)
+    # L ≅ Sᵈ (V ⊗ V*)
     return reduce(vcat, ([1, 0] for _ in 1:d); init=Int[])
 end
 
 
 function arc_diagram_lower_iss(::SO, _::LieAlgebraModule, d::Int)
+    # L ≅ Sᵈ ⋀² V
     return collect([2i - 1, 2i] for i in 1:d)
 end
 
 function arc_diagram_lower_iss(::GL, _::LieAlgebraModule, _::Int)
+    # L ≅ Sᵈ (V ⊗ V*)
     return Vector{Int}[]
 end
 
