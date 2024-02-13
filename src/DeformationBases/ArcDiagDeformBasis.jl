@@ -85,9 +85,11 @@ struct ArcDiagDeformBasis{C <: RingElem} <: DeformBasis{C}
                     end for
                     diag in diag_iter if is_crossing_free(diag, part=:upper) && is_crossing_free(diag, part=:lower)
                 )
-                push!(lens, len)
-                #push!(iters, iter)
-                push!(iters, collect(iter))
+                # push!(lens, len)
+                # push!(iters, iter)
+                collected = collect(iter)
+                push!(lens, length(collected))
+                push!(iters, collected)
             end
         end
         len = sum(lens)
