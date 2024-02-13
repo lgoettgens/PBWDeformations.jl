@@ -101,6 +101,13 @@ struct ArcDiagDeformBasis{C <: RingElem} <: DeformBasis{C}
         iter = Iterators.flatten(iters)
         if !no_normalize
             iter = unique(Iterators.filter(b -> !iszero(b), iter))
+            collected = Vector{eltype(iter)}(collect(iter))
+            if !isempty(collected)
+                _, rels = is_linearly_independent_with_relations(coefficient_ring(sp), reverse(collected))
+                inds = [1 + ncols(rels) - (findfirst(!iszero, vec(rels[i, :]))::Int) for i in nrows(rels):-1:1]
+                deleteat!(collected, inds)
+            end
+            iter = collected
             len = length(iter)
         end
         return new{C}(len, iter, extra_data, normalize)
