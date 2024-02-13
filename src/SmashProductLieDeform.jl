@@ -3,7 +3,7 @@ The struct representing a deformation of a Lie algebra smash product.
 It consists of the underlying FreeAssAlgebra with relations and some metadata.
 It gets created by calling [`deform`](@ref).
 """
-@attributes mutable struct SmashProductLieDeform{C <: RingElem, LieC <: RingElem, LieT <: LieAlgebraElem{LieC}} <:
+@attributes mutable struct SmashProductLieDeform{C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}} <:
                            NCRing
     sp::SmashProductLie{C, LieC, LieT}
     rels::Matrix{Union{Nothing, FreeAssAlgElem{C}}}
@@ -14,12 +14,12 @@ It gets created by calling [`deform`](@ref).
         sp::SmashProductLie{C, LieC, LieT},
         rels::Matrix{Union{Nothing, FreeAssAlgElem{C}}},
         kappa::DeformationMap{C},
-    ) where {C <: RingElem, LieC <: RingElem, LieT <: LieAlgebraElem{LieC}}
+    ) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}}
         new{C, LieC, LieT}(sp, rels, kappa)
     end
 end
 
-mutable struct SmashProductLieDeformElem{C <: RingElem, LieC <: RingElem, LieT <: LieAlgebraElem{LieC}} <: NCRingElem
+mutable struct SmashProductLieDeformElem{C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}} <: NCRingElem
     p::SmashProductLieDeform{C, LieC, LieT}   # parent
     alg_elem::FreeAssAlgElem{C}
     simplified::Bool
@@ -28,7 +28,7 @@ mutable struct SmashProductLieDeformElem{C <: RingElem, LieC <: RingElem, LieT <
         p::SmashProductLieDeform{C, LieC, LieT},
         alg_elem::FreeAssAlgElem{C};
         simplified::Bool=false,
-    ) where {C <: RingElem, LieC <: RingElem, LieT <: LieAlgebraElem{LieC}}
+    ) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}}
         @req underlying_algebra(p) === parent(alg_elem) "Incompatible algebras."
         return new{C, LieC, LieT}(p, alg_elem, simplified)
     end
@@ -42,27 +42,27 @@ end
 
 arent_type(
     ::Type{SmashProductLieDeformElem{C, LieC, LieT}},
-) where {C <: RingElem, LieC <: RingElem, LieT <: LieAlgebraElem{LieC}} = SmashProductLieDeform{C, LieC, LieT}
+) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}} = SmashProductLieDeform{C, LieC, LieT}
 
 elem_type(
     ::Type{SmashProductLieDeform{C, LieC, LieT}},
-) where {C <: RingElem, LieC <: RingElem, LieT <: LieAlgebraElem{LieC}} = SmashProductLieDeformElem{C, LieC, LieT}
+) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}} = SmashProductLieDeformElem{C, LieC, LieT}
 
 parent(e::SmashProductLieDeformElem) = e.p
 
 coefficient_ring(
     D::SmashProductLieDeform{C, LieC, LieT},
-) where {C <: RingElem, LieC <: RingElem, LieT <: LieAlgebraElem{LieC}} = coefficient_ring(D.sp)::parent_type(C)
+) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}} = coefficient_ring(D.sp)::parent_type(C)
 
 coefficient_ring(e::SmashProductLieDeformElem) = coefficient_ring(parent(e))
 
 base_lie_algebra(
     D::SmashProductLieDeform{C, LieC, LieT},
-) where {C <: RingElem, LieC <: RingElem, LieT <: LieAlgebraElem{LieC}} = base_lie_algebra(D.sp)::parent_type(LieT)
+) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}} = base_lie_algebra(D.sp)::parent_type(LieT)
 
 base_module(
     D::SmashProductLieDeform{C, LieC, LieT},
-) where {C <: RingElem, LieC <: RingElem, LieT <: LieAlgebraElem{LieC}} = base_module(D.sp)::LieAlgebraModule{LieC}
+) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}} = base_module(D.sp)::LieAlgebraModule{LieC}
 
 underlying_algebra(D::SmashProductLieDeform) = underlying_algebra(D.sp) # TODO: create new algebra for D
 
@@ -111,7 +111,7 @@ end
 function check_parent(
     e1::SmashProductLieDeformElem{C, LieC, LieT},
     e2::SmashProductLieDeformElem{C, LieC, LieT},
-) where {C <: RingElem, LieC <: RingElem, LieT <: LieAlgebraElem{LieC}}
+) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}}
     parent(e1) != parent(e2) && error("Incompatible smash product deformations.")
 end
 
@@ -159,16 +159,30 @@ end
 
 function (D::SmashProductLieDeform{C, LieC, LieT})(
     e::SmashProductLieDeformElem{C, LieC, LieT},
-) where {C <: RingElem, LieC <: RingElem, LieT <: LieAlgebraElem{LieC}}
+) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}}
     @req parent(e) == D "Incompatible smash product deformations."
     return e
 end
 
 function (D::SmashProductLieDeform{C, LieC, LieT})(
     e::SmashProductLieElem{C, LieC, LieT},
-) where {C <: RingElem, LieC <: RingElem, LieT <: LieAlgebraElem{LieC}}
+) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}}
     @req parent(e) == D.sp "Incompatible smash products."
     return D(e.alg_elem)
+end
+
+function (D::SmashProductLieDeform{C, LieC, LieT})(
+    x::LieT,
+) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}}
+    @req parent(x) == base_lie_algebra(D) "Incompatible smash products."
+    return sum(c * b for (c, b) in zip(coefficients(x), gens(D, :L)))
+end
+
+function (D::SmashProductLieDeform{C, LieC, LieT})(
+    v::LieAlgebraModuleElem{LieC},
+) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}}
+    @req parent(v) == base_module(D) "Incompatible smash products."
+    return sum(c * b for (c, b) in zip(coefficients(v), gens(D, :V)))
 end
 
 ###############################################################################
@@ -240,7 +254,7 @@ end
 function Base.:(==)(
     e1::SmashProductLieDeformElem{C, LieC, LieT},
     e2::SmashProductLieDeformElem{C, LieC, LieT},
-) where {C <: RingElem, LieC <: RingElem, LieT <: LieAlgebraElem{LieC}}
+) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}}
     return parent(e1) === parent(e2) && simplify(e1).alg_elem == simplify(e2).alg_elem
 end
 
@@ -281,7 +295,7 @@ Returns a [`SmashProductLieDeform`](@ref) struct and a two-part basis.
 function deform(
     sp::SmashProductLie{C, LieC, LieT},
     kappa::DeformationMap{C},
-) where {C <: RingElem, LieC <: RingElem, LieT <: LieAlgebraElem{LieC}}
+) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}}
     dimL = dim(base_lie_algebra(sp))
     dimV = dim(base_module(sp))
 
@@ -311,6 +325,14 @@ function deform(
     return d
 end
 
+function deform(
+    sp::SmashProductLie{C, LieC, LieT},
+    kappa::MatElem{SmashProductLieElem{C, LieC, LieT}},
+) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}}
+    @req all(x -> parent(x) == sp, kappa) "Incompatible smash products."
+    return deform(sp, map_entries(x -> x.alg_elem, kappa))
+end
+
 """
     symmetric_deformation(sp::SmashProductLie{C}) where {C <: RingElem}
 
@@ -318,7 +340,7 @@ Constructs the symmetric deformation of the smash product `sp`.
 """
 function symmetric_deformation(
     sp::SmashProductLie{C, LieC, LieT},
-) where {C <: RingElem, LieC <: RingElem, LieT <: LieAlgebraElem{LieC}}
+) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}}
     kappa = zero_matrix(underlying_algebra(sp), dim(base_module(sp)), dim(base_module(sp)))
     d = deform(sp, kappa)
     return d
