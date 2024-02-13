@@ -3,7 +3,7 @@ The struct representing a Lie algebra smash product.
 It consists of the underlying FreeAssAlgebra with relations and some metadata.
 It gets created by calling [`smash_product`](@ref).
 """
-@attributes mutable struct SmashProductLie{C <: RingElem, LieC <: RingElem, LieT <: LieAlgebraElem{LieC}} <: NCRing
+@attributes mutable struct SmashProductLie{C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}} <: NCRing
     coeff_ring::Ring
     L::LieAlgebra{LieC}
     V::LieAlgebraModule{LieC}
@@ -17,12 +17,12 @@ It gets created by calling [`smash_product`](@ref).
         V::LieAlgebraModule{LieC},
         alg::FreeAssAlgebra{C},
         rels::Matrix{Union{Nothing, FreeAssAlgElem{C}}},
-    ) where {C <: RingElem, LieC <: RingElem, LieT <: LieAlgebraElem{LieC}}
+    ) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}}
         new{C, LieC, LieT}(coeff_ring, L, V, alg, rels)
     end
 end
 
-mutable struct SmashProductLieElem{C <: RingElem, LieC <: RingElem, LieT <: LieAlgebraElem{LieC}} <: NCRingElem
+mutable struct SmashProductLieElem{C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}} <: NCRingElem
     p::SmashProductLie{C, LieC, LieT}   # parent
     alg_elem::FreeAssAlgElem{C}
     simplified::Bool
@@ -31,7 +31,7 @@ mutable struct SmashProductLieElem{C <: RingElem, LieC <: RingElem, LieT <: LieA
         p::SmashProductLie{C, LieC, LieT},
         alg_elem::FreeAssAlgElem{C};
         simplified::Bool=false,
-    ) where {C <: RingElem, LieC <: RingElem, LieT <: LieAlgebraElem{LieC}}
+    ) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}}
         @req underlying_algebra(p) === parent(alg_elem) "Incompatible algebras."
         return new{C, LieC, LieT}(p, alg_elem, simplified)
     end
@@ -45,25 +45,25 @@ end
 
 parent_type(
     ::Type{SmashProductLieElem{C, LieC, LieT}},
-) where {C <: RingElem, LieC <: RingElem, LieT <: LieAlgebraElem{LieC}} = SmashProductLie{C, LieC, LieT}
+) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}} = SmashProductLie{C, LieC, LieT}
 
 elem_type(
     ::Type{SmashProductLie{C, LieC, LieT}},
-) where {C <: RingElem, LieC <: RingElem, LieT <: LieAlgebraElem{LieC}} = SmashProductLieElem{C, LieC, LieT}
+) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}} = SmashProductLieElem{C, LieC, LieT}
 
 parent(e::SmashProductLieElem) = e.p
 
 coefficient_ring(
     Sp::SmashProductLie{C, LieC, LieT},
-) where {C <: RingElem, LieC <: RingElem, LieT <: LieAlgebraElem{LieC}} = Sp.coeff_ring::parent_type(C)
+) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}} = Sp.coeff_ring::parent_type(C)
 
 coefficient_ring(e::SmashProductLieElem) = coefficient_ring(parent(e))
 
 base_lie_algebra(
     Sp::SmashProductLie{C, LieC, LieT},
-) where {C <: RingElem, LieC <: RingElem, LieT <: LieAlgebraElem{LieC}} = Sp.L::parent_type(LieT)
+) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}} = Sp.L::parent_type(LieT)
 
-base_module(Sp::SmashProductLie{C, LieC, LieT}) where {C <: RingElem, LieC <: RingElem, LieT <: LieAlgebraElem{LieC}} =
+base_module(Sp::SmashProductLie{C, LieC, LieT}) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}} =
     Sp.V::LieAlgebraModule{LieC}
 
 underlying_algebra(Sp::SmashProductLie) = Sp.alg
@@ -114,7 +114,7 @@ end
 function check_parent(
     e1::SmashProductLieElem{C, LieC, LieT},
     e2::SmashProductLieElem{C, LieC, LieT},
-) where {C <: RingElem, LieC <: RingElem, LieT <: LieAlgebraElem{LieC}}
+) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}}
     parent(e1) != parent(e2) && error("Incompatible smash products.")
 end
 
@@ -124,7 +124,7 @@ end
 #
 ###############################################################################
 
-function show(io::IO, Sp::SmashProductLie{C, LieC}) where {C <: RingElem, LieC <: RingElem}
+function show(io::IO, Sp::SmashProductLie{C, LieC}) where {C <: RingElem, LieC <: FieldElem}
     print(io, "Smash Product")
     if LieC != C
         print(io, " over ")
@@ -165,7 +165,7 @@ end
 
 function (Sp::SmashProductLie{C, LieC, LieT})(
     e::SmashProductLieElem{C, LieC, LieT},
-) where {C <: RingElem, LieC <: RingElem, LieT <: LieAlgebraElem{LieC}}
+) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}}
     @req parent(e) == Sp "Incompatible smash products."
     return e
 end
@@ -239,7 +239,7 @@ end
 function Base.:(==)(
     e1::SmashProductLieElem{C, LieC, LieT},
     e2::SmashProductLieElem{C, LieC, LieT},
-) where {C <: RingElem, LieC <: RingElem, LieT <: LieAlgebraElem{LieC}}
+) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}}
     return parent(e1) === parent(e2) && simplify(e1).alg_elem == simplify(e2).alg_elem
 end
 
