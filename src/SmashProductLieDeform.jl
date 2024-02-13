@@ -171,6 +171,20 @@ function (D::SmashProductLieDeform{C, LieC, LieT})(
     return D(e.alg_elem)
 end
 
+function (D::SmashProductLieDeform{C, LieC, LieT})(
+    x::LieT,
+) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}}
+    @req parent(x) == base_lie_algebra(D) "Incompatible smash products."
+    return sum(c * b for (c, b) in zip(coefficients(x), gens(D, :L)))
+end
+
+function (D::SmashProductLieDeform{C, LieC, LieT})(
+    v::LieAlgebraModuleElem{LieC},
+) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}}
+    @req parent(v) == base_module(D) "Incompatible smash products."
+    return sum(c * b for (c, b) in zip(coefficients(v), gens(D, :V)))
+end
+
 ###############################################################################
 #
 #   Arithmetic operations
@@ -309,6 +323,14 @@ function deform(
     set_attribute!(d, :is_symmetric, symmetric)
 
     return d
+end
+
+function deform(
+    sp::SmashProductLie{C, LieC, LieT},
+    kappa::MatElem{SmashProductLieElem{C, LieC, LieT}},
+) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}}
+    @req all(x -> parent(x) == sp, kappa) "Incompatible smash products."
+    return deform(sp, map_entries(x -> x.alg_elem, kappa))
 end
 
 """

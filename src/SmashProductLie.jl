@@ -170,6 +170,20 @@ function (Sp::SmashProductLie{C, LieC, LieT})(
     return e
 end
 
+function (Sp::SmashProductLie{C, LieC, LieT})(
+    x::LieT,
+) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}}
+    @req parent(x) == base_lie_algebra(Sp) "Incompatible smash products."
+    return sum(c * b for (c, b) in zip(coefficients(x), gens(Sp, :L)))
+end
+
+function (Sp::SmashProductLie{C, LieC, LieT})(
+    v::LieAlgebraModuleElem{LieC},
+) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}}
+    @req parent(v) == base_module(Sp) "Incompatible smash products."
+    return sum(c * b for (c, b) in zip(coefficients(v), gens(Sp, :V)))
+end
+
 ###############################################################################
 #
 #   Arithmetic operations
