@@ -386,6 +386,16 @@ function arc_diagram_label_permutations(T::Union{SO, GL}, V::LieAlgebraModule, l
 end
 
 
+function arcdiag_is_lower_pair_label_bad(::SO, labeled_diag::Vector{Int}, k::Int)
+    left_k = k % 2 == 1 ? k : k - 1
+    return labeled_diag[left_k] == labeled_diag[left_k+1]
+end
+
+function arcdiag_is_lower_pair_label_bad(::GL, labeled_diag::Vector{Int}, k::Int)
+    return false
+end
+
+
 function arcdiag_to_deformationmap(
     T::Union{SO, GL},
     diag::ArcDiagram,
@@ -433,106 +443,6 @@ end
 
 
 function arcdiag_to_deformationmap_entry(
-    T::SO,
-    diag::ArcDiagramUndirected,
-    W::LieAlgebraModule{C},
-    upper_labels::AbstractVector{Int},
-    sp_alg::FreeAssAlgebra{C},
-    iso_pair_to_L::Function,
-    max_label::Int,
-) where {C <: RingElem}
-    entry = zero(sp_alg)
-
-    for (upper_labels, sgn_upper_labels) in arc_diagram_label_permutations(T, W, upper_labels)
-        zeroprod = false
-        lower_labels = [0 for _ in 1:n_lower_vertices(diag)]
-        frees = Int[]
-        for v in upper_vertices(diag)
-            nv = neighbor(diag, v)
-            if is_upper_vertex(nv) && upper_labels[vertex_index(v)] != upper_labels[vertex_index(nv)]
-                zeroprod = true
-                break
-            elseif is_lower_vertex(nv)
-                lower_labels[vertex_index(nv)] = upper_labels[vertex_index(v)]
-            end
-        end
-        if zeroprod
-            continue
-        end
-        for v in lower_vertices(diag)
-            nv = neighbor(diag, v)
-            if is_lower_vertex(nv) && vertex_index(v) < vertex_index(nv)
-                push!(frees, vertex_index(v))
-            end
-        end
-
-        entry_summand = zero(sp_alg)
-
-        # iterate over lower point labelings
-        nextindex = 1
-        while true
-            if nextindex > length(frees)
-                # begin inner
-                coeff_lower_labels = 1
-                basiselem = Int[]
-                for k in 1:2:length(lower_labels)
-                    gen_ind, coeff = iso_pair_to_L(lower_labels[k], lower_labels[k+1])
-                    coeff_lower_labels *= coeff
-                    if iszero(coeff_lower_labels)
-                        break
-                    end
-                    append!(basiselem, gen_ind)
-                end
-                if !iszero(coeff_lower_labels)
-                    symm_basiselem = sp_alg(
-                        fill(C(1 // factorial(length(basiselem))), factorial(length(basiselem))),
-                        [ind for ind in permutations(basiselem)],
-                    )
-                    entry_summand += coeff_lower_labels * symm_basiselem
-                end
-                # end inner
-
-                nextindex -= 1
-            end
-
-            while nextindex >= 1 && lower_labels[frees[nextindex]] == max_label
-                lower_labels[frees[nextindex]] = 0
-                lower_labels[vertex_index(_neighbor_of_lower_vertex(diag, frees[nextindex]))] = 0
-                nextindex -= 1
-            end
-            if nextindex == 0
-                break
-            end
-            lower_labels[frees[nextindex]] += 1
-            lower_labels[vertex_index(_neighbor_of_lower_vertex(diag, frees[nextindex]))] += 1
-
-            if arcdiag_is_lower_pair_label_bad(T, lower_labels, frees[nextindex]) || arcdiag_is_lower_pair_label_bad(
-                T,
-                lower_labels,
-                vertex_index(_neighbor_of_lower_vertex(diag, frees[nextindex])),
-            )
-                continue
-            end
-
-            nextindex += 1
-        end
-
-        entry += sgn_upper_labels * entry_summand
-    end
-    return entry
-end
-
-
-function arcdiag_is_lower_pair_label_bad(::SO, labeled_diag::Vector{Int}, k::Int)
-    left_k = k % 2 == 1 ? k : k - 1
-    return labeled_diag[left_k] == labeled_diag[left_k+1]
-end
-
-function arcdiag_is_lower_pair_label_bad(::GL, labeled_diag::Vector{Int}, k::Int)
-    return false
-end
-
-function arcdiag_to_deformationmap_entry(
     T::GL,
     diag::ArcDiagramDirected,
     W::LieAlgebraModule{C},
@@ -553,7 +463,7 @@ function arcdiag_to_deformationmap_entry(
 end
 
 function arcdiag_to_deformationmap_entry(
-    T::GL,
+    T::Union{SO, GL},
     diag::ArcDiagramUndirected,
     W::LieAlgebraModule{C},
     upper_labels::AbstractVector{Int},
