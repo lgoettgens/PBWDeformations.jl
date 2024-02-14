@@ -397,10 +397,18 @@ function arcdiag_is_lower_pair_label_bad(::GL, labeled_diag::Vector{Int}, k::Int
     return false
 end
 
+function arcdiag_to_deformationmap(
+    T::GL,
+    diag::ArcDiagramDirected,
+    sp::SmashProductLie{C},
+    W::LieAlgebraModule=exterior_power(base_module(sp), 2),
+) where {C <: RingElem}
+    return arcdiag_to_deformationmap(T, arc_diagram(Undirected, diag), sp, W)
+end
 
 function arcdiag_to_deformationmap(
     T::Union{SO, GL},
-    diag::ArcDiagram,
+    diag::ArcDiagramUndirected,
     sp::SmashProductLie{C},
     W::LieAlgebraModule=exterior_power(base_module(sp), 2),
 ) where {C <: RingElem}
@@ -443,26 +451,6 @@ function arcdiag_to_deformationmap(
     return kappa
 end
 
-
-function arcdiag_to_deformationmap_entry(
-    T::GL,
-    diag::ArcDiagramDirected,
-    W::LieAlgebraModule{C},
-    upper_labels::AbstractVector{Int},
-    sp_alg::FreeAssAlgebra{C},
-    iso_pair_to_L::Function,
-    max_label::Int,
-) where {C <: RingElem}
-    return arcdiag_to_deformationmap_entry(
-        T,
-        arc_diagram(Undirected, diag),
-        W,
-        upper_labels,
-        sp_alg,
-        iso_pair_to_L,
-        max_label,
-    )
-end
 
 function arcdiag_to_deformationmap_entry(
     T::Union{SO, GL},
