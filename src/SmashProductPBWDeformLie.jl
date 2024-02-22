@@ -149,18 +149,19 @@ function all_pbwdeformations(
     end
 
     @vprintln :PBWDeformations 1 "Computing the kernel..."
-    kernel_dim, kernel = right_kernel(lgs)
+    ker = kernel(lgs; side=:right)
+    ker_dim = ncols(ker)
 
     if special_return <: SMat
-        return kernel, vars
+        return ker, vars
     end
 
     @vprintln :PBWDeformations 1 "Computing a basis..."
-    kappas = Vector{DeformationMap{C}}(undef, kernel_dim)
-    for l in 1:kernel_dim
+    kappas = Vector{DeformationMap{C}}(undef, ker_dim)
+    for l in 1:ker_dim
         kappa = zero_matrix(underlying_algebra(sp), dimV, dimV)
         for (i, b) in enumerate(deform_basis)
-            kappa += kernel[i, l] * b
+            kappa += ker[i, l] * b
         end
         kappas[l] = kappa
     end

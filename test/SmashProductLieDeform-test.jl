@@ -3,7 +3,7 @@
     @testset "SmashProductLieDeform constructor" begin
         @testset "R = $R" for R in [QQ, cyclotomic_field(4)[1]]
             L = special_orthogonal_lie_algebra(R, 4)
-            V = exterior_power(standard_module(L), 2)
+            V = exterior_power_obj(standard_module(L), 2)
             sp = smash_product(L, V)
 
             kappa = zero_matrix(underlying_algebra(sp), dim(base_module(sp)), dim(base_module(sp)))
@@ -59,12 +59,12 @@
 
             for (sp, dimL, dimV) in [begin
                 L = special_orthogonal_lie_algebra(R, 4)
-                V = exterior_power(standard_module(L), 2)
+                V = exterior_power_obj(standard_module(L), 2)
                 sp = smash_product(L, V)
                 return (sp, 6, 6)
             end, begin
                 L = general_linear_lie_algebra(R, 4)
-                V = symmetric_power(standard_module(L), 2)
+                V = symmetric_power_obj(standard_module(L), 2)
                 sp = smash_product(L, V)
                 return (sp, 16, 10)
             end]
@@ -101,7 +101,7 @@
         @testset "R = $R" for R in [QQ, cyclotomic_field(4)[1]]
 
             L = special_orthogonal_lie_algebra(R, 4)
-            V = exterior_power(standard_module(L), 2)
+            V = exterior_power_obj(standard_module(L), 2)
             sp = smash_product(L, V)
 
             @testset "check dimensions of kappa" begin

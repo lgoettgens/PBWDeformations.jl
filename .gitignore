@@ -11,6 +11,9 @@ examples/.ipynb_checkpoints
 Manifest.toml
 */Manifest.toml
 
+# julia preference files
+LocalPreferences.toml
+
 # code coverage reports
 *.cov
 lcov.info
