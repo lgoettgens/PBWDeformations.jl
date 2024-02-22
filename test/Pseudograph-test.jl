@@ -41,7 +41,7 @@
         end
     end
 
-    @testset "nedges and sum" begin
+    @testset "n_edges and sum" begin
         for _ in 1:num_random_tests
             numloops = rand(0:10)
             numedges = rand(0:10)
@@ -56,7 +56,7 @@
                 ],
             )
             pg = PseudographLabelled(2, edges)
-            @test nedges(pg) ==
+            @test n_edges(pg) ==
                   2 * numloops + numedges ==
                   length(loop1_weights) + length(loop2_weights) + length(edge_weights)
             @test sum(pg) == sum(loop1_weights; init=0) + sum(loop2_weights; init=0) + sum(edge_weights; init=0)

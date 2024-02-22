@@ -894,8 +894,7 @@ function all_arc_diagrams(
     else
         [
             all_arc_diagrams(Directed, parity_upper_verts, n_lower_verts; indep_sets, check=false) for
-            parity_upper_verts in
-            Iterators.map(BitVector, AbstractAlgebra.ProductIterator([false, true], n_upper_verts))
+            parity_upper_verts in Iterators.map(BitVector, ProductIterator([false, true], n_upper_verts))
         ]
     end
     iter = Iterators.flatten(rets)
@@ -928,8 +927,7 @@ function all_arc_diagrams(
     else
         [
             all_arc_diagrams(Directed, parity_upper_verts, parity_lower_verts; indep_sets, check=false) for
-            parity_lower_verts in
-            Iterators.map(BitVector, AbstractAlgebra.ProductIterator([false, true], n_lower_verts)) if
+            parity_lower_verts in Iterators.map(BitVector, ProductIterator([false, true], n_lower_verts)) if
             parity_diff(parity_upper_verts) == parity_diff(parity_lower_verts)
         ]
     end

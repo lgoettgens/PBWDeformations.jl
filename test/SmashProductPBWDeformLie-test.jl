@@ -2,7 +2,7 @@
     @testset "is_pbwdeformation" begin
         @testset "symmetric deformation of so_4(QQ) ⋉ ⋀^2 V" begin
             L = special_orthogonal_lie_algebra(QQ, 4)
-            V = exterior_power(standard_module(L), 2)
+            V = exterior_power_obj(standard_module(L), 2)
             sp = smash_product(L, V)
 
             d = symmetric_deformation(sp)
@@ -11,7 +11,7 @@
 
         @testset "non-PBW deformations" begin
             L = special_orthogonal_lie_algebra(QQ, 4)
-            V = exterior_power(standard_module(L), 2)
+            V = exterior_power_obj(standard_module(L), 2)
             sp = smash_product(L, V)
 
             kappa = zero_matrix(underlying_algebra(sp), 6, 6)

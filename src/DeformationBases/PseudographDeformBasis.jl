@@ -27,9 +27,8 @@ struct PseudographDeformBasis{C <: RingElem} <: DeformBasis{C}
         degs::AbstractVector{Int};
         no_normalize::Bool=false,
     ) where {C <: RingElem}
-        @req is_exterior_power(base_module(sp)) && is_standard_module(base_module(base_module(sp))) "Only works for exterior powers of the standard module."
-
-        e = get_attribute(base_module(sp), :power)
+        fl, Vbase, e = _is_exterior_power(base_module(sp))
+        @req fl && _is_standard_module(Vbase) "Only works for exterior powers of the standard module."
 
         extra_data = Dict{DeformationMap{C}, Set{Tuple{PseudographLabelled{Int}, Partition{Int}}}}()
         normalize = no_normalize ? identity : normalize_default

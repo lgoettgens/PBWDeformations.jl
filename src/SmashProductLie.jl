@@ -341,7 +341,7 @@ function smash_product(R::Ring, L::LieAlgebra{C}, V::LieAlgebraModule{C}) where 
 
     f_alg, _ = free_associative_algebra(
         R,
-        [symbols(L); is_standard_module(V) ? symbols(V) : (x -> Symbol("($x)")).(symbols(V))],
+        [symbols(L); _is_standard_module(V) ? symbols(V) : (x -> Symbol("($x)")).(symbols(V))],
     )
     f_basisL = [gen(f_alg, i) for i in 1:dimL]
     f_basisV = [gen(f_alg, dimL + i) for i in 1:dimV]

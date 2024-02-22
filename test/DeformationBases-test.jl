@@ -3,7 +3,7 @@
         @testset "arcdiag_to_deformationmap(:special_orthogonal, :exterior)" begin
             L = special_orthogonal_lie_algebra(QQ, 4)
             T = Val(:special_orthogonal)
-            V = exterior_power(standard_module(L), 2)
+            V = exterior_power_obj(standard_module(L), 2)
             sp = smash_product(L, V)
 
             @testset "not all specialisations are zero" begin
@@ -24,7 +24,7 @@
         @testset "correctness regression" begin
             @testset "SO_4, ⋀²V" begin
                 L = special_orthogonal_lie_algebra(QQ, 4)
-                V = exterior_power(standard_module(L), 2)
+                V = exterior_power_obj(standard_module(L), 2)
                 sp = smash_product(L, V)
 
                 @test all_pbwdeformations(sp, ArcDiagDeformBasis{QQFieldElem}(sp, 0:0); special_return=SMat)[1] ==
@@ -58,7 +58,7 @@
 
             @testset "SO_5, ⋀²V" begin
                 L = special_orthogonal_lie_algebra(QQ, 5)
-                V = exterior_power(standard_module(L), 2)
+                V = exterior_power_obj(standard_module(L), 2)
                 sp = smash_product(L, V)
 
                 @test all_pbwdeformations(sp, ArcDiagDeformBasis{QQFieldElem}(sp, 0:0); special_return=SMat)[1] ==
@@ -81,7 +81,7 @@
 
             @testset "SO_4, S²V" begin
                 L = special_orthogonal_lie_algebra(QQ, 4)
-                V = symmetric_power(standard_module(L), 2)
+                V = symmetric_power_obj(standard_module(L), 2)
                 sp = smash_product(L, V)
 
                 @test all_pbwdeformations(sp, ArcDiagDeformBasis{QQFieldElem}(sp, 0:0); special_return=SMat)[1] ==
@@ -97,7 +97,7 @@
 
             @testset "SO_5, S²V" begin
                 L = special_orthogonal_lie_algebra(QQ, 5)
-                V = symmetric_power(standard_module(L), 2)
+                V = symmetric_power_obj(standard_module(L), 2)
                 sp = smash_product(L, V)
 
                 @test all_pbwdeformations(sp, ArcDiagDeformBasis{QQFieldElem}(sp, 0:0); special_return=SMat)[1] ==
@@ -118,7 +118,7 @@
         @testset "correctness regression" begin
             @testset "SO_4, ⋀²V" begin
                 L = special_orthogonal_lie_algebra(QQ, 4)
-                V = exterior_power(standard_module(L), 2)
+                V = exterior_power_obj(standard_module(L), 2)
                 sp = smash_product(L, V)
 
                 @test all_pbwdeformations(sp, PseudographDeformBasis{QQFieldElem}(sp, 0:0); special_return=SMat)[1] ==
@@ -152,7 +152,7 @@
 
             @testset "SO_5, ⋀²V" begin
                 L = special_orthogonal_lie_algebra(QQ, 5)
-                V = exterior_power(standard_module(L), 2)
+                V = exterior_power_obj(standard_module(L), 2)
                 sp = smash_product(L, V)
 
                 @test all_pbwdeformations(sp, PseudographDeformBasis{QQFieldElem}(sp, 0:0); special_return=SMat)[1] ==
