@@ -6,13 +6,13 @@ using AbstractAlgebra: ProductIterator
 
 using Oscar: IntegerUnion
 
-using Oscar: _is_dual as is_dual_with_data
-using Oscar: _is_direct_sum as is_direct_sum_with_data
-using Oscar: _is_exterior_power as is_exterior_power_with_data
-using Oscar: _is_symmetric_power as is_symmetric_power_with_data
-using Oscar: _is_tensor_power as is_tensor_power_with_data
-using Oscar: _is_tensor_product as is_tensor_product_with_data
-using Oscar: _is_standard_module as is_standard_module
+using Oscar: _is_dual
+using Oscar: _is_direct_sum
+using Oscar: _is_exterior_power
+using Oscar: _is_symmetric_power
+using Oscar: _is_tensor_power
+using Oscar: _is_tensor_product
+using Oscar: _is_standard_module
 
 using Oscar.LieAlgebras: combinations
 using Oscar.LieAlgebras: multicombinations
@@ -76,6 +76,7 @@ export deform
 export edge_labels
 export edges
 export exterior_power
+export exterior_power_obj
 export general_linear_lie_algebra
 export inneighbor
 export inneighbors
@@ -100,7 +101,9 @@ export special_orthogonal_lie_algebra
 export standard_module
 export symmetric_deformation
 export symmetric_power
+export symmetric_power_obj
 export tensor_power
+export tensor_power_obj
 export to_arcdiag
 export underlying_algebra
 export upper_vertex, is_upper_vertex
@@ -111,6 +114,8 @@ export vertices
 function __init__()
     add_verbose_scope(:PBWDeformations)
 end
+
+include("OscarPatches.jl")
 
 include("ModuleSimpleStructure.jl")
 
