@@ -40,11 +40,11 @@ function Base.hash(pg::PseudographLabelled, h::UInt)
     return xor(h, b)
 end
 
-function nvertices(pg::PseudographLabelled)
+function n_vertices(pg::PseudographLabelled)
     return pg.nv
 end
 
-function nedges(pg::PseudographLabelled)
+function n_edges(pg::PseudographLabelled)
     return Int(length(edges(pg)))
 end
 
@@ -52,7 +52,7 @@ function edges(pg::PseudographLabelled)
     return pg.edges
 end
 
-function nedges(pg::PseudographLabelled, verts::MSet{Int})
+function n_edges(pg::PseudographLabelled, verts::MSet{Int})
     return Int(length(edges(pg, verts)))
 end
 
@@ -113,9 +113,9 @@ function all_pseudographs(nv::Int, degree::Int, sumtotal::Int; upto_iso::Bool=fa
 end
 
 function to_arcdiag(pg::PseudographLabelled{Int}, part::Partition{Int}=Partition(Int[]))
-    @req nvertices(pg) == 2 "Only implemented for 2 vertices"
+    @req n_vertices(pg) == 2 "Only implemented for 2 vertices"
 
-    n_upper_verts = 2 * nedges(pg)
+    n_upper_verts = 2 * n_edges(pg)
     n_lower_verts = 2 * (sum(pg) + sum(part))
 
     upper_adj = zeros(Int, n_upper_verts)

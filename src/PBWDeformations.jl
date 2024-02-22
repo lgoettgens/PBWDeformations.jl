@@ -2,47 +2,50 @@ module PBWDeformations
 
 using Oscar
 
+using AbstractAlgebra: ProductIterator
+
 using Oscar: IntegerUnion
 
-using Oscar.LieAlgebras:
-    AbstractLieAlgebra,
-    AbstractLieAlgebraElem,
-    LieAlgebra,
-    LieAlgebraElem,
-    LieAlgebraModule,
-    LieAlgebraModuleElem,
-    LinearLieAlgebra,
-    LinearLieAlgebraElem,
-    abstract_module,
-    combinations,
-    exterior_power,
-    general_linear_lie_algebra,
-    hom_direct_sum,
-    hom_power,
-    hom_tensor,
-    is_exterior_power,
-    is_standard_module,
-    is_symmetric_power,
-    is_tensor_power,
-    lie_algebra,
-    matrix_repr_basis,
-    multicombinations,
-    permutations,
-    permutations_with_sign,
-    simple_module,
-    special_linear_lie_algebra,
-    special_orthogonal_lie_algebra,
-    standard_module,
-    symmetric_power,
-    tensor_power
+using Oscar: _is_dual as is_dual_with_data
+using Oscar: _is_direct_sum as is_direct_sum_with_data
+using Oscar: _is_exterior_power as is_exterior_power_with_data
+using Oscar: _is_symmetric_power as is_symmetric_power_with_data
+using Oscar: _is_tensor_power as is_tensor_power_with_data
+using Oscar: _is_tensor_product as is_tensor_product_with_data
+using Oscar: _is_standard_module as is_standard_module
 
-import AbstractAlgebra: ProductIterator, coefficient_ring, elem_type, gen, gens, ngens, parent_type
+using Oscar.LieAlgebras: combinations
+using Oscar.LieAlgebras: multicombinations
+using Oscar.LieAlgebras: permutations
+using Oscar.LieAlgebras: permutations_with_sign
 
-import Oscar: comm, edges, nedges, neighbors, nvertices, simplify, vertices
 
-import Oscar.LieAlgebras: base_lie_algebra, base_module
+import AbstractAlgebra: coefficient_ring
+import AbstractAlgebra: elem_type
+import AbstractAlgebra: gen
+import AbstractAlgebra: gens
+import AbstractAlgebra: ngens
+import AbstractAlgebra: parent_type
 
-import Base: deepcopy_internal, hash, isequal, isone, iszero, length, one, parent, show, sum, zero
+import Oscar: base_lie_algebra
+import Oscar: comm
+import Oscar: edges
+import Oscar: n_edges
+import Oscar: neighbors
+import Oscar: n_vertices
+import Oscar: simplify
+import Oscar: vertices
+
+import Base: deepcopy_internal
+import Base: hash
+import Base: isone
+import Base: iszero
+import Base: length
+import Base: one
+import Base: parent
+import Base: show
+import Base: sum
+import Base: zero
 
 
 export AbstractLieAlgebra, AbstractLieAlgebraElem
@@ -83,10 +86,10 @@ export lookup_data
 export lower_vertex, is_lower_vertex
 export lower_vertices
 export matrix_repr_basis
-export nedges
+export n_edges
+export n_vertices
 export neighbor
 export neighbors
-export nvertices
 export outneighbor
 export outneighbors
 export pbwdeform_eqs

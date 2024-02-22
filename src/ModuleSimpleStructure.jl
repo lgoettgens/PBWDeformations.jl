@@ -272,7 +272,7 @@ function isomorphic_module_with_simple_structure(V::LieAlgebraModule)
             projs = canonical_projections(C)
             mat = zero_matrix(coefficient_ring(U), dim(U), dim(U))
             dim_accum = 0
-            for summ_comb in AbstractAlgebra.ProductIterator(1:m, k)
+            for summ_comb in ProductIterator(1:m, k)
                 lambda = [count(==(i), summ_comb) for i in 1:m]
                 factors = [lambda[i] != 0 ? tensor_power(Ds[i], lambda[i]) : nothing for i in 1:m]
                 factors_cleaned = filter(!isnothing, factors)
