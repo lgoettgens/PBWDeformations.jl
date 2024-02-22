@@ -41,16 +41,19 @@ struct ArcDiagDeformBasis{C <: RingElem} <: DeformBasis{C}
         extra_data = Dict{DeformationMap{C}, Set{ArcDiagram}}()
         normalize = no_normalize ? identity : normalize_default
 
+        n_cases = div(length(base_modules(V_nice)) * (length(base_modules(V_nice)) + 1), 2)
         lens = []
         iters = []
-        debug_counter = 0
         for d in degs
+            case = 0
             for (i_l, V_nice_summand_i_l) in enumerate(base_modules(V_nice)),
                 (i_r, V_nice_summand_i_r) in enumerate(base_modules(V_nice))
 
                 if i_l > i_r
                     continue
                 end
+
+                case += 1
 
                 proj_to_summand_l = compose(h, canonical_projection(V_nice, i_l))
                 proj_to_summand_r = compose(h, canonical_projection(V_nice, i_r))
@@ -65,7 +68,7 @@ struct ArcDiagDeformBasis{C <: RingElem} <: DeformBasis{C}
                 len = length(diag_iter)
                 iter = (
                     begin
-                        @vprintln :PBWDeformations 2 "Basis generation deg $(lpad(d, maximum(ndigits, degs))), $(lpad(floor(Int, 100*(debug_counter = (debug_counter % len) + 1) / len), 3))%, $(lpad(debug_counter, ndigits(len)))/$(len)"
+                        @vprintln :PBWDeformations 2 "Basis generation deg $(lpad(d, maximum(ndigits, degs))), case $(lpad(case, ndigits(n_cases)))/$(n_cases), $(lpad(floor(Int, 100*counter / len), 3))%, $(lpad(counter, ndigits(len)))/$(len)"
                         _basis_elem = arcdiag_to_deformationmap(T, diag, sp, W)
                         basis_elem = matrix(proj_to_summand_l) * _basis_elem * transpose(matrix(proj_to_summand_r))
                         if i_l != i_r
@@ -82,12 +85,14 @@ struct ArcDiagDeformBasis{C <: RingElem} <: DeformBasis{C}
                             extra_data[basis_elem] = Set([diag])
                         end
                         basis_elem
-                    end for
-                    diag in diag_iter if is_crossing_free(diag, part=:upper) && is_crossing_free(diag, part=:lower)
+                    end for (counter, diag) in enumerate(diag_iter) if
+                    is_crossing_free(diag, part=:upper) && is_crossing_free(diag, part=:lower)
                 )
-                push!(lens, len)
-                #push!(iters, iter)
-                push!(iters, collect(iter))
+                # push!(lens, len)
+                # push!(iters, iter)
+                collected = collect(iter)
+                push!(lens, length(collected))
+                push!(iters, collected)
             end
         end
         len = sum(lens)
@@ -395,10 +400,18 @@ function arcdiag_is_lower_pair_label_bad(::GL, labeled_diag::Vector{Int}, k::Int
     return false
 end
 
+function arcdiag_to_deformationmap(
+    T::GL,
+    diag::ArcDiagramDirected,
+    sp::SmashProductLie{C},
+    W::LieAlgebraModule=exterior_power(base_module(sp), 2),
+) where {C <: RingElem}
+    return arcdiag_to_deformationmap(T, arc_diagram(Undirected, diag), sp, W)
+end
 
 function arcdiag_to_deformationmap(
     T::Union{SO, GL},
-    diag::ArcDiagram,
+    diag::ArcDiagramUndirected,
     sp::SmashProductLie{C},
     W::LieAlgebraModule=exterior_power(base_module(sp), 2),
 ) where {C <: RingElem}
@@ -441,26 +454,6 @@ function arcdiag_to_deformationmap(
     return kappa
 end
 
-
-function arcdiag_to_deformationmap_entry(
-    T::GL,
-    diag::ArcDiagramDirected,
-    W::LieAlgebraModule{C},
-    upper_labels::AbstractVector{Int},
-    sp_alg::FreeAssAlgebra{C},
-    iso_pair_to_L::Function,
-    max_label::Int,
-) where {C <: RingElem}
-    return arcdiag_to_deformationmap_entry(
-        T,
-        arc_diagram(Undirected, diag),
-        W,
-        upper_labels,
-        sp_alg,
-        iso_pair_to_L,
-        max_label,
-    )
-end
 
 function arcdiag_to_deformationmap_entry(
     T::Union{SO, GL},

@@ -45,6 +45,6 @@ function normalize_default(m::DeformationMap{C}) where {C <: RingElem}
     if nz_index === nothing
         return m
     end
-    cu = canonical_unit(m[CartesianIndex(nz_index[2], nz_index[1])])
-    m = map(e -> C(1 // cu) * e, m)
+    lc = leading_coefficient(m[CartesianIndex(nz_index[2], nz_index[1])])
+    m = map(e -> C(1 // lc) * e, m)
 end
