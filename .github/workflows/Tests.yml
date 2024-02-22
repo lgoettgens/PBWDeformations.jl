@@ -7,6 +7,11 @@ on:
   pull_request:
   workflow_dispatch:
 
+# needed to allow julia-actions/cache to delete old caches that it has created
+permissions:
+  actions: write
+  contents: read
+
 concurrency:
   # group by workflow and ref; the last slightly strange component ensures that for pull
   # requests, we limit to 1 concurrent job, but for the master branch we don't
@@ -43,7 +48,7 @@ jobs:
           #   os: macOS-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           # For Codecov, we must also fetch the parent of the HEAD commit to
           # be able to properly deal with PRs / merges
@@ -58,7 +63,8 @@ jobs:
       - name: Restore cache
         uses: julia-actions/cache@v1
         with:
-          cache-name: 'test-${{ matrix.julia-version }}-${{ matrix.os }}-${{ matrix.julia-arch }}'
+          cache-name: julia-cache;workflow=${{ github.workflow }};julia=${{ matrix.julia-version }};arch=${{ runner.arch }}
+          include-matrix: false
 
       - name: "Build package"
         uses: julia-actions/julia-buildpkg@latest
@@ -76,6 +82,6 @@ jobs:
 
       - name: "Upload coverage data to Codecov"
         continue-on-error: true
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
