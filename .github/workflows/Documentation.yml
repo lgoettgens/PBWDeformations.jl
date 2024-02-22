@@ -31,24 +31,15 @@ jobs:
         with:
           cache-name: 'docs-1.10'
 
-      - name: "Dev Oscar.jl master"
-        shell: julia --project=. --color=yes {0}
-        run: |
-          using Pkg
-          Pkg.add(url="https://github.com/lgoettgens/Oscar.jl", rev="master-pbwdeformations")
-        env:
-          JULIA_PKG_PRECOMPILE_AUTO: no
-
-      - name: Build package
-        uses: julia-actions/julia-buildpkg@latest
-
-      - name: Install dependencies
+      - name: "Instantiate deps (including Oscar.jl master)"
         shell: julia --project=docs/ --color=yes {0}
         run: |
           using Pkg
-          Pkg.add(url="https://github.com/lgoettgens/Oscar.jl", rev="master-pbwdeformations")
+          include(joinpath(pwd(), "etc", "add_oscar.jl"))
           Pkg.develop(PackageSpec(path=pwd()))
           Pkg.instantiate()
+        env:
+          JULIA_PKG_PRECOMPILE_AUTO: no
 
       - name: Build and deploy
         env:

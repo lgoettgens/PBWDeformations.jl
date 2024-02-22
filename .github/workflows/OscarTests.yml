@@ -22,7 +22,7 @@ concurrency:
 jobs:
   oscartest:
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 120
+    timeout-minutes: 30
     continue-on-error: ${{ matrix.julia-version == 'nightly' }}
     strategy:
       fail-fast: false
@@ -66,11 +66,10 @@ jobs:
           cache-name: julia-cache;workflow=${{ github.workflow }};julia=${{ matrix.julia-version }};arch=${{ runner.arch }}
           include-matrix: false
 
-      - name: "Dev Oscar.jl master"
+      - name: "Add deps (including Oscar.jl master)"
         shell: julia --project=. --color=yes {0}
         run: |
-          using Pkg
-          Pkg.add(url="https://github.com/lgoettgens/Oscar.jl", rev="master-pbwdeformations")
+          include(joinpath(pwd(), "etc", "add_oscar.jl"))
         env:
           JULIA_PKG_PRECOMPILE_AUTO: no
 
