@@ -143,7 +143,7 @@ function isomorphic_module_with_simple_structure(V::LieAlgebraModule)
             return U, V_to_U
         end
         U = exterior_power(C, k)
-        V_to_U = hom_power(V, U, B_to_C)
+        V_to_U = hom(V, U, B_to_C)
         if is_direct_sum(C)
             Ds = base_modules(C)
             m = length(Ds)
@@ -203,7 +203,7 @@ function isomorphic_module_with_simple_structure(V::LieAlgebraModule)
             return U, V_to_U
         end
         U = symmetric_power(C, k)
-        V_to_U = hom_power(V, U, B_to_C)
+        V_to_U = hom(V, U, B_to_C)
         if is_direct_sum(C)
             Ds = base_modules(C)
             m = length(Ds)
@@ -263,7 +263,7 @@ function isomorphic_module_with_simple_structure(V::LieAlgebraModule)
             return U, V_to_U
         end
         U = tensor_power(C, k)
-        V_to_U = hom_power(V, U, B_to_C)
+        V_to_U = hom(V, U, B_to_C)
         if is_direct_sum(C)
             Ds = base_modules(C)
             m = length(Ds)
