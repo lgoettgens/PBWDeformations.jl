@@ -26,8 +26,9 @@ jobs:
           - '1.6'
           - '1.8'
           - '1.9'
-          - '~1.10.0-0'
-          - 'nightly'
+          - '1.10'
+          - '1.11-nightly'
+          # - 'nightly'
         julia-arch:
           - x64
         os:
