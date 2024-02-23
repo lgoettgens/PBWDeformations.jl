@@ -112,7 +112,7 @@ export vertex_index
 export vertices
 
 function __init__()
-    add_verbose_scope(:PBWDeformations)
+    add_verbosity_scope(:PBWDeformations)
 end
 
 include("OscarPatches.jl")
