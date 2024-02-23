@@ -102,8 +102,8 @@ struct ArcDiagDeformBasis{C <: RingElem} <: DeformBasis{C}
         if !no_normalize
             iter = unique(Iterators.filter(b -> !iszero(b), iter))
             collected = Vector{DeformationMap{C}}(collect(iter))
-            _, rels = is_linearly_independent_with_relations(coefficient_ring(sp), reverse(collected))
-            inds = [1 + ncols(rels) - (findfirst(!iszero, vec(rels[i, :]))::Int) for i in nrows(rels):-1:1]
+            _, rels = is_linearly_independent_with_relations(coefficient_ring(sp), collected)
+            inds = [findlast(!iszero, vec(rels[i, :]))::Int for i in 1:nrows(rels)]
             deleteat!(collected, inds)
             return new{C}(length(collected), collected, extra_data, normalize)
         end
