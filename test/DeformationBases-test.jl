@@ -45,15 +45,12 @@
                 @test all_pbwdeformations(sp, b) == collect(b)
 
                 b = ArcDiagDeformBasis{QQFieldElem}(sp, 0:3)
-                @test length(collect(b)) == 4
-                @test all_pbwdeformations(sp, b; special_return=SMat)[1] ==
-                      matrix(QQ, 4, 3, [1, 0, 0, 0, -3 // 2, 1 // 2, 0, 1, 0, 0, 0, 1])
+                @test length(collect(b)) == 3
+                @test all_pbwdeformations(sp, b; special_return=SMat)[1] == matrix(QQ, [1 0; 0 -3//2; 0 1])
                 ms = all_pbwdeformations(sp, b)
-                @test length(ms) == 3
+                @test length(ms) == 2
                 @test ms[1] == collect(b)[1]
                 @test 2 * ms[2] == -3 * collect(b)[2] + 2 * collect(b)[3]
-                @test 2 * ms[3] == 1 * collect(b)[2] + 2 * collect(b)[4]
-                @test iszero(ms[2] + ms[3]) # TODO: Check result for linear independence
             end
 
             @testset "SO_5, ⋀²V" begin
@@ -139,15 +136,12 @@
                 @test all_pbwdeformations(sp, b) == collect(b)
 
                 b = PseudographDeformBasis{QQFieldElem}(sp, 0:3)
-                @test length(collect(b)) == 4
-                @test all_pbwdeformations(sp, b; special_return=SMat)[1] ==
-                      matrix(QQ, 4, 3, [1, 0, 0, 0, -3 // 2, 1 // 2, 0, 1, 0, 0, 0, 1])
+                @test length(collect(b)) == 3
+                @test all_pbwdeformations(sp, b; special_return=SMat)[1] == matrix(QQ, [1 0; 0 -3//2; 0 1])
                 ms = all_pbwdeformations(sp, b)
-                @test length(ms) == 3
+                @test length(ms) == 2
                 @test ms[1] == collect(b)[1]
                 @test 2 * ms[2] == -3 * collect(b)[2] + 2 * collect(b)[3]
-                @test 2 * ms[3] == 1 * collect(b)[2] + 2 * collect(b)[4]
-                @test iszero(ms[2] + ms[3])
             end
 
             @testset "SO_5, ⋀²V" begin

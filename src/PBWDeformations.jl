@@ -81,6 +81,8 @@ export general_linear_lie_algebra
 export inneighbor
 export inneighbors
 export is_crossing_free
+export is_linearly_independent
+export is_linearly_independent_with_relations
 export is_pbwdeformation
 export isomorphic_module_with_simple_structure
 export lookup_data
@@ -117,6 +119,7 @@ end
 
 include("OscarPatches.jl")
 
+include("LinearIndependence.jl")
 include("ModuleSimpleStructure.jl")
 
 include("DeformationBases/DeformBasis.jl")
