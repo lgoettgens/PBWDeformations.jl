@@ -64,6 +64,7 @@ export PseudographLabelled
 export SmashProductLie, SmashProductLieElem
 export SmashProductLieDeform, SmashProductLieDeformElem
 export StdDeformBasis
+export UnionBasis
 
 export abstract_module
 export all_arc_diagrams
@@ -133,5 +134,6 @@ include("Pseudograph.jl")
 include("DeformationBases/ArcDiagDeformBasis.jl")
 include("DeformationBases/PseudographDeformBasis.jl")
 include("DeformationBases/StdDeformBasis.jl")
+include("DeformationBases/UnionBasis.jl")
 
 end
