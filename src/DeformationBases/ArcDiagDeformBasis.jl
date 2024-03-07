@@ -87,8 +87,7 @@ struct ArcDiagDeformBasis{C <: RingElem} <: DeformBasis{C}
                             extra_data[basis_elem] = Set([diag])
                         end
                         basis_elem
-                    end for (counter, diag) in enumerate(diag_iter) if
-                    is_crossing_free(diag, part=:upper) && is_crossing_free(diag, part=:lower)
+                    end for (counter, diag) in enumerate(diag_iter) if is_crossing_free(diag, part=:lower)
                 )
                 # push!(lens, len)
                 # push!(iters, iter)
