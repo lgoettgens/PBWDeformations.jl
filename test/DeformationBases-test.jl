@@ -107,6 +107,73 @@
                 @test all_pbwdeformations(sp, b; special_return=SMat)[1] == matrix(QQ, 2, 1, [1, 0])
                 @test all_pbwdeformations(sp, b) == collect(b)[1:1]
             end
+
+            @testset "SO_2, T²V" begin
+                L = special_orthogonal_lie_algebra(QQ, 2)
+                V = tensor_power_obj(standard_module(L), 2)
+                sp = smash_product(L, V)
+
+                b = ArcDiagDeformBasis{QQFieldElem}(sp, 0:0)
+                @test length(b) == 0
+                ms = all_pbwdeformations(sp, b)
+                @test length(ms) == 0
+            end
+
+            @testset "SO_3, T²V" begin
+                L = special_orthogonal_lie_algebra(QQ, 3)
+                V = tensor_power_obj(standard_module(L), 2)
+                sp = smash_product(L, V)
+
+                b = ArcDiagDeformBasis{QQFieldElem}(sp, 0:0)
+                @test length(b) == 0
+                ms = all_pbwdeformations(sp, b)
+                @test length(ms) == 0
+            end
+
+            @testset "SO_2, T³V" begin
+                deformmap(sp::SmashProductLie, diag::String) = PBWDeformations.normalize_default(
+                    PBWDeformations.arcdiag_to_deformationmap(PBWDeformations.SO(), arc_diagram(Undirected, diag), sp),
+                )
+
+                L = special_orthogonal_lie_algebra(QQ, 2)
+                V = tensor_power_obj(standard_module(L), 3)
+                sp = smash_product(L, V)
+
+                b = ArcDiagDeformBasis{QQFieldElem}(sp, 0:0)
+                @test length(b) == 3
+                ms = all_pbwdeformations(sp, b)
+                @test length(ms) == 3
+                @test issetequal(ms, [
+                    deformmap(sp, "AACCEE,"), # same as "ABBDDA,"
+                    deformmap(sp, "AACDCD,"), # same as "ABADDB,"
+                    deformmap(sp, "ABABEE,"), # same as "ABBDAD,"
+                    # deformmap(sp, "ABCCAB,"), # same as "ABCBCA,"; already linear depedent on the others
+                ])
+            end
+
+            @testset "SO_3, T³V" begin
+                deformmap(sp::SmashProductLie, diag::String) = PBWDeformations.normalize_default(
+                    PBWDeformations.arcdiag_to_deformationmap(PBWDeformations.SO(), arc_diagram(Undirected, diag), sp),
+                )
+
+                L = special_orthogonal_lie_algebra(QQ, 3)
+                V = tensor_power_obj(standard_module(L), 3)
+                sp = smash_product(L, V)
+
+                b = ArcDiagDeformBasis{QQFieldElem}(sp, 0:0)
+                @test length(b) == 4
+                ms = all_pbwdeformations(sp, b)
+                @test length(ms) == 4
+                @test issetequal(
+                    ms,
+                    [
+                        deformmap(sp, "AACCEE,"), # same as "ABBDDA,"
+                        deformmap(sp, "AACDCD,"), # same as "ABADDB,"
+                        deformmap(sp, "ABABEE,"), # same as "ABBDAD,"
+                        deformmap(sp, "ABCCAB,"), # same as "ABCBCA,"
+                    ],
+                )
+            end
         end
 
     end
