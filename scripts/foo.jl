@@ -5,7 +5,8 @@ function printboth(io::IO, xs...)
 end
 
 function foo(L, V, d)
-    path, fileio = mktemp()
+    mkpath("output")
+    path, fileio = mktemp("output"; cleanup=false)
     println(path)
     show(fileio, MIME"text/plain"(), L)
     print(fileio, "\n\n")
