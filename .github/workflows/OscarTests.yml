@@ -64,6 +64,16 @@ jobs:
           cache-name: julia-cache;workflow=${{ github.workflow }};julia=${{ matrix.julia-version }};arch=${{ runner.arch }}
           include-matrix: false
 
+      - name: "Remove Oscar.jl compat"
+        shell: julia --color=yes {0}
+        run: |
+          using TOML
+          project = TOML.parsefile("Project.toml")
+          project["compat"]["Oscar"] = "1"
+          open("Project.toml", "w") do io
+              TOML.print(io, project)
+          end
+
       - name: "Dev Oscar.jl master"
         shell: julia --project=. --color=yes {0}
         run: |
