@@ -64,10 +64,11 @@ jobs:
           cache-name: julia-cache;workflow=${{ github.workflow }};julia=${{ matrix.julia-version }};arch=${{ runner.arch }}
           include-matrix: false
 
-      - name: "Add deps (including Oscar.jl master)"
+      - name: "Dev Oscar.jl master"
         shell: julia --project=. --color=yes {0}
         run: |
-          include(joinpath(pwd(), "etc", "add_oscar.jl"))
+          using Pkg
+          Pkg.add(url="https://github.com/oscar-system/Oscar.jl", rev="master")
         env:
           JULIA_PKG_PRECOMPILE_AUTO: no
 

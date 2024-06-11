@@ -20,29 +20,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - name: "Set up Julia"
-        uses: julia-actions/setup-julia@latest
+      - uses: julia-actions/setup-julia@v2
         with:
           version: '1.10'
-
-      - name: Restore cache
-        uses: julia-actions/cache@v1
-        with:
-          cache-name: 'docs-1.10'
-
-      - name: "Instantiate deps (including Oscar.jl master)"
-        shell: julia --project=docs/ --color=yes {0}
-        run: |
-          using Pkg
-          include(joinpath(pwd(), "etc", "add_oscar.jl"))
-          Pkg.develop(PackageSpec(path=pwd()))
-          Pkg.instantiate()
+      - uses: julia-actions/cache@v1
+      - uses: julia-actions/julia-buildpkg@v1
+      - uses: julia-actions/julia-docdeploy@v1
         env:
-          JULIA_PKG_PRECOMPILE_AUTO: no
-
-      - name: Build and deploy
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # For authentication with GitHub Actions token
-          DOCUMENTER_KEY: ${{ secrets.DOCUMENTER_KEY }} # For authentication with SSH deploy key
-        run: julia --project=docs/ --color=yes docs/make.jl
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DOCUMENTER_KEY: ${{ secrets.DOCUMENTER_KEY }}

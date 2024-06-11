@@ -17,15 +17,10 @@ To solve classification problems efficiently, we use representation theoretic id
 - For some modules of ``\mathfrak{so}_n``, give an explicit basis using arc diagrams or pseudographs (cf. [FM22](@cite)).
 
 ## Installation
-o install this package in Julia, clone it from github and then run the following command in the Julia REPL from the package directory:
+As this package heavily relies on [Oscar](https://oscar.computeralgebra.de/), it is recommended to install Oscar first ([installation instructions](https://oscar.computeralgebra.de/install/)). Then, install this package via the Julia package manager:
 ```
-using Pkg
-Pkg.activate(".")
-include(joinpath(pwd(), "etc", "add_oscar.jl"))
-using PBWDeformations, Oscar
+] add PBWDeformations
 ```
-
-This package depends on a development version of the [Oscar](https://oscar.computeralgebra.de/) package. The `add_oscar.jl` script will add the Oscar package to the current environment. If you want to use the package in a different environment, you can run the `add_oscar.jl` script int the other environment to obtain the specific version of Oscar.
 
 ## Outline
 ```@contents
