@@ -49,7 +49,7 @@
         end
 
         @testset "so_4(QQ) ⋉ ⋀^2 V" begin
-            L = special_orthogonal_lie_algebra(QQ, 4)
+            L = special_orthogonal_lie_algebra(QQ, 4, identity_matrix(QQ, 4))
             V = exterior_power_obj(standard_module(L), 2)
 
             sp = smash_product(R, L, V)
