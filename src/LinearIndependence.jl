@@ -1,7 +1,7 @@
 const _linear_independence_rref_cutoff = 0
 
 function column_rref!(mat::MatElem{T}) where {T <: FieldElem}
-    rk = rref!(AbstractAlgebra.Solve.lazy_transpose(mat))
+    rk = rref!(Oscar.AbstractAlgebra.Solve.lazy_transpose(mat))
     return view(mat, :, 1:rk)
 end
 
