@@ -2,7 +2,7 @@
 
     @testset "SmashProductLieDeform constructor" begin
         @testset "R = $R" for R in [QQ, cyclotomic_field(4)[1]]
-            L = special_orthogonal_lie_algebra(R, 4)
+            L = special_orthogonal_lie_algebra(R, 4, identity_matrix(R, 4))
             V = exterior_power_obj(standard_module(L), 2)
             sp = smash_product(L, V)
 
@@ -57,17 +57,20 @@
     @testset "symmetric_deformation constructor" begin
         @testset "R = $R" for R in [QQ, cyclotomic_field(4)[1]]
 
-            for (sp, dimL, dimV) in [begin
-                L = special_orthogonal_lie_algebra(R, 4)
-                V = exterior_power_obj(standard_module(L), 2)
-                sp = smash_product(L, V)
-                return (sp, 6, 6)
-            end, begin
-                L = general_linear_lie_algebra(R, 4)
-                V = symmetric_power_obj(standard_module(L), 2)
-                sp = smash_product(L, V)
-                return (sp, 16, 10)
-            end]
+            for (sp, dimL, dimV) in [
+                begin
+                    L = special_orthogonal_lie_algebra(R, 4, identity_matrix(R, 4))
+                    V = exterior_power_obj(standard_module(L), 2)
+                    sp = smash_product(L, V)
+                    return (sp, 6, 6)
+                end,
+                begin
+                    L = general_linear_lie_algebra(R, 4)
+                    V = symmetric_power_obj(standard_module(L), 2)
+                    sp = smash_product(L, V)
+                    return (sp, 16, 10)
+                end,
+            ]
 
                 d = symmetric_deformation(sp)
 
@@ -100,7 +103,7 @@
     @testset "SmashProductLieDeform sanitize checks" begin
         @testset "R = $R" for R in [QQ, cyclotomic_field(4)[1]]
 
-            L = special_orthogonal_lie_algebra(R, 4)
+            L = special_orthogonal_lie_algebra(R, 4, identity_matrix(R, 4))
             V = exterior_power_obj(standard_module(L), 2)
             sp = smash_product(L, V)
 

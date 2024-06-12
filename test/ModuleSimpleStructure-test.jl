@@ -1,5 +1,5 @@
 @testset "ModuleSimpleStructure.jl tests" begin
-    @testset for L in [general_linear_lie_algebra(QQ, 3), special_orthogonal_lie_algebra(QQ, 3)]
+    @testset for L in [general_linear_lie_algebra(QQ, 3), special_orthogonal_lie_algebra(QQ, 3, identity_matrix(QQ, 3))]
         stdV = standard_module(L)
 
         @testset "Duality, standard" begin

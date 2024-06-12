@@ -20,6 +20,9 @@ struct ArcDiagDeformBasis{C <: RingElem} <: DeformBasis{C}
     ) where {C <: RingElem}
         T = get_attribute(base_lie_algebra(sp), :type, nothing)
         @req T in [:special_orthogonal, :general_linear] "Only works for so_n and gl_n."
+        if T == :special_orthogonal && has_attribute(base_lie_algebra(sp), :form)
+            @req isone(get_attribute(base_lie_algebra(sp), :form)) "Only works for so_n represented as skew-symmetric matrices."
+        end
         return ArcDiagDeformBasis{C}(Val(T), sp, degs; no_normalize)
     end
 

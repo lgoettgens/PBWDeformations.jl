@@ -18,6 +18,9 @@ struct PseudographDeformBasis{C <: RingElem} <: DeformBasis{C}
     ) where {C <: RingElem}
         T = get_attribute(base_lie_algebra(sp), :type, nothing)
         @req T == :special_orthogonal "Only works for so_n."
+        if T == :special_orthogonal && has_attribute(base_lie_algebra(sp), :form)
+            @req isone(get_attribute(base_lie_algebra(sp), :form)) "Only works for so_n represented as skew-symmetric matrices."
+        end
         return PseudographDeformBasis{C}(Val(T), sp, degs; no_normalize)
     end
 

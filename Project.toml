@@ -1,13 +1,11 @@
 name = "PBWDeformations"
 uuid = "5e7992ee-18b2-4301-9ba0-4f17696dc75a"
 authors = ["Lars Göttgens <lars.goettgens@rwth-aachen.de>", "Johannes Flake <flake@art.rwth-aachen.de>"]
-version = "0.3.0-DEV"
+version = "0.3.0"
 
 [deps]
-AbstractAlgebra = "c3fe647b-3220-5bb0-a1ea-a7954cac585d"
 Oscar = "f1435218-dba5-11e9-1e4d-f1a5fab5fc13"
 
 [compat]
-AbstractAlgebra = "0.40.0"
-Oscar = "1.0"
+Oscar = "~1.0.3"
 julia = "1.6"

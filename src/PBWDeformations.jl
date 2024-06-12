@@ -2,7 +2,7 @@ module PBWDeformations
 
 using Oscar
 
-using AbstractAlgebra: ProductIterator
+using Oscar.AbstractAlgebra: ProductIterator
 
 using Oscar: IntegerUnion
 
@@ -20,12 +20,12 @@ using Oscar.LieAlgebras: permutations
 using Oscar.LieAlgebras: permutations_with_sign
 
 
-import AbstractAlgebra: coefficient_ring
-import AbstractAlgebra: elem_type
-import AbstractAlgebra: gen
-import AbstractAlgebra: gens
-import AbstractAlgebra: ngens
-import AbstractAlgebra: parent_type
+import Oscar.AbstractAlgebra: coefficient_ring
+import Oscar.AbstractAlgebra: elem_type
+import Oscar.AbstractAlgebra: gen
+import Oscar.AbstractAlgebra: gens
+import Oscar.AbstractAlgebra: ngens
+import Oscar.AbstractAlgebra: parent_type
 
 import Oscar: base_lie_algebra
 import Oscar: comm

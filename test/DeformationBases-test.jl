@@ -1,7 +1,7 @@
 @testset "DeformationBases/*.jl tests" begin
     @testset "ArcDiagDeformBasis.jl" begin
         @testset "arcdiag_to_deformationmap(:special_orthogonal, :exterior)" begin
-            L = special_orthogonal_lie_algebra(QQ, 4)
+            L = special_orthogonal_lie_algebra(QQ, 4, identity_matrix(QQ, 4))
             T = Val(:special_orthogonal)
             V = exterior_power_obj(standard_module(L), 2)
             sp = smash_product(L, V)
@@ -23,7 +23,7 @@
 
         @testset "correctness regression" begin
             @testset "SO_4, ⋀²V" begin
-                L = special_orthogonal_lie_algebra(QQ, 4)
+                L = special_orthogonal_lie_algebra(QQ, 4, identity_matrix(QQ, 4))
                 V = exterior_power_obj(standard_module(L), 2)
                 sp = smash_product(L, V)
 
@@ -36,10 +36,10 @@
                 @test length(collect(b)) == 1
                 if VERSION <= v"1.7-"
                     @test_broken repr("text/plain", collect(b)) ==
-                                 "1-element Vector{MatElem{<:FreeAssAlgElem{QQFieldElem}}}:\n [0 x_2_3 x_2_4 -x_1_3 -x_1_4 0; -x_2_3 0 x_3_4 x_1_2 0 -x_1_4; -x_2_4 -x_3_4 0 0 x_1_2 x_1_3; x_1_3 -x_1_2 0 0 x_3_4 -x_2_4; x_1_4 0 -x_1_2 -x_3_4 0 x_2_3; 0 x_1_4 -x_1_3 x_2_4 -x_2_3 0]"
+                                 "1-element Vector{MatElem{<:FreeAssAlgElem{QQFieldElem}}}:\n [0 x_4 x_5 -x_2 -x_3 0; -x_4 0 x_6 x_1 0 -x_3; -x_5 -x_6 0 0 x_1 x_2; x_2 -x_1 0 0 x_6 -x_5; x_3 0 -x_1 -x_6 0 x_4; 0 x_3 -x_2 x_5 -x_4 0]"
                 else
                     @test repr("text/plain", collect(b)) ==
-                          "1-element Vector{MatElem{<:FreeAssAlgElem{QQFieldElem}}}:\n [0 x_2_3 x_2_4 -x_1_3 -x_1_4 0; -x_2_3 0 x_3_4 x_1_2 0 -x_1_4; -x_2_4 -x_3_4 0 0 x_1_2 x_1_3; x_1_3 -x_1_2 0 0 x_3_4 -x_2_4; x_1_4 0 -x_1_2 -x_3_4 0 x_2_3; 0 x_1_4 -x_1_3 x_2_4 -x_2_3 0]"
+                          "1-element Vector{MatElem{<:FreeAssAlgElem{QQFieldElem}}}:\n [0 x_4 x_5 -x_2 -x_3 0; -x_4 0 x_6 x_1 0 -x_3; -x_5 -x_6 0 0 x_1 x_2; x_2 -x_1 0 0 x_6 -x_5; x_3 0 -x_1 -x_6 0 x_4; 0 x_3 -x_2 x_5 -x_4 0]"
                 end
                 @test all_pbwdeformations(sp, b; special_return=SMat)[1] == matrix(QQ, 1, 1, [1])
                 @test all_pbwdeformations(sp, b) == collect(b)
@@ -54,7 +54,7 @@
             end
 
             @testset "SO_5, ⋀²V" begin
-                L = special_orthogonal_lie_algebra(QQ, 5)
+                L = special_orthogonal_lie_algebra(QQ, 5, identity_matrix(QQ, 5))
                 V = exterior_power_obj(standard_module(L), 2)
                 sp = smash_product(L, V)
 
@@ -67,17 +67,17 @@
                 @test length(collect(b)) == 1
                 if VERSION <= v"1.7-"
                     @test_broken repr("text/plain", collect(b)) ==
-                                 "1-element Vector{MatElem{<:FreeAssAlgElem{QQFieldElem}}}:\n [0 x_2_3 x_2_4 x_2_5 -x_1_3 -x_1_4 -x_1_5 0 0 0; -x_2_3 0 x_3_4 x_3_5 x_1_2 0 0 -x_1_4 -x_1_5 0; -x_2_4 -x_3_4 0 x_4_5 0 x_1_2 0 x_1_3 0 -x_1_5; -x_2_5 -x_3_5 -x_4_5 0 0 0 x_1_2 0 x_1_3 x_1_4; x_1_3 -x_1_2 0 0 0 x_3_4 x_3_5 -x_2_4 -x_2_5 0; x_1_4 0 -x_1_2 0 -x_3_4 0 x_4_5 x_2_3 0 -x_2_5; x_1_5 0 0 -x_1_2 -x_3_5 -x_4_5 0 0 x_2_3 x_2_4; 0 x_1_4 -x_1_3 0 x_2_4 -x_2_3 0 0 x_4_5 -x_3_5; 0 x_1_5 0 -x_1_3 x_2_5 0 -x_2_3 -x_4_5 0 x_3_4; 0 0 x_1_5 -x_1_4 0 x_2_5 -x_2_4 x_3_5 -x_3_4 0]"
+                                 "1-element Vector{MatElem{<:FreeAssAlgElem{QQFieldElem}}}:\n [0 x_5 x_6 x_7 -x_2 -x_3 -x_4 0 0 0; -x_5 0 x_8 x_9 x_1 0 0 -x_3 -x_4 0; -x_6 -x_8 0 x_10 0 x_1 0 x_2 0 -x_4; -x_7 -x_9 -x_10 0 0 0 x_1 0 x_2 x_3; x_2 -x_1 0 0 0 x_8 x_9 -x_6 -x_7 0; x_3 0 -x_1 0 -x_8 0 x_10 x_5 0 -x_7; x_4 0 0 -x_1 -x_9 -x_10 0 0 x_5 x_6; 0 x_3 -x_2 0 x_6 -x_5 0 0 x_10 -x_9; 0 x_4 0 -x_2 x_7 0 -x_5 -x_10 0 x_8; 0 0 x_4 -x_3 0 x_7 -x_6 x_9 -x_8 0]"
                 else
                     @test repr("text/plain", collect(b)) ==
-                          "1-element Vector{MatElem{<:FreeAssAlgElem{QQFieldElem}}}:\n [0 x_2_3 x_2_4 x_2_5 -x_1_3 -x_1_4 -x_1_5 0 0 0; -x_2_3 0 x_3_4 x_3_5 x_1_2 0 0 -x_1_4 -x_1_5 0; -x_2_4 -x_3_4 0 x_4_5 0 x_1_2 0 x_1_3 0 -x_1_5; -x_2_5 -x_3_5 -x_4_5 0 0 0 x_1_2 0 x_1_3 x_1_4; x_1_3 -x_1_2 0 0 0 x_3_4 x_3_5 -x_2_4 -x_2_5 0; x_1_4 0 -x_1_2 0 -x_3_4 0 x_4_5 x_2_3 0 -x_2_5; x_1_5 0 0 -x_1_2 -x_3_5 -x_4_5 0 0 x_2_3 x_2_4; 0 x_1_4 -x_1_3 0 x_2_4 -x_2_3 0 0 x_4_5 -x_3_5; 0 x_1_5 0 -x_1_3 x_2_5 0 -x_2_3 -x_4_5 0 x_3_4; 0 0 x_1_5 -x_1_4 0 x_2_5 -x_2_4 x_3_5 -x_3_4 0]"
+                          "1-element Vector{MatElem{<:FreeAssAlgElem{QQFieldElem}}}:\n [0 x_5 x_6 x_7 -x_2 -x_3 -x_4 0 0 0; -x_5 0 x_8 x_9 x_1 0 0 -x_3 -x_4 0; -x_6 -x_8 0 x_10 0 x_1 0 x_2 0 -x_4; -x_7 -x_9 -x_10 0 0 0 x_1 0 x_2 x_3; x_2 -x_1 0 0 0 x_8 x_9 -x_6 -x_7 0; x_3 0 -x_1 0 -x_8 0 x_10 x_5 0 -x_7; x_4 0 0 -x_1 -x_9 -x_10 0 0 x_5 x_6; 0 x_3 -x_2 0 x_6 -x_5 0 0 x_10 -x_9; 0 x_4 0 -x_2 x_7 0 -x_5 -x_10 0 x_8; 0 0 x_4 -x_3 0 x_7 -x_6 x_9 -x_8 0]"
                 end
                 @test all_pbwdeformations(sp, b; special_return=SMat)[1] == matrix(QQ, 1, 1, [1])
                 @test all_pbwdeformations(sp, b) == collect(b)
             end
 
             @testset "SO_4, S²V" begin
-                L = special_orthogonal_lie_algebra(QQ, 4)
+                L = special_orthogonal_lie_algebra(QQ, 4, identity_matrix(QQ, 4))
                 V = symmetric_power_obj(standard_module(L), 2)
                 sp = smash_product(L, V)
 
@@ -93,7 +93,7 @@
             end
 
             @testset "SO_5, S²V" begin
-                L = special_orthogonal_lie_algebra(QQ, 5)
+                L = special_orthogonal_lie_algebra(QQ, 5, identity_matrix(QQ, 5))
                 V = symmetric_power_obj(standard_module(L), 2)
                 sp = smash_product(L, V)
 
@@ -109,7 +109,7 @@
             end
 
             @testset "SO_2, T²V" begin
-                L = special_orthogonal_lie_algebra(QQ, 2)
+                L = special_orthogonal_lie_algebra(QQ, 2, identity_matrix(QQ, 2))
                 V = tensor_power_obj(standard_module(L), 2)
                 sp = smash_product(L, V)
 
@@ -120,7 +120,7 @@
             end
 
             @testset "SO_3, T²V" begin
-                L = special_orthogonal_lie_algebra(QQ, 3)
+                L = special_orthogonal_lie_algebra(QQ, 3, identity_matrix(QQ, 3))
                 V = tensor_power_obj(standard_module(L), 2)
                 sp = smash_product(L, V)
 
@@ -135,7 +135,7 @@
                     PBWDeformations.arcdiag_to_deformationmap(PBWDeformations.SO(), arc_diagram(Undirected, diag), sp),
                 )
 
-                L = special_orthogonal_lie_algebra(QQ, 2)
+                L = special_orthogonal_lie_algebra(QQ, 2, identity_matrix(QQ, 2))
                 V = tensor_power_obj(standard_module(L), 3)
                 sp = smash_product(L, V)
 
@@ -156,7 +156,7 @@
                     PBWDeformations.arcdiag_to_deformationmap(PBWDeformations.SO(), arc_diagram(Undirected, diag), sp),
                 )
 
-                L = special_orthogonal_lie_algebra(QQ, 3)
+                L = special_orthogonal_lie_algebra(QQ, 3, identity_matrix(QQ, 3))
                 V = tensor_power_obj(standard_module(L), 3)
                 sp = smash_product(L, V)
 
@@ -181,7 +181,7 @@
     @testset "PseudographDeformBasis.jl" begin
         @testset "correctness regression" begin
             @testset "SO_4, ⋀²V" begin
-                L = special_orthogonal_lie_algebra(QQ, 4)
+                L = special_orthogonal_lie_algebra(QQ, 4, identity_matrix(QQ, 4))
                 V = exterior_power_obj(standard_module(L), 2)
                 sp = smash_product(L, V)
 
@@ -194,10 +194,10 @@
                 @test length(collect(b)) == 1
                 if VERSION <= v"1.7-"
                     @test_broken repr("text/plain", collect(b)) ==
-                                 "1-element Vector{MatElem{<:FreeAssAlgElem{QQFieldElem}}}:\n [0 x_2_3 x_2_4 -x_1_3 -x_1_4 0; -x_2_3 0 x_3_4 x_1_2 0 -x_1_4; -x_2_4 -x_3_4 0 0 x_1_2 x_1_3; x_1_3 -x_1_2 0 0 x_3_4 -x_2_4; x_1_4 0 -x_1_2 -x_3_4 0 x_2_3; 0 x_1_4 -x_1_3 x_2_4 -x_2_3 0]"
+                                 "1-element Vector{MatElem{<:FreeAssAlgElem{QQFieldElem}}}:\n [0 x_4 x_5 -x_2 -x_3 0; -x_4 0 x_6 x_1 0 -x_3; -x_5 -x_6 0 0 x_1 x_2; x_2 -x_1 0 0 x_6 -x_5; x_3 0 -x_1 -x_6 0 x_4; 0 x_3 -x_2 x_5 -x_4 0]"
                 else
                     @test repr("text/plain", collect(b)) ==
-                          "1-element Vector{MatElem{<:FreeAssAlgElem{QQFieldElem}}}:\n [0 x_2_3 x_2_4 -x_1_3 -x_1_4 0; -x_2_3 0 x_3_4 x_1_2 0 -x_1_4; -x_2_4 -x_3_4 0 0 x_1_2 x_1_3; x_1_3 -x_1_2 0 0 x_3_4 -x_2_4; x_1_4 0 -x_1_2 -x_3_4 0 x_2_3; 0 x_1_4 -x_1_3 x_2_4 -x_2_3 0]"
+                          "1-element Vector{MatElem{<:FreeAssAlgElem{QQFieldElem}}}:\n [0 x_4 x_5 -x_2 -x_3 0; -x_4 0 x_6 x_1 0 -x_3; -x_5 -x_6 0 0 x_1 x_2; x_2 -x_1 0 0 x_6 -x_5; x_3 0 -x_1 -x_6 0 x_4; 0 x_3 -x_2 x_5 -x_4 0]"
                 end
                 @test all_pbwdeformations(sp, b; special_return=SMat)[1] == matrix(QQ, 1, 1, [1])
                 @test all_pbwdeformations(sp, b) == collect(b)
@@ -212,7 +212,7 @@
             end
 
             @testset "SO_5, ⋀²V" begin
-                L = special_orthogonal_lie_algebra(QQ, 5)
+                L = special_orthogonal_lie_algebra(QQ, 5, identity_matrix(QQ, 5))
                 V = exterior_power_obj(standard_module(L), 2)
                 sp = smash_product(L, V)
 
@@ -225,10 +225,10 @@
                 @test length(collect(b)) == 1
                 if VERSION <= v"1.7-"
                     @test_broken repr("text/plain", collect(b)) ==
-                                 "1-element Vector{MatElem{<:FreeAssAlgElem{QQFieldElem}}}:\n [0 x_2_3 x_2_4 x_2_5 -x_1_3 -x_1_4 -x_1_5 0 0 0; -x_2_3 0 x_3_4 x_3_5 x_1_2 0 0 -x_1_4 -x_1_5 0; -x_2_4 -x_3_4 0 x_4_5 0 x_1_2 0 x_1_3 0 -x_1_5; -x_2_5 -x_3_5 -x_4_5 0 0 0 x_1_2 0 x_1_3 x_1_4; x_1_3 -x_1_2 0 0 0 x_3_4 x_3_5 -x_2_4 -x_2_5 0; x_1_4 0 -x_1_2 0 -x_3_4 0 x_4_5 x_2_3 0 -x_2_5; x_1_5 0 0 -x_1_2 -x_3_5 -x_4_5 0 0 x_2_3 x_2_4; 0 x_1_4 -x_1_3 0 x_2_4 -x_2_3 0 0 x_4_5 -x_3_5; 0 x_1_5 0 -x_1_3 x_2_5 0 -x_2_3 -x_4_5 0 x_3_4; 0 0 x_1_5 -x_1_4 0 x_2_5 -x_2_4 x_3_5 -x_3_4 0]"
+                                 "1-element Vector{MatElem{<:FreeAssAlgElem{QQFieldElem}}}:\n [0 x_5 x_6 x_7 -x_2 -x_3 -x_4 0 0 0; -x_5 0 x_8 x_9 x_1 0 0 -x_3 -x_4 0; -x_6 -x_8 0 x_10 0 x_1 0 x_2 0 -x_4; -x_7 -x_9 -x_10 0 0 0 x_1 0 x_2 x_3; x_2 -x_1 0 0 0 x_8 x_9 -x_6 -x_7 0; x_3 0 -x_1 0 -x_8 0 x_10 x_5 0 -x_7; x_4 0 0 -x_1 -x_9 -x_10 0 0 x_5 x_6; 0 x_3 -x_2 0 x_6 -x_5 0 0 x_10 -x_9; 0 x_4 0 -x_2 x_7 0 -x_5 -x_10 0 x_8; 0 0 x_4 -x_3 0 x_7 -x_6 x_9 -x_8 0]"
                 else
                     @test repr("text/plain", collect(b)) ==
-                          "1-element Vector{MatElem{<:FreeAssAlgElem{QQFieldElem}}}:\n [0 x_2_3 x_2_4 x_2_5 -x_1_3 -x_1_4 -x_1_5 0 0 0; -x_2_3 0 x_3_4 x_3_5 x_1_2 0 0 -x_1_4 -x_1_5 0; -x_2_4 -x_3_4 0 x_4_5 0 x_1_2 0 x_1_3 0 -x_1_5; -x_2_5 -x_3_5 -x_4_5 0 0 0 x_1_2 0 x_1_3 x_1_4; x_1_3 -x_1_2 0 0 0 x_3_4 x_3_5 -x_2_4 -x_2_5 0; x_1_4 0 -x_1_2 0 -x_3_4 0 x_4_5 x_2_3 0 -x_2_5; x_1_5 0 0 -x_1_2 -x_3_5 -x_4_5 0 0 x_2_3 x_2_4; 0 x_1_4 -x_1_3 0 x_2_4 -x_2_3 0 0 x_4_5 -x_3_5; 0 x_1_5 0 -x_1_3 x_2_5 0 -x_2_3 -x_4_5 0 x_3_4; 0 0 x_1_5 -x_1_4 0 x_2_5 -x_2_4 x_3_5 -x_3_4 0]"
+                          "1-element Vector{MatElem{<:FreeAssAlgElem{QQFieldElem}}}:\n [0 x_5 x_6 x_7 -x_2 -x_3 -x_4 0 0 0; -x_5 0 x_8 x_9 x_1 0 0 -x_3 -x_4 0; -x_6 -x_8 0 x_10 0 x_1 0 x_2 0 -x_4; -x_7 -x_9 -x_10 0 0 0 x_1 0 x_2 x_3; x_2 -x_1 0 0 0 x_8 x_9 -x_6 -x_7 0; x_3 0 -x_1 0 -x_8 0 x_10 x_5 0 -x_7; x_4 0 0 -x_1 -x_9 -x_10 0 0 x_5 x_6; 0 x_3 -x_2 0 x_6 -x_5 0 0 x_10 -x_9; 0 x_4 0 -x_2 x_7 0 -x_5 -x_10 0 x_8; 0 0 x_4 -x_3 0 x_7 -x_6 x_9 -x_8 0]"
                 end
                 @test all_pbwdeformations(sp, b; special_return=SMat)[1] == matrix(QQ, 1, 1, [1])
                 @test all_pbwdeformations(sp, b) == collect(b)
