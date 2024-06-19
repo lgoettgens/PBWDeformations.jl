@@ -1,0 +1,6 @@
+[deps]
+Oscar = "f1435218-dba5-11e9-1e4d-f1a5fab5fc13"
+PBWDeformations = "5e7992ee-18b2-4301-9ba0-4f17696dc75a"
+
+[compat]
+PBWDeformations = "=0.3.0"
