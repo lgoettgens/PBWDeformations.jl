@@ -78,7 +78,7 @@ end
 #
 ###############################################################################
 
-function coefficient_comparison(eq::FreeAssAlgElem)
+function coefficient_comparison(eq::FreeAssociativeAlgebraElem)
     return collect(coefficients(eq))
 end
 

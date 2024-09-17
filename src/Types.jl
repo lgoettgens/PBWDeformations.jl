@@ -219,23 +219,23 @@ end
 
 """
 The struct representing a Lie algebra smash product.
-It consists of the underlying FreeAssAlgebra with relations and some metadata.
+It consists of the underlying FreeAssociativeAlgebra with relations and some metadata.
 It gets created by calling [`smash_product`](@ref).
 """
 @attributes mutable struct SmashProductLie{C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}} <: NCRing
     coeff_ring::Ring
     L::LieAlgebra{LieC}
     V::LieAlgebraModule{LieC}
-    alg::FreeAssAlgebra{C}
-    rels::Matrix{Union{Nothing, F}} where {F <: FreeAssAlgElem{C}}
+    alg::FreeAssociativeAlgebra{C}
+    rels::Matrix{Union{Nothing, F}} where {F <: FreeAssociativeAlgebraElem{C}}
 
     # default constructor for @attributes
     function SmashProductLie{C, LieC, LieT}(
         coeff_ring::Ring,
         L::LieAlgebra{LieC},
         V::LieAlgebraModule{LieC},
-        alg::FreeAssAlgebra{C},
-        rels::Matrix{Union{Nothing, F}} where {F <: FreeAssAlgElem{C}},
+        alg::FreeAssociativeAlgebra{C},
+        rels::Matrix{Union{Nothing, F}} where {F <: FreeAssociativeAlgebraElem{C}},
     ) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}}
         new{C, LieC, LieT}(coeff_ring, L, V, alg, rels)
     end
@@ -243,12 +243,12 @@ end
 
 mutable struct SmashProductLieElem{C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}} <: NCRingElem
     p::SmashProductLie{C, LieC, LieT}   # parent
-    alg_elem::FreeAssAlgElem{C}
+    alg_elem::FreeAssociativeAlgebraElem{C}
     simplified::Bool
 
     function SmashProductLieElem(
         p::SmashProductLie{C, LieC, LieT},
-        alg_elem::FreeAssAlgElem{C};
+        alg_elem::FreeAssociativeAlgebraElem{C};
         simplified::Bool=false,
     ) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}}
         @req underlying_algebra(p) === parent(alg_elem) "Incompatible algebras."
@@ -292,19 +292,19 @@ abstract type DeformBasis{T <: SmashProductLieElem} end
 
 """
 The struct representing a deformation of a Lie algebra smash product.
-It consists of the underlying FreeAssAlgebra with relations and some metadata.
+It consists of the underlying FreeAssociativeAlgebra with relations and some metadata.
 It gets created by calling [`deform`](@ref).
 """
 @attributes mutable struct SmashProductLieDeform{C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}} <:
                            NCRing
     sp::SmashProductLie{C, LieC, LieT}
-    rels::Matrix{Union{Nothing, F}} where {F <: FreeAssAlgElem{C}}
+    rels::Matrix{Union{Nothing, F}} where {F <: FreeAssociativeAlgebraElem{C}}
     kappa::DeformationMap{SmashProductLieElem{C, LieC, LieT}}
 
     # default constructor for @attributes
     function SmashProductLieDeform{C, LieC, LieT}(
         sp::SmashProductLie{C, LieC, LieT},
-        rels::Matrix{Union{Nothing, F}} where {F <: FreeAssAlgElem{C}},
+        rels::Matrix{Union{Nothing, F}} where {F <: FreeAssociativeAlgebraElem{C}},
         kappa::DeformationMap{SmashProductLieElem{C, LieC, LieT}},
     ) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}}
         new{C, LieC, LieT}(sp, rels, kappa)
@@ -313,12 +313,12 @@ end
 
 mutable struct SmashProductLieDeformElem{C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}} <: NCRingElem
     p::SmashProductLieDeform{C, LieC, LieT}   # parent
-    alg_elem::FreeAssAlgElem{C}
+    alg_elem::FreeAssociativeAlgebraElem{C}
     simplified::Bool
 
     function SmashProductLieDeformElem(
         p::SmashProductLieDeform{C, LieC, LieT},
-        alg_elem::FreeAssAlgElem{C};
+        alg_elem::FreeAssociativeAlgebraElem{C};
         simplified::Bool=false,
     ) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}}
         @req underlying_algebra(p) === parent(alg_elem) "Incompatible algebras."
