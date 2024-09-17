@@ -1,4 +1,4 @@
-function isomorphic_module_with_simple_structure(V::LieAlgebraModule)
+function isomorphic_module_with_simple_structure(V::T) where {T <: LieAlgebraModule}
     if _is_standard_module(V)
         return V, identity_map(V)
     elseif ((fl, B) = _is_dual(V); fl)
@@ -59,7 +59,7 @@ function isomorphic_module_with_simple_structure(V::LieAlgebraModule)
         Cs_with_hom = [isomorphic_module_with_simple_structure(B) for B in Bs]
         Cprod = tensor_product([C for (C, _) in Cs_with_hom]...)
         V_to_Cprod = hom_tensor(V, Cprod, [B_to_C for (_, B_to_C) in Cs_with_hom])
-        Ds = []
+        Ds = T[]
         for (C, _) in Cs_with_hom
             if ((fl, C_factors) = _is_tensor_product(C); fl)
                 push!(Ds, C_factors...)
@@ -70,7 +70,7 @@ function isomorphic_module_with_simple_structure(V::LieAlgebraModule)
         Ds_filtered = filter(D -> dim(D) != 1 || any(!iszero, D.transformation_matrices), Ds)
         Ds = length(Ds_filtered) > 0 ? Ds_filtered : [Ds[1]]
         if length(Ds) == 1
-            U = Ds[1]
+            U = only(Ds)
         else
             U = tensor_product(Ds...)
         end
@@ -86,7 +86,7 @@ function isomorphic_module_with_simple_structure(V::LieAlgebraModule)
         else
             Es_with_summands =
                 [((fl, D_summands) = _is_direct_sum(D); fl) ? (D, D_summands) : (direct_sum(D), [D]) for D in Ds]
-            Fs = []
+            Fs = T[]
             inv_pure = inv(get_attribute(U, :tensor_pure_function))
             mat = zero_matrix(coefficient_ring(U), dim(U), dim(U))
             dim_accum = 0
@@ -137,7 +137,7 @@ function isomorphic_module_with_simple_structure(V::LieAlgebraModule)
         V_to_U = hom(V, U, B_to_C)
         if ((fl, Ds) = _is_direct_sum(C); fl)
             m = length(Ds)
-            Es = []
+            Es = T[]
             inv_pure = inv(get_attribute(U, :wedge_pure_function))
             projs = canonical_projections(C)
             mat = zero_matrix(coefficient_ring(U), dim(U), dim(U))
@@ -194,7 +194,7 @@ function isomorphic_module_with_simple_structure(V::LieAlgebraModule)
         V_to_U = hom(V, U, B_to_C)
         if ((fl, Ds) = _is_direct_sum(C); fl)
             m = length(Ds)
-            Es = []
+            Es = T[]
             inv_pure = inv(get_attribute(U, :mult_pure_function))
             projs = canonical_projections(C)
             mat = zero_matrix(coefficient_ring(U), dim(U), dim(U))
@@ -251,7 +251,7 @@ function isomorphic_module_with_simple_structure(V::LieAlgebraModule)
         V_to_U = hom(V, U, B_to_C)
         if ((fl, Ds) = _is_direct_sum(C); fl)
             m = length(Ds)
-            Es = []
+            Es = T[]
             inv_pure = inv(get_attribute(U, :tensor_pure_function))
             projs = canonical_projections(C)
             mat = zero_matrix(coefficient_ring(U), dim(U), dim(U))
