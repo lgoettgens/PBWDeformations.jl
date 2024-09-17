@@ -26,7 +26,7 @@ end
 using Oscar
 using PBWDeformations
 
-function kappa_to_string(kappa::Matrix{FreeAssAlgElem{fmpq}})
+function kappa_to_string(kappa::Matrix{FreeAssociativeAlgebraElem{fmpq}})
     dim = size(kappa, 1)
     string = "["
     for i in 1:dim

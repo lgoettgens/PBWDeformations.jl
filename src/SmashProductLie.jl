@@ -133,7 +133,7 @@ function (Sp::SmashProductLie)(e::Union{RingElement, NCRingElem})
     return Sp(underlying_algebra(Sp)(e))
 end
 
-function (Sp::SmashProductLie{C})(e::FreeAssAlgElem{C}) where {C <: RingElem}
+function (Sp::SmashProductLie{C})(e::FreeAssociativeAlgebraElem{C}) where {C <: RingElem}
     if underlying_algebra(Sp) !== parent(e)
         e = underlying_algebra(Sp)(e)
     end
@@ -262,7 +262,7 @@ function simplify(
     return e
 end
 
-function _normal_form(a::F, rels::Matrix{Union{Nothing, F}}) where {C <: RingElem, F <: FreeAssAlgElem{C}}
+function _normal_form(a::F, rels::Matrix{Union{Nothing, F}}) where {C <: RingElem, F <: FreeAssociativeAlgebraElem{C}}
     result = zero(parent(a))
     CR = coefficient_ring(a)
     A = parent(a)
