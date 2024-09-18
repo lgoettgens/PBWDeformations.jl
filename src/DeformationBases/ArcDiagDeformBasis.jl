@@ -47,7 +47,7 @@ struct ArcDiagDeformBasis{C <: RingElem} <: DeformBasis{C}
         normalize = no_normalize ? identity : normalize_default
 
         n_cases = div(length(V_nice_summands) * (length(V_nice_summands) + 1), 2)
-        lens = []
+        lens = Int[]
         iters = []
         for d in degs
             case = 0
@@ -103,7 +103,7 @@ struct ArcDiagDeformBasis{C <: RingElem} <: DeformBasis{C}
         iter = Iterators.flatten(iters)
         if !no_normalize
             iter = unique(Iterators.filter(b -> !iszero(b), iter))
-            collected = Vector{DeformationMap{C}}(collect(iter))
+            collected = Vector{DeformationMap{C}}(collect(iter))::Vector{DeformationMap{C}}
             _, rels = is_linearly_independent_with_relations(coefficient_ring(sp), collected)
             inds = [findlast(!iszero, vec(rels[i, :]))::Int for i in 1:nrows(rels)]
             deleteat!(collected, inds)
