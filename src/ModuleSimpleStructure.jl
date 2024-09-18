@@ -38,8 +38,7 @@ function _isomorphic_module__is_dual(V::T, B::T) where {T <: LieAlgebraModule}
         mat = zero_matrix(coefficient_ring(V), dim(V), dim(V))
         for i in 1:dim(B)
             pure_factors = inv_pure(basis(B, i))
-            mat[i, i] =
-                div(factorial(k), prod(factorial(count(==(xj), pure_factors)) for xj in unique(pure_factors)))
+            mat[i, i] = div(factorial(k), prod(factorial(count(==(xj), pure_factors)) for xj in unique(pure_factors)))
         end
         V_to_U = hom(V, U, mat; check=false)
     elseif ((fl, C, k) = _is_tensor_power(B); fl)
@@ -52,10 +51,10 @@ function _isomorphic_module__is_dual(V::T, B::T) where {T <: LieAlgebraModule}
 end
 
 function _isomorphic_module__is_direct_sum(V::T, Bs::Vector{T}) where {T <: LieAlgebraModule}
-    Cs_with_hom = [isomorphic_module_with_simple_structure(B) for B in Bs]
-    Csum = direct_sum([C for (C, _) in Cs_with_hom]...)
-    V_to_Csum = hom_direct_sum(V, Csum, [B_to_C for (_, B_to_C) in Cs_with_hom])
-    Ds = []
+    Cs_with_hom = isomorphic_module_with_simple_structure.(Bs)
+    Csum = direct_sum(first.(Cs_with_hom)::Vector{T}...)
+    V_to_Csum = hom_direct_sum(V, Csum, last.(Cs_with_hom)::Vector{LieAlgebraModuleHom{T, T}})
+    Ds = T[]
     for (C, _) in Cs_with_hom
         if ((fl, C_summands) = _is_direct_sum(C); fl)
             push!(Ds, C_summands...)
@@ -76,9 +75,9 @@ function _isomorphic_module__is_direct_sum(V::T, Bs::Vector{T}) where {T <: LieA
 end
 
 function _isomorphic_module__is_tensor_product(V::T, Bs::Vector{T}) where {T <: LieAlgebraModule}
-    Cs_with_hom = [isomorphic_module_with_simple_structure(B) for B in Bs]
-    Cprod = tensor_product([C for (C, _) in Cs_with_hom]...)
-    V_to_Cprod = hom_tensor(V, Cprod, [B_to_C for (_, B_to_C) in Cs_with_hom])
+    Cs_with_hom = isomorphic_module_with_simple_structure.(Bs)
+    Cprod = tensor_product(first.(Cs_with_hom)::Vector{T}...)
+    V_to_Cprod = hom_tensor(V, Cprod, last.(Cs_with_hom)::Vector{LieAlgebraModuleHom{T, T}})
     Ds = T[]
     for (C, _) in Cs_with_hom
         if ((fl, C_factors) = _is_tensor_product(C); fl)
@@ -107,11 +106,13 @@ function _isomorphic_module__is_tensor_product(V::T, Bs::Vector{T}) where {T <: 
         Es_with_summands =
             [((fl, D_summands) = _is_direct_sum(D); fl) ? (D, D_summands) : (direct_sum(D), [D]) for D in Ds]
         Fs = T[]
-        inv_pure = inv(get_attribute(U, :tensor_pure_function))
+        inv_pure = inv(get_attribute(U, :tensor_pure_function))::MapFromFunc
         mat = zero_matrix(coefficient_ring(U), dim(U), dim(U))
         dim_accum = 0
-        for summ_comb in
-            reverse.(ProductIterator(reverse([1:length(E_summands) for (_, E_summands) in Es_with_summands])))
+        for summ_comb in Iterators.map(
+            reverse,
+            ProductIterator(reverse([1:length(E_summands) for (_, E_summands) in Es_with_summands])),
+        )
             F = tensor_product([E_summands[i] for ((_, E_summands), i) in zip(Es_with_summands, summ_comb)]...)
             for (i, bi) in enumerate(basis(U))
                 pure_factors = inv_pure(bi)
@@ -124,14 +125,14 @@ function _isomorphic_module__is_tensor_product(V::T, Bs::Vector{T}) where {T <: 
                             f = Ei([f])
                         end
                         for outer j in 1:length(projs)
-                            pr_f = projs[j](f)
+                            pr_f = projs[j](f)::elem_type(T)
                             if !iszero(pr_f)
                                 break
                             end
                         end
-                        (j, pr_f)
-                    end for (i, f) in enumerate(pure_factors)
-                ]
+                        (j, pr_f)::Tuple{Int, elem_type(T)}
+                    end for (i, f::elem_type(T)) in enumerate(pure_factors)
+                ]::Vector{Tuple{Int, elem_type(T)}}
                 if [dsmap[l][1] for l in 1:length(Es_with_summands)] == summ_comb
                     img = F([dsmap[j][2] for j in 1:length(Es_with_summands)])
                     mat[i, dim_accum+1:dim_accum+dim(F)] = Oscar.LieAlgebras._matrix(img)
@@ -159,45 +160,47 @@ function _isomorphic_module__is_exterior_power(V::T, B::T, k::Int) where {T <: L
     V_to_U = hom(V, U, B_to_C)
     if ((fl, Ds) = _is_direct_sum(C); fl)
         m = length(Ds)
-        Es = T[]
-        inv_pure = inv(get_attribute(U, :wedge_pure_function))
-        projs = canonical_projections(C)
-        mat = zero_matrix(coefficient_ring(U), dim(U), dim(U))
-        dim_accum = 0
-        for summ_comb in multicombinations(m, k)
-            lambda = [count(==(i), summ_comb) for i in 1:m]
-            factors = [lambda[i] != 0 ? exterior_power_obj(Ds[i], lambda[i]) : nothing for i in 1:m]
-            factors_cleaned = filter(!isnothing, factors)
-            E = tensor_product(factors_cleaned...)
-            for (i, bi) in enumerate(basis(U))
-                pure_factors = inv_pure(bi)
-                dsmap = [
-                    begin
-                        local j, pr_f
-                        for outer j in 1:length(projs)
-                            pr_f = projs[j](f)
-                            if !iszero(pr_f)
-                                break
+        let Ds = Ds
+            Es = T[]
+            inv_pure = inv(get_attribute(U, :wedge_pure_function))::MapFromFunc
+            projs = canonical_projections(C)
+            mat = zero_matrix(coefficient_ring(U), dim(U), dim(U))
+            dim_accum = 0
+            for summ_comb in multicombinations(m, k)
+                lambda = [count(==(i), summ_comb) for i in 1:m]
+                factors = [lambda[i] != 0 ? exterior_power_obj(Ds[i], lambda[i]) : nothing for i in 1:m]
+                factors_cleaned = filter(!isnothing, factors)
+                E = tensor_product(factors_cleaned...)
+                for (i, bi) in enumerate(basis(U))
+                    pure_factors = inv_pure(bi)
+                    dsmap = [
+                        begin
+                            local j, pr_f
+                            for outer j in 1:length(projs)
+                                pr_f = projs[j](f)
+                                if !iszero(pr_f)
+                                    break
+                                end
                             end
-                        end
-                        (j, pr_f)
-                    end for f in pure_factors
-                ]
-                if [dsmap[l][1] for l in 1:k] == summ_comb
-                    img = E([
-                        factors[j]([dsmap[l][2] for l in 1:k if dsmap[l][1] == j]) for j in 1:m if lambda[j] != 0
-                    ])
-                    mat[i, dim_accum+1:dim_accum+dim(E)] = Oscar.LieAlgebras._matrix(img)
+                            (j, pr_f)::Tuple{Int, elem_type(T)}
+                        end for f in pure_factors
+                    ]::Vector{Tuple{Int, elem_type(T)}}
+                    if [dsmap[l][1] for l in 1:k] == summ_comb
+                        img = E([
+                            factors[j]([dsmap[l][2] for l in 1:k if dsmap[l][1] == j]) for j in 1:m if lambda[j] != 0
+                        ])::elem_type(E)
+                        mat[i, dim_accum+1:dim_accum+dim(E)] = Oscar.LieAlgebras._matrix(img)
+                    end
                 end
+                dim_accum += dim(E)
+                push!(Es, E)
             end
-            dim_accum += dim(E)
-            push!(Es, E)
+            F = direct_sum(Es...)
+            @assert dim(U) == dim_accum == dim(F)
+            U_to_F = hom(U, F, mat; check=false)
+            W, F_to_W = isomorphic_module_with_simple_structure(F)
+            U_to_W = compose(U_to_F, F_to_W)
         end
-        F = direct_sum(Es...)
-        @assert dim(U) == dim_accum == dim(F)
-        U_to_F = hom(U, F, mat; check=false)
-        W, F_to_W = isomorphic_module_with_simple_structure(F)
-        U_to_W = compose(U_to_F, F_to_W)
     else
         W = U
         U_to_W = identity_map(U)
@@ -218,45 +221,47 @@ function _isomorphic_module__is_symmetric_power(V::T, B::T, k::Int) where {T <: 
     V_to_U = hom(V, U, B_to_C)
     if ((fl, Ds) = _is_direct_sum(C); fl)
         m = length(Ds)
-        Es = T[]
-        inv_pure = inv(get_attribute(U, :mult_pure_function))
-        projs = canonical_projections(C)
-        mat = zero_matrix(coefficient_ring(U), dim(U), dim(U))
-        dim_accum = 0
-        for summ_comb in multicombinations(m, k)
-            lambda = [count(==(i), summ_comb) for i in 1:m]
-            factors = [lambda[i] != 0 ? symmetric_power_obj(Ds[i], lambda[i]) : nothing for i in 1:m]
-            factors_cleaned = filter(!isnothing, factors)
-            E = tensor_product(factors_cleaned...)
-            for (i, bi) in enumerate(basis(U))
-                pure_factors = inv_pure(bi)
-                dsmap = [
-                    begin
-                        local j, pr_f
-                        for outer j in 1:length(projs)
-                            pr_f = projs[j](f)
-                            if !iszero(pr_f)
-                                break
+        let Ds = Ds
+            Es = T[]
+            inv_pure = inv(get_attribute(U, :mult_pure_function))::MapFromFunc
+            projs = canonical_projections(C)
+            mat = zero_matrix(coefficient_ring(U), dim(U), dim(U))
+            dim_accum = 0
+            for summ_comb in multicombinations(m, k)
+                lambda = [count(==(i), summ_comb) for i in 1:m]
+                factors = [lambda[i] != 0 ? symmetric_power_obj(Ds[i], lambda[i]) : nothing for i in 1:m]
+                factors_cleaned = filter(!isnothing, factors)
+                E = tensor_product(factors_cleaned...)
+                for (i, bi) in enumerate(basis(U))
+                    pure_factors = inv_pure(bi)
+                    dsmap = [
+                        begin
+                            local j, pr_f
+                            for outer j in 1:length(projs)
+                                pr_f = projs[j](f)
+                                if !iszero(pr_f)
+                                    break
+                                end
                             end
-                        end
-                        (j, pr_f)
-                    end for f in pure_factors
-                ]
-                if [dsmap[l][1] for l in 1:k] == summ_comb
-                    img = E([
-                        factors[j]([dsmap[l][2] for l in 1:k if dsmap[l][1] == j]) for j in 1:m if lambda[j] != 0
-                    ])
-                    mat[i, dim_accum+1:dim_accum+dim(E)] = Oscar.LieAlgebras._matrix(img)
+                            (j, pr_f)::Tuple{Int, elem_type(T)}
+                        end for f in pure_factors
+                    ]::Vector{Tuple{Int, elem_type(T)}}
+                    if [dsmap[l][1] for l in 1:k] == summ_comb
+                        img = E([
+                            factors[j]([dsmap[l][2] for l in 1:k if dsmap[l][1] == j]) for j in 1:m if lambda[j] != 0
+                        ])::elem_type(E)
+                        mat[i, dim_accum+1:dim_accum+dim(E)] = Oscar.LieAlgebras._matrix(img)
+                    end
                 end
+                dim_accum += dim(E)
+                push!(Es, E)
             end
-            dim_accum += dim(E)
-            push!(Es, E)
+            F = direct_sum(Es...)
+            @assert dim(U) == dim_accum == dim(F)
+            U_to_F = hom(U, F, mat; check=false)
+            W, F_to_W = isomorphic_module_with_simple_structure(F)
+            U_to_W = compose(U_to_F, F_to_W)
         end
-        F = direct_sum(Es...)
-        @assert dim(U) == dim_accum == dim(F)
-        U_to_F = hom(U, F, mat; check=false)
-        W, F_to_W = isomorphic_module_with_simple_structure(F)
-        U_to_W = compose(U_to_F, F_to_W)
     else
         W = U
         U_to_W = identity_map(U)
@@ -277,45 +282,47 @@ function _isomorphic_module__is_tensor_power(V::T, B::T, k::Int) where {T <: Lie
     V_to_U = hom(V, U, B_to_C)
     if ((fl, Ds) = _is_direct_sum(C); fl)
         m = length(Ds)
-        Es = T[]
-        inv_pure = inv(get_attribute(U, :tensor_pure_function))
-        projs = canonical_projections(C)
-        mat = zero_matrix(coefficient_ring(U), dim(U), dim(U))
-        dim_accum = 0
-        for summ_comb in ProductIterator(1:m, k)
-            lambda = [count(==(i), summ_comb) for i in 1:m]
-            factors = [lambda[i] != 0 ? tensor_power_obj(Ds[i], lambda[i]) : nothing for i in 1:m]
-            factors_cleaned = filter(!isnothing, factors)
-            E = tensor_product(factors_cleaned...)
-            for (i, bi) in enumerate(basis(U))
-                pure_factors = inv_pure(bi)
-                dsmap = [
-                    begin
-                        local j, pr_f
-                        for outer j in 1:length(projs)
-                            pr_f = projs[j](f)
-                            if !iszero(pr_f)
-                                break
+        let Ds = Ds
+            Es = T[]
+            inv_pure = inv(get_attribute(U, :tensor_pure_function))::MapFromFunc
+            projs = canonical_projections(C)
+            mat = zero_matrix(coefficient_ring(U), dim(U), dim(U))
+            dim_accum = 0
+            for summ_comb in ProductIterator(1:m, k)
+                lambda = [count(==(i), summ_comb) for i in 1:m]
+                factors = [lambda[i] != 0 ? tensor_power_obj(Ds[i], lambda[i]) : nothing for i in 1:m]
+                factors_cleaned = filter(!isnothing, factors)
+                E = tensor_product(factors_cleaned...)
+                for (i, bi) in enumerate(basis(U))
+                    pure_factors = inv_pure(bi)
+                    dsmap = [
+                        begin
+                            local j, pr_f
+                            for outer j in 1:length(projs)
+                                pr_f = projs[j](f)
+                                if !iszero(pr_f)
+                                    break
+                                end
                             end
-                        end
-                        (j, pr_f)
-                    end for f in pure_factors
-                ]
-                if [dsmap[l][1] for l in 1:k] == summ_comb
-                    img = E([
-                        factors[j]([dsmap[l][2] for l in 1:k if dsmap[l][1] == j]) for j in 1:m if lambda[j] != 0
-                    ])
-                    mat[i, dim_accum+1:dim_accum+dim(E)] = Oscar.LieAlgebras._matrix(img)
+                            (j, pr_f)::Tuple{Int, elem_type(T)}
+                        end for f in pure_factors
+                    ]::Vector{Tuple{Int, elem_type(T)}}
+                    if [dsmap[l][1] for l in 1:k] == summ_comb
+                        img = E([
+                            factors[j]([dsmap[l][2] for l in 1:k if dsmap[l][1] == j]) for j in 1:m if lambda[j] != 0
+                        ])::elem_type(E)
+                        mat[i, dim_accum+1:dim_accum+dim(E)] = Oscar.LieAlgebras._matrix(img)
+                    end
                 end
+                dim_accum += dim(E)
+                push!(Es, E)
             end
-            dim_accum += dim(E)
-            push!(Es, E)
+            F = direct_sum(Es...)
+            @assert dim(U) == dim_accum == dim(F)
+            U_to_F = hom(U, F, mat; check=false)
+            W, F_to_W = isomorphic_module_with_simple_structure(F)
+            U_to_W = compose(U_to_F, F_to_W)
         end
-        F = direct_sum(Es...)
-        @assert dim(U) == dim_accum == dim(F)
-        U_to_F = hom(U, F, mat; check=false)
-        W, F_to_W = isomorphic_module_with_simple_structure(F)
-        U_to_W = compose(U_to_F, F_to_W)
     else
         W = U
         U_to_W = identity_map(U)
