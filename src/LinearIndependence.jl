@@ -51,7 +51,7 @@ function _linear_independence_coeff_matrix(F::Field, V::Vector{<:PolyRingElem})
             end
         end for i in 0:maximum(degree, V; init=-1);
         init=zero_matrix(F, length(V), 0),
-    )
+    )::dense_matrix_type(F)
 end
 
 function _linear_independence_coeff_matrix(F::Field, V::Vector{<:MatElem})
@@ -71,7 +71,7 @@ function _linear_independence_coeff_matrix(F::Field, V::Vector{<:MatElem})
             end
         end for i in eachindex(V[1]);
         init=zero_matrix(F, n, 0),
-    )
+    )::dense_matrix_type(F)
 end
 
 function _linear_independence_coeff_matrix(F::Field, V::Vector{<:FreeAssAlgElem})
@@ -95,6 +95,6 @@ function _linear_independence_coeff_matrix(F::Field, V::Vector{<:FreeAssAlgElem}
             end
         end for word in support_words;
         init=zero_matrix(F, n, 0),
-    )
+    )::dense_matrix_type(F)
 end
 
