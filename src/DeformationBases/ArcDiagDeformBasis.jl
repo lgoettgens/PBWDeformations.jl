@@ -18,10 +18,10 @@ struct ArcDiagDeformBasis{C <: RingElem} <: DeformBasis{C}
         degs::AbstractVector{Int};
         no_normalize::Bool=false,
     ) where {C <: RingElem}
-        T = get_attribute(base_lie_algebra(sp), :type, nothing)
+        T = get_attribute(base_lie_algebra(sp), :type, nothing)::Union{Nothing,Symbol}
         @req T in [:special_orthogonal, :general_linear] "Only works for so_n and gl_n."
         if T == :special_orthogonal && has_attribute(base_lie_algebra(sp), :form)
-            @req isone(get_attribute(base_lie_algebra(sp), :form)) "Only works for so_n represented as skew-symmetric matrices."
+            @req isone(get_attribute(base_lie_algebra(sp), :form)::dense_matrix_type(C)) "Only works for so_n represented as skew-symmetric matrices."
         end
         return ArcDiagDeformBasis{C}(Val(T), sp, degs; no_normalize)
     end
@@ -47,7 +47,7 @@ struct ArcDiagDeformBasis{C <: RingElem} <: DeformBasis{C}
         normalize = no_normalize ? identity : normalize_default
 
         n_cases = div(length(V_nice_summands) * (length(V_nice_summands) + 1), 2)
-        lens = []
+        lens = Int[]
         iters = []
         for d in degs
             case = 0
@@ -103,7 +103,7 @@ struct ArcDiagDeformBasis{C <: RingElem} <: DeformBasis{C}
         iter = Iterators.flatten(iters)
         if !no_normalize
             iter = unique(Iterators.filter(b -> !iszero(b), iter))
-            collected = Vector{DeformationMap{C}}(collect(iter))
+            collected = Vector{DeformationMap{C}}(collect(iter))::Vector{DeformationMap{C}}
             _, rels = is_linearly_independent_with_relations(coefficient_ring(sp), collected)
             inds = [findlast(!iszero, vec(rels[i, :]))::Int for i in 1:nrows(rels)]
             deleteat!(collected, inds)
