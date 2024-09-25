@@ -225,7 +225,7 @@ It gets created by calling [`smash_product`](@ref).
 @attributes mutable struct SmashProductLie{C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}} <: NCRing
     coeff_ring::Ring
     L::LieAlgebra{LieC}
-    V::LieAlgebraModule{LieC}
+    V::LieAlgebraModule{LieC, LieT}
     alg::FreeAssociativeAlgebra{C}
     rels::Matrix{Union{Nothing, F}} where {F <: FreeAssociativeAlgebraElem{C}}
 

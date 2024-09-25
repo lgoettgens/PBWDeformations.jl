@@ -26,7 +26,7 @@ base_lie_algebra(
 
 base_module(
     D::SmashProductLieDeform{C, LieC, LieT},
-) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}} = base_module(D.sp)::LieAlgebraModule{LieC}
+) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}} = base_module(D.sp)
 
 underlying_algebra(
     D::SmashProductLieDeform{C, LieC, LieT},

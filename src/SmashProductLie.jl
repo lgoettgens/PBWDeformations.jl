@@ -25,7 +25,7 @@ base_lie_algebra(
 ) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}} = Sp.L::parent_type(LieT)
 
 base_module(Sp::SmashProductLie{C, LieC, LieT}) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}} =
-    Sp.V::LieAlgebraModule{LieC}
+    Sp.V
 
 underlying_algebra(
     Sp::SmashProductLie{C, LieC, LieT},
