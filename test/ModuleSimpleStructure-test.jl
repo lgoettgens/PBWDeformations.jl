@@ -8,8 +8,8 @@
             @test is_welldefined(h)
             @test is_isomorphism(h)
             @test W == V
-            @test sprint(show, basis(V)) == "LieAlgebraModuleElem{QQFieldElem}[v_1*, v_2*, v_3*]"
-            @test sprint(show, h.(basis(V))) == "LieAlgebraModuleElem{QQFieldElem}[v_1*, v_2*, v_3*]"
+            @test sprint(show, basis(V)) == "LieAlgebraModuleElem{QQFieldElem, LinearLieAlgebraElem{QQFieldElem}}[v_1*, v_2*, v_3*]"
+            @test sprint(show, h.(basis(V))) == "LieAlgebraModuleElem{QQFieldElem, LinearLieAlgebraElem{QQFieldElem}}[v_1*, v_2*, v_3*]"
         end
 
         @testset "Duality, duality" begin
@@ -18,8 +18,8 @@
             @test is_welldefined(h)
             @test is_isomorphism(h)
             @test W == stdV
-            @test sprint(show, basis(V)) == "LieAlgebraModuleElem{QQFieldElem}[(v_1*)*, (v_2*)*, (v_3*)*]"
-            @test sprint(show, h.(basis(V))) == "LieAlgebraModuleElem{QQFieldElem}[v_1, v_2, v_3]"
+            @test sprint(show, basis(V)) == "LieAlgebraModuleElem{QQFieldElem, LinearLieAlgebraElem{QQFieldElem}}[(v_1*)*, (v_2*)*, (v_3*)*]"
+            @test sprint(show, h.(basis(V))) == "LieAlgebraModuleElem{QQFieldElem, LinearLieAlgebraElem{QQFieldElem}}[v_1, v_2, v_3]"
         end
 
         @testset "Duality, direct sum" begin
@@ -29,9 +29,9 @@
             @test is_isomorphism(h)
             @test W == direct_sum(dual(stdV), dual(stdV), stdV)
             @test sprint(show, basis(V)) ==
-                  "LieAlgebraModuleElem{QQFieldElem}[(v_1^(1))*, (v_2^(1))*, (v_3^(1))*, (v_1^(2))*, (v_2^(2))*, (v_3^(2))*, ((v_1*)^(3))*, ((v_2*)^(3))*, ((v_3*)^(3))*]"
+                  "LieAlgebraModuleElem{QQFieldElem, LinearLieAlgebraElem{QQFieldElem}}[(v_1^(1))*, (v_2^(1))*, (v_3^(1))*, (v_1^(2))*, (v_2^(2))*, (v_3^(2))*, ((v_1*)^(3))*, ((v_2*)^(3))*, ((v_3*)^(3))*]"
             @test sprint(show, h.(basis(V))) ==
-                  "LieAlgebraModuleElem{QQFieldElem}[(v_1*)^(1), (v_2*)^(1), (v_3*)^(1), (v_1*)^(2), (v_2*)^(2), (v_3*)^(2), v_1^(3), v_2^(3), v_3^(3)]"
+                  "LieAlgebraModuleElem{QQFieldElem, LinearLieAlgebraElem{QQFieldElem}}[(v_1*)^(1), (v_2*)^(1), (v_3*)^(1), (v_1*)^(2), (v_2*)^(2), (v_3*)^(2), v_1^(3), v_2^(3), v_3^(3)]"
         end
 
         @testset "Duality, tensor product" begin
@@ -41,9 +41,9 @@
             @test is_isomorphism(h)
             @test W == tensor_product(dual(stdV), stdV)
             @test sprint(show, basis(V)) ==
-                  "LieAlgebraModuleElem{QQFieldElem}[(v_1⊗(v_1*))*, (v_1⊗(v_2*))*, (v_1⊗(v_3*))*, (v_2⊗(v_1*))*, (v_2⊗(v_2*))*, (v_2⊗(v_3*))*, (v_3⊗(v_1*))*, (v_3⊗(v_2*))*, (v_3⊗(v_3*))*]"
+                  "LieAlgebraModuleElem{QQFieldElem, LinearLieAlgebraElem{QQFieldElem}}[(v_1⊗(v_1*))*, (v_1⊗(v_2*))*, (v_1⊗(v_3*))*, (v_2⊗(v_1*))*, (v_2⊗(v_2*))*, (v_2⊗(v_3*))*, (v_3⊗(v_1*))*, (v_3⊗(v_2*))*, (v_3⊗(v_3*))*]"
             @test sprint(show, h.(basis(V))) ==
-                  "LieAlgebraModuleElem{QQFieldElem}[(v_1*)⊗v_1, (v_1*)⊗v_2, (v_1*)⊗v_3, (v_2*)⊗v_1, (v_2*)⊗v_2, (v_2*)⊗v_3, (v_3*)⊗v_1, (v_3*)⊗v_2, (v_3*)⊗v_3]"
+                  "LieAlgebraModuleElem{QQFieldElem, LinearLieAlgebraElem{QQFieldElem}}[(v_1*)⊗v_1, (v_1*)⊗v_2, (v_1*)⊗v_3, (v_2*)⊗v_1, (v_2*)⊗v_2, (v_2*)⊗v_3, (v_3*)⊗v_1, (v_3*)⊗v_2, (v_3*)⊗v_3]"
         end
 
         @testset "Duality, exterior power, k = $k" for k in 2:3
@@ -53,9 +53,9 @@
             @test is_isomorphism(h)
             @test W == exterior_power_obj(dual(stdV), k)
             if k == 2
-                @test sprint(show, basis(V)) == "LieAlgebraModuleElem{QQFieldElem}[(v_1∧v_2)*, (v_1∧v_3)*, (v_2∧v_3)*]"
+                @test sprint(show, basis(V)) == "LieAlgebraModuleElem{QQFieldElem, LinearLieAlgebraElem{QQFieldElem}}[(v_1∧v_2)*, (v_1∧v_3)*, (v_2∧v_3)*]"
                 @test sprint(show, h.(basis(V))) ==
-                      "LieAlgebraModuleElem{QQFieldElem}[(v_1*)∧(v_2*), (v_1*)∧(v_3*), (v_2*)∧(v_3*)]"
+                      "LieAlgebraModuleElem{QQFieldElem, LinearLieAlgebraElem{QQFieldElem}}[(v_1*)∧(v_2*), (v_1*)∧(v_3*), (v_2*)∧(v_3*)]"
             end
         end
 
@@ -67,9 +67,9 @@
             @test W == symmetric_power_obj(dual(stdV), k)
             if k == 2
                 @test sprint(show, basis(V)) ==
-                      "LieAlgebraModuleElem{QQFieldElem}[(v_1^2)*, (v_1*v_2)*, (v_1*v_3)*, (v_2^2)*, (v_2*v_3)*, (v_3^2)*]"
+                      "LieAlgebraModuleElem{QQFieldElem, LinearLieAlgebraElem{QQFieldElem}}[(v_1^2)*, (v_1*v_2)*, (v_1*v_3)*, (v_2^2)*, (v_2*v_3)*, (v_3^2)*]"
                 @test sprint(show, h.(basis(V))) ==
-                      "LieAlgebraModuleElem{QQFieldElem}[(v_1*)^2, 2*(v_1*)*(v_2*), 2*(v_1*)*(v_3*), (v_2*)^2, 2*(v_2*)*(v_3*), (v_3*)^2]"
+                      "LieAlgebraModuleElem{QQFieldElem, LinearLieAlgebraElem{QQFieldElem}}[(v_1*)^2, 2*(v_1*)*(v_2*), 2*(v_1*)*(v_3*), (v_2*)^2, 2*(v_2*)*(v_3*), (v_3*)^2]"
             end
         end
 
@@ -81,9 +81,9 @@
             @test W == tensor_power_obj(dual(stdV), k)
             if k == 2
                 @test sprint(show, basis(V)) ==
-                      "LieAlgebraModuleElem{QQFieldElem}[(v_1⊗v_1)*, (v_1⊗v_2)*, (v_1⊗v_3)*, (v_2⊗v_1)*, (v_2⊗v_2)*, (v_2⊗v_3)*, (v_3⊗v_1)*, (v_3⊗v_2)*, (v_3⊗v_3)*]"
+                      "LieAlgebraModuleElem{QQFieldElem, LinearLieAlgebraElem{QQFieldElem}}[(v_1⊗v_1)*, (v_1⊗v_2)*, (v_1⊗v_3)*, (v_2⊗v_1)*, (v_2⊗v_2)*, (v_2⊗v_3)*, (v_3⊗v_1)*, (v_3⊗v_2)*, (v_3⊗v_3)*]"
                 @test sprint(show, h.(basis(V))) ==
-                      "LieAlgebraModuleElem{QQFieldElem}[(v_1*)⊗(v_1*), (v_1*)⊗(v_2*), (v_1*)⊗(v_3*), (v_2*)⊗(v_1*), (v_2*)⊗(v_2*), (v_2*)⊗(v_3*), (v_3*)⊗(v_1*), (v_3*)⊗(v_2*), (v_3*)⊗(v_3*)]"
+                      "LieAlgebraModuleElem{QQFieldElem, LinearLieAlgebraElem{QQFieldElem}}[(v_1*)⊗(v_1*), (v_1*)⊗(v_2*), (v_1*)⊗(v_3*), (v_2*)⊗(v_1*), (v_2*)⊗(v_2*), (v_2*)⊗(v_3*), (v_3*)⊗(v_1*), (v_3*)⊗(v_2*), (v_3*)⊗(v_3*)]"
             end
         end
 
@@ -93,8 +93,8 @@
             @test is_welldefined(h)
             @test is_isomorphism(h)
             @test W == exterior_power_obj(stdV, 2)
-            @test sprint(show, basis(V)) == "LieAlgebraModuleElem{QQFieldElem}[v_1∧v_2, v_1∧v_3, v_2∧v_3]"
-            @test sprint(show, h.(basis(V))) == "LieAlgebraModuleElem{QQFieldElem}[v_1∧v_2, v_1∧v_3, v_2∧v_3]"
+            @test sprint(show, basis(V)) == "LieAlgebraModuleElem{QQFieldElem, LinearLieAlgebraElem{QQFieldElem}}[v_1∧v_2, v_1∧v_3, v_2∧v_3]"
+            @test sprint(show, h.(basis(V))) == "LieAlgebraModuleElem{QQFieldElem, LinearLieAlgebraElem{QQFieldElem}}[v_1∧v_2, v_1∧v_3, v_2∧v_3]"
         end
 
         @testset "Direct sum: 0-dim summand" begin
@@ -107,9 +107,9 @@
                 @test is_isomorphism(h)
                 @test W == direct_sum(V1, V3)
                 @test sprint(show, basis(V)) ==
-                      "LieAlgebraModuleElem{QQFieldElem}[(v_1*)^(1), (v_2*)^(1), (v_3*)^(1), (v_1∧v_2)^(3), (v_1∧v_3)^(3), (v_2∧v_3)^(3)]"
+                      "LieAlgebraModuleElem{QQFieldElem, LinearLieAlgebraElem{QQFieldElem}}[(v_1*)^(1), (v_2*)^(1), (v_3*)^(1), (v_1∧v_2)^(3), (v_1∧v_3)^(3), (v_2∧v_3)^(3)]"
                 @test sprint(show, h.(basis(V))) ==
-                      "LieAlgebraModuleElem{QQFieldElem}[(v_1*)^(1), (v_2*)^(1), (v_3*)^(1), (v_1∧v_2)^(2), (v_1∧v_3)^(2), (v_2∧v_3)^(2)]"
+                      "LieAlgebraModuleElem{QQFieldElem, LinearLieAlgebraElem{QQFieldElem}}[(v_1*)^(1), (v_2*)^(1), (v_3*)^(1), (v_1∧v_2)^(2), (v_1∧v_3)^(2), (v_2∧v_3)^(2)]"
             end
         end
 
@@ -120,9 +120,9 @@
             @test is_isomorphism(h)
             @test W == direct_sum(stdV, exterior_power_obj(stdV, 2), dual(stdV))
             @test sprint(show, basis(V)) ==
-                  "LieAlgebraModuleElem{QQFieldElem}[(v_1^(1))^(1), (v_2^(1))^(1), (v_3^(1))^(1), ((v_1∧v_2)^(2))^(1), ((v_1∧v_3)^(2))^(1), ((v_2∧v_3)^(2))^(1), (v_1*)^(2), (v_2*)^(2), (v_3*)^(2)]"
+                  "LieAlgebraModuleElem{QQFieldElem, LinearLieAlgebraElem{QQFieldElem}}[(v_1^(1))^(1), (v_2^(1))^(1), (v_3^(1))^(1), ((v_1∧v_2)^(2))^(1), ((v_1∧v_3)^(2))^(1), ((v_2∧v_3)^(2))^(1), (v_1*)^(2), (v_2*)^(2), (v_3*)^(2)]"
             @test sprint(show, h.(basis(V))) ==
-                  "LieAlgebraModuleElem{QQFieldElem}[v_1^(1), v_2^(1), v_3^(1), (v_1∧v_2)^(2), (v_1∧v_3)^(2), (v_2∧v_3)^(2), (v_1*)^(3), (v_2*)^(3), (v_3*)^(3)]"
+                  "LieAlgebraModuleElem{QQFieldElem, LinearLieAlgebraElem{QQFieldElem}}[v_1^(1), v_2^(1), v_3^(1), (v_1∧v_2)^(2), (v_1∧v_3)^(2), (v_2∧v_3)^(2), (v_1*)^(3), (v_2*)^(3), (v_3*)^(3)]"
         end
 
         @testset "Tensor product: one factor" begin
@@ -131,8 +131,8 @@
             @test is_welldefined(h)
             @test is_isomorphism(h)
             @test W == exterior_power_obj(stdV, 2)
-            @test sprint(show, basis(V)) == "LieAlgebraModuleElem{QQFieldElem}[v_1∧v_2, v_1∧v_3, v_2∧v_3]"
-            @test sprint(show, h.(basis(V))) == "LieAlgebraModuleElem{QQFieldElem}[v_1∧v_2, v_1∧v_3, v_2∧v_3]"
+            @test sprint(show, basis(V)) == "LieAlgebraModuleElem{QQFieldElem, LinearLieAlgebraElem{QQFieldElem}}[v_1∧v_2, v_1∧v_3, v_2∧v_3]"
+            @test sprint(show, h.(basis(V))) == "LieAlgebraModuleElem{QQFieldElem, LinearLieAlgebraElem{QQFieldElem}}[v_1∧v_2, v_1∧v_3, v_2∧v_3]"
         end
 
         @testset "Tensor product: trivial 1-dim factor" begin
@@ -154,9 +154,9 @@
             @test is_isomorphism(h)
             @test W == tensor_product(stdV, exterior_power_obj(stdV, 2), dual(stdV))
             @test sprint(show, basis(V)) ==
-                  "LieAlgebraModuleElem{QQFieldElem}[(v_1⊗(v_1∧v_2))⊗(v_1*), (v_1⊗(v_1∧v_2))⊗(v_2*), (v_1⊗(v_1∧v_2))⊗(v_3*), (v_1⊗(v_1∧v_3))⊗(v_1*), (v_1⊗(v_1∧v_3))⊗(v_2*), (v_1⊗(v_1∧v_3))⊗(v_3*), (v_1⊗(v_2∧v_3))⊗(v_1*), (v_1⊗(v_2∧v_3))⊗(v_2*), (v_1⊗(v_2∧v_3))⊗(v_3*), (v_2⊗(v_1∧v_2))⊗(v_1*), (v_2⊗(v_1∧v_2))⊗(v_2*), (v_2⊗(v_1∧v_2))⊗(v_3*), (v_2⊗(v_1∧v_3))⊗(v_1*), (v_2⊗(v_1∧v_3))⊗(v_2*), (v_2⊗(v_1∧v_3))⊗(v_3*), (v_2⊗(v_2∧v_3))⊗(v_1*), (v_2⊗(v_2∧v_3))⊗(v_2*), (v_2⊗(v_2∧v_3))⊗(v_3*), (v_3⊗(v_1∧v_2))⊗(v_1*), (v_3⊗(v_1∧v_2))⊗(v_2*), (v_3⊗(v_1∧v_2))⊗(v_3*), (v_3⊗(v_1∧v_3))⊗(v_1*), (v_3⊗(v_1∧v_3))⊗(v_2*), (v_3⊗(v_1∧v_3))⊗(v_3*), (v_3⊗(v_2∧v_3))⊗(v_1*), (v_3⊗(v_2∧v_3))⊗(v_2*), (v_3⊗(v_2∧v_3))⊗(v_3*)]"
+                  "LieAlgebraModuleElem{QQFieldElem, LinearLieAlgebraElem{QQFieldElem}}[(v_1⊗(v_1∧v_2))⊗(v_1*), (v_1⊗(v_1∧v_2))⊗(v_2*), (v_1⊗(v_1∧v_2))⊗(v_3*), (v_1⊗(v_1∧v_3))⊗(v_1*), (v_1⊗(v_1∧v_3))⊗(v_2*), (v_1⊗(v_1∧v_3))⊗(v_3*), (v_1⊗(v_2∧v_3))⊗(v_1*), (v_1⊗(v_2∧v_3))⊗(v_2*), (v_1⊗(v_2∧v_3))⊗(v_3*), (v_2⊗(v_1∧v_2))⊗(v_1*), (v_2⊗(v_1∧v_2))⊗(v_2*), (v_2⊗(v_1∧v_2))⊗(v_3*), (v_2⊗(v_1∧v_3))⊗(v_1*), (v_2⊗(v_1∧v_3))⊗(v_2*), (v_2⊗(v_1∧v_3))⊗(v_3*), (v_2⊗(v_2∧v_3))⊗(v_1*), (v_2⊗(v_2∧v_3))⊗(v_2*), (v_2⊗(v_2∧v_3))⊗(v_3*), (v_3⊗(v_1∧v_2))⊗(v_1*), (v_3⊗(v_1∧v_2))⊗(v_2*), (v_3⊗(v_1∧v_2))⊗(v_3*), (v_3⊗(v_1∧v_3))⊗(v_1*), (v_3⊗(v_1∧v_3))⊗(v_2*), (v_3⊗(v_1∧v_3))⊗(v_3*), (v_3⊗(v_2∧v_3))⊗(v_1*), (v_3⊗(v_2∧v_3))⊗(v_2*), (v_3⊗(v_2∧v_3))⊗(v_3*)]"
             @test sprint(show, h.(basis(V))) ==
-                  "LieAlgebraModuleElem{QQFieldElem}[v_1⊗(v_1∧v_2)⊗(v_1*), v_1⊗(v_1∧v_2)⊗(v_2*), v_1⊗(v_1∧v_2)⊗(v_3*), v_1⊗(v_1∧v_3)⊗(v_1*), v_1⊗(v_1∧v_3)⊗(v_2*), v_1⊗(v_1∧v_3)⊗(v_3*), v_1⊗(v_2∧v_3)⊗(v_1*), v_1⊗(v_2∧v_3)⊗(v_2*), v_1⊗(v_2∧v_3)⊗(v_3*), v_2⊗(v_1∧v_2)⊗(v_1*), v_2⊗(v_1∧v_2)⊗(v_2*), v_2⊗(v_1∧v_2)⊗(v_3*), v_2⊗(v_1∧v_3)⊗(v_1*), v_2⊗(v_1∧v_3)⊗(v_2*), v_2⊗(v_1∧v_3)⊗(v_3*), v_2⊗(v_2∧v_3)⊗(v_1*), v_2⊗(v_2∧v_3)⊗(v_2*), v_2⊗(v_2∧v_3)⊗(v_3*), v_3⊗(v_1∧v_2)⊗(v_1*), v_3⊗(v_1∧v_2)⊗(v_2*), v_3⊗(v_1∧v_2)⊗(v_3*), v_3⊗(v_1∧v_3)⊗(v_1*), v_3⊗(v_1∧v_3)⊗(v_2*), v_3⊗(v_1∧v_3)⊗(v_3*), v_3⊗(v_2∧v_3)⊗(v_1*), v_3⊗(v_2∧v_3)⊗(v_2*), v_3⊗(v_2∧v_3)⊗(v_3*)]"
+                  "LieAlgebraModuleElem{QQFieldElem, LinearLieAlgebraElem{QQFieldElem}}[v_1⊗(v_1∧v_2)⊗(v_1*), v_1⊗(v_1∧v_2)⊗(v_2*), v_1⊗(v_1∧v_2)⊗(v_3*), v_1⊗(v_1∧v_3)⊗(v_1*), v_1⊗(v_1∧v_3)⊗(v_2*), v_1⊗(v_1∧v_3)⊗(v_3*), v_1⊗(v_2∧v_3)⊗(v_1*), v_1⊗(v_2∧v_3)⊗(v_2*), v_1⊗(v_2∧v_3)⊗(v_3*), v_2⊗(v_1∧v_2)⊗(v_1*), v_2⊗(v_1∧v_2)⊗(v_2*), v_2⊗(v_1∧v_2)⊗(v_3*), v_2⊗(v_1∧v_3)⊗(v_1*), v_2⊗(v_1∧v_3)⊗(v_2*), v_2⊗(v_1∧v_3)⊗(v_3*), v_2⊗(v_2∧v_3)⊗(v_1*), v_2⊗(v_2∧v_3)⊗(v_2*), v_2⊗(v_2∧v_3)⊗(v_3*), v_3⊗(v_1∧v_2)⊗(v_1*), v_3⊗(v_1∧v_2)⊗(v_2*), v_3⊗(v_1∧v_2)⊗(v_3*), v_3⊗(v_1∧v_3)⊗(v_1*), v_3⊗(v_1∧v_3)⊗(v_2*), v_3⊗(v_1∧v_3)⊗(v_3*), v_3⊗(v_2∧v_3)⊗(v_1*), v_3⊗(v_2∧v_3)⊗(v_2*), v_3⊗(v_2∧v_3)⊗(v_3*)]"
         end
 
         @testset "Tensor product, direct sum" begin
