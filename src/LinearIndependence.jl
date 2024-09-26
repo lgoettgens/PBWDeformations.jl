@@ -102,4 +102,3 @@ function _linear_independence_coeff_matrix(F::Field, V::Vector{<:FreeAssAlgElem}
         init=zero_matrix(F, n, 0),
     )::dense_matrix_type(F)
 end
-
