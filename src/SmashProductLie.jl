@@ -118,6 +118,13 @@ function check_parent(
     parent(e1) != parent(e2) && error("Incompatible smash products.")
 end
 
+function AbstractAlgebra.promote_rule(
+    T1::Type{<:SmashProductLieElem{C1}},
+    ::Type{C2},
+) where {C1 <: RingElem, C2 <: RingElem}
+    AbstractAlgebra.promote_rule(C1, C2) == C1 ? T1 : Union{}
+end
+
 ###############################################################################
 #
 #   String I/O
