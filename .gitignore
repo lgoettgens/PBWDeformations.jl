@@ -5,7 +5,7 @@ docs/build
 db
 
 # jupyter artifacts
-examples/.ipynb_checkpoints
+.ipynb_checkpoints
 
 # julia project Manifests
 Manifest.toml
