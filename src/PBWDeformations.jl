@@ -119,6 +119,8 @@ end
 
 include("OscarPatches.jl")
 
+include("Types.jl")
+
 include("LinearIndependence.jl")
 include("ModuleSimpleStructure.jl")
 

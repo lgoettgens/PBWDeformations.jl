@@ -1,8 +1,3 @@
-const ArcDiagramVertex = Tuple{Symbol, Int}
-
-abstract type ArcDiagram end
-
-
 function vertices(a::ArcDiagram)
     return vcat(upper_vertices(a), lower_vertices(a))
 end
@@ -162,73 +157,6 @@ end
 #
 ################################################################################
 
-struct ArcDiagramUndirected <: ArcDiagram
-    n_upper_verts::Int
-    n_lower_verts::Int
-    upper_neighbors::Vector{ArcDiagramVertex}
-    lower_neighbors::Vector{ArcDiagramVertex}
-
-    function ArcDiagramUndirected(
-        n_upper_verts::Int,
-        n_lower_verts::Int,
-        upper_neighbors::Vector{ArcDiagramVertex},
-        lower_neighbors::Vector{ArcDiagramVertex};
-        check::Bool=true,
-    )
-        if check
-            @req length(upper_neighbors) == n_upper_verts "Upper vertices' neighbors list has wrong length."
-            @req length(lower_neighbors) == n_lower_verts "Lower vertices' neighbors list has wrong length."
-            for i in 1:n_upper_verts
-                neigh = upper_neighbors[i]
-                if is_upper_vertex(neigh)
-                    @req 1 <= vertex_index(neigh) <= n_upper_verts "Out of bounds adjacency."
-                    @req vertex_index(neigh) != i "No self-loops allowed."
-                    neigh_neigh = upper_neighbors[vertex_index(neigh)]
-                    @req is_upper_vertex(neigh_neigh) && vertex_index(neigh_neigh) == i "Adjacency not symmetric."
-                elseif is_lower_vertex(neigh)
-                    @req 1 <= vertex_index(neigh) <= n_lower_verts "Out of bounds adjacency."
-                    neigh_neigh = lower_neighbors[vertex_index(neigh)]
-                    @req is_upper_vertex(neigh_neigh) && vertex_index(neigh_neigh) == i "Adjacency not symmetric."
-                else
-                    @req false "Invalid neighbor type."
-                end
-            end
-            for i in 1:n_lower_verts
-                neigh = lower_neighbors[i]
-                if is_upper_vertex(neigh)
-                    @req 1 <= vertex_index(neigh) <= n_upper_verts "Out of bounds adjacency."
-                    neigh_neigh = upper_neighbors[vertex_index(neigh)]
-                    @req is_lower_vertex(neigh_neigh) && vertex_index(neigh_neigh) == i "Adjacency not symmetric."
-                elseif is_lower_vertex(neigh)
-                    @req 1 <= vertex_index(neigh) <= n_lower_verts "Out of bounds adjacency."
-                    @req vertex_index(neigh) != i "No self-loops allowed."
-                    neigh_neigh = lower_neighbors[vertex_index(neigh)]
-                    @req is_lower_vertex(neigh_neigh) && vertex_index(neigh_neigh) == i "Adjacency not symmetric."
-                else
-                    @req false "Invalid neighbor type."
-                end
-            end
-        end
-        return new(n_upper_verts, n_lower_verts, upper_neighbors, lower_neighbors)
-    end
-
-    function ArcDiagramUndirected(
-        n_upper_verts::Int,
-        n_lower_verts::Int,
-        upper_neighbor_inds::Vector{Int},
-        lower_neighbor_inds::Vector{Int};
-        check::Bool=true,
-    )
-        upper_neighbors = [
-            i < 0 ? upper_vertex(ArcDiagramVertex, -i) : lower_vertex(ArcDiagramVertex, i) for i in upper_neighbor_inds
-        ]
-        lower_neighbors = [
-            i < 0 ? upper_vertex(ArcDiagramVertex, -i) : lower_vertex(ArcDiagramVertex, i) for i in lower_neighbor_inds
-        ]
-        return ArcDiagramUndirected(n_upper_verts, n_lower_verts, upper_neighbors, lower_neighbors; check)
-    end
-end
-
 function Base.:(==)(a1::ArcDiagramUndirected, a2::ArcDiagramUndirected)
     return (a1.n_upper_verts, a1.n_lower_verts, a1.upper_neighbors, a1.lower_neighbors) ==
            (a2.n_upper_verts, a2.n_lower_verts, a2.upper_neighbors, a2.lower_neighbors)
@@ -312,100 +240,6 @@ end
 # Directed arc diagrams
 #
 ################################################################################
-
-struct ArcDiagramDirected <: ArcDiagram
-    n_upper_verts::Int
-    n_lower_verts::Int
-    parity_upper_verts::BitVector   # true is down
-    parity_lower_verts::BitVector   # true is down
-    upper_neighbors::Vector{ArcDiagramVertex}
-    lower_neighbors::Vector{ArcDiagramVertex}
-
-    function ArcDiagramDirected(
-        n_upper_verts::Int,
-        n_lower_verts::Int,
-        parity_upper_verts::BitVector,
-        parity_lower_verts::BitVector,
-        upper_neighbors::Vector{ArcDiagramVertex},
-        lower_neighbors::Vector{ArcDiagramVertex};
-        check::Bool=true,
-    )
-        if check
-            @req length(parity_upper_verts) == n_upper_verts "Upper vertices' parity list has wrong length."
-            @req length(parity_lower_verts) == n_lower_verts "Lower vertices' parity list has wrong length."
-            @req length(upper_neighbors) == n_upper_verts "Upper vertices' neighbors list has wrong length."
-            @req length(lower_neighbors) == n_lower_verts "Lower vertices' neighbors list has wrong length."
-            for i in 1:n_upper_verts
-                neigh = upper_neighbors[i]
-                if is_upper_vertex(neigh)
-                    @req 1 <= vertex_index(neigh) <= n_upper_verts "Out of bounds adjacency."
-                    @req vertex_index(neigh) != i "No self-loops allowed."
-                    neigh_neigh = upper_neighbors[vertex_index(neigh)]
-                    @req is_upper_vertex(neigh_neigh) && vertex_index(neigh_neigh) == i "Adjacency not symmetric."
-                    @req parity_upper_verts[i] != parity_upper_verts[vertex_index(neigh)] "Direction parity mismatch."
-                elseif is_lower_vertex(neigh)
-                    @req 1 <= vertex_index(neigh) <= n_lower_verts "Out of bounds adjacency."
-                    neigh_neigh = lower_neighbors[vertex_index(neigh)]
-                    @req is_upper_vertex(neigh_neigh) && vertex_index(neigh_neigh) == i "Adjacency not symmetric."
-                    @req parity_upper_verts[i] == parity_lower_verts[vertex_index(neigh)] "Direction parity mismatch."
-                else
-                    @req false "Invalid neighbor type."
-                end
-            end
-            for i in 1:n_lower_verts
-                neigh = lower_neighbors[i]
-                if is_upper_vertex(neigh)
-                    @req 1 <= vertex_index(neigh) <= n_upper_verts "Out of bounds adjacency."
-                    neigh_neigh = upper_neighbors[vertex_index(neigh)]
-                    @req is_lower_vertex(neigh_neigh) && vertex_index(neigh_neigh) == i "Adjacency not symmetric."
-                    @req parity_lower_verts[i] == parity_upper_verts[vertex_index(neigh)] "Direction parity mismatch."
-                elseif is_lower_vertex(neigh)
-                    @req 1 <= vertex_index(neigh) <= n_lower_verts "Out of bounds adjacency."
-                    @req vertex_index(neigh) != i "No self-loops allowed."
-                    neigh_neigh = lower_neighbors[vertex_index(neigh)]
-                    @req is_lower_vertex(neigh_neigh) && vertex_index(neigh_neigh) == i "Adjacency not symmetric."
-                    @req parity_lower_verts[i] != parity_lower_verts[vertex_index(neigh)] "Direction parity mismatch."
-                else
-                    @req false "Invalid neighbor type."
-                end
-            end
-        end
-        return new(
-            n_upper_verts,
-            n_lower_verts,
-            parity_upper_verts,
-            parity_lower_verts,
-            upper_neighbors,
-            lower_neighbors,
-        )
-    end
-
-    function ArcDiagramDirected(
-        n_upper_verts::Int,
-        n_lower_verts::Int,
-        parity_upper_verts::BitVector,
-        parity_lower_verts::BitVector,
-        upper_neighbor_inds::Vector{Int},
-        lower_neighbor_inds::Vector{Int};
-        check::Bool=true,
-    )
-        upper_neighbors = [
-            i < 0 ? upper_vertex(ArcDiagramVertex, -i) : lower_vertex(ArcDiagramVertex, i) for i in upper_neighbor_inds
-        ]
-        lower_neighbors = [
-            i < 0 ? upper_vertex(ArcDiagramVertex, -i) : lower_vertex(ArcDiagramVertex, i) for i in lower_neighbor_inds
-        ]
-        return ArcDiagramDirected(
-            n_upper_verts,
-            n_lower_verts,
-            parity_upper_verts,
-            parity_lower_verts,
-            upper_neighbors,
-            lower_neighbors;
-            check,
-        )
-    end
-end
 
 function Base.:(==)(a1::ArcDiagramDirected, a2::ArcDiagramDirected)
     return (
@@ -781,11 +615,6 @@ end
 # Iterators
 #
 ################################################################################
-
-struct ArcDiagramIterator{T <: Union{Directed, Undirected}}
-    iter
-    len::Int
-end
 
 function Base.iterate(i::ArcDiagramIterator)
     return iterate(i.iter)
