@@ -1,34 +1,3 @@
-struct PseudographLabelled{T}
-    nv::Int
-    edges::MSet{Pair{MSet{Int}, T}}
-
-    function PseudographLabelled(
-        nv::Int,
-        edges::MSet{Pair{MSet{Int}, T}};
-        check::Bool=true,
-        regular_degree::Union{Nothing, Int}=nothing,
-    ) where {T}
-        if check
-            @req all(e -> all(i -> 1 <= i <= nv, first(e)), edges) "Out of bounds edge"
-            if !isnothing(regular_degree)
-                for i in 1:nv
-                    @req regular_degree == sum(e -> multiplicity(first(e), i), edges; init=0) "Vertex $i has wrong degree"
-                end
-            end
-        end
-        return new{T}(nv, edges)
-    end
-
-    function PseudographLabelled(
-        nv::Int,
-        edges::Vector{Pair{MSet{Int}, T}};
-        check::Bool=true,
-        regular_degree::Union{Nothing, Int}=nothing,
-    ) where {T}
-        return PseudographLabelled(nv, MSet(edges); check, regular_degree)
-    end
-end
-
 function Base.:(==)(pg1::PseudographLabelled{T}, pg2::PseudographLabelled{T}) where {T}
     return (pg1.nv, pg1.edges) == (pg2.nv, pg2.edges)
 end

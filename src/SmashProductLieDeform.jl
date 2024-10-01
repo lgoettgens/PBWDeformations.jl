@@ -1,39 +1,3 @@
-"""
-The struct representing a deformation of a Lie algebra smash product.
-It consists of the underlying FreeAssAlgebra with relations and some metadata.
-It gets created by calling [`deform`](@ref).
-"""
-@attributes mutable struct SmashProductLieDeform{C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}} <:
-                           NCRing
-    sp::SmashProductLie{C, LieC, LieT}
-    rels::Matrix{Union{Nothing, FreeAssAlgElem{C}}}
-    kappa::DeformationMap{C}
-
-    # default constructor for @attributes
-    function SmashProductLieDeform{C, LieC, LieT}(
-        sp::SmashProductLie{C, LieC, LieT},
-        rels::Matrix{Union{Nothing, FreeAssAlgElem{C}}},
-        kappa::DeformationMap{C},
-    ) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}}
-        new{C, LieC, LieT}(sp, rels, kappa)
-    end
-end
-
-mutable struct SmashProductLieDeformElem{C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}} <: NCRingElem
-    p::SmashProductLieDeform{C, LieC, LieT}   # parent
-    alg_elem::FreeAssAlgElem{C}
-    simplified::Bool
-
-    function SmashProductLieDeformElem(
-        p::SmashProductLieDeform{C, LieC, LieT},
-        alg_elem::FreeAssAlgElem{C};
-        simplified::Bool=false,
-    ) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}}
-        @req underlying_algebra(p) === parent(alg_elem) "Incompatible algebras."
-        return new{C, LieC, LieT}(p, alg_elem, simplified)
-    end
-end
-
 ###############################################################################
 #
 #   Basic manipulation
