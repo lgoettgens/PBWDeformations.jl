@@ -90,7 +90,7 @@ end
 
 
 """
-    all_pbwdeformations(sp::SmashProductLie{C}, deform_basis::DeformBasis{C}; special_return=Nothing) where {C <: RingElem}
+    all_pbwdeformations(sp::SmashProductLie{C}, deform_basis::DeformBasis{elem_type(sp)}; special_return=Nothing) where {C <: RingElem}
 
 Computes a basis of all Poincare-Birkhoff-Witt deformations of `sp`.
 `deform_basis` specifies the basis to use for the space of deformation maps.
@@ -99,10 +99,10 @@ If `special_return` is `SMat`, the function returns intermediate results.
 Uses [`pbwdeform_eqs`](@ref) and thus Theorem 3.1 of [WW14](@cite).
 """
 function all_pbwdeformations(
-    sp::SmashProductLie{C},
-    deform_basis::DeformBasis{C};
+    sp::SmashProductLie{C, LieC, LieT},
+    deform_basis::DeformBasis{SmashProductLieElem{C, LieC, LieT}};
     special_return::Type{T}=Nothing,
-) where {C <: RingElem, T <: Union{Nothing, SMat}}
+) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}, T <: Union{Nothing, SMat}}
     @req coefficient_ring(sp) == QQ "Only implemented for QQ coefficients."
 
     dimL = dim(base_lie_algebra(sp))
@@ -117,9 +117,10 @@ function all_pbwdeformations(
     new_sp = smash_product(R, base_lie_algebra(sp), base_module(sp))
 
     @vprintln :PBWDeformations 1 "Constructing kappa..."
-    kappa = zero_matrix(underlying_algebra(new_sp), dimV, dimV)
+    kappa = zero_matrix(new_sp, dimV, dimV)
     for (i, b) in enumerate(deform_basis)
-        kappa += map_entries(e -> vars[i] * change_base_ring(R, e; parent=underlying_algebra(new_sp)), b)
+        kappa +=
+            map_entries(e -> vars[i] * new_sp(change_base_ring(R, e.alg_elem; parent=underlying_algebra(new_sp))), b) # TODO: implement something high-level for this
     end
 
     @vprintln :PBWDeformations 1 "Constructing deformation..."
@@ -157,9 +158,9 @@ function all_pbwdeformations(
     end
 
     @vprintln :PBWDeformations 1 "Computing a basis..."
-    kappas = Vector{DeformationMap{C}}(undef, ker_dim)
+    kappas = Vector{DeformationMap{elem_type(sp)}}(undef, ker_dim)
     for l in 1:ker_dim
-        kappa = zero_matrix(underlying_algebra(sp), dimV, dimV)
+        kappa = zero_matrix(sp, dimV, dimV)
         for (i, b) in enumerate(deform_basis)
             kappa += ker[i, l] * b
         end
@@ -169,7 +170,7 @@ function all_pbwdeformations(
 end
 
 """
-    all_pbwdeformations(sp::SmashProductLie{C}, degs::AbstractVector{Int}, DeformBasisType::Type{<:DeformBasis{C}}=StdDeformBasis{C}; special_return=Nothing) where {C <: RingElem}
+    all_pbwdeformations(sp::SmashProductLie{C}, degs::AbstractVector{Int}, DeformBasisType::Type{<:DeformBasis{elem_type(sp)}}=StdDeformBasis{elem_type(sp)}; special_return=Nothing) where {C <: RingElem}
 
 Computes a basis of all Poincare-Birkhoff-Witt deformations of `sp` of degrees `degs`.
 `DeformBasisType` specifies the type of basis to use for the space of deformation maps.
@@ -178,26 +179,30 @@ If `special_return` is `SMat`, the function returns intermediate results.
 Uses [`pbwdeform_eqs`](@ref) and thus Theorem 3.1 of [WW14](@cite).
 """
 function all_pbwdeformations(
-    sp::SmashProductLie{C},
+    sp::SmashProductLie{C, LieC, LieT},
     degs::AbstractVector{Int},
-    DeformBasisType::Type{<:DeformBasis{C}}=StdDeformBasis{C};
+    DeformBasisType::Type{<:DeformBasis{SmashProductLieElem{C, LieC, LieT}}}=StdDeformBasis{
+        SmashProductLieElem{C, LieC, LieT},
+    };
     special_return::Type{T}=Nothing,
-) where {C <: RingElem, T <: Union{Nothing, SMat}}
+) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}, T <: Union{Nothing, SMat}}
     @vprintln :PBWDeformations 1 "Computing Deform Basis"
     deform_basis = DeformBasisType(sp, degs)
     return all_pbwdeformations(sp, deform_basis; special_return)
 end
 
 """
-    all_pbwdeformations(sp::SmashProductLie{C}, deg::Int, DeformBasisType::Type{<:DeformBasis{C}}=StdDeformBasis{C}; special_return=Nothing) where {C <: RingElem}
+    all_pbwdeformations(sp::SmashProductLie{C}, deg::Int, DeformBasisType::Type{<:DeformBasis{elem_type(sp)}}=StdDeformBasis{elem_type(sp)}; special_return=Nothing) where {C <: RingElem}
 
 The same as the other method, but only for a single degree `deg`.
 """
 function all_pbwdeformations(
-    sp::SmashProductLie{C},
+    sp::SmashProductLie{C, LieC, LieT},
     deg::Int,
-    DeformBasisType::Type{<:DeformBasis{C}}=StdDeformBasis{C};
+    DeformBasisType::Type{<:DeformBasis{SmashProductLieElem{C, LieC, LieT}}}=StdDeformBasis{
+        SmashProductLieElem{C, LieC, LieT},
+    };
     special_return::Type{T}=Nothing,
-) where {C <: RingElem, T <: Union{Nothing, SMat}}
+) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}, T <: Union{Nothing, SMat}}
     return all_pbwdeformations(sp, [deg], DeformBasisType; special_return)
 end

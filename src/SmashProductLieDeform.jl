@@ -257,7 +257,7 @@ end
 ###############################################################################
 
 """
-    deform(sp::SmashProductLie{C}, kappa::DeformationMap{C}) where {C <: RingElem}
+    deform(sp::SmashProductLie{C}, kappa::DeformationMap{elem_type(sp)}) where {C <: RingElem}
 
 Constructs the deformation of the smash product `sp` by the deformation map `kappa`.
 
@@ -265,19 +265,20 @@ Returns a [`SmashProductLieDeform`](@ref) struct and a two-part basis.
 """
 function deform(
     sp::SmashProductLie{C, LieC, LieT},
-    kappa::DeformationMap{C},
+    kappa::DeformationMap{SmashProductLieElem{C, LieC, LieT}},
 ) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}}
     dimL = dim(base_lie_algebra(sp))
     dimV = dim(base_module(sp))
 
     @req size(kappa) == (dimV, dimV) "kappa has wrong dimensions."
+    @req all(e -> parent(e) == sp, kappa) "Incompatible smash products."
 
     basisV = [gen(underlying_algebra(sp), dimL + i) for i in 1:dimV]
 
     for i in 1:dimV, j in 1:i
         @req kappa[i, j] == -kappa[j, i] "kappa is not skew-symmetric."
-        @req all(x -> x <= dimL, Iterators.flatten(exponent_words(kappa[i, j]))) "kappa does not only take values in the hopf algebra"
-        @req all(x -> x <= dimL, Iterators.flatten(exponent_words(kappa[j, i]))) "kappa does not only take values in the hopf algebra"
+        @req all(<=(dimL), Iterators.flatten(exponent_words(kappa[i, j].alg_elem))) "kappa does not only take values in the hopf algebra"
+        @req all(<=(dimL), Iterators.flatten(exponent_words(kappa[j, i].alg_elem))) "kappa does not only take values in the hopf algebra"
     end
 
     symmetric = true
@@ -285,7 +286,7 @@ function deform(
     for i in 1:dimV, j in 1:dimV
         # We have the commutator relation [v_i, v_j] = kappa[i,j]
         # which is equivalent to v_i*v_j = v_j*v_i + kappa[i,j]
-        rels[dimL+i, dimL+j] = basisV[j] * basisV[i] + kappa[i, j]
+        rels[dimL+i, dimL+j] = basisV[j] * basisV[i] + simplify(kappa[i, j]).alg_elem
         symmetric &= iszero(kappa[i, j])
     end
 
@@ -298,10 +299,9 @@ end
 
 function deform(
     sp::SmashProductLie{C, LieC, LieT},
-    kappa::MatElem{SmashProductLieElem{C, LieC, LieT}},
+    kappa::MatElem{<:FreeAssAlgElem{C}},
 ) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}}
-    @req all(x -> parent(x) == sp, kappa) "Incompatible smash products."
-    return deform(sp, map_entries(x -> x.alg_elem, kappa))
+    return deform(sp, map_entries(sp, kappa))
 end
 
 """
@@ -312,7 +312,7 @@ Constructs the symmetric deformation of the smash product `sp`.
 function symmetric_deformation(
     sp::SmashProductLie{C, LieC, LieT},
 ) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}}
-    kappa = zero_matrix(underlying_algebra(sp), dim(base_module(sp)), dim(base_module(sp)))
+    kappa = zero_matrix(sp, dim(base_module(sp)), dim(base_module(sp)))
     d = deform(sp, kappa)
     return d
 end

@@ -34,6 +34,11 @@ function _linear_independence_coeff_matrix(V::Vector{<:FieldElem})
     return _linear_independence_coeff_matrix(parent(V[1]), V)
 end
 
+function _linear_independence_coeff_matrix(F::Field, V::Vector{Any})
+    @req is_empty(V) "Only empty vectors may have eltype Any"
+    return matrix(F, 0, 0, V)
+end
+
 function _linear_independence_coeff_matrix(F::Field, V::Vector{<:FieldElem})
     return matrix(F, length(V), 1, V)
 end
