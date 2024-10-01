@@ -213,6 +213,34 @@ end
 
 ################################################################################
 #
+# Deformation maps
+#
+################################################################################
+
+"""
+    DeformationMap{C} = MatElem{FreeAssAlgElem{C}} where {C <: RingElem}
+
+The type for deformation maps of a Lie algebra smash product.
+The entry `kappa[i,j]` should be the image of ``v_i \\wedge v_j`` under the deformation map, i.e. ``κ(v_i,v_j)``.
+Deformation maps are always assumed to be quadratic and skew-symmetric.
+"""
+const DeformationMap{C} = MatElem{<:FreeAssAlgElem{C}} where {C <: RingElem} # TODO: make concrete type
+
+
+"""
+    abstract type DeformBasis{C <: RingElem} end
+
+A basis for a deformation map space of a Lie algebra smash product.
+The constructor of a subtype should accept a [`SmashProductLie`](@ref) and an `AbstractVector{Int}` of degrees.
+It is required that `Base.length` and `Base.iterate` are implemented for subtypes,
+where iterating yields objects of type `DeformationMap{C}`.
+
+For a reference implementation, we refer to [`StdDeformBasis`](@ref).
+"""
+abstract type DeformBasis{C <: RingElem} end
+
+################################################################################
+#
 # Smash products
 #
 ################################################################################
@@ -297,31 +325,3 @@ mutable struct SmashProductLieDeformElem{C <: RingElem, LieC <: FieldElem, LieT 
         return new{C, LieC, LieT}(p, alg_elem, simplified)
     end
 end
-
-################################################################################
-#
-# Deformation maps
-#
-################################################################################
-
-"""
-    DeformationMap{C} = MatElem{FreeAssAlgElem{C}} where {C <: RingElem}
-
-The type for deformation maps of a Lie algebra smash product.
-The entry `kappa[i,j]` should be the image of ``v_i \\wedge v_j`` under the deformation map, i.e. ``κ(v_i,v_j)``.
-Deformation maps are always assumed to be quadratic and skew-symmetric.
-"""
-const DeformationMap{C} = MatElem{<:FreeAssAlgElem{C}} where {C <: RingElem} # TODO: make concrete type
-
-
-"""
-    abstract type DeformBasis{C <: RingElem} end
-
-A basis for a deformation map space of a Lie algebra smash product.
-The constructor of a subtype should accept a [`SmashProductLie`](@ref) and an `AbstractVector{Int}` of degrees.
-It is required that `Base.length` and `Base.iterate` are implemented for subtypes,
-where iterating yields objects of type `DeformationMap{C}`.
-
-For a reference implementation, we refer to [`StdDeformBasis`](@ref).
-"""
-abstract type DeformBasis{C <: RingElem} end
