@@ -118,9 +118,8 @@ function all_pbwdeformations(
 
     @vprintln :PBWDeformations 1 "Constructing kappa..."
     kappa = zero_matrix(new_sp, dimV, dimV)
-    for (i, b) in enumerate(deform_basis)
-        kappa +=
-            map_entries(e -> vars[i] * new_sp(change_base_ring(R, e.alg_elem; parent=underlying_algebra(new_sp))), b)::DeformationMap{elem_type(new_sp)} # TODO: implement something high-level for this
+    for (var, b) in zip(vars, deform_basis)
+        kappa += var * map_entries(e -> change_base_ring(R, e; parent=new_sp), b)
     end
 
     @vprintln :PBWDeformations 1 "Constructing deformation..."

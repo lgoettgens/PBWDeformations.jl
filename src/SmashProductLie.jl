@@ -27,7 +27,9 @@ base_lie_algebra(
 base_module(Sp::SmashProductLie{C, LieC, LieT}) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}} =
     Sp.V::LieAlgebraModule{LieC}
 
-underlying_algebra(Sp::SmashProductLie) = Sp.alg
+underlying_algebra(
+    Sp::SmashProductLie{C, LieC, LieT},
+) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}} = Sp.alg::Generic.FreeAssAlgebra{C} # TODO: add free_ass_algebra_type or something like that
 
 ngens(Sp::SmashProductLie) = ngens(underlying_algebra(Sp))
 function ngens(Sp::SmashProductLie, part::Symbol)
@@ -84,6 +86,10 @@ function AbstractAlgebra.promote_rule(
     ::Type{C2},
 ) where {C1 <: RingElem, C2 <: RingElem}
     AbstractAlgebra.promote_rule(C1, C2) == C1 ? T1 : Union{}
+end
+
+function change_base_ring(R::Ring, e::SmashProductLieElem{C}; parent::SmashProductLie=smash_product(R, base_lie_algebra(parent(e)), base_module(parent(e)))) where C
+    return parent(change_base_ring(R, e.alg_elem; parent=underlying_algebra(parent)))
 end
 
 ###############################################################################
