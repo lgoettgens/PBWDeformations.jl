@@ -32,11 +32,11 @@ struct StdDeformBasis{T <: SmashProductLieElem} <: DeformBasis{T}
 end
 
 function Base.iterate(i::StdDeformBasis)
-    return iterate(i.iter)
+    return iterate(i.iter)::Union{Tuple{eltype(i), Any}, Nothing}
 end
 
 function Base.iterate(i::StdDeformBasis, s)
-    return iterate(i.iter, s)
+    return iterate(i.iter, s)::Union{Tuple{eltype(i), Any}, Nothing}
 end
 
 Base.length(basis::StdDeformBasis) = basis.len

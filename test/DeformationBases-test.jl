@@ -35,7 +35,7 @@
                 b = ArcDiagDeformBasis(sp, 0:2)
                 @test length(collect(b)) == 1
                 @test repr("text/plain", collect(b)) ==
-                      "1-element Vector{MatElem{SmashProductLieElem{QQFieldElem, QQFieldElem, LinearLieAlgebraElem{QQFieldElem}}}}:\n [0 x_4 x_5 -x_2 -x_3 0; -x_4 0 x_6 x_1 0 -x_3; -x_5 -x_6 0 0 x_1 x_2; x_2 -x_1 0 0 x_6 -x_5; x_3 0 -x_1 -x_6 0 x_4; 0 x_3 -x_2 x_5 -x_4 0]"
+                      "1-element Vector{AbstractAlgebra.Generic.MatSpaceElem{SmashProductLieElem{QQFieldElem, QQFieldElem, LinearLieAlgebraElem{QQFieldElem}}}}:\n [0 x_4 x_5 -x_2 -x_3 0; -x_4 0 x_6 x_1 0 -x_3; -x_5 -x_6 0 0 x_1 x_2; x_2 -x_1 0 0 x_6 -x_5; x_3 0 -x_1 -x_6 0 x_4; 0 x_3 -x_2 x_5 -x_4 0]"
                 @test all_pbwdeformations(sp, b; special_return=SMat)[1] == matrix(QQ, 1, 1, [1])
                 @test all_pbwdeformations(sp, b) == collect(b)
 
@@ -61,7 +61,7 @@
                 b = ArcDiagDeformBasis(sp, 0:2)
                 @test length(collect(b)) == 1
                 @test repr("text/plain", collect(b)) ==
-                      "1-element Vector{MatElem{SmashProductLieElem{QQFieldElem, QQFieldElem, LinearLieAlgebraElem{QQFieldElem}}}}:\n [0 x_5 x_6 x_7 -x_2 -x_3 -x_4 0 0 0; -x_5 0 x_8 x_9 x_1 0 0 -x_3 -x_4 0; -x_6 -x_8 0 x_10 0 x_1 0 x_2 0 -x_4; -x_7 -x_9 -x_10 0 0 0 x_1 0 x_2 x_3; x_2 -x_1 0 0 0 x_8 x_9 -x_6 -x_7 0; x_3 0 -x_1 0 -x_8 0 x_10 x_5 0 -x_7; x_4 0 0 -x_1 -x_9 -x_10 0 0 x_5 x_6; 0 x_3 -x_2 0 x_6 -x_5 0 0 x_10 -x_9; 0 x_4 0 -x_2 x_7 0 -x_5 -x_10 0 x_8; 0 0 x_4 -x_3 0 x_7 -x_6 x_9 -x_8 0]"
+                      "1-element Vector{AbstractAlgebra.Generic.MatSpaceElem{SmashProductLieElem{QQFieldElem, QQFieldElem, LinearLieAlgebraElem{QQFieldElem}}}}:\n [0 x_5 x_6 x_7 -x_2 -x_3 -x_4 0 0 0; -x_5 0 x_8 x_9 x_1 0 0 -x_3 -x_4 0; -x_6 -x_8 0 x_10 0 x_1 0 x_2 0 -x_4; -x_7 -x_9 -x_10 0 0 0 x_1 0 x_2 x_3; x_2 -x_1 0 0 0 x_8 x_9 -x_6 -x_7 0; x_3 0 -x_1 0 -x_8 0 x_10 x_5 0 -x_7; x_4 0 0 -x_1 -x_9 -x_10 0 0 x_5 x_6; 0 x_3 -x_2 0 x_6 -x_5 0 0 x_10 -x_9; 0 x_4 0 -x_2 x_7 0 -x_5 -x_10 0 x_8; 0 0 x_4 -x_3 0 x_7 -x_6 x_9 -x_8 0]"
                 @test all_pbwdeformations(sp, b; special_return=SMat)[1] == matrix(QQ, 1, 1, [1])
                 @test all_pbwdeformations(sp, b) == collect(b)
             end
@@ -183,7 +183,7 @@
                 b = PseudographDeformBasis(sp, 0:2)
                 @test length(collect(b)) == 1
                 @test repr("text/plain", collect(b)) ==
-                      "1-element Vector{MatElem{SmashProductLieElem{QQFieldElem, QQFieldElem, LinearLieAlgebraElem{QQFieldElem}}}}:\n [0 x_4 x_5 -x_2 -x_3 0; -x_4 0 x_6 x_1 0 -x_3; -x_5 -x_6 0 0 x_1 x_2; x_2 -x_1 0 0 x_6 -x_5; x_3 0 -x_1 -x_6 0 x_4; 0 x_3 -x_2 x_5 -x_4 0]"
+                      "1-element Vector{AbstractAlgebra.Generic.MatSpaceElem{SmashProductLieElem{QQFieldElem, QQFieldElem, LinearLieAlgebraElem{QQFieldElem}}}}:\n [0 x_4 x_5 -x_2 -x_3 0; -x_4 0 x_6 x_1 0 -x_3; -x_5 -x_6 0 0 x_1 x_2; x_2 -x_1 0 0 x_6 -x_5; x_3 0 -x_1 -x_6 0 x_4; 0 x_3 -x_2 x_5 -x_4 0]"
                 @test all_pbwdeformations(sp, b; special_return=SMat)[1] == matrix(QQ, 1, 1, [1])
                 @test all_pbwdeformations(sp, b) == collect(b)
 
@@ -209,7 +209,7 @@
                 b = PseudographDeformBasis(sp, 0:2)
                 @test length(collect(b)) == 1
                 @test repr("text/plain", collect(b)) ==
-                      "1-element Vector{MatElem{SmashProductLieElem{QQFieldElem, QQFieldElem, LinearLieAlgebraElem{QQFieldElem}}}}:\n [0 x_5 x_6 x_7 -x_2 -x_3 -x_4 0 0 0; -x_5 0 x_8 x_9 x_1 0 0 -x_3 -x_4 0; -x_6 -x_8 0 x_10 0 x_1 0 x_2 0 -x_4; -x_7 -x_9 -x_10 0 0 0 x_1 0 x_2 x_3; x_2 -x_1 0 0 0 x_8 x_9 -x_6 -x_7 0; x_3 0 -x_1 0 -x_8 0 x_10 x_5 0 -x_7; x_4 0 0 -x_1 -x_9 -x_10 0 0 x_5 x_6; 0 x_3 -x_2 0 x_6 -x_5 0 0 x_10 -x_9; 0 x_4 0 -x_2 x_7 0 -x_5 -x_10 0 x_8; 0 0 x_4 -x_3 0 x_7 -x_6 x_9 -x_8 0]"
+                      "1-element Vector{AbstractAlgebra.Generic.MatSpaceElem{SmashProductLieElem{QQFieldElem, QQFieldElem, LinearLieAlgebraElem{QQFieldElem}}}}:\n [0 x_5 x_6 x_7 -x_2 -x_3 -x_4 0 0 0; -x_5 0 x_8 x_9 x_1 0 0 -x_3 -x_4 0; -x_6 -x_8 0 x_10 0 x_1 0 x_2 0 -x_4; -x_7 -x_9 -x_10 0 0 0 x_1 0 x_2 x_3; x_2 -x_1 0 0 0 x_8 x_9 -x_6 -x_7 0; x_3 0 -x_1 0 -x_8 0 x_10 x_5 0 -x_7; x_4 0 0 -x_1 -x_9 -x_10 0 0 x_5 x_6; 0 x_3 -x_2 0 x_6 -x_5 0 0 x_10 -x_9; 0 x_4 0 -x_2 x_7 0 -x_5 -x_10 0 x_8; 0 0 x_4 -x_3 0 x_7 -x_6 x_9 -x_8 0]"
                 @test all_pbwdeformations(sp, b; special_return=SMat)[1] == matrix(QQ, 1, 1, [1])
                 @test all_pbwdeformations(sp, b) == collect(b)
 
