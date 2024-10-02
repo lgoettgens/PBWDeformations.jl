@@ -11,29 +11,29 @@ struct PseudographDeformBasis{T <: SmashProductLieElem} <: DeformBasis{T}
     extra_data::Dict{DeformationMap{T}, Set{Tuple{PseudographLabelled{Int}, Partition{Int}}}}
     normalize
 
-    function PseudographDeformBasis{T}(
+    function PseudographDeformBasis(
         sp::SmashProductLie{C, LieC, LieT},
         degs::AbstractVector{Int};
         no_normalize::Bool=false,
-    ) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}, T <: SmashProductLieElem{C, LieC, LieT}}
+    ) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}}
         LieType = get_attribute(base_lie_algebra(sp), :type, nothing)
         @req LieType == :special_orthogonal "Only works for so_n."
         if LieType == :special_orthogonal && has_attribute(base_lie_algebra(sp), :form)
             @req isone(get_attribute(base_lie_algebra(sp), :form)) "Only works for so_n represented as skew-symmetric matrices."
         end
-        return PseudographDeformBasis{T}(Val(LieType), sp, degs; no_normalize)
+        return PseudographDeformBasis(Val(LieType), sp, degs; no_normalize)
     end
 
-    function PseudographDeformBasis{T}(
+    function PseudographDeformBasis(
         LieType::Union{Val{:special_orthogonal}},
         sp::SmashProductLie{C, LieC, LieT},
         degs::AbstractVector{Int};
         no_normalize::Bool=false,
-        ) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}, T <: SmashProductLieElem{C, LieC, LieT}}
+    ) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}}
         fl, Vbase, e = _is_exterior_power(base_module(sp))
         @req fl && _is_standard_module(Vbase) "Only works for exterior powers of the standard module."
 
-        extra_data = Dict{DeformationMap{T}, Set{Tuple{PseudographLabelled{Int}, Partition{Int}}}}()
+        extra_data = Dict{DeformationMap{elem_type(sp)}, Set{Tuple{PseudographLabelled{Int}, Partition{Int}}}}()
         normalize = no_normalize ? identity : normalize_default
 
         lens = []
@@ -65,16 +65,16 @@ struct PseudographDeformBasis{T <: SmashProductLieElem} <: DeformBasis{T}
         iter = Iterators.flatten(iters)
         if !no_normalize
             iter = unique(Iterators.filter(b -> !iszero(b), iter))
-            collected = Vector{DeformationMap{T}}(collect(iter))::Vector{DeformationMap{T}}
+            collected = Vector{DeformationMap{elem_type(sp)}}(collect(iter))::Vector{DeformationMap{elem_type(sp)}}
             _, rels = is_linearly_independent_with_relations(
                 coefficient_ring(sp),
                 map(mat -> map_entries(e -> simplify(e).alg_elem, mat), reverse(collected)),
             ) # TODO: add _linear_independence_coeff_matrix dispatch instead
             inds = [1 + ncols(rels) - (findfirst(!iszero, vec(rels[i, :]))::Int) for i in nrows(rels):-1:1]
             deleteat!(collected, inds)
-            return new{T}(length(collected), collected, extra_data, normalize)
+            return new{elem_type(sp)}(length(collected), collected, extra_data, normalize)
         end
-        return new{T}(len, iter, extra_data, normalize)
+        return new{elem_type(sp)}(len, iter, extra_data, normalize)
     end
 end
 

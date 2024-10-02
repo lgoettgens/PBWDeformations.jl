@@ -13,25 +13,25 @@ struct ArcDiagDeformBasis{T <: SmashProductLieElem} <: DeformBasis{T}
     extra_data::Dict{DeformationMap{T}, Set{ArcDiagram}}
     normalize
 
-    function ArcDiagDeformBasis{T}(
+    function ArcDiagDeformBasis(
         sp::SmashProductLie{C, LieC, LieT},
         degs::AbstractVector{Int};
         no_normalize::Bool=false,
-    ) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}, T <: SmashProductLieElem{C, LieC, LieT}}
+    ) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}}
         LieType = get_attribute(base_lie_algebra(sp), :type, nothing)::Union{Nothing,Symbol}
         @req LieType in [:special_orthogonal, :general_linear] "Only works for so_n and gl_n."
         if LieType == :special_orthogonal && has_attribute(base_lie_algebra(sp), :form)
             @req isone(get_attribute(base_lie_algebra(sp), :form)::dense_matrix_type(C)) "Only works for so_n represented as skew-symmetric matrices."
         end
-        return ArcDiagDeformBasis{T}(Val(LieType), sp, degs; no_normalize)
+        return ArcDiagDeformBasis(Val(LieType), sp, degs; no_normalize)
     end
 
-    function ArcDiagDeformBasis{T}(
+    function ArcDiagDeformBasis(
         LieType::Union{SO, GL},
         sp::SmashProductLie{C, LieC, LieT},
         degs::AbstractVector{Int};
         no_normalize::Bool=false,
-    ) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}, T <: SmashProductLieElem{C, LieC, LieT}}
+    ) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}}
         V = base_module(sp)
 
         V_nice, h = isomorphic_module_with_simple_structure(V)
@@ -43,7 +43,7 @@ struct ArcDiagDeformBasis{T <: SmashProductLieElem} <: DeformBasis{T}
             V_nice = temp
         end
 
-        extra_data = Dict{DeformationMap{T}, Set{ArcDiagram}}()
+        extra_data = Dict{DeformationMap{elem_type(sp)}, Set{ArcDiagram}}()
         normalize = no_normalize ? identity : normalize_default
 
         n_cases = div(length(V_nice_summands) * (length(V_nice_summands) + 1), 2)
@@ -103,16 +103,16 @@ struct ArcDiagDeformBasis{T <: SmashProductLieElem} <: DeformBasis{T}
         iter = Iterators.flatten(iters)
         if !no_normalize
             iter = unique(Iterators.filter(b -> !iszero(b), iter))
-            collected = Vector{DeformationMap{T}}(collect(iter))::Vector{DeformationMap{T}}
+            collected = Vector{DeformationMap{elem_type(sp)}}(collect(iter))::Vector{DeformationMap{elem_type(sp)}}
             _, rels = is_linearly_independent_with_relations(
                 coefficient_ring(sp),
                 map(mat -> map_entries(e -> simplify(e).alg_elem, mat), collected),
             ) # TODO: add _linear_independence_coeff_matrix dispatch instead
             inds = [findlast(!iszero, vec(rels[i, :]))::Int for i in 1:nrows(rels)]
             deleteat!(collected, inds)
-            return new{T}(length(collected), collected, extra_data, normalize)
+            return new{elem_type(sp)}(length(collected), collected, extra_data, normalize)
         end
-        return new{T}(len, iter, extra_data, normalize)
+        return new{elem_type(sp)}(len, iter, extra_data, normalize)
     end
 end
 

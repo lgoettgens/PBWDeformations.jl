@@ -170,7 +170,7 @@ function all_pbwdeformations(
 end
 
 """
-    all_pbwdeformations(sp::SmashProductLie{C}, degs::AbstractVector{Int}, DeformBasisType::Type{<:DeformBasis{elem_type(sp)}}=StdDeformBasis{elem_type(sp)}; special_return=Nothing) where {C <: RingElem}
+    all_pbwdeformations(sp::SmashProductLie{C}, degs::AbstractVector{Int}, DeformBasisType::Type{<:DeformBasis}=StdDeformBasis; special_return=Nothing) where {C <: RingElem}
 
 Computes a basis of all Poincare-Birkhoff-Witt deformations of `sp` of degrees `degs`.
 `DeformBasisType` specifies the type of basis to use for the space of deformation maps.
@@ -181,9 +181,7 @@ Uses [`pbwdeform_eqs`](@ref) and thus Theorem 3.1 of [WW14](@cite).
 function all_pbwdeformations(
     sp::SmashProductLie{C, LieC, LieT},
     degs::AbstractVector{Int},
-    DeformBasisType::Type{<:DeformBasis{SmashProductLieElem{C, LieC, LieT}}}=StdDeformBasis{
-        SmashProductLieElem{C, LieC, LieT},
-    };
+    DeformBasisType::Type{<:DeformBasis}=StdDeformBasis;
     special_return::Type{T}=Nothing,
 ) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}, T <: Union{Nothing, SMat}}
     @vprintln :PBWDeformations 1 "Computing Deform Basis"
@@ -192,16 +190,14 @@ function all_pbwdeformations(
 end
 
 """
-    all_pbwdeformations(sp::SmashProductLie{C}, deg::Int, DeformBasisType::Type{<:DeformBasis{elem_type(sp)}}=StdDeformBasis{elem_type(sp)}; special_return=Nothing) where {C <: RingElem}
+    all_pbwdeformations(sp::SmashProductLie{C}, deg::Int, DeformBasisType::Type{<:DeformBasis}=StdDeformBasis; special_return=Nothing) where {C <: RingElem}
 
 The same as the other method, but only for a single degree `deg`.
 """
 function all_pbwdeformations(
     sp::SmashProductLie{C, LieC, LieT},
     deg::Int,
-    DeformBasisType::Type{<:DeformBasis{SmashProductLieElem{C, LieC, LieT}}}=StdDeformBasis{
-        SmashProductLieElem{C, LieC, LieT},
-    };
+    DeformBasisType::Type{<:DeformBasis}=StdDeformBasis;
     special_return::Type{T}=Nothing,
 ) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}, T <: Union{Nothing, SMat}}
     return all_pbwdeformations(sp, [deg], DeformBasisType; special_return)

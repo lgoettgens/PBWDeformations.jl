@@ -10,10 +10,10 @@ struct StdDeformBasis{T <: SmashProductLieElem} <: DeformBasis{T}
     extra_data::Dict{DeformationMap{T}, Nothing}
     normalize
 
-    function StdDeformBasis{T}(
+    function StdDeformBasis(
         sp::SmashProductLie{C, LieC, LieT},
         degs::AbstractVector{Int}
-    ) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}, T <: SmashProductLieElem{C, LieC, LieT}}
+    ) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}}
         dimL = dim(base_lie_algebra(sp))
         dimV = dim(base_module(sp))
         iter = (
@@ -27,7 +27,7 @@ struct StdDeformBasis{T <: SmashProductLieElem} <: DeformBasis{T}
         )
 
         len = div(dimV * (dimV - 1), 2) * sum(binomial(dimL + k - 1, k) for k in degs)
-        return new{T}(len, iter, Dict{DeformationMap{T}, Nothing}(), normalize_default)
+        return new{elem_type(sp)}(len, iter, Dict{DeformationMap{elem_type(sp)}, Nothing}(), normalize_default)
     end
 end
 
