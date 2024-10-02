@@ -66,10 +66,7 @@ struct PseudographDeformBasis{T <: SmashProductLieElem} <: DeformBasis{T}
         if !no_normalize
             iter = unique(Iterators.filter(b -> !iszero(b), iter))
             collected = Vector{DeformationMap{elem_type(sp)}}(collect(iter))::Vector{DeformationMap{elem_type(sp)}}
-            _, rels = is_linearly_independent_with_relations(
-                coefficient_ring(sp),
-                map(mat -> map_entries(e -> simplify(e).alg_elem, mat), reverse(collected)),
-            ) # TODO: add _linear_independence_coeff_matrix dispatch instead
+            _, rels = is_linearly_independent_with_relations(coefficient_ring(sp), reverse(collected))
             inds = [1 + ncols(rels) - (findfirst(!iszero, vec(rels[i, :]))::Int) for i in nrows(rels):-1:1]
             deleteat!(collected, inds)
             return new{elem_type(sp)}(length(collected), collected, extra_data, normalize)
