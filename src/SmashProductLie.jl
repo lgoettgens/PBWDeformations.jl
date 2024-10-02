@@ -29,7 +29,7 @@ base_module(Sp::SmashProductLie{C, LieC, LieT}) where {C <: RingElem, LieC <: Fi
 
 underlying_algebra(
     Sp::SmashProductLie{C, LieC, LieT},
-) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}} = Sp.alg::Generic.FreeAssAlgebra{C} # TODO: add free_ass_algebra_type or something like that
+) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}} = Sp.alg::free_associative_algebra_type(C)
 
 ngens(Sp::SmashProductLie) = ngens(underlying_algebra(Sp))
 function ngens(Sp::SmashProductLie, part::Symbol)
