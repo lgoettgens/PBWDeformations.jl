@@ -5,35 +5,35 @@ certain properties, which gets transformed to an arc diagram and then handled as
 in [`ArcDiagDeformBasis`](@ref).
 This process is due to [FM22](@cite).
 """
-struct PseudographDeformBasis{C <: RingElem} <: DeformBasis{C}
+struct PseudographDeformBasis{T <: SmashProductLieElem} <: DeformBasis{T}
     len::Int
     iter
-    extra_data::Dict{DeformationMap{C}, Set{Tuple{PseudographLabelled{Int}, Partition{Int}}}}
+    extra_data::Dict{DeformationMap{T}, Set{Tuple{PseudographLabelled{Int}, Partition{Int}}}}
     normalize
 
-    function PseudographDeformBasis{C}(
-        sp::SmashProductLie{C},
+    function PseudographDeformBasis(
+        sp::SmashProductLie{C, LieC, LieT},
         degs::AbstractVector{Int};
         no_normalize::Bool=false,
-    ) where {C <: RingElem}
-        T = get_attribute(base_lie_algebra(sp), :type, nothing)
-        @req T == :special_orthogonal "Only works for so_n."
-        if T == :special_orthogonal && has_attribute(base_lie_algebra(sp), :form)
+    ) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}}
+        LieType = get_attribute(base_lie_algebra(sp), :type, nothing)
+        @req LieType == :special_orthogonal "Only works for so_n."
+        if LieType == :special_orthogonal && has_attribute(base_lie_algebra(sp), :form)
             @req isone(get_attribute(base_lie_algebra(sp), :form)) "Only works for so_n represented as skew-symmetric matrices."
         end
-        return PseudographDeformBasis{C}(Val(T), sp, degs; no_normalize)
+        return PseudographDeformBasis(Val(LieType), sp, degs; no_normalize)
     end
 
-    function PseudographDeformBasis{C}(
-        T::Union{Val{:special_orthogonal}},
-        sp::SmashProductLie{C},
+    function PseudographDeformBasis(
+        LieType::Union{Val{:special_orthogonal}},
+        sp::SmashProductLie{C, LieC, LieT},
         degs::AbstractVector{Int};
         no_normalize::Bool=false,
-    ) where {C <: RingElem}
+    ) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}}
         fl, Vbase, e = _is_exterior_power(base_module(sp))
         @req fl && _is_standard_module(Vbase) "Only works for exterior powers of the standard module."
 
-        extra_data = Dict{DeformationMap{C}, Set{Tuple{PseudographLabelled{Int}, Partition{Int}}}}()
+        extra_data = Dict{DeformationMap{elem_type(sp)}, Set{Tuple{PseudographLabelled{Int}, Partition{Int}}}}()
         normalize = no_normalize ? identity : normalize_default
 
         lens = []
@@ -46,7 +46,7 @@ struct PseudographDeformBasis{C <: RingElem} <: DeformBasis{C}
                 begin
                     @vprintln :PBWDeformations 2 "Basis generation deg $(lpad(d, maximum(ndigits, degs))), $(lpad(floor(Int, 100*(debug_counter = (debug_counter % len) + 1) / len), 3))%, $(lpad(debug_counter, ndigits(len)))/$(len)"
                     diag = to_arcdiag(pg, part)
-                    basis_elem = arcdiag_to_deformationmap(T, diag, sp)
+                    basis_elem = arcdiag_to_deformationmap(LieType, diag, sp)
                     if !no_normalize
                         basis_elem = normalize(basis_elem)
                     end
@@ -65,22 +65,22 @@ struct PseudographDeformBasis{C <: RingElem} <: DeformBasis{C}
         iter = Iterators.flatten(iters)
         if !no_normalize
             iter = unique(Iterators.filter(b -> !iszero(b), iter))
-            collected = Vector{DeformationMap{C}}(collect(iter))
+            collected = Vector{DeformationMap{elem_type(sp)}}(collect(iter))::Vector{DeformationMap{elem_type(sp)}}
             _, rels = is_linearly_independent_with_relations(coefficient_ring(sp), reverse(collected))
             inds = [1 + ncols(rels) - (findfirst(!iszero, vec(rels[i, :]))::Int) for i in nrows(rels):-1:1]
             deleteat!(collected, inds)
-            return new{C}(length(collected), collected, extra_data, normalize)
+            return new{elem_type(sp)}(length(collected), collected, extra_data, normalize)
         end
-        return new{C}(len, iter, extra_data, normalize)
+        return new{elem_type(sp)}(len, iter, extra_data, normalize)
     end
 end
 
 function Base.iterate(i::PseudographDeformBasis)
-    return iterate(i.iter)
+    return iterate(i.iter)::Union{Tuple{eltype(i), Any}, Nothing}
 end
 
 function Base.iterate(i::PseudographDeformBasis, s)
-    return iterate(i.iter, s)
+    return iterate(i.iter, s)::Union{Tuple{eltype(i), Any}, Nothing}
 end
 
 Base.length(basis::PseudographDeformBasis) = basis.len

@@ -20,6 +20,7 @@ using Oscar.LieAlgebras: permutations
 using Oscar.LieAlgebras: permutations_with_sign
 
 
+import Oscar.AbstractAlgebra: change_base_ring
 import Oscar.AbstractAlgebra: coefficient_ring
 import Oscar.AbstractAlgebra: elem_type
 import Oscar.AbstractAlgebra: gen

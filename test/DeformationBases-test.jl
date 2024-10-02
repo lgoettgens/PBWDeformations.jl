@@ -27,24 +27,19 @@
                 V = exterior_power_obj(standard_module(L), 2)
                 sp = smash_product(L, V)
 
-                @test all_pbwdeformations(sp, ArcDiagDeformBasis{QQFieldElem}(sp, 0:0); special_return=SMat)[1] ==
+                @test all_pbwdeformations(sp, ArcDiagDeformBasis(sp, 0:0); special_return=SMat)[1] ==
                       matrix(QQ, 0, 0, [])
-                @test all_pbwdeformations(sp, ArcDiagDeformBasis{QQFieldElem}(sp, 0:1); special_return=SMat)[1] ==
+                @test all_pbwdeformations(sp, ArcDiagDeformBasis(sp, 0:1); special_return=SMat)[1] ==
                       matrix(QQ, 1, 1, [1])
 
-                b = ArcDiagDeformBasis{QQFieldElem}(sp, 0:2)
+                b = ArcDiagDeformBasis(sp, 0:2)
                 @test length(collect(b)) == 1
-                if VERSION <= v"1.7-"
-                    @test_broken repr("text/plain", collect(b)) ==
-                                 "1-element Vector{MatElem{<:FreeAssAlgElem{QQFieldElem}}}:\n [0 x_4 x_5 -x_2 -x_3 0; -x_4 0 x_6 x_1 0 -x_3; -x_5 -x_6 0 0 x_1 x_2; x_2 -x_1 0 0 x_6 -x_5; x_3 0 -x_1 -x_6 0 x_4; 0 x_3 -x_2 x_5 -x_4 0]"
-                else
-                    @test repr("text/plain", collect(b)) ==
-                          "1-element Vector{MatElem{<:FreeAssAlgElem{QQFieldElem}}}:\n [0 x_4 x_5 -x_2 -x_3 0; -x_4 0 x_6 x_1 0 -x_3; -x_5 -x_6 0 0 x_1 x_2; x_2 -x_1 0 0 x_6 -x_5; x_3 0 -x_1 -x_6 0 x_4; 0 x_3 -x_2 x_5 -x_4 0]"
-                end
+                @test repr("text/plain", collect(b)) ==
+                      "1-element Vector{AbstractAlgebra.Generic.MatSpaceElem{SmashProductLieElem{QQFieldElem, QQFieldElem, LinearLieAlgebraElem{QQFieldElem}}}}:\n [0 x_4 x_5 -x_2 -x_3 0; -x_4 0 x_6 x_1 0 -x_3; -x_5 -x_6 0 0 x_1 x_2; x_2 -x_1 0 0 x_6 -x_5; x_3 0 -x_1 -x_6 0 x_4; 0 x_3 -x_2 x_5 -x_4 0]"
                 @test all_pbwdeformations(sp, b; special_return=SMat)[1] == matrix(QQ, 1, 1, [1])
                 @test all_pbwdeformations(sp, b) == collect(b)
 
-                b = ArcDiagDeformBasis{QQFieldElem}(sp, 0:3)
+                b = ArcDiagDeformBasis(sp, 0:3)
                 @test length(collect(b)) == 3
                 @test all_pbwdeformations(sp, b; special_return=SMat)[1] == matrix(QQ, [1 0; 0 -3//2; 0 1])
                 ms = all_pbwdeformations(sp, b)
@@ -58,20 +53,15 @@
                 V = exterior_power_obj(standard_module(L), 2)
                 sp = smash_product(L, V)
 
-                @test all_pbwdeformations(sp, ArcDiagDeformBasis{QQFieldElem}(sp, 0:0); special_return=SMat)[1] ==
+                @test all_pbwdeformations(sp, ArcDiagDeformBasis(sp, 0:0); special_return=SMat)[1] ==
                       matrix(QQ, 0, 0, [])
-                @test all_pbwdeformations(sp, ArcDiagDeformBasis{QQFieldElem}(sp, 0:1); special_return=SMat)[1] ==
+                @test all_pbwdeformations(sp, ArcDiagDeformBasis(sp, 0:1); special_return=SMat)[1] ==
                       matrix(QQ, 1, 1, [1])
 
-                b = ArcDiagDeformBasis{QQFieldElem}(sp, 0:2)
+                b = ArcDiagDeformBasis(sp, 0:2)
                 @test length(collect(b)) == 1
-                if VERSION <= v"1.7-"
-                    @test_broken repr("text/plain", collect(b)) ==
-                                 "1-element Vector{MatElem{<:FreeAssAlgElem{QQFieldElem}}}:\n [0 x_5 x_6 x_7 -x_2 -x_3 -x_4 0 0 0; -x_5 0 x_8 x_9 x_1 0 0 -x_3 -x_4 0; -x_6 -x_8 0 x_10 0 x_1 0 x_2 0 -x_4; -x_7 -x_9 -x_10 0 0 0 x_1 0 x_2 x_3; x_2 -x_1 0 0 0 x_8 x_9 -x_6 -x_7 0; x_3 0 -x_1 0 -x_8 0 x_10 x_5 0 -x_7; x_4 0 0 -x_1 -x_9 -x_10 0 0 x_5 x_6; 0 x_3 -x_2 0 x_6 -x_5 0 0 x_10 -x_9; 0 x_4 0 -x_2 x_7 0 -x_5 -x_10 0 x_8; 0 0 x_4 -x_3 0 x_7 -x_6 x_9 -x_8 0]"
-                else
-                    @test repr("text/plain", collect(b)) ==
-                          "1-element Vector{MatElem{<:FreeAssAlgElem{QQFieldElem}}}:\n [0 x_5 x_6 x_7 -x_2 -x_3 -x_4 0 0 0; -x_5 0 x_8 x_9 x_1 0 0 -x_3 -x_4 0; -x_6 -x_8 0 x_10 0 x_1 0 x_2 0 -x_4; -x_7 -x_9 -x_10 0 0 0 x_1 0 x_2 x_3; x_2 -x_1 0 0 0 x_8 x_9 -x_6 -x_7 0; x_3 0 -x_1 0 -x_8 0 x_10 x_5 0 -x_7; x_4 0 0 -x_1 -x_9 -x_10 0 0 x_5 x_6; 0 x_3 -x_2 0 x_6 -x_5 0 0 x_10 -x_9; 0 x_4 0 -x_2 x_7 0 -x_5 -x_10 0 x_8; 0 0 x_4 -x_3 0 x_7 -x_6 x_9 -x_8 0]"
-                end
+                @test repr("text/plain", collect(b)) ==
+                      "1-element Vector{AbstractAlgebra.Generic.MatSpaceElem{SmashProductLieElem{QQFieldElem, QQFieldElem, LinearLieAlgebraElem{QQFieldElem}}}}:\n [0 x_5 x_6 x_7 -x_2 -x_3 -x_4 0 0 0; -x_5 0 x_8 x_9 x_1 0 0 -x_3 -x_4 0; -x_6 -x_8 0 x_10 0 x_1 0 x_2 0 -x_4; -x_7 -x_9 -x_10 0 0 0 x_1 0 x_2 x_3; x_2 -x_1 0 0 0 x_8 x_9 -x_6 -x_7 0; x_3 0 -x_1 0 -x_8 0 x_10 x_5 0 -x_7; x_4 0 0 -x_1 -x_9 -x_10 0 0 x_5 x_6; 0 x_3 -x_2 0 x_6 -x_5 0 0 x_10 -x_9; 0 x_4 0 -x_2 x_7 0 -x_5 -x_10 0 x_8; 0 0 x_4 -x_3 0 x_7 -x_6 x_9 -x_8 0]"
                 @test all_pbwdeformations(sp, b; special_return=SMat)[1] == matrix(QQ, 1, 1, [1])
                 @test all_pbwdeformations(sp, b) == collect(b)
             end
@@ -81,12 +71,12 @@
                 V = symmetric_power_obj(standard_module(L), 2)
                 sp = smash_product(L, V)
 
-                @test all_pbwdeformations(sp, ArcDiagDeformBasis{QQFieldElem}(sp, 0:0); special_return=SMat)[1] ==
+                @test all_pbwdeformations(sp, ArcDiagDeformBasis(sp, 0:0); special_return=SMat)[1] ==
                       matrix(QQ, 0, 0, [])
-                @test all_pbwdeformations(sp, ArcDiagDeformBasis{QQFieldElem}(sp, 0:1); special_return=SMat)[1] ==
+                @test all_pbwdeformations(sp, ArcDiagDeformBasis(sp, 0:1); special_return=SMat)[1] ==
                       matrix(QQ, 1, 1, [1])
 
-                b = ArcDiagDeformBasis{QQFieldElem}(sp, 0:2)
+                b = ArcDiagDeformBasis(sp, 0:2)
                 @test length(collect(b)) == 2
                 @test all_pbwdeformations(sp, b; special_return=SMat)[1] == matrix(QQ, 2, 1, [1, 0])
                 @test all_pbwdeformations(sp, b) == collect(b)[1:1]
@@ -97,12 +87,12 @@
                 V = symmetric_power_obj(standard_module(L), 2)
                 sp = smash_product(L, V)
 
-                @test all_pbwdeformations(sp, ArcDiagDeformBasis{QQFieldElem}(sp, 0:0); special_return=SMat)[1] ==
+                @test all_pbwdeformations(sp, ArcDiagDeformBasis(sp, 0:0); special_return=SMat)[1] ==
                       matrix(QQ, 0, 0, [])
-                @test all_pbwdeformations(sp, ArcDiagDeformBasis{QQFieldElem}(sp, 0:1); special_return=SMat)[1] ==
+                @test all_pbwdeformations(sp, ArcDiagDeformBasis(sp, 0:1); special_return=SMat)[1] ==
                       matrix(QQ, 1, 1, [1])
 
-                b = ArcDiagDeformBasis{QQFieldElem}(sp, 0:2)
+                b = ArcDiagDeformBasis(sp, 0:2)
                 @test length(collect(b)) == 2
                 @test all_pbwdeformations(sp, b; special_return=SMat)[1] == matrix(QQ, 2, 1, [1, 0])
                 @test all_pbwdeformations(sp, b) == collect(b)[1:1]
@@ -113,7 +103,7 @@
                 V = tensor_power_obj(standard_module(L), 2)
                 sp = smash_product(L, V)
 
-                b = ArcDiagDeformBasis{QQFieldElem}(sp, 0:0)
+                b = ArcDiagDeformBasis(sp, 0:0)
                 @test length(b) == 0
                 ms = all_pbwdeformations(sp, b)
                 @test length(ms) == 0
@@ -124,7 +114,7 @@
                 V = tensor_power_obj(standard_module(L), 2)
                 sp = smash_product(L, V)
 
-                b = ArcDiagDeformBasis{QQFieldElem}(sp, 0:0)
+                b = ArcDiagDeformBasis(sp, 0:0)
                 @test length(b) == 0
                 ms = all_pbwdeformations(sp, b)
                 @test length(ms) == 0
@@ -139,7 +129,7 @@
                 V = tensor_power_obj(standard_module(L), 3)
                 sp = smash_product(L, V)
 
-                b = ArcDiagDeformBasis{QQFieldElem}(sp, 0:0)
+                b = ArcDiagDeformBasis(sp, 0:0)
                 @test length(b) == 3
                 ms = all_pbwdeformations(sp, b)
                 @test length(ms) == 3
@@ -160,7 +150,7 @@
                 V = tensor_power_obj(standard_module(L), 3)
                 sp = smash_product(L, V)
 
-                b = ArcDiagDeformBasis{QQFieldElem}(sp, 0:0)
+                b = ArcDiagDeformBasis(sp, 0:0)
                 @test length(b) == 4
                 ms = all_pbwdeformations(sp, b)
                 @test length(ms) == 4
@@ -185,24 +175,19 @@
                 V = exterior_power_obj(standard_module(L), 2)
                 sp = smash_product(L, V)
 
-                @test all_pbwdeformations(sp, PseudographDeformBasis{QQFieldElem}(sp, 0:0); special_return=SMat)[1] ==
+                @test all_pbwdeformations(sp, PseudographDeformBasis(sp, 0:0); special_return=SMat)[1] ==
                       matrix(QQ, 0, 0, [])
-                @test all_pbwdeformations(sp, PseudographDeformBasis{QQFieldElem}(sp, 0:1); special_return=SMat)[1] ==
+                @test all_pbwdeformations(sp, PseudographDeformBasis(sp, 0:1); special_return=SMat)[1] ==
                       matrix(QQ, 1, 1, [1])
 
-                b = PseudographDeformBasis{QQFieldElem}(sp, 0:2)
+                b = PseudographDeformBasis(sp, 0:2)
                 @test length(collect(b)) == 1
-                if VERSION <= v"1.7-"
-                    @test_broken repr("text/plain", collect(b)) ==
-                                 "1-element Vector{MatElem{<:FreeAssAlgElem{QQFieldElem}}}:\n [0 x_4 x_5 -x_2 -x_3 0; -x_4 0 x_6 x_1 0 -x_3; -x_5 -x_6 0 0 x_1 x_2; x_2 -x_1 0 0 x_6 -x_5; x_3 0 -x_1 -x_6 0 x_4; 0 x_3 -x_2 x_5 -x_4 0]"
-                else
-                    @test repr("text/plain", collect(b)) ==
-                          "1-element Vector{MatElem{<:FreeAssAlgElem{QQFieldElem}}}:\n [0 x_4 x_5 -x_2 -x_3 0; -x_4 0 x_6 x_1 0 -x_3; -x_5 -x_6 0 0 x_1 x_2; x_2 -x_1 0 0 x_6 -x_5; x_3 0 -x_1 -x_6 0 x_4; 0 x_3 -x_2 x_5 -x_4 0]"
-                end
+                @test repr("text/plain", collect(b)) ==
+                      "1-element Vector{AbstractAlgebra.Generic.MatSpaceElem{SmashProductLieElem{QQFieldElem, QQFieldElem, LinearLieAlgebraElem{QQFieldElem}}}}:\n [0 x_4 x_5 -x_2 -x_3 0; -x_4 0 x_6 x_1 0 -x_3; -x_5 -x_6 0 0 x_1 x_2; x_2 -x_1 0 0 x_6 -x_5; x_3 0 -x_1 -x_6 0 x_4; 0 x_3 -x_2 x_5 -x_4 0]"
                 @test all_pbwdeformations(sp, b; special_return=SMat)[1] == matrix(QQ, 1, 1, [1])
                 @test all_pbwdeformations(sp, b) == collect(b)
 
-                b = PseudographDeformBasis{QQFieldElem}(sp, 0:3)
+                b = PseudographDeformBasis(sp, 0:3)
                 @test length(collect(b)) == 3
                 @test all_pbwdeformations(sp, b; special_return=SMat)[1] == matrix(QQ, [1 0; 0 -3//2; 0 1])
                 ms = all_pbwdeformations(sp, b)
@@ -216,24 +201,19 @@
                 V = exterior_power_obj(standard_module(L), 2)
                 sp = smash_product(L, V)
 
-                @test all_pbwdeformations(sp, PseudographDeformBasis{QQFieldElem}(sp, 0:0); special_return=SMat)[1] ==
+                @test all_pbwdeformations(sp, PseudographDeformBasis(sp, 0:0); special_return=SMat)[1] ==
                       matrix(QQ, 0, 0, [])
-                @test all_pbwdeformations(sp, PseudographDeformBasis{QQFieldElem}(sp, 0:1); special_return=SMat)[1] ==
+                @test all_pbwdeformations(sp, PseudographDeformBasis(sp, 0:1); special_return=SMat)[1] ==
                       matrix(QQ, 1, 1, [1])
 
-                b = PseudographDeformBasis{QQFieldElem}(sp, 0:2)
+                b = PseudographDeformBasis(sp, 0:2)
                 @test length(collect(b)) == 1
-                if VERSION <= v"1.7-"
-                    @test_broken repr("text/plain", collect(b)) ==
-                                 "1-element Vector{MatElem{<:FreeAssAlgElem{QQFieldElem}}}:\n [0 x_5 x_6 x_7 -x_2 -x_3 -x_4 0 0 0; -x_5 0 x_8 x_9 x_1 0 0 -x_3 -x_4 0; -x_6 -x_8 0 x_10 0 x_1 0 x_2 0 -x_4; -x_7 -x_9 -x_10 0 0 0 x_1 0 x_2 x_3; x_2 -x_1 0 0 0 x_8 x_9 -x_6 -x_7 0; x_3 0 -x_1 0 -x_8 0 x_10 x_5 0 -x_7; x_4 0 0 -x_1 -x_9 -x_10 0 0 x_5 x_6; 0 x_3 -x_2 0 x_6 -x_5 0 0 x_10 -x_9; 0 x_4 0 -x_2 x_7 0 -x_5 -x_10 0 x_8; 0 0 x_4 -x_3 0 x_7 -x_6 x_9 -x_8 0]"
-                else
-                    @test repr("text/plain", collect(b)) ==
-                          "1-element Vector{MatElem{<:FreeAssAlgElem{QQFieldElem}}}:\n [0 x_5 x_6 x_7 -x_2 -x_3 -x_4 0 0 0; -x_5 0 x_8 x_9 x_1 0 0 -x_3 -x_4 0; -x_6 -x_8 0 x_10 0 x_1 0 x_2 0 -x_4; -x_7 -x_9 -x_10 0 0 0 x_1 0 x_2 x_3; x_2 -x_1 0 0 0 x_8 x_9 -x_6 -x_7 0; x_3 0 -x_1 0 -x_8 0 x_10 x_5 0 -x_7; x_4 0 0 -x_1 -x_9 -x_10 0 0 x_5 x_6; 0 x_3 -x_2 0 x_6 -x_5 0 0 x_10 -x_9; 0 x_4 0 -x_2 x_7 0 -x_5 -x_10 0 x_8; 0 0 x_4 -x_3 0 x_7 -x_6 x_9 -x_8 0]"
-                end
+                @test repr("text/plain", collect(b)) ==
+                      "1-element Vector{AbstractAlgebra.Generic.MatSpaceElem{SmashProductLieElem{QQFieldElem, QQFieldElem, LinearLieAlgebraElem{QQFieldElem}}}}:\n [0 x_5 x_6 x_7 -x_2 -x_3 -x_4 0 0 0; -x_5 0 x_8 x_9 x_1 0 0 -x_3 -x_4 0; -x_6 -x_8 0 x_10 0 x_1 0 x_2 0 -x_4; -x_7 -x_9 -x_10 0 0 0 x_1 0 x_2 x_3; x_2 -x_1 0 0 0 x_8 x_9 -x_6 -x_7 0; x_3 0 -x_1 0 -x_8 0 x_10 x_5 0 -x_7; x_4 0 0 -x_1 -x_9 -x_10 0 0 x_5 x_6; 0 x_3 -x_2 0 x_6 -x_5 0 0 x_10 -x_9; 0 x_4 0 -x_2 x_7 0 -x_5 -x_10 0 x_8; 0 0 x_4 -x_3 0 x_7 -x_6 x_9 -x_8 0]"
                 @test all_pbwdeformations(sp, b; special_return=SMat)[1] == matrix(QQ, 1, 1, [1])
                 @test all_pbwdeformations(sp, b) == collect(b)
 
-                b = PseudographDeformBasis{QQFieldElem}(sp, 0:3)
+                b = PseudographDeformBasis(sp, 0:3)
                 @test length(collect(b)) == 4
                 @test all_pbwdeformations(sp, b; special_return=SMat)[1] == matrix(QQ, 4, 1, [1, 0, 0, 0])
                 @test all_pbwdeformations(sp, b) == collect(b)[1:1]

@@ -7,31 +7,31 @@ Each element of the basis is induced by an arc diagram of a suitable size,
 which gets symmetrized and specialised to the given smash product.
 This process is due to [FM22](@cite).
 """
-struct ArcDiagDeformBasis{C <: RingElem} <: DeformBasis{C}
+struct ArcDiagDeformBasis{T <: SmashProductLieElem} <: DeformBasis{T}
     len::Int
     iter
-    extra_data::Dict{DeformationMap{C}, Set{ArcDiagram}}
+    extra_data::Dict{DeformationMap{T}, Set{ArcDiagram}}
     normalize
 
-    function ArcDiagDeformBasis{C}(
-        sp::SmashProductLie{C},
+    function ArcDiagDeformBasis(
+        sp::SmashProductLie{C, LieC, LieT},
         degs::AbstractVector{Int};
         no_normalize::Bool=false,
-    ) where {C <: RingElem}
-        T = get_attribute(base_lie_algebra(sp), :type, nothing)::Union{Nothing,Symbol}
-        @req T in [:special_orthogonal, :general_linear] "Only works for so_n and gl_n."
-        if T == :special_orthogonal && has_attribute(base_lie_algebra(sp), :form)
+    ) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}}
+        LieType = get_attribute(base_lie_algebra(sp), :type, nothing)::Union{Nothing,Symbol}
+        @req LieType in [:special_orthogonal, :general_linear] "Only works for so_n and gl_n."
+        if LieType == :special_orthogonal && has_attribute(base_lie_algebra(sp), :form)
             @req isone(get_attribute(base_lie_algebra(sp), :form)::dense_matrix_type(C)) "Only works for so_n represented as skew-symmetric matrices."
         end
-        return ArcDiagDeformBasis{C}(Val(T), sp, degs; no_normalize)
+        return ArcDiagDeformBasis(Val(LieType), sp, degs; no_normalize)
     end
 
-    function ArcDiagDeformBasis{C}(
-        T::Union{SO, GL},
-        sp::SmashProductLie{C},
+    function ArcDiagDeformBasis(
+        LieType::Union{SO, GL},
+        sp::SmashProductLie{C, LieC, LieT},
         degs::AbstractVector{Int};
         no_normalize::Bool=false,
-    ) where {C <: RingElem}
+    ) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}}
         V = base_module(sp)
 
         V_nice, h = isomorphic_module_with_simple_structure(V)
@@ -43,7 +43,7 @@ struct ArcDiagDeformBasis{C <: RingElem} <: DeformBasis{C}
             V_nice = temp
         end
 
-        extra_data = Dict{DeformationMap{C}, Set{ArcDiagram}}()
+        extra_data = Dict{DeformationMap{elem_type(sp)}, Set{ArcDiagram}}()
         normalize = no_normalize ? identity : normalize_default
 
         n_cases = div(length(V_nice_summands) * (length(V_nice_summands) + 1), 2)
@@ -69,12 +69,12 @@ struct ArcDiagDeformBasis{C <: RingElem} <: DeformBasis{C}
                     tensor_product(V_nice_summand_i_l, V_nice_summand_i_r)
                 end
 
-                diag_iter = pbw_arc_diagrams(T, W, d)
+                diag_iter = pbw_arc_diagrams(LieType, W, d)
                 len = length(diag_iter)
                 iter = (
                     begin
                         @vprintln :PBWDeformations 2 "Basis generation deg $(lpad(d, maximum(ndigits, degs))), case $(lpad(case, ndigits(n_cases)))/$(n_cases), $(lpad(floor(Int, 100*counter / len), 3))%, $(lpad(counter, ndigits(len)))/$(len)"
-                        _basis_elem = arcdiag_to_deformationmap(T, diag, sp, W)
+                        _basis_elem = arcdiag_to_deformationmap(LieType, diag, sp, W)
                         basis_elem = matrix(proj_to_summand_l) * _basis_elem * transpose(matrix(proj_to_summand_r))
                         if i_l != i_r
                             basis_elem -= transpose(basis_elem)
@@ -103,22 +103,22 @@ struct ArcDiagDeformBasis{C <: RingElem} <: DeformBasis{C}
         iter = Iterators.flatten(iters)
         if !no_normalize
             iter = unique(Iterators.filter(b -> !iszero(b), iter))
-            collected = Vector{DeformationMap{C}}(collect(iter))::Vector{DeformationMap{C}}
+            collected = Vector{DeformationMap{elem_type(sp)}}(collect(iter))::Vector{DeformationMap{elem_type(sp)}}
             _, rels = is_linearly_independent_with_relations(coefficient_ring(sp), collected)
             inds = [findlast(!iszero, vec(rels[i, :]))::Int for i in 1:nrows(rels)]
             deleteat!(collected, inds)
-            return new{C}(length(collected), collected, extra_data, normalize)
+            return new{elem_type(sp)}(length(collected), collected, extra_data, normalize)
         end
-        return new{C}(len, iter, extra_data, normalize)
+        return new{elem_type(sp)}(len, iter, extra_data, normalize)
     end
 end
 
 function Base.iterate(i::ArcDiagDeformBasis)
-    return iterate(i.iter)
+    return iterate(i.iter)::Union{Tuple{eltype(i), Any}, Nothing}
 end
 
 function Base.iterate(i::ArcDiagDeformBasis, s)
-    return iterate(i.iter, s)
+    return iterate(i.iter, s)::Union{Tuple{eltype(i), Any}, Nothing}
 end
 
 Base.length(basis::ArcDiagDeformBasis) = basis.len
@@ -425,22 +425,13 @@ function arcdiag_to_deformationmap(
         case = :tensor_product
     end
 
-    kappa = zero_matrix(underlying_algebra(sp), nrows_kappa, ncols_kappa)
+    kappa = zero_matrix(sp, nrows_kappa, ncols_kappa)
     for (label_index, upper_labels) in enumerate(arc_diagram_label_iterator(T, W, 1:dim_stdmod_V))
 
         i, j = ind_map[label_index]
 
-        entry = arcdiag_to_deformationmap_entry(
-            T,
-            diag,
-            W,
-            upper_labels,
-            underlying_algebra(sp),
-            iso_pair_to_L,
-            dim_stdmod_V,
-        )
-
-        entry = _normal_form(entry, sp.rels)
+        entry = arcdiag_to_deformationmap_entry(T, diag, W, upper_labels, sp, iso_pair_to_L, dim_stdmod_V)
+        simplify(entry)
 
         kappa[i, j] += entry
         if case == :exterior_power
@@ -456,11 +447,11 @@ function arcdiag_to_deformationmap_entry(
     diag::ArcDiagramUndirected,
     W::LieAlgebraModule{C},
     upper_labels::AbstractVector{Int},
-    sp_alg::FreeAssAlgebra{C},
+    sp::SmashProductLie{C},
     iso_pair_to_L::Function,
     max_label::Int,
 ) where {C <: RingElem}
-    entry = zero(sp_alg)
+    entry = zero(sp)
 
     for (upper_labels, sgn_upper_labels) in arc_diagram_label_permutations(T, W, upper_labels)
         zeroprod = false
@@ -485,7 +476,7 @@ function arcdiag_to_deformationmap_entry(
             end
         end
 
-        entry_summand = zero(sp_alg)
+        entry_summand = zero(sp)
 
         # iterate over lower point labelings
         nextindex = 1
@@ -503,9 +494,11 @@ function arcdiag_to_deformationmap_entry(
                     append!(basiselem, gen_ind)
                 end
                 if !iszero(coeff_lower_labels)
-                    symm_basiselem = sp_alg(
-                        fill(C(1 // factorial(length(basiselem))), factorial(length(basiselem))),
-                        [ind for ind in permutations(basiselem)],
+                    symm_basiselem = sp(
+                        underlying_algebra(sp)(
+                            fill(C(1 // factorial(length(basiselem))), factorial(length(basiselem))),
+                            [ind for ind in permutations(basiselem)],
+                        ),
                     )
                     entry_summand += coeff_lower_labels * symm_basiselem
                 end

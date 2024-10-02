@@ -27,7 +27,9 @@ base_lie_algebra(
 base_module(Sp::SmashProductLie{C, LieC, LieT}) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}} =
     Sp.V::LieAlgebraModule{LieC}
 
-underlying_algebra(Sp::SmashProductLie) = Sp.alg
+underlying_algebra(
+    Sp::SmashProductLie{C, LieC, LieT},
+) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}} = Sp.alg::free_associative_algebra_type(C)
 
 ngens(Sp::SmashProductLie) = ngens(underlying_algebra(Sp))
 function ngens(Sp::SmashProductLie, part::Symbol)
@@ -84,6 +86,10 @@ function AbstractAlgebra.promote_rule(
     ::Type{C2},
 ) where {C1 <: RingElem, C2 <: RingElem}
     AbstractAlgebra.promote_rule(C1, C2) == C1 ? T1 : Union{}
+end
+
+function change_base_ring(R::Ring, e::SmashProductLieElem{C}; parent::SmashProductLie=smash_product(R, base_lie_algebra(parent(e)), base_module(parent(e)))) where C
+    return parent(change_base_ring(R, e.alg_elem; parent=underlying_algebra(parent)))
 end
 
 ###############################################################################
@@ -247,21 +253,21 @@ function simplify(e::SmashProductLieElem)
 end
 
 function _normal_form(a::FreeAssAlgElem{C}, rels::Matrix{Union{Nothing, FreeAssAlgElem{C}}}) where {C <: RingElem}
-    todo = deepcopy(a)
-    result = zero(parent(todo))
+    a = deepcopy(a)
+    result = zero(parent(a))
     CR = coefficient_ring(a)
-    A = parent(todo)
-    while todo.length > 0
-        c = leading_coefficient(todo)
-        exp = leading_exponent_word(todo)
-        t = leading_term(todo)
-        todo -= t
+    A = parent(a)
+    while a.length > 0
+        c = leading_coefficient(a)
+        exp = leading_exponent_word(a)
+        t = leading_term(a)
+        a -= t
 
         changed = false
         for i in 1:length(exp)-1
             if exp[i] > exp[i+1] && !isnothing(rels[exp[i], exp[i+1]])
                 changed = true
-                todo += A([c], [exp[1:i-1]]) * rels[exp[i], exp[i+1]] * A([one(CR)], [exp[i+2:end]])
+                a += A([c], [exp[1:i-1]]) * rels[exp[i], exp[i+1]] * A([one(CR)], [exp[i+2:end]])
                 break
             end
         end
@@ -309,7 +315,8 @@ function smash_product(R::Ring, L::LieAlgebra{C}, V::LieAlgebraModule{C}) where 
 
     f_alg, _ = free_associative_algebra(
         R,
-        [symbols(L); _is_standard_module(V) ? symbols(V) : (x -> Symbol("($x)")).(symbols(V))],
+        [symbols(L); _is_standard_module(V) ? symbols(V) : (x -> Symbol("($x)")).(symbols(V))];
+        cached=false,
     )
     f_basisL = [gen(f_alg, i) for i in 1:dimL]
     f_basisV = [gen(f_alg, dimL + i) for i in 1:dimV]

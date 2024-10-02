@@ -6,10 +6,10 @@
             V = exterior_power_obj(standard_module(L), 2)
             sp = smash_product(L, V)
 
-            kappa = zero_matrix(underlying_algebra(sp), dim(base_module(sp)), dim(base_module(sp)))
-            kappa[1, 2] = gen(sp, 1, :L).alg_elem
+            kappa = zero_matrix(sp, dim(base_module(sp)), dim(base_module(sp)))
+            kappa[1, 2] = gen(sp, 1, :L)
             kappa[2, 1] = -kappa[1, 2]
-            kappa[3, 4] = gen(sp, 2, :L).alg_elem
+            kappa[3, 4] = gen(sp, 2, :L)
             kappa[4, 3] = -kappa[3, 4]
             d = deform(sp, kappa)
 

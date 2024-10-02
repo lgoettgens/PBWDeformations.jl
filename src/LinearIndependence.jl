@@ -34,6 +34,11 @@ function _linear_independence_coeff_matrix(V::Vector{<:FieldElem})
     return _linear_independence_coeff_matrix(parent(V[1]), V)
 end
 
+function _linear_independence_coeff_matrix(F::Field, V::Vector{Any})
+    @req is_empty(V) "Only empty vectors may have eltype Any"
+    return matrix(F, 0, 0, V)
+end
+
 function _linear_independence_coeff_matrix(F::Field, V::Vector{<:FieldElem})
     return matrix(F, length(V), 1, V)
 end
@@ -98,3 +103,10 @@ function _linear_independence_coeff_matrix(F::Field, V::Vector{<:FreeAssAlgElem}
     )::dense_matrix_type(F)
 end
 
+function _linear_independence_coeff_matrix(F::Field, V::Vector{<:SmashProductLieElem})
+    return _linear_independence_coeff_matrix(F, map(e -> simplify(e).alg_elem, V))::dense_matrix_type(F)
+end
+
+function _linear_independence_coeff_matrix(F::Field, V::Vector{<:SmashProductLieDeformElem})
+    return _linear_independence_coeff_matrix(F, map(e -> simplify(e).alg_elem, V))::dense_matrix_type(F)
+end
