@@ -249,9 +249,12 @@ end
 #
 ###############################################################################
 
-function simplify(e::SmashProductLieDeformElem)
+function simplify(
+    e::SmashProductLieDeformElem{C, LieC, LieT},
+) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}}
     e.simplified && return e
-    e.alg_elem = _normal_form(data(e), parent(e).rels)
+    e.alg_elem =
+        _normal_form(data(e), parent(e).rels::Matrix{Union{Nothing, elem_type(free_associative_algebra_type(C))}})
     e.simplified = true
     return e
 end
@@ -287,7 +290,7 @@ function deform(
     end
 
     symmetric = true
-    rels = deepcopy(sp.rels)
+    rels = deepcopy(sp.rels::Matrix{Union{Nothing, elem_type(free_associative_algebra_type(C))}})
     for i in 1:dimV, j in 1:dimV
         # We have the commutator relation [v_i, v_j] = kappa[i,j]
         # which is equivalent to v_i*v_j = v_j*v_i + kappa[i,j]

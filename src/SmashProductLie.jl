@@ -248,15 +248,17 @@ end
 #
 ###############################################################################
 
-function simplify(e::SmashProductLieElem)
+function simplify(
+    e::SmashProductLieElem{C, LieC, LieT},
+) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}}
     e.simplified && return e
-    e.alg_elem = _normal_form(data(e), parent(e).rels)
+    e.alg_elem =
+        _normal_form(data(e), parent(e).rels::Matrix{Union{Nothing, elem_type(free_associative_algebra_type(C))}})
     e.simplified = true
     return e
 end
 
-function _normal_form(a::FreeAssAlgElem{C}, rels::Matrix{Union{Nothing, F}} where {F <: FreeAssAlgElem{C}}) where {C <: RingElem}
-    a = deepcopy(a)
+function _normal_form(a::F, rels::Matrix{Union{Nothing, F}}) where {C <: RingElem, F <: FreeAssAlgElem{C}}
     result = zero(parent(a))
     CR = coefficient_ring(a)
     A = parent(a)
@@ -268,9 +270,11 @@ function _normal_form(a::FreeAssAlgElem{C}, rels::Matrix{Union{Nothing, F}} wher
 
         changed = false
         for i in 1:length(exp)-1
-            if exp[i] > exp[i+1] && !isnothing(rels[exp[i], exp[i+1]])
+            exp[i] > exp[i+1] || continue
+            rel = rels[exp[i], exp[i+1]]
+            if !isnothing(rel)
                 changed = true
-                a += A([c], [exp[1:i-1]]) * rels[exp[i], exp[i+1]] * A([one(CR)], [exp[i+2:end]])
+                a += A([c], [exp[1:i-1]]) * rel * A([one(CR)], [exp[i+2:end]])
                 break
             end
         end
