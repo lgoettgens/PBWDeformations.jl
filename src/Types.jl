@@ -227,7 +227,7 @@ It gets created by calling [`smash_product`](@ref).
     L::LieAlgebra{LieC}
     V::LieAlgebraModule{LieC}
     alg::FreeAssAlgebra{C}
-    rels::Matrix{Union{Nothing, FreeAssAlgElem{C}}}
+    rels::Matrix{Union{Nothing, F}} where {F <: FreeAssAlgElem{C}}
 
     # default constructor for @attributes
     function SmashProductLie{C, LieC, LieT}(
@@ -235,7 +235,7 @@ It gets created by calling [`smash_product`](@ref).
         L::LieAlgebra{LieC},
         V::LieAlgebraModule{LieC},
         alg::FreeAssAlgebra{C},
-        rels::Matrix{Union{Nothing, FreeAssAlgElem{C}}},
+        rels::Matrix{Union{Nothing, F}} where {F <: FreeAssAlgElem{C}},
     ) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}}
         new{C, LieC, LieT}(coeff_ring, L, V, alg, rels)
     end
@@ -298,13 +298,13 @@ It gets created by calling [`deform`](@ref).
 @attributes mutable struct SmashProductLieDeform{C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}} <:
                            NCRing
     sp::SmashProductLie{C, LieC, LieT}
-    rels::Matrix{Union{Nothing, FreeAssAlgElem{C}}}
+    rels::Matrix{Union{Nothing, F}} where {F <: FreeAssAlgElem{C}}
     kappa::DeformationMap{SmashProductLieElem{C, LieC, LieT}}
 
     # default constructor for @attributes
     function SmashProductLieDeform{C, LieC, LieT}(
         sp::SmashProductLie{C, LieC, LieT},
-        rels::Matrix{Union{Nothing, FreeAssAlgElem{C}}},
+        rels::Matrix{Union{Nothing, F}} where {F <: FreeAssAlgElem{C}},
         kappa::DeformationMap{SmashProductLieElem{C, LieC, LieT}},
     ) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}}
         new{C, LieC, LieT}(sp, rels, kappa)

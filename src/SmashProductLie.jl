@@ -255,7 +255,7 @@ function simplify(e::SmashProductLieElem)
     return e
 end
 
-function _normal_form(a::FreeAssAlgElem{C}, rels::Matrix{Union{Nothing, FreeAssAlgElem{C}}}) where {C <: RingElem}
+function _normal_form(a::FreeAssAlgElem{C}, rels::Matrix{Union{Nothing, F}} where {F <: FreeAssAlgElem{C}}) where {C <: RingElem}
     a = deepcopy(a)
     result = zero(parent(a))
     CR = coefficient_ring(a)
@@ -324,7 +324,7 @@ function smash_product(R::Ring, L::LieAlgebra{C}, V::LieAlgebraModule{C}) where 
     f_basisL = [gen(f_alg, i) for i in 1:dimL]
     f_basisV = [gen(f_alg, dimL + i) for i in 1:dimV]
 
-    rels = Matrix{Union{Nothing, FreeAssAlgElem{elem_type(R)}}}(nothing, dimL + dimV, dimL + dimV)
+    rels = Matrix{Union{Nothing, elem_type(free_associative_algebra_type(R))}}(nothing, dimL + dimV, dimL + dimV)
 
     for (i, xi) in enumerate(basis(L)), (j, xj) in enumerate(basis(L))
         commutator =
