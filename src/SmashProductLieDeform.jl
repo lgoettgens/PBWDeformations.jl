@@ -28,7 +28,13 @@ base_module(
     D::SmashProductLieDeform{C, LieC, LieT},
 ) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}} = base_module(D.sp)::LieAlgebraModule{LieC}
 
-underlying_algebra(D::SmashProductLieDeform) = underlying_algebra(D.sp) # TODO: create new algebra for D
+underlying_algebra(
+    D::SmashProductLieDeform{C, LieC, LieT},
+) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}} =
+    underlying_algebra(D.sp)::free_associative_algebra_type(C) # TODO: create new algebra for D
+
+data(e::SmashProductLieDeformElem{C, LieC, LieT}) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}} =
+    e.alg_elem::elem_type(free_associative_algebra_type(C))
 
 ngens(D::SmashProductLieDeform) = ngens(underlying_algebra(D))
 function ngens(D::SmashProductLieDeform, part::Symbol)
@@ -57,7 +63,7 @@ function zero(D::SmashProductLieDeform)
 end
 
 function iszero(e::SmashProductLieDeformElem)
-    return iszero(simplify(e).alg_elem)
+    return iszero(data(simplify(e)))
 end
 
 function one(D::SmashProductLieDeform)
@@ -65,11 +71,11 @@ function one(D::SmashProductLieDeform)
 end
 
 function isone(e::SmashProductLieDeformElem)
-    return isone(simplify(e).alg_elem)
+    return isone(data(simplify(e)))
 end
 
 function Base.deepcopy_internal(e::SmashProductLieDeformElem, dict::IdDict)
-    return SmashProductLieDeformElem(parent(e), deepcopy_internal(e.alg_elem, dict); simplified=e.simplified)
+    return SmashProductLieDeformElem(parent(e), deepcopy_internal(data(e), dict); simplified=e.simplified)
 end
 
 function check_parent(
@@ -103,7 +109,7 @@ end
 
 
 function show(io::IO, e::SmashProductLieDeformElem)
-    show(io, e.alg_elem)
+    show(io, data(e))
 end
 
 
@@ -139,7 +145,7 @@ function (D::SmashProductLieDeform{C, LieC, LieT})(
     e::SmashProductLieElem{C, LieC, LieT},
 ) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}}
     @req parent(e) == D.sp "Incompatible smash products."
-    return D(e.alg_elem)
+    return D(data(e))
 end
 
 function (D::SmashProductLieDeform{C, LieC, LieT})(
@@ -163,57 +169,57 @@ end
 ###############################################################################
 
 function Base.:-(e::SmashProductLieDeformElem)
-    return parent(e)(-e.alg_elem)
+    return parent(e)(-data(e))
 end
 
 function Base.:+(e1::SmashProductLieDeformElem, e2::SmashProductLieDeformElem)
     check_parent(e1, e2)
-    return parent(e1)(e1.alg_elem + e2.alg_elem)
+    return parent(e1)(data(e1) + data(e2))
 end
 
 function Base.:-(e1::SmashProductLieDeformElem, e2::SmashProductLieDeformElem)
     check_parent(e1, e2)
-    return parent(e1)(e1.alg_elem - e2.alg_elem)
+    return parent(e1)(data(e1) - data(e2))
 end
 
 function Base.:*(e1::SmashProductLieDeformElem, e2::SmashProductLieDeformElem)
     check_parent(e1, e2)
-    return parent(e1)(e1.alg_elem * e2.alg_elem)
+    return parent(e1)(data(e1) * data(e2))
 end
 
 function Base.:*(e::SmashProductLieDeformElem{C}, c::C) where {C <: RingElem}
     coefficient_ring(e) != parent(c) && error("Incompatible rings.")
-    return parent(e)(e.alg_elem * c)
+    return parent(e)(data(e) * c)
 end
 
 function Base.:*(e::SmashProductLieDeformElem, c::U) where {U <: Union{Rational, IntegerUnion}}
-    return parent(e)(e.alg_elem * c)
+    return parent(e)(data(e) * c)
 end
 
 function Base.:*(e::SmashProductLieDeformElem{ZZRingElem}, c::ZZRingElem)
-    return parent(e)(e.alg_elem * c)
+    return parent(e)(data(e) * c)
 end
 
 function Base.:*(c::C, e::SmashProductLieDeformElem{C}) where {C <: RingElem}
     coefficient_ring(e) != parent(c) && error("Incompatible rings.")
-    return parent(e)(c * e.alg_elem)
+    return parent(e)(c * data(e))
 end
 
 function Base.:*(c::U, e::SmashProductLieDeformElem) where {U <: Union{Rational, IntegerUnion}}
-    return parent(e)(c * e.alg_elem)
+    return parent(e)(c * data(e))
 end
 
 function Base.:*(c::ZZRingElem, e::SmashProductLieDeformElem{ZZRingElem})
-    return parent(e)(c * e.alg_elem)
+    return parent(e)(c * data(e))
 end
 
 function Base.:^(e::SmashProductLieDeformElem, n::Int)
-    return parent(e)(e.alg_elem^n)
+    return parent(e)(data(e)^n)
 end
 
 function comm(e1::SmashProductLieDeformElem, e2::SmashProductLieDeformElem)
     check_parent(e1, e2)
-    return parent(e1)(e1.alg_elem * e2.alg_elem - e2.alg_elem * e1.alg_elem)
+    return parent(e1)(data(e1) * data(e2) - data(e2) * data(e1))
 end
 
 ###############################################################################
@@ -226,14 +232,14 @@ function Base.:(==)(
     e1::SmashProductLieDeformElem{C, LieC, LieT},
     e2::SmashProductLieDeformElem{C, LieC, LieT},
 ) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}}
-    return parent(e1) === parent(e2) && simplify(e1).alg_elem == simplify(e2).alg_elem
+return parent(e1) === parent(e2) && data(simplify(e1)) == data(simplify(e2))
 end
 
 function Base.hash(e::SmashProductLieDeformElem, h::UInt)
     e = simplify(e)
     b = 0x97eb07aa70e4a59c % UInt
     h = hash(parent(e), h)
-    h = hash(e.alg_elem, h)
+    h = hash(data(e), h)
     return xor(h, b)
 end
 
@@ -245,7 +251,7 @@ end
 
 function simplify(e::SmashProductLieDeformElem)
     e.simplified && return e
-    e.alg_elem = _normal_form(e.alg_elem, parent(e).rels)
+    e.alg_elem = _normal_form(data(e), parent(e).rels)
     e.simplified = true
     return e
 end
@@ -277,8 +283,7 @@ function deform(
 
     for i in 1:dimV, j in 1:i
         @req kappa[i, j] == -kappa[j, i] "kappa is not skew-symmetric."
-        @req all(<=(dimL), Iterators.flatten(exponent_words(kappa[i, j].alg_elem))) "kappa does not only take values in the hopf algebra"
-        @req all(<=(dimL), Iterators.flatten(exponent_words(kappa[j, i].alg_elem))) "kappa does not only take values in the hopf algebra"
+        @req all(<=(dimL), Iterators.flatten(exponent_words(data(kappa[i, j])))) "kappa does not only take values in the hopf algebra"
     end
 
     symmetric = true
@@ -286,7 +291,7 @@ function deform(
     for i in 1:dimV, j in 1:dimV
         # We have the commutator relation [v_i, v_j] = kappa[i,j]
         # which is equivalent to v_i*v_j = v_j*v_i + kappa[i,j]
-        rels[dimL+i, dimL+j] = basisV[j] * basisV[i] + simplify(kappa[i, j]).alg_elem
+        rels[dimL+i, dimL+j] = basisV[j] * basisV[i] + data(simplify(kappa[i, j]))
         symmetric &= iszero(kappa[i, j])
     end
 

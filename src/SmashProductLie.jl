@@ -31,6 +31,9 @@ underlying_algebra(
     Sp::SmashProductLie{C, LieC, LieT},
 ) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}} = Sp.alg::free_associative_algebra_type(C)
 
+data(e::SmashProductLieElem{C, LieC, LieT}) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}} =
+    e.alg_elem::elem_type(free_associative_algebra_type(C))
+
 ngens(Sp::SmashProductLie) = ngens(underlying_algebra(Sp))
 function ngens(Sp::SmashProductLie, part::Symbol)
     part == :L && return dim(base_lie_algebra(Sp))
@@ -59,7 +62,7 @@ function zero(Sp::SmashProductLie)
 end
 
 function iszero(e::SmashProductLieElem)
-    return iszero(simplify(e).alg_elem)
+    return iszero(data(simplify(e)))
 end
 
 function one(Sp::SmashProductLie)
@@ -67,11 +70,11 @@ function one(Sp::SmashProductLie)
 end
 
 function isone(e::SmashProductLieElem)
-    return isone(simplify(e).alg_elem)
+    return isone(data(simplify(e)))
 end
 
 function Base.deepcopy_internal(e::SmashProductLieElem, dict::IdDict)
-    return SmashProductLieElem(parent(e), deepcopy_internal(e.alg_elem, dict); simplified=e.simplified)
+    return SmashProductLieElem(parent(e), deepcopy_internal(data(e), dict); simplified=e.simplified)
 end
 
 function check_parent(
@@ -89,7 +92,7 @@ function AbstractAlgebra.promote_rule(
 end
 
 function change_base_ring(R::Ring, e::SmashProductLieElem{C}; parent::SmashProductLie=smash_product(R, base_lie_algebra(parent(e)), base_module(parent(e)))) where C
-    return parent(change_base_ring(R, e.alg_elem; parent=underlying_algebra(parent)))
+    return parent(change_base_ring(R, data(e); parent=underlying_algebra(parent)))
 end
 
 ###############################################################################
@@ -112,7 +115,7 @@ end
 
 
 function show(io::IO, e::SmashProductLieElem)
-    show(io, e.alg_elem)
+    show(io, data(e))
 end
 
 
@@ -165,57 +168,57 @@ end
 ###############################################################################
 
 function Base.:-(e::SmashProductLieElem)
-    return parent(e)(-e.alg_elem)
+    return parent(e)(-data(e))
 end
 
 function Base.:+(e1::SmashProductLieElem, e2::SmashProductLieElem)
     check_parent(e1, e2)
-    return parent(e1)(e1.alg_elem + e2.alg_elem)
+    return parent(e1)(data(e1) + data(e2))
 end
 
 function Base.:-(e1::SmashProductLieElem, e2::SmashProductLieElem)
     check_parent(e1, e2)
-    return parent(e1)(e1.alg_elem - e2.alg_elem)
+    return parent(e1)(data(e1) - data(e2))
 end
 
 function Base.:*(e1::SmashProductLieElem, e2::SmashProductLieElem)
     check_parent(e1, e2)
-    return parent(e1)(e1.alg_elem * e2.alg_elem)
+    return parent(e1)(data(e1) * data(e2))
 end
 
 function Base.:*(e::SmashProductLieElem{C}, c::C) where {C <: RingElem}
     coefficient_ring(e) != parent(c) && error("Incompatible rings.")
-    return parent(e)(e.alg_elem * c)
+    return parent(e)(data(e) * c)
 end
 
 function Base.:*(e::SmashProductLieElem, c::U) where {U <: Union{Rational, IntegerUnion}}
-    return parent(e)(e.alg_elem * c)
+    return parent(e)(data(e) * c)
 end
 
 function Base.:*(e::SmashProductLieElem{ZZRingElem}, c::ZZRingElem)
-    return parent(e)(e.alg_elem * c)
+    return parent(e)(data(e) * c)
 end
 
 function Base.:*(c::C, e::SmashProductLieElem{C}) where {C <: RingElem}
     coefficient_ring(e) != parent(c) && error("Incompatible rings.")
-    return parent(e)(c * e.alg_elem)
+    return parent(e)(c * data(e))
 end
 
 function Base.:*(c::U, e::SmashProductLieElem) where {U <: Union{Rational, IntegerUnion}}
-    return parent(e)(c * e.alg_elem)
+    return parent(e)(c * data(e))
 end
 
 function Base.:*(c::ZZRingElem, e::SmashProductLieElem{ZZRingElem})
-    return parent(e)(c * e.alg_elem)
+    return parent(e)(c * data(e))
 end
 
 function Base.:^(e::SmashProductLieElem, n::Int)
-    return parent(e)(e.alg_elem^n)
+    return parent(e)(data(e)^n)
 end
 
 function comm(e1::SmashProductLieElem, e2::SmashProductLieElem)
     check_parent(e1, e2)
-    return parent(e1)(e1.alg_elem * e2.alg_elem - e2.alg_elem * e1.alg_elem)
+    return parent(e1)(data(e1) * data(e2) - data(e2) * data(e1))
 end
 
 ###############################################################################
@@ -228,14 +231,14 @@ function Base.:(==)(
     e1::SmashProductLieElem{C, LieC, LieT},
     e2::SmashProductLieElem{C, LieC, LieT},
 ) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}}
-    return parent(e1) === parent(e2) && simplify(e1).alg_elem == simplify(e2).alg_elem
+    return parent(e1) === parent(e2) && data(simplify(e1)) == data(simplify(e2))
 end
 
 function Base.hash(e::SmashProductLieElem, h::UInt)
     e = simplify(e)
     b = 0xdcc11ff793ca4ada % UInt
     h = hash(parent(e), h)
-    h = hash(e.alg_elem, h)
+    h = hash(data(e), h)
     return xor(h, b)
 end
 
@@ -247,7 +250,7 @@ end
 
 function simplify(e::SmashProductLieElem)
     e.simplified && return e
-    e.alg_elem = _normal_form(e.alg_elem, parent(e).rels)
+    e.alg_elem = _normal_form(data(e), parent(e).rels)
     e.simplified = true
     return e
 end

@@ -135,7 +135,7 @@ function all_pbwdeformations(
                     i = x[1]
                     a = x[2]
                     @vprintln :PBWDeformations 2 "Equations $(lpad(floor(Int, 100*i / neqs), 3))%, $(lpad(i, ndigits(neqs)))/$(neqs)"
-                    coefficient_comparison(simplify(a).alg_elem)
+                    coefficient_comparison(data(simplify(a)))
                 end,
                 enumerate(pbwdeform_eqs(d)),
             ),

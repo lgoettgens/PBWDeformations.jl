@@ -23,6 +23,6 @@ function normalize_default(m::DeformationMap{T}) where {T <: SmashProductLieElem
     if nz_index === nothing
         return m
     end
-    lc = leading_coefficient(m[CartesianIndex(nz_index[2], nz_index[1])].alg_elem)
+    lc = leading_coefficient(data(m[CartesianIndex(nz_index[2], nz_index[1])]))
     m = map(e -> 1 // lc * e, m)
 end

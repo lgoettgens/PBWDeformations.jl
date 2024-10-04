@@ -30,6 +30,7 @@ import Oscar.AbstractAlgebra: parent_type
 
 import Oscar: base_lie_algebra
 import Oscar: comm
+import Oscar: data
 import Oscar: edges
 import Oscar: n_edges
 import Oscar: neighbors
