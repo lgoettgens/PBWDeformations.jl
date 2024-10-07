@@ -15,6 +15,11 @@ function is_linearly_independent(V::Vector{T}) where {T}
     return is_linearly_independent_with_relations(V)[1]
 end
 
+"""
+    is_linearly_independent(F::Field, V::Vector{T}) where {T} -> Bool
+
+Checks whether the elements of `V` are linearly independent over `F`.
+"""
 function is_linearly_independent(F::Field, V::Vector{T}) where {T}
     return is_linearly_independent_with_relations(F, V)[1]
 end
@@ -24,9 +29,48 @@ function is_linearly_independent_with_relations(V::Vector{T}) where {T}
     return nrows(M) == 0, M
 end
 
+"""
+    is_linearly_independent_with_relations(F::Field, V::Vector{T}) where {T}
+
+Checks whether the elements of `V` are linearly independent over `F`.
+
+This function returns a tuple `(is_independent, relations)` where `is_independent`
+is a boolean indicating whether the elements are linearly independent and `relations`
+is a matrix whose rows are the coefficients of the linear relations.
+"""
 function is_linearly_independent_with_relations(F::Field, V::Vector{T}) where {T}
     M = kernel(_linear_independence_coeff_matrix(F, V); side=:left)
     return nrows(M) == 0, M
+end
+
+"""
+    is_in_span(F::Field, x::T, V::Vector{T}) where {T} -> Bool
+
+Checks whether `x` is in the `F`-span of `V`.
+"""
+function is_in_span(F::Field, x::T, V::Vector{T}) where {T}
+    cm = _linear_independence_coeff_matrix(F, [x; V])
+    return rank(cm[2:end, :]) == rank(cm)
+end
+
+"""
+    is_span_subset(F::Field, V::Vector{T}, W::Vector{T}) where {T} -> Bool
+
+Checks whether the `F`-span of `V` is a subset of the `F`-span of `W`.
+"""
+function is_span_subset(F::Field, V::Vector{T}, W::Vector{T}) where {T}
+    cm = _linear_independence_coeff_matrix(F, [V; W])
+    return rank(cm[length(V)+1:end, :]) == rank(cm)
+end
+
+"""
+    is_span_equal(F::Field, V::Vector{T}, W::Vector{T}) where {T} -> Bool
+
+Checks whether the `F`-span of `V` is equal to the `F`-span of `W`.
+"""
+function is_span_equal(F::Field, V::Vector{T}, W::Vector{T}) where {T}
+    cm = _linear_independence_coeff_matrix(F, [V; W])
+    return rank(cm[1:length(V), :]) == rank(cm[length(V)+1:end, :]) == rank(cm)
 end
 
 function _linear_independence_coeff_matrix(V::Vector{<:FieldElem})

@@ -83,9 +83,12 @@ export general_linear_lie_algebra
 export inneighbor
 export inneighbors
 export is_crossing_free
+export is_in_span
 export is_linearly_independent
 export is_linearly_independent_with_relations
 export is_pbwdeformation
+export is_span_equal
+export is_span_subset
 export isomorphic_module_with_simple_structure
 export lookup_data
 export lower_vertex, is_lower_vertex
