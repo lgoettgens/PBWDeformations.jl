@@ -109,6 +109,7 @@ export standard_module
 export symmetric_deformation
 export symmetric_power
 export symmetric_power_obj
+export symmetrize
 export tensor_power
 export tensor_power_obj
 export to_arcdiag
@@ -128,6 +129,7 @@ include("Types.jl")
 
 include("LinearIndependence.jl")
 include("ModuleSimpleStructure.jl")
+include("Misc.jl")
 
 include("DeformationBases/DeformBasis.jl")
 
