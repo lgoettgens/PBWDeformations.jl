@@ -222,6 +222,10 @@ function comm(e1::SmashProductLieDeformElem, e2::SmashProductLieDeformElem)
     return parent(e1)(data(e1) * data(e2) - data(e2) * data(e1))
 end
 
+function symmetrize(e::SmashProductLieDeformElem)
+    return parent(e)(symmetrize(data(e)))
+end
+
 ###############################################################################
 #
 #   Comparison functions

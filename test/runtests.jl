@@ -5,6 +5,7 @@ Oscar.with_unicode(true) do
     include("ArcDiagram-test.jl")
     include("DeformationBases-test.jl")
     include("LinearIndependence-test.jl")
+    include("Misc-test.jl")
     include("Pseudograph-test.jl")
     include("SmashProductLie-test.jl")
     include("SmashProductLieDeform-test.jl")
