@@ -72,7 +72,7 @@ function svg_string(A::ArcDiagram; colorful=false)
     height = dims.h + 2 * dims.margin
     width = (max(n_upper_vertices(A), n_lower_vertices(A)) - 1) * dims.w + 2 * dims.margin
 
-    svg = "<svg height=\"$(height)\" width=\"$(width)\" style=\"vertical-align:-$(1/2 * height)px;\">"
+    svg = "<svg height=\"$(height)\" width=\"$(width)\" style=\"vertical-align:middle;\">"
 
     svg *= "<defs>"
     if A isa ArcDiagramDirected
@@ -105,4 +105,14 @@ function Base.show(io::IO, mime::MIME"text/html", x::Tuple{Int,ArcDiagram})
     print(io, "($(first(x)), ")
     show(io, mime, x[2])
     print(io, ")")
+end
+
+function Base.show(io::IO, mime::MIME"text/html", x::Tuple{ArcDiagram,Vararg{ArcDiagram}})
+    print(io, "<div>(")
+    show(io, mime, first(x))
+    for A in Base.tail(x)
+        print(io, ", ")
+        show(io, mime, A)
+    end
+    print(io, ")</div>")
 end
