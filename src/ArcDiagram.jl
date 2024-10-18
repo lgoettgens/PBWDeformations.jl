@@ -40,6 +40,15 @@ function vertex_index(p::ArcDiagramVertex)
     return p[2]
 end
 
+function _vertex_lt(v1::ArcDiagramVertex, v2::ArcDiagramVertex)
+    if is_upper_vertex(v1) && is_lower_vertex(v2)
+        return true
+    elseif is_lower_vertex(v1) && is_upper_vertex(v2)
+        return false
+    else
+        return vertex_index(v1) < vertex_index(v2)
+    end
+end
 
 function is_crossing_free(a::ArcDiagram; part=:everything::Symbol)
     if part == :everything
@@ -182,23 +191,13 @@ function Base.show(io::IO, ::MIME"text/plain", a::ArcDiagramUndirected)
         return
     end
     symb_dict = Dict(v => s for (v, s) in zip(vertices(a), symbols))
-    function first_vertex(v1::ArcDiagramVertex, v2::ArcDiagramVertex)
-        if is_upper_vertex(v1) && is_lower_vertex(v2)
-            return v1
-        elseif is_lower_vertex(v1) && is_upper_vertex(v2)
-            return v2
-        else
-            return vertex_index(v1) <= vertex_index(v2) ? v1 : v2
-
-        end
-    end
-    print(io, join(symb_dict[first_vertex(v, neighbor(a, v))] for v in upper_vertices(a)))
+    print(io, join(symb_dict[_vertex_lt(v, neighbor(a, v)) ? v : neighbor(a, v)] for v in upper_vertices(a)))
     if get(io, :compact, false)
         print(io, ",")
     else
         print(io, "\n")
     end
-    print(io, join(symb_dict[first_vertex(v, neighbor(a, v))] for v in lower_vertices(a)))
+    print(io, join(symb_dict[_vertex_lt(v, neighbor(a, v)) ? v : neighbor(a, v)] for v in lower_vertices(a)))
 end
 
 function n_upper_vertices(a::ArcDiagramUndirected)
@@ -281,21 +280,10 @@ function Base.show(io::IO, ::MIME"text/plain", a::ArcDiagramDirected)
         return
     end
     symb_dict = Dict(v => (lowercase(s), s) for (v, s) in zip(vertices(a), symbols))
-    function first_vertex(v1::ArcDiagramVertex, v2::ArcDiagramVertex)
-        if is_upper_vertex(v1) && is_lower_vertex(v2)
-            return v1
-        elseif is_lower_vertex(v1) && is_upper_vertex(v2)
-            return v2
-        else
-            return vertex_index(v1) <= vertex_index(v2) ? v1 : v2
-
-        end
-    end
-
     print(
         io,
         join(
-            (a.parity_upper_verts[vertex_index(v)] ? first : last)(symb_dict[first_vertex(v, neighbor(a, v))]) for
+            (a.parity_upper_verts[vertex_index(v)] ? first : last)(symb_dict[_vertex_lt(v, neighbor(a, v)) ? v : neighbor(a, v)]) for
             v in upper_vertices(a)
         ),
     )
@@ -307,7 +295,7 @@ function Base.show(io::IO, ::MIME"text/plain", a::ArcDiagramDirected)
     print(
         io,
         join(
-            (!a.parity_lower_verts[vertex_index(v)] ? first : last)(symb_dict[first_vertex(v, neighbor(a, v))]) for
+            (!a.parity_lower_verts[vertex_index(v)] ? first : last)(symb_dict[_vertex_lt(v, neighbor(a, v)) ? v : neighbor(a, v)]) for
             v in lower_vertices(a)
         ),
     )

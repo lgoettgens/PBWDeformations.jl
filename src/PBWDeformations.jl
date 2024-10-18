@@ -1,5 +1,7 @@
 module PBWDeformations
 
+using Preferences: Preferences, @load_preference, @set_preferences!
+
 using Oscar
 
 using Oscar.AbstractAlgebra: ProductIterator
@@ -80,6 +82,7 @@ export edges
 export exterior_power
 export exterior_power_obj
 export general_linear_lie_algebra
+export get_show_colorful_html
 export inneighbor
 export inneighbors
 export is_crossing_free
@@ -101,6 +104,7 @@ export neighbors
 export outneighbor
 export outneighbors
 export pbwdeform_eqs
+export set_show_colorful_html
 export simple_module
 export smash_product
 export special_linear_lie_algebra
