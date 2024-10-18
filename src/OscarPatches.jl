@@ -21,7 +21,7 @@ function tensor_power_obj(V::LieAlgebraModule, k::Int)
 end
 
 if !isdefined(Oscar, :free_associative_algebra_type)
-    free_associative_algebra_type(::Type{T}) where T<:RingElement = Generic.FreeAssAlgebra{T}
+    free_associative_algebra_type(::Type{T}) where T<:RingElement = Generic.FreeAssociativeAlgebra{T}
 
     free_associative_algebra_type(::Type{S}) where S<:Ring = free_associative_algebra_type(elem_type(S))
     free_associative_algebra_type(x) = free_associative_algebra_type(typeof(x)) # to stop this method from eternally recursing on itself, we better add ...
@@ -29,8 +29,8 @@ if !isdefined(Oscar, :free_associative_algebra_type)
 end
 
 #=
-if !hasmethod(Oscar._is_homogeneous, Tuple{FreeAssAlgElem})
-    function Oscar._is_homogeneous(f::FreeAssAlgElem)
+if !hasmethod(Oscar._is_homogeneous, Tuple{FreeAssociativeAlgebraElem})
+    function Oscar._is_homogeneous(f::FreeAssociativeAlgebraElem)
         length(f) <= 1 && return true
         leadexpv, tailexpvs = Iterators.peel(AbstractAlgebra.exponent_words(f))
         d = length(leadexpv)
