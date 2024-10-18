@@ -23,7 +23,28 @@ end
 
 Base.show(io::IO, ::MIME"text/html", A::ArcDiagram) = print(io, svg_string(A; colorful=get_show_colorful_html()))
 
-function svg_path_string(v::ArcDiagramVertex, nv::ArcDiagramVertex, dims)
+function svg_string_defs(::ArcDiagram)
+    return ""
+end
+
+function svg_string_defs(::ArcDiagramDirected)
+    # marker to be used as an arrowhead
+    return """
+        <marker id=\"arrow\" refX=\"2\" refY=\"2\" markerWidth=\"3\" markerHeight=\"4\" orient=\"auto\">
+            <path d=\"M 0 0 V 4 L 2 2 Z\" stroke=\"context-stroke\" fill=\"context-stroke\"/>
+        </marker>
+        """
+end
+
+function svg_string_edge_iterator(A::ArcDiagramUndirected)
+    return ((v, neighbor(A, v)) for v in vertices(A) if _vertex_lt(v, neighbor(A, v)))
+end
+
+function svg_string_edge_iterator(A::ArcDiagramDirected)
+    return ((v, outneighbor(A, v)) for v in vertices(A) if !isnothing(outneighbor(A, v)))
+end
+
+function svg_string_path(v::ArcDiagramVertex, nv::ArcDiagramVertex, dims)
     (;margin, h, w) = dims
     x_v = (vertex_index(v) - 1) * w + margin
     x_nv = (vertex_index(nv) - 1) * w + margin
@@ -58,8 +79,7 @@ function svg_path_string(v::ArcDiagramVertex, nv::ArcDiagramVertex, dims)
 end
 
 function svg_string(A::ArcDiagram; colorful=false)
-    myblue = "#008"
-    mygray = "#aaa"
+    color_mono = "#008"
     size = 40
     dims = (
         rad=0.1*size,
@@ -74,29 +94,15 @@ function svg_string(A::ArcDiagram; colorful=false)
 
     svg = "<svg height=\"$(height)\" width=\"$(width)\" style=\"vertical-align:middle;\">"
 
-    svg *= "<defs>"
-    if A isa ArcDiagramDirected
-        # marker to be used as an arrowhead
-        svg *= """<marker id=\"arrow\" refX=\"2\" refY=\"2\" markerWidth=\"3\" markerHeight=\"4\" orient=\"auto\">
-                    <path d=\"M 0 0 V 4 L 2 2 Z\" stroke=\"context-stroke\" fill=\"context-stroke\"/>
-                  </marker>"""
-    end
-    svg *= "</defs>"
+    svg *= "<defs>$(svg_string_defs(A))</defs>"
 
     i = 0
-    for v in vertices(A)
-        nv = neighbor(A, v)
-        _vertex_lt(v, nv) || continue
-        col = colorful ? "hsl($(105*i),100%,45%)" : myblue
-        svg *= "<path d=\"$(svg_path_string(v, nv, dims))\" fill=\"transparent\" stroke=\"$col\" stroke-width=\"$(dims.stroke_width)px\" $(A isa ArcDiagramDirected ? "marker-end=\"url(#arrow)\"" : "")/>"
+    for (v, nv) in svg_string_edge_iterator(A)
+        color = colorful ? "hsl($(105*i),100%,45%)" : color_mono
+        svg *= "<path d=\"$(svg_string_path(v, nv, dims))\" fill=\"transparent\" stroke=\"$color\" stroke-width=\"$(dims.stroke_width)px\" $(A isa ArcDiagramDirected ? "marker-end=\"url(#arrow)\"" : "")/>"
         i += 1
     end
-    # for (i, n_verts) in enumerate((n_upper_vertices(A), n_lower_vertices(A)))
-    #     for j in 1:n_verts
-    #         col = colorful ? mygray : myblue
-    #         svg *= "<circle cx=\"$(dims.margin+(j-1)*dims.w)\" cy=\"$(dims.margin+(i-1)*dims.h)\" r=\"$(dims.rad)\" fill=\"$col\" />"
-    #     end
-    # end
+
     svg *= "</svg>"
     return svg
 end
