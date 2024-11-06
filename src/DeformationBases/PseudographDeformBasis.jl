@@ -47,7 +47,7 @@ struct PseudographDeformBasis{T <: SmashProductLieElem} <: DeformBasis{T}
                     diag = to_arcdiag(pg, part)
                     basis_elem = arcdiag_to_deformationmap(LieType, diag, sp)
                     if !no_normalize
-                        basis_elem = normalize_default(basis_elem)
+                        basis_elem = normalize(basis_elem)
                     end
                     if haskey(extra_data, basis_elem)
                         push!(extra_data[basis_elem], (pg, part))

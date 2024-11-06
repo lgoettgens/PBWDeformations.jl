@@ -81,7 +81,7 @@ struct ArcDiagDeformBasis{T <: SmashProductLieElem} <: DeformBasis{T}
                         @assert is_skew_symmetric(basis_elem)
 
                         if !no_normalize
-                            basis_elem = normalize_default(basis_elem)
+                            basis_elem = normalize(basis_elem)
                         end
                         if haskey(extra_data, basis_elem)
                             push!(extra_data[basis_elem], diag)

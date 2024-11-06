@@ -11,7 +11,7 @@ This can e.g. be an arc diagram or a pseudograph.
 """
 function lookup_data(m::DeformationMap{T}, basis::DeformBasis{T}) where {T <: SmashProductLieElem}
     if !basis.no_normalize
-        m = normalize_default(m)
+        m = normalize(m)
     end
     if haskey(basis.extra_data, m)
         return basis.extra_data[m]
@@ -20,7 +20,7 @@ function lookup_data(m::DeformationMap{T}, basis::DeformBasis{T}) where {T <: Sm
     end
 end
 
-function normalize_default(m::DeformationMap{T}) where {T <: SmashProductLieElem}
+function normalize(m::DeformationMap{T}) where {T <: SmashProductLieElem}
     nz_index = findfirst(x -> !iszero(x), m)
     if nz_index === nothing
         return m
