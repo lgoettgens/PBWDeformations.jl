@@ -10,7 +10,9 @@ Look up additional data that was used to generate the deformation map `m` in the
 This can e.g. be an arc diagram or a pseudograph.
 """
 function lookup_data(m::DeformationMap{T}, basis::DeformBasis{T}) where {T <: SmashProductLieElem}
-    m = basis.normalize(m)
+    if !basis.no_normalize
+        m = normalize_default(m)
+    end
     if haskey(basis.extra_data, m)
         return basis.extra_data[m]
     else
