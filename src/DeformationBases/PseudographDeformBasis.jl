@@ -9,7 +9,7 @@ struct PseudographDeformBasis{T <: SmashProductLieElem} <: DeformBasis{T}
     len::Int
     iter
     extra_data::Dict{DeformationMap{T}, Set{Tuple{PseudographLabelled{Int}, Partition{Int}}}}
-    normalize
+    no_normalize::Bool
 
     function PseudographDeformBasis(
         sp::SmashProductLie{C, LieC, LieT},
@@ -34,7 +34,6 @@ struct PseudographDeformBasis{T <: SmashProductLieElem} <: DeformBasis{T}
         @req fl && _is_standard_module(Vbase) "Only works for exterior powers of the standard module."
 
         extra_data = Dict{DeformationMap{elem_type(sp)}, Set{Tuple{PseudographLabelled{Int}, Partition{Int}}}}()
-        normalize = no_normalize ? identity : normalize_default
 
         lens = []
         iters = []
@@ -69,9 +68,9 @@ struct PseudographDeformBasis{T <: SmashProductLieElem} <: DeformBasis{T}
             _, rels = is_linearly_independent_with_relations(coefficient_ring(sp), reverse(collected))
             inds = [1 + ncols(rels) - (findfirst(!iszero, vec(rels[i, :]))::Int) for i in nrows(rels):-1:1]
             deleteat!(collected, inds)
-            return new{elem_type(sp)}(length(collected), collected, extra_data, normalize)
+            return new{elem_type(sp)}(length(collected), collected, extra_data, no_normalize)
         end
-        return new{elem_type(sp)}(len, iter, extra_data, normalize)
+        return new{elem_type(sp)}(len, iter, extra_data, no_normalize)
     end
 end
 

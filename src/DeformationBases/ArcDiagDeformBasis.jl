@@ -11,7 +11,7 @@ struct ArcDiagDeformBasis{T <: SmashProductLieElem} <: DeformBasis{T}
     len::Int
     iter
     extra_data::Dict{DeformationMap{T}, Set{ArcDiagram}}
-    normalize
+    no_normalize::Bool
 
     function ArcDiagDeformBasis(
         sp::SmashProductLie{C, LieC, LieT},
@@ -44,7 +44,6 @@ struct ArcDiagDeformBasis{T <: SmashProductLieElem} <: DeformBasis{T}
         end
 
         extra_data = Dict{DeformationMap{elem_type(sp)}, Set{ArcDiagram}}()
-        normalize = no_normalize ? identity : normalize_default
 
         n_cases = div(length(V_nice_summands) * (length(V_nice_summands) + 1), 2)
         lens = Int[]
@@ -107,9 +106,9 @@ struct ArcDiagDeformBasis{T <: SmashProductLieElem} <: DeformBasis{T}
             _, rels = is_linearly_independent_with_relations(coefficient_ring(sp), collected)
             inds = [findlast(!iszero, vec(rels[i, :]))::Int for i in 1:nrows(rels)]
             deleteat!(collected, inds)
-            return new{elem_type(sp)}(length(collected), collected, extra_data, normalize)
+            return new{elem_type(sp)}(length(collected), collected, extra_data, no_normalize)
         end
-        return new{elem_type(sp)}(len, iter, extra_data, normalize)
+        return new{elem_type(sp)}(len, iter, extra_data, no_normalize)
     end
 end
 

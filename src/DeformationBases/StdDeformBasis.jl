@@ -8,7 +8,7 @@ struct StdDeformBasis{T <: SmashProductLieElem} <: DeformBasis{T}
     len::Int
     iter
     extra_data::Dict{DeformationMap{T}, Nothing}
-    normalize
+    no_normalize::Bool
 
     function StdDeformBasis(
         sp::SmashProductLie{C, LieC, LieT},
@@ -27,7 +27,7 @@ struct StdDeformBasis{T <: SmashProductLieElem} <: DeformBasis{T}
         )
 
         len = div(dimV * (dimV - 1), 2) * sum(binomial(dimL + k - 1, k) for k in degs)
-        return new{elem_type(sp)}(len, iter, Dict{DeformationMap{elem_type(sp)}, Nothing}(), normalize_default)
+        return new{elem_type(sp)}(len, iter, Dict{DeformationMap{elem_type(sp)}, Nothing}(), false)
     end
 end
 

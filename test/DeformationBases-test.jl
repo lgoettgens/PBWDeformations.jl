@@ -121,7 +121,7 @@
             end
 
             @testset "SO_2, T³V" begin
-                deformmap(sp::SmashProductLie, diag::String) = PBWDeformations.normalize_default(
+                deformmap(sp::SmashProductLie, diag::String) = PBWDeformations.normalize(
                     PBWDeformations.arcdiag_to_deformationmap(PBWDeformations.SO(), arc_diagram(Undirected, diag), sp),
                 )
 
@@ -142,7 +142,7 @@
             end
 
             @testset "SO_3, T³V" begin
-                deformmap(sp::SmashProductLie, diag::String) = PBWDeformations.normalize_default(
+                deformmap(sp::SmashProductLie, diag::String) = PBWDeformations.normalize(
                     PBWDeformations.arcdiag_to_deformationmap(PBWDeformations.SO(), arc_diagram(Undirected, diag), sp),
                 )
 
