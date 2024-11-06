@@ -123,7 +123,7 @@ function _linear_independence_coeff_matrix(F::Field, V::Vector{<:MatElem})
     )::dense_matrix_type(F)
 end
 
-function _linear_independence_coeff_matrix(F::Field, V::Vector{<:FreeAssAlgElem})
+function _linear_independence_coeff_matrix(F::Field, V::Vector{<:FreeAssociativeAlgebraElem})
     n = length(V)
     if n == 0
         return zero_matrix(F, n, 0)

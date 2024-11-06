@@ -26,7 +26,7 @@ base_lie_algebra(
 
 base_module(
     D::SmashProductLieDeform{C, LieC, LieT},
-) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}} = base_module(D.sp)::LieAlgebraModule{LieC}
+) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}} = base_module(D.sp)
 
 underlying_algebra(
     D::SmashProductLieDeform{C, LieC, LieT},
@@ -127,7 +127,7 @@ function (D::SmashProductLieDeform)(e::Union{RingElement, NCRingElem})
     return D(underlying_algebra(D)(e))
 end
 
-function (D::SmashProductLieDeform{C})(e::FreeAssAlgElem{C}) where {C <: RingElem}
+function (D::SmashProductLieDeform{C})(e::FreeAssociativeAlgebraElem{C}) where {C <: RingElem}
     if underlying_algebra(D) !== parent(e)
         e = underlying_algebra(D)(e)
     end
@@ -311,7 +311,7 @@ end
 
 function deform(
     sp::SmashProductLie{C, LieC, LieT},
-    kappa::MatElem{<:FreeAssAlgElem{C}},
+    kappa::MatElem{<:FreeAssociativeAlgebraElem{C}},
 ) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}}
     return deform(sp, map_entries(sp, kappa))
 end

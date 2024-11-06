@@ -1,4 +1,4 @@
-function symmetrize(f::FreeAssAlgElem)
+function symmetrize(f::FreeAssociativeAlgebraElem)
     R = parent(f)
     g = zero(R)
     for (c, exp) in zip(AbstractAlgebra.coefficients(f), AbstractAlgebra.exponent_words(f))
