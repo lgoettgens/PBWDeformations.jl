@@ -17,13 +17,14 @@ struct ArcDiagDeformBasis{T <: SmashProductLieElem} <: DeformBasis{T}
         sp::SmashProductLie{C, LieC, LieT},
         degs::AbstractVector{Int};
         no_normalize::Bool=false,
+        check_all_diagrams::Bool=false,
     ) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}}
         LieType = get_attribute(base_lie_algebra(sp), :type, nothing)::Union{Nothing,Symbol}
         @req LieType in [:special_orthogonal, :general_linear] "Only works for so_n and gl_n."
         if LieType == :special_orthogonal && has_attribute(base_lie_algebra(sp), :form)
             @req isone(get_attribute(base_lie_algebra(sp), :form)::dense_matrix_type(C)) "Only works for so_n represented as skew-symmetric matrices."
         end
-        return ArcDiagDeformBasis(Val(LieType), sp, degs; no_normalize)
+        return ArcDiagDeformBasis(Val(LieType), sp, degs; no_normalize, check_all_diagrams)
     end
 
     function ArcDiagDeformBasis(
@@ -31,6 +32,7 @@ struct ArcDiagDeformBasis{T <: SmashProductLieElem} <: DeformBasis{T}
         sp::SmashProductLie{C, LieC, LieT},
         degs::AbstractVector{Int};
         no_normalize::Bool=false,
+        check_all_diagrams::Bool=false,
     ) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}}
         V = base_module(sp)
 
@@ -94,7 +96,7 @@ struct ArcDiagDeformBasis{T <: SmashProductLieElem} <: DeformBasis{T}
                         end
                         ProgressMeter.update!(prog_meter, counter; showvalues = generate_showvalues(counter, diag))
                         basis_elem
-                    end for (counter, diag) in enumerate(diag_iter) if is_crossing_free(diag, part=:lower)
+                    end for (counter, diag) in enumerate(diag_iter) if check_all_diagrams || is_in_canonical_form_for_deformation(diag; case)
                 )
                 # push!(lens, len)
                 # push!(iters, iter)
@@ -543,20 +545,14 @@ function arcdiag_to_deformationmap_entry(
     return entry
 end
 
-function is_in_expected_form(A::ArcDiagramDirected; case::Symbol=:unknown)
-    ### lower part crossing free
-    is_crossing_free(A, part=:lower) || return false
-    ###
-
+function is_in_canonical_form_for_deformation(A::ArcDiagramDirected; case::Symbol=:unknown)
     ### if first arc goes from upper to lower, it goes to the first lower vertex
-    if n_upper_vertices(A) >= 1
-        first_neigh = outneighbor(A, upper_vertex(A, 1))
-        if is_lower_vertex(first_neigh) && vertex_index(first_neigh) != 1
-            return false
-        end
+    first_neigh = outneighbor(A, upper_vertex(A, 1))
+    if is_lower_vertex(first_neigh) && vertex_index(first_neigh) != 1
+        return false
     end
     ###
-    if case == :exterior_power && n_upper_vertices(A) >= 1
+    if case == :exterior_power
         first_neigh_right = outneighbor(A, upper_vertex(A, div(n_upper_vertices(A), 2) + 1))
         if is_lower_vertex(first_neigh_right) && vertex_index(first_neigh_right) == 1
             return false
@@ -581,6 +577,58 @@ function is_in_expected_form(A::ArcDiagramDirected; case::Symbol=:unknown)
             curr_v_ind = vertex_index(curr_v) + 1
             push!(loop_inds, div(curr_v_ind, 2))
             curr_v = outneighbor(A, lower_vertex(A, curr_v_ind))
+        end
+        issorted(loop_inds) || return false
+        length(loop_inds) == maximum(loop_inds) - minimum(loop_inds) + 1 || return false
+        if contains_upper
+            for i in loop_inds
+                lower_loop_lengths[i] = typemax(Int)
+            end
+        else
+            for i in loop_inds
+                lower_loop_lengths[i] = length(loop_inds)
+            end
+        end
+    end
+    issorted(lower_loop_lengths; rev=true) || return false
+    ###
+
+    return true
+end
+
+function is_in_canonical_form_for_deformation(A::ArcDiagramUndirected; case::Symbol=:unknown)
+    ### if first arc goes from upper to lower, it goes to the first lower vertex
+    first_neigh = neighbor(A, upper_vertex(A, 1))
+    if is_lower_vertex(first_neigh) && vertex_index(first_neigh) != 1
+        return false
+    end
+    ###
+    if case == :exterior_power
+        first_neigh_right = neighbor(A, upper_vertex(A, div(n_upper_vertices(A), 2) + 1))
+        if is_lower_vertex(first_neigh_right) && vertex_index(first_neigh_right) == 1
+            return false
+        end
+    end
+    ###
+
+    ### lower part cycles in the end and desc sorted by length
+    n_lower_pairs = div(n_lower_vertices(A), 2)
+    lower_loop_lengths = fill(typemin(Int), n_lower_pairs)
+    for i in 1:n_lower_pairs
+        lower_loop_lengths[i] != typemin(Int) && continue
+        loop_inds = [i]
+        start_v = lower_vertex(A, 2i-1)
+        curr_v = neighbor(A, lower_vertex(A, 2i))
+        contains_upper = false
+        while curr_v != start_v
+            if is_upper_vertex(curr_v)
+                contains_upper = true
+                break
+            end
+            curr_v_ind = vertex_index(curr_v) + 1
+            isodd(curr_v_ind) && return false
+            push!(loop_inds, div(curr_v_ind, 2))
+            curr_v = neighbor(A, lower_vertex(A, curr_v_ind))
         end
         issorted(loop_inds) || return false
         length(loop_inds) == maximum(loop_inds) - minimum(loop_inds) + 1 || return false
