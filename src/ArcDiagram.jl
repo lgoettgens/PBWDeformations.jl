@@ -631,7 +631,7 @@ function all_arc_diagrams(
         end
     end
     if isodd(n_upper_verts + n_lower_verts)
-        return ArcDiagramIterator{Undirected}([], 0)
+        return ArcDiagramIterator{Undirected}(ArcDiagramUndirected[], 0)
     end
     iter, len = iter_possible_adjacencies_undir(
         n_upper_verts,
@@ -704,7 +704,7 @@ function all_arc_diagrams(
         end
     end
     if isodd(n_upper_verts + n_lower_verts)
-        return ArcDiagramIterator{Directed}([], 0)
+        return ArcDiagramIterator{Directed}(ArcDiagramDirected[], 0)
     end
     rets = if n_upper_verts == 0
         [all_arc_diagrams(Directed, BitVector([]), n_lower_verts; indep_sets, check=false)]
@@ -734,10 +734,10 @@ function all_arc_diagrams(
         end
     end
     if isodd(n_upper_verts + n_lower_verts)
-        return ArcDiagramIterator{Directed}([], 0)
+        return ArcDiagramIterator{Directed}(ArcDiagramDirected[], 0)
     end
     if abs(parity_diff(parity_upper_verts)) > n_lower_verts
-        return ArcDiagramIterator{Directed}([], 0)
+        return ArcDiagramIterator{Directed}(ArcDiagramDirected[], 0)
     end
     rets = if n_lower_verts == 0
         [all_arc_diagrams(Directed, parity_upper_verts, BitVector([]); indep_sets, check=false)]
@@ -770,10 +770,10 @@ function all_arc_diagrams(
         end
     end
     if isodd(n_upper_verts + n_lower_verts)
-        return ArcDiagramIterator{Directed}([], 0)
+        return ArcDiagramIterator{Directed}(ArcDiagramDirected[], 0)
     end
     if parity_diff(parity_upper_verts) != parity_diff(parity_lower_verts)
-        return ArcDiagramIterator{Directed}([], 0)
+        return ArcDiagramIterator{Directed}(ArcDiagramDirected[], 0)
     end
     iter, len = iter_possible_adjacencies_dir(
         n_upper_verts,
