@@ -669,8 +669,8 @@ function iter_possible_adjacencies_undir(
         poss_upper_adjs = setdiff!(setdiff!(map(-, findall(iszero, partial_upper)), i), forbidden_neighbors[i])
         poss_lower_adjs = setdiff!(findall(iszero, partial_lower), forbidden_neighbors[i])
         choices = Iterators.map(Iterators.flatten([poss_upper_adjs, poss_lower_adjs])) do j
-            partial_upper2 = deepcopy(partial_upper)
-            partial_lower2 = deepcopy(partial_lower)
+            partial_upper2 = copy(partial_upper)
+            partial_lower2 = copy(partial_lower)
             partial_upper2[-i] = j
             if j < 0
                 partial_upper2[-j] = i
@@ -691,7 +691,7 @@ function iter_possible_adjacencies_undir(
         if !isnothing(i)
             poss_lower_adjs = setdiff!(setdiff!(findall(iszero, partial_lower), i), forbidden_neighbors[i])
             choices = Iterators.map(poss_lower_adjs) do j
-                partial_lower2 = deepcopy(partial_lower)
+                partial_lower2 = copy(partial_lower)
                 partial_lower2[i] = j
                 partial_lower2[j] = i
                 iter_possible_adjacencies_undir(
@@ -844,8 +844,8 @@ function iter_possible_adjacencies_dir(
             parity_upper_verts[-i] == parity_lower_verts[j]
         )
         choices = Iterators.map(Iterators.flatten([poss_upper_adjs, poss_lower_adjs])) do j
-            partial_upper2 = deepcopy(partial_upper)
-            partial_lower2 = deepcopy(partial_lower)
+            partial_upper2 = copy(partial_upper)
+            partial_lower2 = copy(partial_lower)
             partial_upper2[-i] = j
             if j < 0
                 partial_upper2[-j] = i
@@ -871,7 +871,7 @@ function iter_possible_adjacencies_dir(
                 parity_lower_verts[i] != parity_lower_verts[j]
             )
             choices = Iterators.map(poss_lower_adjs) do j
-                partial_lower2 = deepcopy(partial_lower)
+                partial_lower2 = copy(partial_lower)
                 partial_lower2[i] = j
                 partial_lower2[j] = i
                 iter_possible_adjacencies_dir(
