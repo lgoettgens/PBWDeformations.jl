@@ -650,12 +650,12 @@ function iter_possible_adjacencies_undir(
     partial_lower::Vector{Int},
     indep_sets::AbstractVector{<:AbstractVector{Int}},
 )
-    i = findfirst(==(0), partial_upper)
+    i = findfirst(iszero, partial_upper)
     if !isnothing(i)
         i = -i
         relevant_indep_sets = filter(is -> i in is, indep_sets)
-        poss_upper_adjs = setdiff(setdiff(map(j -> -j, findall(==(0), partial_upper)), i), relevant_indep_sets...)
-        poss_lower_adjs = setdiff(findall(==(0), partial_lower), relevant_indep_sets...)
+        poss_upper_adjs = setdiff(setdiff(map(-, findall(iszero, partial_upper)), i), relevant_indep_sets...)
+        poss_lower_adjs = setdiff(findall(iszero, partial_lower), relevant_indep_sets...)
         choices = Iterators.map([poss_upper_adjs; poss_lower_adjs]) do j
             partial_upper2 = deepcopy(partial_upper)
             partial_lower2 = deepcopy(partial_lower)
@@ -669,10 +669,10 @@ function iter_possible_adjacencies_undir(
         end
         return Iterators.flatten(Iterators.map(first, choices)), sum(last, choices; init=0)
     else
-        i = findfirst(==(0), partial_lower)
+        i = findfirst(iszero, partial_lower)
         if !isnothing(i)
             relevant_indep_sets = filter(is -> i in is, indep_sets)
-            poss_lower_adjs = setdiff(setdiff(findall(==(0), partial_lower), i), relevant_indep_sets...)
+            poss_lower_adjs = setdiff(setdiff(findall(iszero, partial_lower), i), relevant_indep_sets...)
             choices = Iterators.map(poss_lower_adjs) do j
                 partial_lower2 = deepcopy(partial_lower)
                 partial_lower2[i] = j
@@ -796,16 +796,16 @@ function iter_possible_adjacencies_dir(
     partial_lower::Vector{Int},
     indep_sets::AbstractVector{<:AbstractVector{Int}},
 )
-    i = findfirst(==(0), partial_upper)
+    i = findfirst(iszero, partial_upper)
     if !isnothing(i)
         i = -i
         relevant_indep_sets = filter(is -> i in is, indep_sets)
         poss_upper_adjs = [
-            j for j in setdiff(setdiff(map(j -> -j, findall(==(0), partial_upper)), i), relevant_indep_sets...) if
+            j for j in setdiff(setdiff(map(-, findall(iszero, partial_upper)), i), relevant_indep_sets...) if
             parity_upper_verts[-i] != parity_upper_verts[-j]
         ]
         poss_lower_adjs = [
-            j for j in setdiff(findall(==(0), partial_lower), relevant_indep_sets...) if
+            j for j in setdiff(findall(iszero, partial_lower), relevant_indep_sets...) if
             parity_upper_verts[-i] == parity_lower_verts[j]
         ]
         choices = Iterators.map([poss_upper_adjs; poss_lower_adjs]) do j
@@ -829,11 +829,11 @@ function iter_possible_adjacencies_dir(
         end
         return Iterators.flatten(Iterators.map(first, choices)), sum(last, choices; init=0)
     else
-        i = findfirst(==(0), partial_lower)
+        i = findfirst(iszero, partial_lower)
         if !isnothing(i)
             relevant_indep_sets = filter(is -> i in is, indep_sets)
             poss_lower_adjs = [
-                j for j in setdiff(setdiff(findall(==(0), partial_lower), i), relevant_indep_sets...) if
+                j for j in setdiff(setdiff(findall(iszero, partial_lower), i), relevant_indep_sets...) if
                 parity_lower_verts[i] != parity_lower_verts[j]
             ]
             choices = Iterators.map(poss_lower_adjs) do j
