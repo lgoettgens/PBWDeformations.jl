@@ -668,7 +668,7 @@ function iter_possible_adjacencies_undir(
         i = -i
         poss_upper_adjs = setdiff!(setdiff!(map(-, findall(iszero, partial_upper)), i), forbidden_neighbors[i])
         poss_lower_adjs = setdiff!(findall(iszero, partial_lower), forbidden_neighbors[i])
-        choices = Iterators.map([poss_upper_adjs; poss_lower_adjs]) do j
+        choices = Iterators.map(Iterators.flatten([poss_upper_adjs, poss_lower_adjs])) do j
             partial_upper2 = deepcopy(partial_upper)
             partial_lower2 = deepcopy(partial_lower)
             partial_upper2[-i] = j
@@ -835,15 +835,15 @@ function iter_possible_adjacencies_dir(
     i = findfirst(iszero, partial_upper)
     if !isnothing(i)
         i = -i
-        poss_upper_adjs = [
+        poss_upper_adjs = (
             j for j in setdiff!(setdiff!(map(-, findall(iszero, partial_upper)), i), forbidden_neighbors[i]) if
             parity_upper_verts[-i] != parity_upper_verts[-j]
-        ]
-        poss_lower_adjs = [
+        )
+        poss_lower_adjs = (
             j for j in setdiff!(findall(iszero, partial_lower), forbidden_neighbors[i]) if
             parity_upper_verts[-i] == parity_lower_verts[j]
-        ]
-        choices = Iterators.map([poss_upper_adjs; poss_lower_adjs]) do j
+        )
+        choices = Iterators.map(Iterators.flatten([poss_upper_adjs, poss_lower_adjs])) do j
             partial_upper2 = deepcopy(partial_upper)
             partial_lower2 = deepcopy(partial_lower)
             partial_upper2[-i] = j
@@ -866,10 +866,10 @@ function iter_possible_adjacencies_dir(
     else
         i = findfirst(iszero, partial_lower)
         if !isnothing(i)
-            poss_lower_adjs = [
+            poss_lower_adjs = (
                 j for j in setdiff!(setdiff!(findall(iszero, partial_lower), i), forbidden_neighbors[i]) if
                 parity_lower_verts[i] != parity_lower_verts[j]
-            ]
+            )
             choices = Iterators.map(poss_lower_adjs) do j
                 partial_lower2 = deepcopy(partial_lower)
                 partial_lower2[i] = j
