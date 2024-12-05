@@ -633,12 +633,25 @@ function all_arc_diagrams(
     if isodd(n_upper_verts + n_lower_verts)
         return ArcDiagramIterator{Undirected}(ArcDiagramUndirected[], 0)
     end
+    forbidden_neighbors = Dict{Int, Vector{Int}}()
+    for i in 1:n_upper_verts
+        i = -i
+        forbidden_neighbors[i] = Vector{Int}()
+    end
+    for i in 1:n_lower_verts
+        forbidden_neighbors[i] = Vector{Int}()
+    end
+    for is in indep_sets
+        for i in is
+            union!(forbidden_neighbors[i], is)
+        end
+    end
     iter, len = iter_possible_adjacencies_undir(
         n_upper_verts,
         n_lower_verts,
         [0 for _ in 1:n_upper_verts],
         [0 for _ in 1:n_lower_verts],
-        indep_sets,
+        forbidden_neighbors,
     )
     return ArcDiagramIterator{Undirected}(iter, len)
 end
@@ -648,14 +661,13 @@ function iter_possible_adjacencies_undir(
     n_lower_verts::Int,
     partial_upper::Vector{Int},
     partial_lower::Vector{Int},
-    indep_sets::AbstractVector{<:AbstractVector{Int}},
+    forbidden_neighbors::Dict{Int, Vector{Int}},
 )
     i = findfirst(iszero, partial_upper)
     if !isnothing(i)
         i = -i
-        relevant_indep_sets = filter(is -> i in is, indep_sets)
-        poss_upper_adjs = setdiff!(setdiff!(map(-, findall(iszero, partial_upper)), i), relevant_indep_sets...)
-        poss_lower_adjs = setdiff!(findall(iszero, partial_lower), relevant_indep_sets...)
+        poss_upper_adjs = setdiff!(setdiff!(map(-, findall(iszero, partial_upper)), i), forbidden_neighbors[i])
+        poss_lower_adjs = setdiff!(findall(iszero, partial_lower), forbidden_neighbors[i])
         choices = Iterators.map([poss_upper_adjs; poss_lower_adjs]) do j
             partial_upper2 = deepcopy(partial_upper)
             partial_lower2 = deepcopy(partial_lower)
@@ -665,19 +677,30 @@ function iter_possible_adjacencies_undir(
             else
                 partial_lower2[j] = i
             end
-            iter_possible_adjacencies_undir(n_upper_verts, n_lower_verts, partial_upper2, partial_lower2, indep_sets)
+            iter_possible_adjacencies_undir(
+                n_upper_verts,
+                n_lower_verts,
+                partial_upper2,
+                partial_lower2,
+                forbidden_neighbors,
+            )
         end
         return Iterators.flatten(Iterators.map(first, choices)), sum(last, choices; init=0)
     else
         i = findfirst(iszero, partial_lower)
         if !isnothing(i)
-            relevant_indep_sets = filter(is -> i in is, indep_sets)
-            poss_lower_adjs = setdiff!(setdiff!(findall(iszero, partial_lower), i), relevant_indep_sets...)
+            poss_lower_adjs = setdiff!(setdiff!(findall(iszero, partial_lower), i), forbidden_neighbors[i])
             choices = Iterators.map(poss_lower_adjs) do j
                 partial_lower2 = deepcopy(partial_lower)
                 partial_lower2[i] = j
                 partial_lower2[j] = i
-                iter_possible_adjacencies_undir(n_upper_verts, n_lower_verts, partial_upper, partial_lower2, indep_sets)
+                iter_possible_adjacencies_undir(
+                    n_upper_verts,
+                    n_lower_verts,
+                    partial_upper,
+                    partial_lower2,
+                    forbidden_neighbors,
+                )
             end
             return Iterators.flatten(Iterators.map(first, choices)), sum(last, choices; init=0)
         else
@@ -775,6 +798,19 @@ function all_arc_diagrams(
     if parity_diff(parity_upper_verts) != parity_diff(parity_lower_verts)
         return ArcDiagramIterator{Directed}(ArcDiagramDirected[], 0)
     end
+    forbidden_neighbors = Dict{Int, Vector{Int}}()
+    for i in 1:n_upper_verts
+        i = -i
+        forbidden_neighbors[i] = Vector{Int}()
+    end
+    for i in 1:n_lower_verts
+        forbidden_neighbors[i] = Vector{Int}()
+    end
+    for is in indep_sets
+        for i in is
+            union!(forbidden_neighbors[i], is)
+        end
+    end
     iter, len = iter_possible_adjacencies_dir(
         n_upper_verts,
         n_lower_verts,
@@ -782,7 +818,7 @@ function all_arc_diagrams(
         parity_lower_verts,
         [0 for _ in 1:n_upper_verts],
         [0 for _ in 1:n_lower_verts],
-        indep_sets,
+        forbidden_neighbors,
     )
     return ArcDiagramIterator{Directed}(iter, len)
 end
@@ -794,18 +830,17 @@ function iter_possible_adjacencies_dir(
     parity_lower_verts::BitVector,
     partial_upper::Vector{Int},
     partial_lower::Vector{Int},
-    indep_sets::AbstractVector{<:AbstractVector{Int}},
+    forbidden_neighbors::Dict{Int, Vector{Int}},
 )
     i = findfirst(iszero, partial_upper)
     if !isnothing(i)
         i = -i
-        relevant_indep_sets = filter(is -> i in is, indep_sets)
         poss_upper_adjs = [
-            j for j in setdiff!(setdiff!(map(-, findall(iszero, partial_upper)), i), relevant_indep_sets...) if
+            j for j in setdiff!(setdiff!(map(-, findall(iszero, partial_upper)), i), forbidden_neighbors[i]) if
             parity_upper_verts[-i] != parity_upper_verts[-j]
         ]
         poss_lower_adjs = [
-            j for j in setdiff!(findall(iszero, partial_lower), relevant_indep_sets...) if
+            j for j in setdiff!(findall(iszero, partial_lower), forbidden_neighbors[i]) if
             parity_upper_verts[-i] == parity_lower_verts[j]
         ]
         choices = Iterators.map([poss_upper_adjs; poss_lower_adjs]) do j
@@ -824,16 +859,15 @@ function iter_possible_adjacencies_dir(
                 parity_lower_verts,
                 partial_upper2,
                 partial_lower2,
-                indep_sets,
+                forbidden_neighbors,
             )
         end
         return Iterators.flatten(Iterators.map(first, choices)), sum(last, choices; init=0)
     else
         i = findfirst(iszero, partial_lower)
         if !isnothing(i)
-            relevant_indep_sets = filter(is -> i in is, indep_sets)
             poss_lower_adjs = [
-                j for j in setdiff!(setdiff!(findall(iszero, partial_lower), i), relevant_indep_sets...) if
+                j for j in setdiff!(setdiff!(findall(iszero, partial_lower), i), forbidden_neighbors[i]) if
                 parity_lower_verts[i] != parity_lower_verts[j]
             ]
             choices = Iterators.map(poss_lower_adjs) do j
@@ -847,7 +881,7 @@ function iter_possible_adjacencies_dir(
                     parity_lower_verts,
                     partial_upper,
                     partial_lower2,
-                    indep_sets,
+                    forbidden_neighbors,
                 )
             end
             return Iterators.flatten(Iterators.map(first, choices)), sum(last, choices; init=0)
