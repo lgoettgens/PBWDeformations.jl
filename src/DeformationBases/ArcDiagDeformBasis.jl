@@ -70,9 +70,11 @@ struct ArcDiagDeformBasis{T <: SmashProductLieElem} <: DeformBasis{T}
 
                 diag_iter = pbw_arc_diagrams(LieType, W, d)
                 len = length(diag_iter)
+                prog_meter = ProgressMeter.Progress(len; output=stderr, enabled=true, desc="Basis generation: deg $d, case $(case)/$(n_cases)")
+                generate_showvalues(counter, diag) = () -> [("iteration", (counter, diag))]
                 iter = (
                     begin
-                        @vprintln :PBWDeformations 2 "Basis generation deg $(lpad(d, maximum(ndigits, degs))), case $(lpad(case, ndigits(n_cases)))/$(n_cases), $(lpad(floor(Int, 100*counter / len), 3))%, $(lpad(counter, ndigits(len)))/$(len)"
+                        # @vprintln :PBWDeformations 2 "Basis generation deg $(lpad(d, maximum(ndigits, degs))), case $(lpad(case, ndigits(n_cases)))/$(n_cases), $(lpad(floor(Int, 100*counter / len), 3))%, $(lpad(counter, ndigits(len)))/$(len)"
                         _basis_elem = arcdiag_to_deformationmap(LieType, diag, sp, W)
                         basis_elem = matrix(proj_to_summand_l) * _basis_elem * transpose(matrix(proj_to_summand_r))
                         if i_l != i_r
@@ -88,6 +90,7 @@ struct ArcDiagDeformBasis{T <: SmashProductLieElem} <: DeformBasis{T}
                         else
                             extra_data[basis_elem] = Set([diag])
                         end
+                        ProgressMeter.update!(prog_meter, counter; showvalues = generate_showvalues(counter, diag))
                         basis_elem
                     end for (counter, diag) in enumerate(diag_iter) if is_crossing_free(diag, part=:lower)
                 )
