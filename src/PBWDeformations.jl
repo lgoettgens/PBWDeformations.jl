@@ -2,6 +2,8 @@ module PBWDeformations
 
 using Preferences: Preferences, @load_preference, @set_preferences!
 
+import ProgressMeter
+
 using Oscar
 
 using Oscar.AbstractAlgebra: ProductIterator
