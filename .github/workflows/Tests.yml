@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master
+    tags: '*'
   pull_request:
   workflow_dispatch:
 
@@ -33,18 +34,11 @@ jobs:
           - '1.11'
           - '1.12-nightly'
           - 'nightly'
-        julia-arch:
-          - x64
+        oscar-version:
+          - 'stable'
+          - 'devel'
         os:
           - ubuntu-latest
-        # include:
-          # Add a few macOS jobs (not too many, the number we can run in parallel is limited)
-          # - julia-version: '1.8'
-          #   julia-arch: x64
-          #   os: macOS-latest
-          # - julia-version: 'nightly'
-          #   julia-arch: x64
-          #   os: macOS-latest
 
     steps:
       - uses: actions/checkout@v4
@@ -53,28 +47,34 @@ jobs:
           # be able to properly deal with PRs / merges
           fetch-depth: 2
 
-      - name: "Set up Julia"
-        uses: julia-actions/setup-julia@v2
+      - uses: julia-actions/setup-julia@v2
         with:
           version: ${{ matrix.julia-version }}
-          arch: ${{ matrix.julia-arch }}
 
-      - name: Restore cache
-        uses: julia-actions/cache@v2
-        with:
-          cache-name: julia-cache;workflow=${{ github.workflow }};julia=${{ matrix.julia-version }};arch=${{ runner.arch }}
-          include-matrix: false
+      - uses: julia-actions/cache@v2
 
-      - name: "Build package"
-        uses: julia-actions/julia-buildpkg@latest
+      - name: "Remove Oscar.jl compat"
+        if: ${{ matrix.oscar-version == 'devel' }}
+        shell: julia --color=yes {0}
+        run: |
+          using TOML
+          project = TOML.parsefile("Project.toml")
+          project["compat"]["Oscar"] = "1"
+          open("Project.toml", "w") do io
+              TOML.print(io, project)
+          end
 
-      # - name: "limit OpenMP threads"
-      #   if: runner.os == 'macOS'
-      #   # restrict number of openMP threads on macOS due to oversubscription
-      #   run: echo "OMP_NUM_THREADS=1" >> $GITHUB_ENV
+      - name: "Install OSCAR dev version"
+        if: ${{ matrix.oscar-version == 'devel' }}
+        shell: julia --project=. --color=yes {0}
+        run: |
+          using Pkg
+          Pkg.develop("Oscar")
+          Pkg.pin("Oscar")
 
-      - name: "Run tests"
-        uses: julia-actions/julia-runtest@latest
+      - uses: julia-actions/julia-buildpkg@v1
+
+      - uses: julia-actions/julia-runtest@v1
         with:
           depwarn: 'error'
 
