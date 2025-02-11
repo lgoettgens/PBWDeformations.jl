@@ -53,6 +53,17 @@ jobs:
 
       - uses: julia-actions/cache@v2
 
+      - name: "Remove Oscar.jl compat"
+        if: ${{ matrix.oscar-version == 'devel' }}
+        shell: julia --color=yes {0}
+        run: |
+          using TOML
+          project = TOML.parsefile("Project.toml")
+          project["compat"]["Oscar"] = "1"
+          open("Project.toml", "w") do io
+              TOML.print(io, project)
+          end
+
       - name: "Install OSCAR dev version"
         if: ${{ matrix.oscar-version == 'devel' }}
         shell: julia --project=. --color=yes {0}
