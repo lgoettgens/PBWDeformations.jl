@@ -45,11 +45,11 @@ struct ArcDiagDeformBasis{T <: SmashProductLieElem} <: DeformBasis{T}
 
         extra_data = Dict{DeformationMap{elem_type(sp)}, Set{ArcDiagram}}()
 
-        n_cases = div(length(V_nice_summands) * (length(V_nice_summands) + 1), 2)
+        n_sum_cases = div(length(V_nice_summands) * (length(V_nice_summands) + 1), 2)
         lens = Int[]
         iters = []
         for d in degs
-            case = 0
+            sum_case = 0
             for (i_l, V_nice_summand_i_l) in enumerate(V_nice_summands),
                 (i_r, V_nice_summand_i_r) in enumerate(V_nice_summands)
 
@@ -57,25 +57,27 @@ struct ArcDiagDeformBasis{T <: SmashProductLieElem} <: DeformBasis{T}
                     continue
                 end
 
-                case += 1
+                sum_case += 1
 
                 proj_to_summand_l = compose(h, canonical_projection(V_nice, i_l))
                 proj_to_summand_r = compose(h, canonical_projection(V_nice, i_r))
 
-                W = if i_l == i_r
-                    exterior_power_obj(V_nice_summand_i_l, 2)
+                if i_l == i_r
+                    W = exterior_power_obj(V_nice_summand_i_l, 2)
+                    case = :exterior_power
                 else
-                    tensor_product(V_nice_summand_i_l, V_nice_summand_i_r)
+                    W = tensor_product(V_nice_summand_i_l, V_nice_summand_i_r)
+                    case = :tensor_product
                 end
 
                 diag_iter = pbw_arc_diagrams(LieType, W, d)
                 len = length(diag_iter)
-                prog_meter = ProgressMeter.Progress(len; output=stderr, enabled=true, desc="Basis generation: deg $d, case $(case)/$(n_cases)")
+                prog_meter = ProgressMeter.Progress(len; output=stderr, enabled=true, desc="Basis generation: deg $d, case $(sum_case)/$(n_sum_cases)")
                 generate_showvalues(counter, diag) = () -> [("iteration", (counter, diag))]
                 iter = (
                     begin
-                        # @vprintln :PBWDeformations 2 "Basis generation deg $(lpad(d, maximum(ndigits, degs))), case $(lpad(case, ndigits(n_cases)))/$(n_cases), $(lpad(floor(Int, 100*counter / len), 3))%, $(lpad(counter, ndigits(len)))/$(len)"
-                        _basis_elem = arcdiag_to_deformationmap(LieType, diag, sp, W)
+                        # @vprintln :PBWDeformations 2 "Basis generation deg $(lpad(d, maximum(ndigits, degs))), case $(lpad(sum_case, ndigits(n_sum_cases)))/$(n_sum_cases), $(lpad(floor(Int, 100*counter / len), 3))%, $(lpad(counter, ndigits(len)))/$(len)"
+                        _basis_elem = arcdiag_to_deformationmap(LieType, diag, sp, W, case)
                         basis_elem = matrix(proj_to_summand_l) * _basis_elem * transpose(matrix(proj_to_summand_r))
                         if i_l != i_r
                             basis_elem -= transpose(basis_elem)
@@ -399,8 +401,9 @@ function arcdiag_to_deformationmap(
     diag::ArcDiagramDirected,
     sp::SmashProductLie{C},
     W::LieAlgebraModule=exterior_power_obj(base_module(sp), 2),
+    case::Symbol=:exterior_power
 ) where {C <: RingElem}
-    return arcdiag_to_deformationmap(T, arc_diagram(Undirected, diag), sp, W)
+    return arcdiag_to_deformationmap(T, arc_diagram(Undirected, diag), sp, W, case)
 end
 
 function arcdiag_to_deformationmap(
@@ -408,6 +411,7 @@ function arcdiag_to_deformationmap(
     diag::ArcDiagramUndirected,
     sp::SmashProductLie{C},
     W::LieAlgebraModule=exterior_power_obj(base_module(sp), 2),
+    case::Symbol=:exterior_power
 ) where {C <: RingElem}
     @req !_is_direct_sum(W)[1] "Not permitted for direct sums."
     ind_map = basis_index_mapping(W)
@@ -416,15 +420,17 @@ function arcdiag_to_deformationmap(
 
     iso_pair_to_L = arc_diagram_lower_pair_to_L(T, dim_stdmod_V)
 
-    case = :unknown
-
-    if ((fl, Wbase, k) = _is_exterior_power(W); fl)
+    if case == :exterior_power
+        fl, Wbase, k = _is_exterior_power(W)
+        @assert fl
         @assert k == 2
         nrows_kappa = ncols_kappa = dim(Wbase)
-        case = :exterior_power
-    elseif ((fl, W_factors) = _is_tensor_product(W); fl)
+    elseif case == :tensor_product
+        fl, W_factors = _is_tensor_product(W)
+        @assert fl
         nrows_kappa, ncols_kappa = dim.(W_factors)
-        case = :tensor_product
+    else
+        error("Unknown case")
     end
 
     kappa = zero_matrix(sp, nrows_kappa, ncols_kappa)
