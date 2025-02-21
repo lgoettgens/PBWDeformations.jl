@@ -62,8 +62,8 @@ end
 
 function gln_graph_labelings_with_partitions(n_edges::Int, total_weight::Int)
     return (
-        (wcomp, part) for part_weight in 0:total_weight for part in partitions(part_weight) for
-        wcomp in weak_compositions(total_weight - part_weight, n_edges)
+        (Vector{Int}(wcomp), part) for edge_weights in 0:total_weight for part in Iterators.reverse(collect(partitions(total_weight - edge_weights))) for
+        wcomp in weak_compositions(edge_weights, n_edges)
     )
 end
 
@@ -93,8 +93,6 @@ function arc_diagram(g::GlnGraph, labeling::Vector{Int}, part::Partition{Int}=Pa
     addarc_ll(i, j) = (lower_adj[i] = j; lower_adj[j] = i)
     addarc_ul(i, j) = (upper_adj[i] = j; lower_adj[j] = -i)
     addarc_lu(i, j) = (lower_adj[i] = -j; upper_adj[j] = i)
-    # i = 1
-    # j = div(n_upper_verts, 2) + 1
     k = 1
     for ((v, w), label) in zip(g.edges, labeling)
         if label == 0
