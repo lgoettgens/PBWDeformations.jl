@@ -171,13 +171,14 @@ end
 
 function arc_diagram_upper_points(T::GL, V::LieAlgebraModule)
     if _is_standard_module(V)
-        return 1
+        return BitVector([true])
     elseif ((fl, W) = _is_dual(V); fl) && _is_standard_module(W)
-        return 0
+        return BitVector([false])
     elseif ((fl, Ws) = _is_tensor_product(V); fl)
-        return reduce(vcat, arc_diagram_upper_points(T, W) for W in Ws)
+        return reduce(vcat, [arc_diagram_upper_points(T, W) for W in Ws])
     elseif ((fl, W, k) = is_power_with_data(V); fl)
-        return reduce(vcat, [arc_diagram_upper_points(T, W) for _ in 1:k])
+        upper_points_W = arc_diagram_upper_points(T, W)
+        return reduce(vcat, [upper_points_W for _ in 1:k])
     else
         error("Not implemented.")
     end
@@ -429,6 +430,7 @@ function arcdiag_to_deformationmap(
     elseif case == :tensor_product
         fl, W_factors = _is_tensor_product(W)
         @assert fl
+        @assert length(W_factors) == 2
         nrows_kappa, ncols_kappa = dim.(W_factors)
     else
         error("Unknown case")
