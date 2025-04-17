@@ -1,6 +1,3 @@
-const SO = Val{:special_orthogonal}
-const GL = Val{:general_linear}
-
 """
 Concrete subtype of [`DeformBasis`](@ref).
 Each element of the basis is induced by an arc diagram of a suitable size,
@@ -18,12 +15,12 @@ struct ArcDiagDeformBasis{T <: SmashProductLieElem} <: DeformBasis{T}
         degs::AbstractVector{Int};
         no_normalize::Bool=false,
     ) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}}
-        LieType = get_attribute(base_lie_algebra(sp), :type, nothing)::Union{Nothing,Symbol}
-        @req LieType in [:special_orthogonal, :general_linear] "Only works for so_n and gl_n."
-        if LieType == :special_orthogonal && has_attribute(base_lie_algebra(sp), :form)
+        LieType = Val(get_attribute(base_lie_algebra(sp), :type, nothing)::Union{Nothing, Symbol})
+        @req LieType isa Union{SO,GL} "Only works for so_n and gl_n."
+        if LieType isa SO && has_attribute(base_lie_algebra(sp), :form)
             @req isone(get_attribute(base_lie_algebra(sp), :form)::dense_matrix_type(C)) "Only works for so_n represented as skew-symmetric matrices."
         end
-        return ArcDiagDeformBasis(Val(LieType), sp, degs; no_normalize)
+        return ArcDiagDeformBasis(LieType, sp, degs; no_normalize)
     end
 
     function ArcDiagDeformBasis(
@@ -403,7 +400,7 @@ function arcdiag_to_deformationmap(
     diag::ArcDiagramDirected,
     sp::SmashProductLie{C},
     W::LieAlgebraModule=exterior_power_obj(base_module(sp), 2),
-    case::Symbol=:exterior_power
+    case::Symbol=:exterior_power,
 ) where {C <: RingElem}
     return arcdiag_to_deformationmap(T, arc_diagram(Undirected, diag), sp, W, case)
 end
@@ -413,7 +410,7 @@ function arcdiag_to_deformationmap(
     diag::ArcDiagramUndirected,
     sp::SmashProductLie{C},
     W::LieAlgebraModule=exterior_power_obj(base_module(sp), 2),
-    case::Symbol=:exterior_power
+    case::Symbol=:exterior_power,
 ) where {C <: RingElem}
     @req !_is_direct_sum(W)[1] "Not permitted for direct sums."
     ind_map = basis_index_mapping(W)

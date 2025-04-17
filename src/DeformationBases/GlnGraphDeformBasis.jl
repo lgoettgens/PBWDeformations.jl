@@ -22,7 +22,7 @@ struct GlnGraphDeformBasis{T <: SmashProductLieElem} <: DeformBasis{T}
     end
 
     function GlnGraphDeformBasis(
-        LieType::Union{GL},
+        LieType::GL,
         sp::SmashProductLie{C, LieC, LieT},
         degs::AbstractVector{Int};
         no_normalize::Bool=false,
