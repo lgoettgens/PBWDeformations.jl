@@ -35,6 +35,7 @@ jobs:
           - '1.12-nightly'
           - 'nightly'
         oscar-version:
+          - '1.2' # minimum compat bound
           - 'stable'
           - 'devel'
         os:
@@ -53,23 +54,20 @@ jobs:
 
       - uses: julia-actions/cache@v2
 
-      - name: "Remove Oscar.jl compat"
-        if: ${{ matrix.oscar-version == 'devel' }}
-        shell: julia --color=yes {0}
-        run: |
-          using TOML
-          project = TOML.parsefile("Project.toml")
-          project["compat"]["Oscar"] = "1"
-          open("Project.toml", "w") do io
-              TOML.print(io, project)
-          end
-
       - name: "Install OSCAR dev version"
         if: ${{ matrix.oscar-version == 'devel' }}
         shell: julia --project=. --color=yes {0}
         run: |
           using Pkg
           Pkg.develop("Oscar")
+          Pkg.pin("Oscar")
+
+      - name: "Install OSCAR specific version"
+        if: ${{ matrix.oscar-version != 'devel' && matrix.oscar-version != 'stable' }}
+        shell: julia --project=. --color=yes {0}
+        run: |
+          using Pkg
+          Pkg.add(name="Oscar", version="${{ matrix.oscar-version }}")
           Pkg.pin("Oscar")
 
       - uses: julia-actions/julia-buildpkg@v1
