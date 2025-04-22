@@ -30,38 +30,36 @@ struct PseudographDeformBasis{T <: SmashProductLieElem} <: DeformBasis{T}
         degs::AbstractVector{Int};
         no_normalize::Bool=false,
     ) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}}
-        fl, Vbase, e = _is_exterior_power(base_module(sp))
-        @req fl && _is_standard_module(Vbase) "Only works for exterior powers of the standard module."
-
         extra_data = Dict{DeformationMap{elem_type(sp)}, Set{Tuple{PseudographLabelled{Int}, Partition{Int}}}}()
 
-        lens = []
-        iters = []
-        debug_counter = 0
-        for d in degs
+        function diag_data_iter_and_len(LieType::SO, W::LieAlgebraModule, case::Symbol, d::Int)
+            @req case == :exterior_power "Not implemented for direct sums"
+            fl, V, e = _is_exterior_power(W)
+            @assert fl
+            @assert e == 2
+            fl, Vbase, e = _is_exterior_power(V)
+            @req fl && _is_standard_module(Vbase) "Only works for exterior powers of the standard module."
+
             pg_iter = pseudographs_with_partitions__so_extpowers_stdmod(e, d)
+            diag_data_iter = ((to_arcdiag(pg, part), (pg, part)) for (pg, part) in pg_iter)
             len = length(pg_iter)
-            iter = (
-                begin
-                    @vprintln :PBWDeformations 2 "Basis generation deg $(lpad(d, maximum(ndigits, degs))), $(lpad(floor(Int, 100*(debug_counter = (debug_counter % len) + 1) / len), 3))%, $(lpad(debug_counter, ndigits(len)))/$(len)"
-                    diag = to_arcdiag(pg, part)
-                    basis_elem = arcdiag_to_deformationmap(LieType, diag, sp)
-                    if !no_normalize
-                        basis_elem = normalize(basis_elem)
-                    end
-                    if haskey(extra_data, basis_elem)
-                        push!(extra_data[basis_elem], (pg, part))
-                    else
-                        extra_data[basis_elem] = Set([(pg, part)])
-                    end
-                    basis_elem
-                end for (pg, part) in pg_iter
-            )
-            push!(lens, len)
-            push!(iters, iter)
+            return diag_data_iter, len::Int
         end
-        len = sum(lens)
-        iter = Iterators.flatten(iters)
+
+        function should_be_used(LieType::SO, diag::ArcDiagram, data)
+            true
+        end
+
+        iter, len = arc_diag_based_basis_iteration(
+            LieType,
+            sp,
+            degs,
+            extra_data,
+            diag_data_iter_and_len,
+            should_be_used;
+            no_normalize,
+        )
+
         if !no_normalize
             iter = unique(Iterators.filter(b -> !iszero(b), iter))
             collected = Vector{DeformationMap{elem_type(sp)}}(collect(iter))::Vector{DeformationMap{elem_type(sp)}}
