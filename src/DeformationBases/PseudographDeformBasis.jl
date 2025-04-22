@@ -66,7 +66,7 @@ struct PseudographDeformBasis{T <: SmashProductLieElem} <: DeformBasis{T}
             iter = unique(Iterators.filter(b -> !iszero(b), iter))
             collected = Vector{DeformationMap{elem_type(sp)}}(collect(iter))::Vector{DeformationMap{elem_type(sp)}}
             _, rels = is_linearly_independent_with_relations(coefficient_ring(sp), reverse(collected))
-            inds = [1 + ncols(rels) - (findfirst(!iszero, vec(rels[i, :]))::Int) for i in nrows(rels):-1:1]
+            inds = [1 + ncols(rels) - (findfirst(!iszero, vec(rels[i, :]))::Int) for i in nrows(rels):-1:1] # FIXME: findfirst -> findlast
             deleteat!(collected, inds)
             return new{elem_type(sp)}(length(collected), collected, extra_data, no_normalize)
         end
