@@ -63,8 +63,8 @@ struct PseudographDeformBasis{T <: SmashProductLieElem} <: DeformBasis{T}
         if !no_normalize
             iter = unique(Iterators.filter(b -> !iszero(b), iter))
             collected = Vector{DeformationMap{elem_type(sp)}}(collect(iter))::Vector{DeformationMap{elem_type(sp)}}
-            _, rels = is_linearly_independent_with_relations(coefficient_ring(sp), reverse(collected))
-            inds = [1 + ncols(rels) - (findfirst(!iszero, vec(rels[i, :]))::Int) for i in nrows(rels):-1:1] # FIXME: findfirst -> findlast
+            _, rels = is_linearly_independent_with_relations(coefficient_ring(sp), collected)
+            inds = [findlast(!iszero, vec(rels[i, :]))::Int for i in 1:nrows(rels)]
             deleteat!(collected, inds)
             return new{elem_type(sp)}(length(collected), collected, extra_data, no_normalize)
         end
@@ -91,7 +91,7 @@ function pseudographs_with_partitions__so_extpowers_stdmod(deg::Int, sumtotal::I
         part in partitions(sumtotal - sumpg) if all(iseven, part) &&
         all(isodd, edge_labels(pg, MSet([1, 1]))) &&
         all(isodd, edge_labels(pg, MSet([2, 2]))) &&
-        (edges(pg, MSet([1, 1])) != edges(pg, MSet([1, 1])) || isodd(sum(pg, MSet([1, 2]))))
+        (edges(pg, MSet([1, 1])) != edges(pg, MSet([2, 2])) || isodd(sum(pg, MSet([1, 2]))))
     )
     return collect(iter)
 end
