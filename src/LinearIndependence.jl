@@ -148,9 +148,9 @@ function _linear_independence_coeff_matrix(F::Field, V::Vector{<:FreeAssociative
 end
 
 function _linear_independence_coeff_matrix(F::Field, V::Vector{<:SmashProductLieElem})
-    return _linear_independence_coeff_matrix(F, map(e -> simplify(e).alg_elem, V))::dense_matrix_type(F)
+    return _linear_independence_coeff_matrix(F, map(e -> data(simplify(e)), V))::dense_matrix_type(F)
 end
 
 function _linear_independence_coeff_matrix(F::Field, V::Vector{<:SmashProductLieDeformElem})
-    return _linear_independence_coeff_matrix(F, map(e -> simplify(e).alg_elem, V))::dense_matrix_type(F)
+    return _linear_independence_coeff_matrix(F, map(e -> data(simplify(e)), V))::dense_matrix_type(F)
 end
