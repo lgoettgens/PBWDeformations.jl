@@ -50,7 +50,7 @@ struct PseudographDeformBasis{T <: SmashProductLieElem} <: DeformBasis{T}
             true
         end
 
-        iter, len = arc_diag_based_basis_iteration(
+        iter1, len1 = arc_diag_based_basis_iteration(
             LieType,
             sp,
             degs,
@@ -60,15 +60,12 @@ struct PseudographDeformBasis{T <: SmashProductLieElem} <: DeformBasis{T}
             no_normalize,
         )
 
-        if !no_normalize
-            iter = unique(Iterators.filter(b -> !iszero(b), iter))
-            collected = Vector{DeformationMap{elem_type(sp)}}(collect(iter))::Vector{DeformationMap{elem_type(sp)}}
-            _, rels = is_linearly_independent_with_relations(coefficient_ring(sp), collected)
-            inds = [findlast(!iszero, vec(rels[i, :]))::Int for i in 1:nrows(rels)]
-            deleteat!(collected, inds)
-            return new{elem_type(sp)}(length(collected), collected, extra_data, no_normalize)
+        if no_normalize
+            return new{elem_type(sp)}(len1, iter1, extra_data, no_normalize)
+        else
+            iter2, len2 = filter_independent(coefficient_ring(sp), iter1)
+            return new{elem_type(sp)}(len2, iter2, extra_data, no_normalize)
         end
-        return new{elem_type(sp)}(len, iter, extra_data, no_normalize)
     end
 end
 

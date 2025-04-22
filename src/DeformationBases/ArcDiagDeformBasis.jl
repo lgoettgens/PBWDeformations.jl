@@ -42,7 +42,7 @@ struct ArcDiagDeformBasis{T <: SmashProductLieElem} <: DeformBasis{T}
             is_crossing_free(diag; part=:lower)
         end
 
-        iter, len = arc_diag_based_basis_iteration(
+        iter1, len1 = arc_diag_based_basis_iteration(
             LieType,
             sp,
             degs,
@@ -52,15 +52,12 @@ struct ArcDiagDeformBasis{T <: SmashProductLieElem} <: DeformBasis{T}
             no_normalize,
         )
 
-        if !no_normalize
-            iter = unique(Iterators.filter(b -> !iszero(b), iter))
-            collected = Vector{DeformationMap{elem_type(sp)}}(collect(iter))::Vector{DeformationMap{elem_type(sp)}}
-            _, rels = is_linearly_independent_with_relations(coefficient_ring(sp), collected)
-            inds = [findlast(!iszero, vec(rels[i, :]))::Int for i in 1:nrows(rels)]
-            deleteat!(collected, inds)
-            return new{elem_type(sp)}(length(collected), collected, extra_data, no_normalize)
+        if no_normalize
+            return new{elem_type(sp)}(len1, iter1, extra_data, no_normalize)
+        else
+            iter2, len2 = filter_independent(coefficient_ring(sp), iter1)
+            return new{elem_type(sp)}(len2, iter2, extra_data, no_normalize)
         end
-        return new{elem_type(sp)}(len, iter, extra_data, no_normalize)
     end
 end
 
@@ -97,7 +94,7 @@ function arc_diag_based_basis_iteration(
 
     n_sum_cases = div(length(V_nice_summands) * (length(V_nice_summands) + 1), 2)
     lens = Int[]
-    iters = []
+    iters = Vector{DeformationMap{elem_type(sp)}}[]
     for d in degs
         sum_case = 0
         for (i_l, V_nice_summand_i_l) in enumerate(V_nice_summands),
