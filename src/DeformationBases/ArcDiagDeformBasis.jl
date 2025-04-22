@@ -1,6 +1,3 @@
-const SO = Val{:special_orthogonal}
-const GL = Val{:general_linear}
-
 """
 Concrete subtype of [`DeformBasis`](@ref).
 Each element of the basis is induced by an arc diagram of a suitable size,
@@ -18,12 +15,12 @@ struct ArcDiagDeformBasis{T <: SmashProductLieElem} <: DeformBasis{T}
         degs::AbstractVector{Int};
         no_normalize::Bool=false,
     ) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}}
-        LieType = get_attribute(base_lie_algebra(sp), :type, nothing)::Union{Nothing,Symbol}
-        @req LieType in [:special_orthogonal, :general_linear] "Only works for so_n and gl_n."
-        if LieType == :special_orthogonal && has_attribute(base_lie_algebra(sp), :form)
+        LieType = Val(get_attribute(base_lie_algebra(sp), :type, nothing)::Union{Nothing, Symbol})
+        @req LieType isa Union{SO,GL} "Only works for so_n and gl_n."
+        if LieType isa SO && has_attribute(base_lie_algebra(sp), :form)
             @req isone(get_attribute(base_lie_algebra(sp), :form)::dense_matrix_type(C)) "Only works for so_n represented as skew-symmetric matrices."
         end
-        return ArcDiagDeformBasis(Val(LieType), sp, degs; no_normalize)
+        return ArcDiagDeformBasis(LieType, sp, degs; no_normalize)
     end
 
     function ArcDiagDeformBasis(
@@ -32,89 +29,35 @@ struct ArcDiagDeformBasis{T <: SmashProductLieElem} <: DeformBasis{T}
         degs::AbstractVector{Int};
         no_normalize::Bool=false,
     ) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}}
-        V = base_module(sp)
-
-        V_nice, h = isomorphic_module_with_simple_structure(V)
-        fl, V_nice_summands = _is_direct_sum(V_nice)
-        if !fl
-            temp = direct_sum(V_nice)
-            h = compose(h, hom(V_nice, temp, identity_matrix(coefficient_ring(temp), dim(temp))))
-            V_nice_summands = [V_nice]
-            V_nice = temp
-        end
-
         extra_data = Dict{DeformationMap{elem_type(sp)}, Set{ArcDiagram}}()
 
-        n_sum_cases = div(length(V_nice_summands) * (length(V_nice_summands) + 1), 2)
-        lens = Int[]
-        iters = []
-        for d in degs
-            sum_case = 0
-            for (i_l, V_nice_summand_i_l) in enumerate(V_nice_summands),
-                (i_r, V_nice_summand_i_r) in enumerate(V_nice_summands)
-
-                if i_l > i_r
-                    continue
-                end
-
-                sum_case += 1
-
-                proj_to_summand_l = compose(h, canonical_projection(V_nice, i_l))
-                proj_to_summand_r = compose(h, canonical_projection(V_nice, i_r))
-
-                if i_l == i_r
-                    W = exterior_power_obj(V_nice_summand_i_l, 2)
-                    case = :exterior_power
-                else
-                    W = tensor_product(V_nice_summand_i_l, V_nice_summand_i_r)
-                    case = :tensor_product
-                end
-
-                diag_iter = pbw_arc_diagrams(LieType, W, d)
-                len = length(diag_iter)
-                prog_meter = ProgressMeter.Progress(len; output=stderr, enabled=true, desc="Basis generation: deg $d, case $(sum_case)/$(n_sum_cases)")
-                generate_showvalues(counter, diag) = () -> [("iteration", (counter, diag))]
-                iter = (
-                    begin
-                        # @vprintln :PBWDeformations 2 "Basis generation deg $(lpad(d, maximum(ndigits, degs))), case $(lpad(sum_case, ndigits(n_sum_cases)))/$(n_sum_cases), $(lpad(floor(Int, 100*counter / len), 3))%, $(lpad(counter, ndigits(len)))/$(len)"
-                        _basis_elem = arcdiag_to_deformationmap(LieType, diag, sp, W, case)
-                        basis_elem = matrix(proj_to_summand_l) * _basis_elem * transpose(matrix(proj_to_summand_r))
-                        if i_l != i_r
-                            basis_elem -= transpose(basis_elem)
-                        end
-                        @assert is_skew_symmetric(basis_elem)
-
-                        if !no_normalize
-                            basis_elem = normalize(basis_elem)
-                        end
-                        if haskey(extra_data, basis_elem)
-                            push!(extra_data[basis_elem], diag)
-                        else
-                            extra_data[basis_elem] = Set([diag])
-                        end
-                        ProgressMeter.update!(prog_meter, counter; showvalues = generate_showvalues(counter, diag))
-                        basis_elem
-                    end for (counter, diag) in enumerate(diag_iter) if is_crossing_free(diag, part=:lower)
-                )
-                # push!(lens, len)
-                # push!(iters, iter)
-                collected = collect(iter)
-                push!(lens, length(collected))
-                push!(iters, collected)
-                ProgressMeter.finish!(prog_meter)
-            end
+        function diag_data_iter_and_len(LieType::Union{SO, GL}, W::LieAlgebraModule, case::Symbol, d::Int)
+            diag_iter = pbw_arc_diagrams(LieType, W, d)
+            diag_data_iter = ((diag, diag) for diag in diag_iter)
+            len = length(diag_iter)
+            return diag_data_iter, len::Int
         end
-        len = sum(lens)
-        iter = Iterators.flatten(iters)
-        if !no_normalize
-            iter = unique(Iterators.filter(b -> !iszero(b), iter))
-            collected = Vector{DeformationMap{elem_type(sp)}}(collect(iter))::Vector{DeformationMap{elem_type(sp)}}
-            _, rels = is_linearly_independent_with_relations(coefficient_ring(sp), collected)
-            inds = [findlast(!iszero, vec(rels[i, :]))::Int for i in 1:nrows(rels)]
-            deleteat!(collected, inds)
-            return new{elem_type(sp)}(length(collected), collected, extra_data, no_normalize)
+
+        function should_be_used(LieType::Union{SO, GL}, diag::ArcDiagram, data)
+            is_crossing_free(diag; part=:lower)
         end
-        return new{elem_type(sp)}(len, iter, extra_data, no_normalize)
+
+        iter1, len1 = arc_diag_based_basis_iteration(
+            LieType,
+            sp,
+            degs,
+            extra_data,
+            diag_data_iter_and_len,
+            should_be_used;
+            no_normalize,
+        )
+
+        if no_normalize
+            return new{elem_type(sp)}(len1, iter1, extra_data, no_normalize)
+        else
+            iter2, len2 = filter_independent(coefficient_ring(sp), iter1)
+            return new{elem_type(sp)}(len2, iter2, extra_data, no_normalize)
+        end
     end
 end
 
@@ -127,6 +70,96 @@ function Base.iterate(i::ArcDiagDeformBasis, s)
 end
 
 Base.length(basis::ArcDiagDeformBasis) = basis.len
+
+
+function arc_diag_based_basis_iteration(
+    LieType::Union{SO, GL},
+    sp::SmashProductLie{C, LieC, LieT},
+    degs::AbstractVector{Int},
+    extra_data::Dict{DeformationMap{SmashProductLieElem{C, LieC, LieT}}, Set{ExtraDataT}},
+    diag_data_iter_and_len::Function,
+    should_be_used::Function;
+    no_normalize::Bool,
+) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}, ExtraDataT}
+    V = base_module(sp)
+
+    V_nice, h = isomorphic_module_with_simple_structure(V)
+    fl, V_nice_summands = _is_direct_sum(V_nice)
+    if !fl
+        temp = direct_sum(V_nice)
+        h = compose(h, hom(V_nice, temp, identity_matrix(coefficient_ring(temp), dim(temp))))
+        V_nice_summands = [V_nice]
+        V_nice = temp
+    end
+
+    n_sum_cases = div(length(V_nice_summands) * (length(V_nice_summands) + 1), 2)
+    lens = Int[]
+    iters = Vector{DeformationMap{elem_type(sp)}}[]
+    for d in degs
+        sum_case = 0
+        for (i_l, V_nice_summand_i_l) in enumerate(V_nice_summands),
+            (i_r, V_nice_summand_i_r) in enumerate(V_nice_summands)
+
+            if i_l > i_r
+                continue
+            end
+
+            sum_case += 1
+
+            proj_to_summand_l = compose(h, canonical_projection(V_nice, i_l))
+            proj_to_summand_r = compose(h, canonical_projection(V_nice, i_r))
+
+            if i_l == i_r
+                W = exterior_power_obj(V_nice_summand_i_l, 2)
+                case = :exterior_power
+            else
+                W = tensor_product(V_nice_summand_i_l, V_nice_summand_i_r)
+                case = :tensor_product
+            end
+
+            diag_data_iter, len = diag_data_iter_and_len(LieType, W, case, d)
+            prog_meter = ProgressMeter.Progress(
+                len;
+                output=stderr,
+                enabled=true,
+                desc="Basis generation: deg $d, case $(sum_case)/$(n_sum_cases)",
+            )
+            generate_showvalues(counter, data) = () -> [("iteration", (counter, data))]
+            iter = (
+                begin
+                    # @vprintln :PBWDeformations 2 "Basis generation deg $(lpad(d, maximum(ndigits, degs))), case $(lpad(sum_case, ndigits(n_sum_cases)))/$(n_sum_cases), $(lpad(floor(Int, 100*counter / len), 3))%, $(lpad(counter, ndigits(len)))/$(len)"
+                    _basis_elem = arcdiag_to_deformationmap(LieType, diag, sp, W, case)
+                    basis_elem = matrix(proj_to_summand_l) * _basis_elem * transpose(matrix(proj_to_summand_r))
+                    if i_l != i_r
+                        basis_elem -= transpose(basis_elem)
+                    end
+                    @assert is_skew_symmetric(basis_elem)
+
+                    if !no_normalize
+                        basis_elem = normalize(basis_elem)
+                    end
+                    if haskey(extra_data, basis_elem)
+                        push!(extra_data[basis_elem], data)
+                    else
+                        extra_data[basis_elem] = Set([data])
+                    end
+                    ProgressMeter.update!(prog_meter, counter; showvalues=generate_showvalues(counter, data))
+                    basis_elem
+                end for (counter, (diag, data)) in enumerate(diag_data_iter) if should_be_used(LieType, diag, data)
+            )
+            # push!(lens, len)
+            # push!(iters, iter)
+            collected = collect(iter)
+            push!(lens, length(collected))
+            push!(iters, collected)
+            ProgressMeter.finish!(prog_meter)
+        end
+    end
+    len = sum(lens)
+    iter = Iterators.flatten(iters)
+
+    return iter, len
+end
 
 
 function pbw_arc_diagrams(T::Union{SO, GL}, V::LieAlgebraModule, d::Int)
@@ -171,13 +204,14 @@ end
 
 function arc_diagram_upper_points(T::GL, V::LieAlgebraModule)
     if _is_standard_module(V)
-        return 1
+        return BitVector([true])
     elseif ((fl, W) = _is_dual(V); fl) && _is_standard_module(W)
-        return 0
+        return BitVector([false])
     elseif ((fl, Ws) = _is_tensor_product(V); fl)
-        return reduce(vcat, arc_diagram_upper_points(T, W) for W in Ws)
+        return reduce(vcat, [arc_diagram_upper_points(T, W) for W in Ws])
     elseif ((fl, W, k) = is_power_with_data(V); fl)
-        return reduce(vcat, [arc_diagram_upper_points(T, W) for _ in 1:k])
+        upper_points_W = arc_diagram_upper_points(T, W)
+        return reduce(vcat, [upper_points_W for _ in 1:k])
     else
         error("Not implemented.")
     end
@@ -402,7 +436,7 @@ function arcdiag_to_deformationmap(
     diag::ArcDiagramDirected,
     sp::SmashProductLie{C},
     W::LieAlgebraModule=exterior_power_obj(base_module(sp), 2),
-    case::Symbol=:exterior_power
+    case::Symbol=:exterior_power,
 ) where {C <: RingElem}
     return arcdiag_to_deformationmap(T, arc_diagram(Undirected, diag), sp, W, case)
 end
@@ -412,7 +446,7 @@ function arcdiag_to_deformationmap(
     diag::ArcDiagramUndirected,
     sp::SmashProductLie{C},
     W::LieAlgebraModule=exterior_power_obj(base_module(sp), 2),
-    case::Symbol=:exterior_power
+    case::Symbol=:exterior_power,
 ) where {C <: RingElem}
     @req !_is_direct_sum(W)[1] "Not permitted for direct sums."
     ind_map = basis_index_mapping(W)
@@ -429,6 +463,7 @@ function arcdiag_to_deformationmap(
     elseif case == :tensor_product
         fl, W_factors = _is_tensor_product(W)
         @assert fl
+        @assert length(W_factors) == 2
         nrows_kappa, ncols_kappa = dim.(W_factors)
     else
         error("Unknown case")
