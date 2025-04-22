@@ -131,6 +131,9 @@ function __init__()
     add_verbosity_scope(:PBWDeformations)
 end
 
+const SO = Val{:special_orthogonal}
+const GL = Val{:general_linear}
+
 include("OscarPatches.jl")
 
 include("Types.jl")

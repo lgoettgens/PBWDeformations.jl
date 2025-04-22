@@ -16,16 +16,16 @@ struct PseudographDeformBasis{T <: SmashProductLieElem} <: DeformBasis{T}
         degs::AbstractVector{Int};
         no_normalize::Bool=false,
     ) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}}
-        LieType = get_attribute(base_lie_algebra(sp), :type, nothing)
-        @req LieType == :special_orthogonal "Only works for so_n."
-        if LieType == :special_orthogonal && has_attribute(base_lie_algebra(sp), :form)
+        LieType = Val(get_attribute(base_lie_algebra(sp), :type, nothing)::Union{Nothing, Symbol})
+        @req LieType isa SO "Only works for so_n."
+        if LieType isa SO && has_attribute(base_lie_algebra(sp), :form)
             @req isone(get_attribute(base_lie_algebra(sp), :form)) "Only works for so_n represented as skew-symmetric matrices."
         end
-        return PseudographDeformBasis(Val(LieType), sp, degs; no_normalize)
+        return PseudographDeformBasis(LieType, sp, degs; no_normalize)
     end
 
     function PseudographDeformBasis(
-        LieType::Union{Val{:special_orthogonal}},
+        LieType::SO,
         sp::SmashProductLie{C, LieC, LieT},
         degs::AbstractVector{Int};
         no_normalize::Bool=false,
