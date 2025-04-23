@@ -85,9 +85,14 @@ function pseudographs_with_partitions__so_extpowers_stdmod(deg::Int, sumtotal::I
         begin
             (pg, part)
         end for sumpg in 0:sumtotal for pg in all_pseudographs(2, deg, sumpg; upto_iso=true) for
-        part in partitions(sumtotal - sumpg) if all(iseven, part) &&
+        part in partitions(sumtotal - sumpg) if
+        # length n lower cycles can be reversed in n lower flips of sgn -1 => odd n has sgn -1 in stabilizer
+        all(iseven, part) &&
+        # length n paths from 1 to 1 can be reversed with n-1 many lower flips of sgn -1 and one upper flip of sgn 1 => even n has sgn -1 in stabilizer
         all(isodd, edge_labels(pg, MSet([1, 1]))) &&
+        # even paths from 2 to 2 can be reversed with odd many lower flips of sgn -1 and one upper flip of sgn 1 => even n has sgn -1 in stabilizer
         all(isodd, edge_labels(pg, MSet([2, 2]))) &&
+        # if pg is symmetric, this symmetry needs one upper block flip of sgn -1 and sum(pg, MSet([1, 2])) many lower flips of sgn -1 => even sum has sgn -1 in stabilizer
         (edges(pg, MSet([1, 1])) != edges(pg, MSet([2, 2])) || isodd(sum(pg, MSet([1, 2]))))
     )
     return collect(iter)
