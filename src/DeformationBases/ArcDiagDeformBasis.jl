@@ -38,8 +38,9 @@ struct ArcDiagDeformBasis{T <: SmashProductLieElem} <: DeformBasis{T}
             return diag_data_iter, len::Int
         end
 
-        function should_be_used(LieType::Union{SO, GL}, diag::ArcDiagram, data)
-            is_crossing_free(diag; part=:lower)
+        function should_be_used(LieType::Union{SO, GL}, diag::ArcDiagram, data::ArcDiagram)
+            @assert diag === data
+            is_crossing_free(data; part=:lower)
         end
 
         iter1, len1 = arc_diag_based_basis_iteration(
