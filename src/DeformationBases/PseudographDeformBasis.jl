@@ -40,14 +40,34 @@ struct PseudographDeformBasis{T <: SmashProductLieElem} <: DeformBasis{T}
             fl, Vbase, e = _is_exterior_power(V)
             @req fl && _is_standard_module(Vbase) "Only works for exterior powers of the standard module."
 
-            pg_iter = pseudographs_with_partitions__so_extpowers_stdmod(e, d)
-            diag_data_iter = ((to_arcdiag(pg, part), (pg, part)) for (pg, part) in pg_iter)
-            len = length(pg_iter)
+            pg_part_iter = collect(
+                begin
+                    (pg, part)
+                end for sumpg in 0:d for pg in all_pseudographs(2, e, sumpg; upto_iso=true) for
+                part in partitions(d - sumpg)
+
+            )
+            diag_data_iter = ((to_arcdiag(pg, part), (pg, part)) for (pg, part) in pg_part_iter)
+            len = length(pg_part_iter) # TODO: implement without collect
             return diag_data_iter, len::Int
         end
 
-        function should_be_used(LieType::SO, diag::ArcDiagram, data)
-            true
+        function should_be_used(LieType::SO, diag::ArcDiagram, data::Tuple{PseudographLabelled{Int}, Partition{Int}})
+            pg, part = data
+
+            # length n lower cycles can be reversed in n lower flips of sgn -1 => odd n has sgn -1 in stabilizer
+            all(iseven, part) || return false
+
+            # length n paths from 1 to 1 can be reversed with n-1 many lower flips of sgn -1 and one upper flip of sgn 1 => even n has sgn -1 in stabilizer
+            all(isodd, edge_labels(pg, MSet([1, 1]))) || return false
+
+            # even paths from 2 to 2 can be reversed with odd many lower flips of sgn -1 and one upper flip of sgn 1 => even n has sgn -1 in stabilizer
+            all(isodd, edge_labels(pg, MSet([2, 2]))) || return false
+
+            # if pg is symmetric, this symmetry needs one upper block flip of sgn -1 and sum(pg, MSet([1, 2])) many lower flips of sgn -1 => even sum has sgn -1 in stabilizer
+            (edges(pg, MSet([1, 1])) != edges(pg, MSet([2, 2])) || isodd(sum(pg, MSet([1, 2])))) || return false
+
+            return true
         end
 
         iter1, len1 = arc_diag_based_basis_iteration(
@@ -78,22 +98,3 @@ function Base.iterate(i::PseudographDeformBasis, s)
 end
 
 Base.length(basis::PseudographDeformBasis) = basis.len
-
-
-function pseudographs_with_partitions__so_extpowers_stdmod(deg::Int, sumtotal::Int)
-    iter = (
-        begin
-            (pg, part)
-        end for sumpg in 0:sumtotal for pg in all_pseudographs(2, deg, sumpg; upto_iso=true) for
-        part in partitions(sumtotal - sumpg) if
-        # length n lower cycles can be reversed in n lower flips of sgn -1 => odd n has sgn -1 in stabilizer
-        all(iseven, part) &&
-        # length n paths from 1 to 1 can be reversed with n-1 many lower flips of sgn -1 and one upper flip of sgn 1 => even n has sgn -1 in stabilizer
-        all(isodd, edge_labels(pg, MSet([1, 1]))) &&
-        # even paths from 2 to 2 can be reversed with odd many lower flips of sgn -1 and one upper flip of sgn 1 => even n has sgn -1 in stabilizer
-        all(isodd, edge_labels(pg, MSet([2, 2]))) &&
-        # if pg is symmetric, this symmetry needs one upper block flip of sgn -1 and sum(pg, MSet([1, 2])) many lower flips of sgn -1 => even sum has sgn -1 in stabilizer
-        (edges(pg, MSet([1, 1])) != edges(pg, MSet([2, 2])) || isodd(sum(pg, MSet([1, 2]))))
-    )
-    return collect(iter)
-end
