@@ -10,7 +10,7 @@ This process is a generalization of [FM22](@cite).
 struct GlnGraphDeformBasis{T <: SmashProductLieElem} <: DeformBasis{T}
     len::Int
     iter
-    extra_data::Dict{DeformationMap{T}, Set{GlnGraphDeformBasisDataT}}
+    extra_data::Dict{DeformationMap{T}, Set{Tuple{Tuple{Int, Int}, GlnGraphDeformBasisDataT}}}
     no_normalize::Bool
 
     function GlnGraphDeformBasis(
@@ -29,7 +29,7 @@ struct GlnGraphDeformBasis{T <: SmashProductLieElem} <: DeformBasis{T}
         degs::AbstractVector{Int};
         no_normalize::Bool=false,
     ) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}}
-        extra_data = Dict{DeformationMap{elem_type(sp)}, Set{GlnGraphDeformBasisDataT}}()
+        extra_data = Dict{DeformationMap{elem_type(sp)}, Set{Tuple{Tuple{Int, Int}, GlnGraphDeformBasisDataT}}}()
 
         function data_iter_and_len(LieType::GL, W::LieAlgebraModule, case::Symbol, d::Int)
             parity_verts = arc_diagram_upper_points(LieType, W)
