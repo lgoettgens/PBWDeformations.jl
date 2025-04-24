@@ -1,3 +1,5 @@
+const GlnGraphDeformBasisDataT = Tuple{GlnGraph, Vector{Int}, Partition{Int}}
+
 """
 Concrete subtype of [`DeformBasis`](@ref).
 Each element of the basis is induced by a GlnGraph with certain properties,
@@ -8,7 +10,7 @@ This process is a generalization of [FM22](@cite).
 struct GlnGraphDeformBasis{T <: SmashProductLieElem} <: DeformBasis{T}
     len::Int
     iter
-    extra_data::Dict{DeformationMap{T}, Set{Tuple{GlnGraph, Vector{Int}, Partition{Int}}}}
+    extra_data::Dict{DeformationMap{T}, Set{GlnGraphDeformBasisDataT}}
     no_normalize::Bool
 
     function GlnGraphDeformBasis(
@@ -27,9 +29,9 @@ struct GlnGraphDeformBasis{T <: SmashProductLieElem} <: DeformBasis{T}
         degs::AbstractVector{Int};
         no_normalize::Bool=false,
     ) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}}
-        extra_data = Dict{DeformationMap{elem_type(sp)}, Set{Tuple{GlnGraph, Vector{Int}, Partition{Int}}}}()
+        extra_data = Dict{DeformationMap{elem_type(sp)}, Set{GlnGraphDeformBasisDataT}}()
 
-        function diag_data_iter_and_len(LieType::GL, W::LieAlgebraModule, case::Symbol, d::Int)
+        function data_iter_and_len(LieType::GL, W::LieAlgebraModule, case::Symbol, d::Int)
             parity_verts = arc_diagram_upper_points(LieType, W)
             n_left_verts = n_right_verts = div(length(parity_verts), 2) # FIXME
 
@@ -39,13 +41,9 @@ struct GlnGraphDeformBasis{T <: SmashProductLieElem} <: DeformBasis{T}
 
             label_part_iter_len = number_of_gln_graph_labelings_with_partitions(n_edges, d)
             label_part_iter = gln_graph_labelings_with_partitions(n_edges, d)
-            diag_data_iter = ((arc_diagram(g, labeling, part), (g, labeling, part)) for g in gln_graph_iter for (labeling, part) in label_part_iter)
+            data_iter = ((g, labeling, part) for g in gln_graph_iter for (labeling, part) in label_part_iter)
             len = Int(gln_graph_iter_len * label_part_iter_len)
-            return diag_data_iter, len::Int
-        end
-
-        function should_be_used(LieType::GL, diag::ArcDiagram, data)
-            true
+            return data_iter, len::Int
         end
 
         iter1, len1 = arc_diag_based_basis_iteration(
@@ -53,8 +51,7 @@ struct GlnGraphDeformBasis{T <: SmashProductLieElem} <: DeformBasis{T}
             sp,
             degs,
             extra_data,
-            diag_data_iter_and_len,
-            should_be_used;
+            data_iter_and_len;
             no_normalize,
         )
 
