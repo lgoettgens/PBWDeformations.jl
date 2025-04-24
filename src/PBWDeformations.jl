@@ -23,6 +23,9 @@ using Oscar.LieAlgebras: multicombinations
 using Oscar.LieAlgebras: permutations
 using Oscar.LieAlgebras: permutations_with_sign
 
+using Base: Fix1
+using Base: Fix2
+
 
 import Oscar.AbstractAlgebra: change_base_ring
 import Oscar.AbstractAlgebra: coefficient_ring
