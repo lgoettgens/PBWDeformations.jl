@@ -236,7 +236,7 @@ function Base.:(==)(
     e1::SmashProductLieDeformElem{C, LieC, LieT},
     e2::SmashProductLieDeformElem{C, LieC, LieT},
 ) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}}
-return parent(e1) === parent(e2) && data(simplify(e1)) == data(simplify(e2))
+    return parent(e1) === parent(e2) && data(simplify(e1)) == data(simplify(e2))
 end
 
 function Base.hash(e::SmashProductLieDeformElem, h::UInt)

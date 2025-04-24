@@ -10,7 +10,7 @@ This process is due to [FM22](@cite).
 struct PseudographDeformBasis{T <: SmashProductLieElem} <: DeformBasis{T}
     len::Int
     iter
-    extra_data::Dict{DeformationMap{T}, Set{PseudographDeformBasisDataT}}
+    extra_data::Dict{DeformationMap{T}, Set{Tuple{Tuple{Int, Int}, PseudographDeformBasisDataT}}}
     no_normalize::Bool
 
     function PseudographDeformBasis(
@@ -32,7 +32,7 @@ struct PseudographDeformBasis{T <: SmashProductLieElem} <: DeformBasis{T}
         degs::AbstractVector{Int};
         no_normalize::Bool=false,
     ) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}}
-        extra_data = Dict{DeformationMap{elem_type(sp)}, Set{PseudographDeformBasisDataT}}()
+        extra_data = Dict{DeformationMap{elem_type(sp)}, Set{Tuple{Tuple{Int, Int}, PseudographDeformBasisDataT}}}()
 
         function data_iter_and_len(LieType::SO, W::LieAlgebraModule, case::Symbol, d::Int)
             @req case == :exterior_power "Not implemented for direct sums"
