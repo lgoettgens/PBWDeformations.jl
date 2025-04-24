@@ -1,3 +1,5 @@
+const ArcDiagDeformBasisDataT = ArcDiagram
+
 """
 Concrete subtype of [`DeformBasis`](@ref).
 Each element of the basis is induced by an arc diagram of a suitable size,
@@ -7,7 +9,7 @@ This process is due to [FM22](@cite).
 struct ArcDiagDeformBasis{T <: SmashProductLieElem} <: DeformBasis{T}
     len::Int
     iter
-    extra_data::Dict{DeformationMap{T}, Set{ArcDiagram}}
+    extra_data::Dict{DeformationMap{T}, Set{ArcDiagDeformBasisDataT}}
     no_normalize::Bool
 
     function ArcDiagDeformBasis(
@@ -16,7 +18,7 @@ struct ArcDiagDeformBasis{T <: SmashProductLieElem} <: DeformBasis{T}
         no_normalize::Bool=false,
     ) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}}
         LieType = Val(get_attribute(base_lie_algebra(sp), :type, nothing)::Union{Nothing, Symbol})
-        @req LieType isa Union{SO,GL} "Only works for so_n and gl_n."
+        @req LieType isa Union{SO, GL} "Only works for so_n and gl_n."
         if LieType isa SO && has_attribute(base_lie_algebra(sp), :form)
             @req isone(get_attribute(base_lie_algebra(sp), :form)::dense_matrix_type(C)) "Only works for so_n represented as skew-symmetric matrices."
         end
@@ -29,18 +31,23 @@ struct ArcDiagDeformBasis{T <: SmashProductLieElem} <: DeformBasis{T}
         degs::AbstractVector{Int};
         no_normalize::Bool=false,
     ) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}}
-        extra_data = Dict{DeformationMap{elem_type(sp)}, Set{ArcDiagram}}()
+        extra_data = Dict{DeformationMap{elem_type(sp)}, Set{ArcDiagDeformBasisDataT}}()
 
-        function diag_data_iter_and_len(LieType::Union{SO, GL}, W::LieAlgebraModule, case::Symbol, d::Int)
+        function data_iter_and_len(LieType::Union{SO, GL}, W::LieAlgebraModule, case::Symbol, d::Int)
             diag_iter = pbw_arc_diagrams(LieType, W, d)
-            diag_data_iter = ((diag, diag) for diag in diag_iter)
             len = length(diag_iter)
-            return diag_data_iter, len::Int
+            return diag_iter, len::Int
         end
 
-        function should_be_used(LieType::Union{SO, GL}, diag::ArcDiagram, data::ArcDiagram)
-            @assert diag === data
-            is_crossing_free(data; part=:lower)
+        function should_data_be_used(
+            LieType::Union{SO, GL},
+            data::ArcDiagDeformBasisDataT,
+            ::SmashProductLie{C, LieC, LieT},
+            ::LieAlgebraModule,
+            ::Symbol,
+        )
+            diag = data
+            is_crossing_free(diag; part=:lower)
         end
 
         iter1, len1 = arc_diag_based_basis_iteration(
@@ -48,8 +55,8 @@ struct ArcDiagDeformBasis{T <: SmashProductLieElem} <: DeformBasis{T}
             sp,
             degs,
             extra_data,
-            diag_data_iter_and_len,
-            should_be_used;
+            data_iter_and_len;
+            should_data_be_used,
             no_normalize,
         )
 
@@ -78,8 +85,21 @@ function arc_diag_based_basis_iteration(
     sp::SmashProductLie{C, LieC, LieT},
     degs::AbstractVector{Int},
     extra_data::Dict{DeformationMap{SmashProductLieElem{C, LieC, LieT}}, Set{ExtraDataT}},
-    diag_data_iter_and_len::Function,
-    should_be_used::Function;
+    data_iter_and_len::Function;
+    should_data_be_used::Function=(
+        ::Union{SO, GL},
+        ::Any,
+        ::SmashProductLie{C, LieC, LieT},
+        ::LieAlgebraModule,
+        ::Symbol,
+    ) -> true,
+    should_diag_be_used::Function=(
+        ::Union{SO, GL},
+        ::ArcDiagram,
+        ::SmashProductLie{C, LieC, LieT},
+        ::LieAlgebraModule,
+        ::Symbol,
+    ) -> true,
     no_normalize::Bool,
 ) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}, ExtraDataT}
     V = base_module(sp)
@@ -118,7 +138,7 @@ function arc_diag_based_basis_iteration(
                 case = :tensor_product
             end
 
-            diag_data_iter, len = diag_data_iter_and_len(LieType, W, case, d)
+            data_iter, len = data_iter_and_len(LieType, W, case, d)
             prog_meter = ProgressMeter.Progress(
                 len;
                 output=stderr,
@@ -126,28 +146,46 @@ function arc_diag_based_basis_iteration(
                 desc="Basis generation: deg $d, case $(sum_case)/$(n_sum_cases)",
             )
             generate_showvalues(counter, data) = () -> [("iteration", (counter, data))]
-            iter = (
-                begin
-                    # @vprintln :PBWDeformations 2 "Basis generation deg $(lpad(d, maximum(ndigits, degs))), case $(lpad(sum_case, ndigits(n_sum_cases)))/$(n_sum_cases), $(lpad(floor(Int, 100*counter / len), 3))%, $(lpad(counter, ndigits(len)))/$(len)"
-                    _basis_elem = arcdiag_to_deformationmap(LieType, diag, sp, W, case)
-                    basis_elem = matrix(proj_to_summand_l) * _basis_elem * transpose(matrix(proj_to_summand_r))
-                    if i_l != i_r
-                        basis_elem -= transpose(basis_elem)
-                    end
-                    @assert is_skew_symmetric(basis_elem)
 
-                    if !no_normalize
-                        basis_elem = normalize(basis_elem)
-                    end
-                    if haskey(extra_data, basis_elem)
-                        push!(extra_data[basis_elem], data)
-                    else
-                        extra_data[basis_elem] = Set([data])
-                    end
-                    ProgressMeter.update!(prog_meter, counter; showvalues=generate_showvalues(counter, data))
-                    basis_elem
-                end for (counter, (diag, data)) in enumerate(diag_data_iter) if should_be_used(LieType, diag, data)
-            )
+            iter =
+                data_iter |>
+                enumerate |>
+                Fix1(Iterators.filter, arg -> begin
+                    _, data = arg
+                    should_data_be_used(LieType, data, sp, W, case)
+                end) |>
+                Fix1(Iterators.map, arg -> begin
+                    counter, data = arg
+                    (counter, data, to_arc_diagram(data))
+                end) |>
+                Fix1(Iterators.filter, arg -> begin
+                    _, _, diag = arg
+                    should_diag_be_used(LieType, diag, sp, W, case)
+                end) |>
+                Fix1(
+                    Iterators.map, arg -> begin
+                        counter, data, diag = arg
+
+                        # @vprintln :PBWDeformations 2 "Basis generation deg $(lpad(d, maximum(ndigits, degs))), case $(lpad(sum_case, ndigits(n_sum_cases)))/$(n_sum_cases), $(lpad(floor(Int, 100*counter / len), 3))%, $(lpad(counter, ndigits(len)))/$(len)"
+                        _basis_elem = arcdiag_to_deformationmap(LieType, diag, sp, W, case)
+                        basis_elem = matrix(proj_to_summand_l) * _basis_elem * transpose(matrix(proj_to_summand_r))
+                        if i_l != i_r
+                            basis_elem -= transpose(basis_elem)
+                        end
+                        @assert is_skew_symmetric(basis_elem)
+
+                        if !no_normalize
+                            basis_elem = normalize(basis_elem)
+                        end
+                        if haskey(extra_data, basis_elem)
+                            push!(extra_data[basis_elem], data)
+                        else
+                            extra_data[basis_elem] = Set([data])
+                        end
+                        ProgressMeter.update!(prog_meter, counter; showvalues=generate_showvalues(counter, data))
+                        basis_elem
+                    end,
+                )
             # push!(lens, len)
             # push!(iters, iter)
             collected = collect(iter)
@@ -160,6 +198,18 @@ function arc_diag_based_basis_iteration(
     iter = Iterators.flatten(iters)
 
     return iter, len
+end
+
+function to_arc_diagram(diag::ArcDiagram)
+    return diag
+end
+
+function to_arc_diagram(data::Tuple)
+    return arc_diagram(data...)
+end
+
+function to_arc_diagram(data)
+    return arc_diagram(data)
 end
 
 

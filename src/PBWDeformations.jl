@@ -23,6 +23,9 @@ using Oscar.LieAlgebras: multicombinations
 using Oscar.LieAlgebras: permutations
 using Oscar.LieAlgebras: permutations_with_sign
 
+using Base: Fix1
+using Base: Fix2
+
 
 import Oscar.AbstractAlgebra: change_base_ring
 import Oscar.AbstractAlgebra: coefficient_ring
@@ -120,7 +123,6 @@ export symmetric_power_obj
 export symmetrize
 export tensor_power
 export tensor_power_obj
-export to_arcdiag
 export underlying_algebra
 export upper_vertex, is_upper_vertex
 export upper_vertices

@@ -1,3 +1,5 @@
+const PseudographDeformBasisDataT = Tuple{PseudographLabelled{Int}, Partition{Int}}
+
 """
 Concrete subtype of [`DeformBasis`](@ref).
 Each element of the basis is induced by a pseudograph with two vertices and
@@ -8,7 +10,7 @@ This process is due to [FM22](@cite).
 struct PseudographDeformBasis{T <: SmashProductLieElem} <: DeformBasis{T}
     len::Int
     iter
-    extra_data::Dict{DeformationMap{T}, Set{Tuple{PseudographLabelled{Int}, Partition{Int}}}}
+    extra_data::Dict{DeformationMap{T}, Set{PseudographDeformBasisDataT}}
     no_normalize::Bool
 
     function PseudographDeformBasis(
@@ -30,9 +32,9 @@ struct PseudographDeformBasis{T <: SmashProductLieElem} <: DeformBasis{T}
         degs::AbstractVector{Int};
         no_normalize::Bool=false,
     ) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}}
-        extra_data = Dict{DeformationMap{elem_type(sp)}, Set{Tuple{PseudographLabelled{Int}, Partition{Int}}}}()
+        extra_data = Dict{DeformationMap{elem_type(sp)}, Set{PseudographDeformBasisDataT}}()
 
-        function diag_data_iter_and_len(LieType::SO, W::LieAlgebraModule, case::Symbol, d::Int)
+        function data_iter_and_len(LieType::SO, W::LieAlgebraModule, case::Symbol, d::Int)
             @req case == :exterior_power "Not implemented for direct sums"
             fl, V, e = _is_exterior_power(W)
             @assert fl
@@ -45,14 +47,18 @@ struct PseudographDeformBasis{T <: SmashProductLieElem} <: DeformBasis{T}
                     (pg, part)
                 end for sumpg in 0:d for pg in all_pseudographs(2, e, sumpg; upto_iso=true) for
                 part in partitions(d - sumpg)
-
             )
-            diag_data_iter = ((to_arcdiag(pg, part), (pg, part)) for (pg, part) in pg_part_iter)
             len = length(pg_part_iter) # TODO: implement without collect
-            return diag_data_iter, len::Int
+            return pg_part_iter, len::Int
         end
 
-        function should_be_used(LieType::SO, diag::ArcDiagram, data::Tuple{PseudographLabelled{Int}, Partition{Int}})
+        function should_data_be_used(
+            LieType::SO,
+            data::PseudographDeformBasisDataT,
+            ::SmashProductLie{C, LieC, LieT},
+            ::LieAlgebraModule,
+            ::Symbol,
+        )
             pg, part = data
 
             # length n lower cycles can be reversed in n lower flips of sgn -1 => odd n has sgn -1 in stabilizer
@@ -75,8 +81,8 @@ struct PseudographDeformBasis{T <: SmashProductLieElem} <: DeformBasis{T}
             sp,
             degs,
             extra_data,
-            diag_data_iter_and_len,
-            should_be_used;
+            data_iter_and_len;
+            should_data_be_used,
             no_normalize,
         )
 
