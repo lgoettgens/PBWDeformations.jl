@@ -65,6 +65,7 @@ export ArcDiagramUndirected
 export ArcDiagramVertex
 export DeformationMap
 export DeformBasis
+export GlnGraphDeformBasis
 export LieAlgebra, LieAlgebraElem
 export LieAlgebraModule, LieAlgebraModuleElem
 export LinearLieAlgebra, LinearLieAlgebraElem
@@ -151,9 +152,11 @@ include("SmashProductLieDeform.jl")
 include("SmashProductPBWDeformLie.jl")
 include("ArcDiagram.jl")
 include("Pseudograph.jl")
+include("GlnGraph.jl")
 
 include("DeformationBases/ArcDiagDeformBasis.jl")
 include("DeformationBases/PseudographDeformBasis.jl")
+include("DeformationBases/GlnGraphDeformBasis.jl")
 include("DeformationBases/StdDeformBasis.jl")
 
 end
