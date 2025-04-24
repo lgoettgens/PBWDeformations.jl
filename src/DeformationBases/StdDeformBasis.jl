@@ -12,7 +12,7 @@ struct StdDeformBasis{T <: SmashProductLieElem} <: DeformBasis{T}
 
     function StdDeformBasis(
         sp::SmashProductLie{C, LieC, LieT},
-        degs::AbstractVector{Int}
+        degs::AbstractVector{Int},
     ) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}}
         dimL = dim(base_lie_algebra(sp))
         dimV = dim(base_module(sp))

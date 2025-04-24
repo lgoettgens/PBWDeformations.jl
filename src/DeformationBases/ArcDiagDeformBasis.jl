@@ -9,7 +9,7 @@ This process is due to [FM22](@cite).
 struct ArcDiagDeformBasis{T <: SmashProductLieElem} <: DeformBasis{T}
     len::Int
     iter
-    extra_data::Dict{DeformationMap{T}, Set{ArcDiagDeformBasisDataT}}
+    extra_data::Dict{DeformationMap{T}, Set{Tuple{Tuple{Int, Int}, ArcDiagDeformBasisDataT}}}
     no_normalize::Bool
 
     function ArcDiagDeformBasis(
@@ -31,7 +31,7 @@ struct ArcDiagDeformBasis{T <: SmashProductLieElem} <: DeformBasis{T}
         degs::AbstractVector{Int};
         no_normalize::Bool=false,
     ) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}}
-        extra_data = Dict{DeformationMap{elem_type(sp)}, Set{ArcDiagDeformBasisDataT}}()
+        extra_data = Dict{DeformationMap{elem_type(sp)}, Set{Tuple{Tuple{Int, Int}, ArcDiagDeformBasisDataT}}}()
 
         function data_iter_and_len(LieType::Union{SO, GL}, W::LieAlgebraModule, case::Symbol, d::Int)
             diag_iter = pbw_arc_diagrams(LieType, W, d)
@@ -178,9 +178,9 @@ function arc_diag_based_basis_iteration(
                             basis_elem = normalize(basis_elem)
                         end
                         if haskey(extra_data, basis_elem)
-                            push!(extra_data[basis_elem], data)
+                            push!(extra_data[basis_elem], ((i_l, i_r), data))
                         else
-                            extra_data[basis_elem] = Set([data])
+                            extra_data[basis_elem] = Set([((i_l, i_r), data)])
                         end
                         ProgressMeter.update!(prog_meter, counter; showvalues=generate_showvalues(counter, data))
                         basis_elem
