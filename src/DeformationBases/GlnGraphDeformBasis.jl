@@ -33,7 +33,20 @@ struct GlnGraphDeformBasis{T <: SmashProductLieElem} <: DeformBasis{T}
 
         function data_iter_and_len(LieType::GL, W::LieAlgebraModule, case::Symbol, d::Int)
             parity_verts = arc_diagram_upper_points(LieType, W)
-            n_left_verts = n_right_verts = div(length(parity_verts), 2) # FIXME
+            if case == :exterior_power
+                fl, Wbase, k = _is_exterior_power(W)
+                @assert fl
+                @assert k == 2
+                n_left_verts = n_right_verts = arc_diagram_num_upper_points(LieType, Wbase)
+            elseif case == :tensor_product
+                fl, W_factors = _is_tensor_product(W)
+                @assert fl
+                @assert length(W_factors) == 2
+                n_left_verts, n_right_verts = arc_diagram_num_upper_points.(Ref(LieType), W_factors)
+            else
+                error("Unknown case")
+            end
+            @assert length(parity_verts) == n_left_verts + n_right_verts
 
             gln_graph_iter_len = number_of_gln_graphs(n_left_verts, n_right_verts, parity_verts)
             gln_graph_iter = all_gln_graphs(n_left_verts, n_right_verts, parity_verts)
