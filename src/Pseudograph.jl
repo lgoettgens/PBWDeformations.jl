@@ -81,7 +81,7 @@ function all_pseudographs(nv::Int, degree::Int, sumtotal::Int; upto_iso::Bool=fa
     return result
 end
 
-function to_arcdiag(pg::PseudographLabelled{Int}, part::Partition{Int}=Partition(Int[]))
+function arc_diagram(pg::PseudographLabelled{Int}, part::Partition{Int}=Partition(Int[]))
     @req n_vertices(pg) == 2 "Only implemented for 2 vertices"
 
     n_upper_verts = 2 * n_edges(pg)

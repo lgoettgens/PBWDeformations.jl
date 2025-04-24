@@ -123,7 +123,6 @@ export symmetric_power_obj
 export symmetrize
 export tensor_power
 export tensor_power_obj
-export to_arcdiag
 export underlying_algebra
 export upper_vertex, is_upper_vertex
 export upper_vertices

@@ -76,24 +76,12 @@ struct PseudographDeformBasis{T <: SmashProductLieElem} <: DeformBasis{T}
             return true
         end
 
-        function data_to_diag(
-            LieType::SO,
-            data::PseudographDeformBasisDataT,
-            ::SmashProductLie{C, LieC, LieT},
-            ::LieAlgebraModule,
-            ::Symbol,
-        )
-            pg, part = data
-            return to_arcdiag(pg, part)
-        end
-
         iter1, len1 = arc_diag_based_basis_iteration(
             LieType,
             sp,
             degs,
             extra_data,
-            data_iter_and_len,
-            data_to_diag;
+            data_iter_and_len;
             should_data_be_used,
             no_normalize,
         )

@@ -50,23 +50,12 @@ struct ArcDiagDeformBasis{T <: SmashProductLieElem} <: DeformBasis{T}
             is_crossing_free(diag; part=:lower)
         end
 
-        function data_to_diag(
-            LieType::Union{SO, GL},
-            data::ArcDiagDeformBasisDataT,
-            ::SmashProductLie{C, LieC, LieT},
-            ::LieAlgebraModule,
-            ::Symbol,
-        )
-            return data
-        end
-
         iter1, len1 = arc_diag_based_basis_iteration(
             LieType,
             sp,
             degs,
             extra_data,
-            data_iter_and_len,
-            data_to_diag;
+            data_iter_and_len;
             should_data_be_used,
             no_normalize,
         )
@@ -96,8 +85,7 @@ function arc_diag_based_basis_iteration(
     sp::SmashProductLie{C, LieC, LieT},
     degs::AbstractVector{Int},
     extra_data::Dict{DeformationMap{SmashProductLieElem{C, LieC, LieT}}, Set{ExtraDataT}},
-    data_iter_and_len::Function,
-    data_to_diag::Function;
+    data_iter_and_len::Function;
     should_data_be_used::Function=(
         ::Union{SO, GL},
         ::Any,
@@ -168,7 +156,7 @@ function arc_diag_based_basis_iteration(
                 end) |>
                 Fix1(Iterators.map, arg -> begin
                     counter, data = arg
-                    (counter, data, data_to_diag(LieType, data, sp, W, case))
+                    (counter, data, to_arc_diagram(data))
                 end) |>
                 Fix1(Iterators.filter, arg -> begin
                     _, _, diag = arg
@@ -210,6 +198,18 @@ function arc_diag_based_basis_iteration(
     iter = Iterators.flatten(iters)
 
     return iter, len
+end
+
+function to_arc_diagram(diag::ArcDiagram)
+    return diag
+end
+
+function to_arc_diagram(data::Tuple)
+    return arc_diagram(data...)
+end
+
+function to_arc_diagram(data)
+    return arc_diagram(data)
 end
 
 
