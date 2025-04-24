@@ -1,3 +1,5 @@
+const ArcDiagDeformBasisDataT = ArcDiagram
+
 """
 Concrete subtype of [`DeformBasis`](@ref).
 Each element of the basis is induced by an arc diagram of a suitable size,
@@ -7,7 +9,7 @@ This process is due to [FM22](@cite).
 struct ArcDiagDeformBasis{T <: SmashProductLieElem} <: DeformBasis{T}
     len::Int
     iter
-    extra_data::Dict{DeformationMap{T}, Set{ArcDiagram}}
+    extra_data::Dict{DeformationMap{T}, Set{ArcDiagDeformBasisDataT}}
     no_normalize::Bool
 
     function ArcDiagDeformBasis(
@@ -16,7 +18,7 @@ struct ArcDiagDeformBasis{T <: SmashProductLieElem} <: DeformBasis{T}
         no_normalize::Bool=false,
     ) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}}
         LieType = Val(get_attribute(base_lie_algebra(sp), :type, nothing)::Union{Nothing, Symbol})
-        @req LieType isa Union{SO,GL} "Only works for so_n and gl_n."
+        @req LieType isa Union{SO, GL} "Only works for so_n and gl_n."
         if LieType isa SO && has_attribute(base_lie_algebra(sp), :form)
             @req isone(get_attribute(base_lie_algebra(sp), :form)::dense_matrix_type(C)) "Only works for so_n represented as skew-symmetric matrices."
         end
@@ -29,18 +31,33 @@ struct ArcDiagDeformBasis{T <: SmashProductLieElem} <: DeformBasis{T}
         degs::AbstractVector{Int};
         no_normalize::Bool=false,
     ) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}}
-        extra_data = Dict{DeformationMap{elem_type(sp)}, Set{ArcDiagram}}()
+        extra_data = Dict{DeformationMap{elem_type(sp)}, Set{ArcDiagDeformBasisDataT}}()
 
-        function diag_data_iter_and_len(LieType::Union{SO, GL}, W::LieAlgebraModule, case::Symbol, d::Int)
+        function data_iter_and_len(LieType::Union{SO, GL}, W::LieAlgebraModule, case::Symbol, d::Int)
             diag_iter = pbw_arc_diagrams(LieType, W, d)
-            diag_data_iter = ((diag, diag) for diag in diag_iter)
             len = length(diag_iter)
-            return diag_data_iter, len::Int
+            return diag_iter, len::Int
         end
 
-        function should_be_used(LieType::Union{SO, GL}, diag::ArcDiagram, data::ArcDiagram)
-            @assert diag === data
-            is_crossing_free(data; part=:lower)
+        function should_data_be_used(
+            LieType::Union{SO, GL},
+            data::ArcDiagDeformBasisDataT,
+            ::SmashProductLie{C, LieC, LieT},
+            ::LieAlgebraModule,
+            ::Symbol,
+        )
+            diag = data
+            is_crossing_free(diag; part=:lower)
+        end
+
+        function data_to_diag(
+            LieType::Union{SO, GL},
+            data::ArcDiagDeformBasisDataT,
+            ::SmashProductLie{C, LieC, LieT},
+            ::LieAlgebraModule,
+            ::Symbol,
+        )
+            return data
         end
 
         iter1, len1 = arc_diag_based_basis_iteration(
@@ -48,8 +65,9 @@ struct ArcDiagDeformBasis{T <: SmashProductLieElem} <: DeformBasis{T}
             sp,
             degs,
             extra_data,
-            diag_data_iter_and_len,
-            should_be_used;
+            data_iter_and_len,
+            data_to_diag;
+            should_data_be_used,
             no_normalize,
         )
 
