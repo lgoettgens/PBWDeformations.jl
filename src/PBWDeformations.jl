@@ -75,6 +75,7 @@ export SmashProductLieDeform, SmashProductLieDeformElem
 export StdDeformBasis
 
 export abstract_module
+export acting_group_with_sgn
 export all_arc_diagrams
 export all_pbwdeformations
 export all_pseudographs

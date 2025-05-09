@@ -228,11 +228,7 @@ arc_diagram_type(::SO) = Undirected
 arc_diagram_type(::GL) = Directed
 
 
-function is_tensor_generator(::SO, V::LieAlgebraModule)
-    return _is_standard_module(V)
-end
-
-function is_tensor_generator(::GL, V::LieAlgebraModule)
+function is_tensor_generator(V::LieAlgebraModule)
     if _is_standard_module(V)
         return true
     end
@@ -278,7 +274,7 @@ end
 
 
 function arc_diagram_upper_iss(T::Union{SO, GL}, V::LieAlgebraModule)
-    if is_tensor_generator(T, V)
+    if is_tensor_generator(V)
         return Vector{Int}[]
     elseif ((fl, inner_mods) = _is_tensor_product(V); fl)
         offset = 0
@@ -289,7 +285,7 @@ function arc_diagram_upper_iss(T::Union{SO, GL}, V::LieAlgebraModule)
         end
         return iss
     elseif ((fl, inner_mod, power) = is_power_with_data(V); fl)
-        if is_tensor_generator(T, inner_mod)
+        if is_tensor_generator(inner_mod)
             if _is_exterior_power(V)[1]
                 return [collect(1:power)]
             else
@@ -364,7 +360,7 @@ function arc_diagram_lower_pair_to_L(::GL, dim_stdmod_V::Int)
 end
 
 function arc_diagram_label_iterator(T::Union{SO, GL}, V::LieAlgebraModule, base_labels::AbstractVector{Int})
-    if is_tensor_generator(T, V)
+    if is_tensor_generator(V)
         return [[l] for l in base_labels]
     elseif ((fl, inner_mods) = _is_tensor_product(V); fl)
         return ProductIterator([
@@ -408,7 +404,7 @@ end
 
 
 function arc_diagram_label_permutations(T::Union{SO, GL}, V::LieAlgebraModule, label::AbstractVector{Int})
-    if is_tensor_generator(T, V)
+    if is_tensor_generator(V)
         @req length(label) == 1 "Number of labels mismatch."
         return [(label, 1)]
     elseif ((fl, inner_mods) = _is_tensor_product(V); fl)
