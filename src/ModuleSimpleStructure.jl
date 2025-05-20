@@ -51,7 +51,7 @@ function _isomorphic_module__is_dual(V::T, B::T) where {T <: LieAlgebraModule}
 end
 
 function _isomorphic_module__is_direct_sum(V::T, Bs::Vector{T}) where {T <: LieAlgebraModule}
-    Cs_with_hom = isomorphic_module_with_simple_structure.(Bs)
+    Cs_with_hom = map(isomorphic_module_with_simple_structure, Bs)
     Csum = direct_sum(first.(Cs_with_hom)::Vector{T}...)
     V_to_Csum = hom_direct_sum(V, Csum, last.(Cs_with_hom)::Vector{LieAlgebraModuleHom{T, T}})
     Ds = T[]
@@ -75,7 +75,7 @@ function _isomorphic_module__is_direct_sum(V::T, Bs::Vector{T}) where {T <: LieA
 end
 
 function _isomorphic_module__is_tensor_product(V::T, Bs::Vector{T}) where {T <: LieAlgebraModule}
-    Cs_with_hom = isomorphic_module_with_simple_structure.(Bs)
+    Cs_with_hom = map(isomorphic_module_with_simple_structure, Bs)
     Cprod = tensor_product(first.(Cs_with_hom)::Vector{T}...)
     V_to_Cprod = hom_tensor(V, Cprod, last.(Cs_with_hom)::Vector{LieAlgebraModuleHom{T, T}})
     Ds = T[]
@@ -115,7 +115,7 @@ function _isomorphic_module__is_tensor_product(V::T, Bs::Vector{T}) where {T <: 
         )
             F = tensor_product([E_summands[i] for ((_, E_summands), i) in zip(Es_with_summands, summ_comb)]...)
             for (i, bi) in enumerate(basis(U))
-                pure_factors = inv_pure(bi)
+                pure_factors = inv_pure(bi)::Tuple{Vararg{elem_type(T)}}
                 dsmap = [
                     begin
                         local j, pr_f
