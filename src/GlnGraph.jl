@@ -47,7 +47,7 @@ function all_gln_graphs(n_left_verts::Int, n_right_verts::Int, parity_verts::Bit
     return (
         begin
             edges = collect(zip(out_indices, in_indices_permuted))
-            GlnGraph(n_left_verts, n_right_verts, parity_verts, edges)
+            GlnGraph(n_left_verts, n_right_verts, parity_verts, edges; check=false, sort=false)
         end for in_indices_permuted in permutations(in_indices)
     )
 end
