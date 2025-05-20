@@ -54,9 +54,34 @@ function Base.hash(g::GlnGraph, h::UInt)
     return h
 end
 
-function n_edges(g::GlnGraph)
-    return length(g.edges)
+function _lt(g1::GlnGraph, g2::GlnGraph)
+    @req g1.n_left_verts == g2.n_left_verts && g1.n_right_verts == g2.n_right_verts "number of vertices mismatch"
+    @req g1.parity_verts == g2.parity_verts "parity mismatch"
+    return g1.edges < g2.edges
 end
+
+################################################################################
+#
+# Group actions
+#
+################################################################################
+
+function gset_by_type(G::PermGroup, Omega, ::Type{GlnGraph}; closed::Bool = false)
+    return GSetByElements(G, ^, Omega; closed = closed, check = false)
+end
+
+function Base.:^(g::GlnGraph, p::PermGroupElem)
+    @req length(g.parity_verts) == degree(p) "permutation degree mismatch"
+    @req g.parity_verts == permuted(g.parity_verts, p) "parity is not preserved"
+    return GlnGraph(g.n_left_verts, g.n_right_verts, g.parity_verts, on_tuples.(g.edges, p); check=false, sort=true)
+end
+
+################################################################################
+#
+# Iterators
+#
+################################################################################
+
 
 function all_gln_graphs(n_left_verts::Int, n_right_verts::Int, parity_verts::BitVector)
     @req n_left_verts + n_right_verts == length(parity_verts) "number of vertices mismatch"

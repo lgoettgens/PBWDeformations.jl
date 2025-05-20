@@ -59,12 +59,29 @@ struct GlnGraphDeformBasis{T <: SmashProductLieElem} <: DeformBasis{T}
             return data_iter, len::Int
         end
 
+        function should_data_be_used(
+            LieType::GL,
+            data::GlnGraphDeformBasisDataT,
+            ::SmashProductLie{C, LieC, LieT},
+            V::LieAlgebraModule,
+            ::Symbol,
+        )
+            g, labeling, part = data
+
+            G, sgn = acting_group_with_sgn(V)
+
+            is_smallest_obj_in_orbit(g, G) || return false
+
+            return true
+        end
+
         iter1, len1 = arc_diag_based_basis_iteration(
             LieType,
             sp,
             degs,
             extra_data,
             data_iter_and_len;
+            should_data_be_used,
             no_normalize,
         )
 

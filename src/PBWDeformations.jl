@@ -11,6 +11,7 @@ using Oscar
 using Oscar.AbstractAlgebra: ProductIterator
 
 using Oscar: IntegerUnion
+using Oscar: GSetByElements
 
 using Oscar: _is_dual
 using Oscar: _is_direct_sum
@@ -41,6 +42,7 @@ import Oscar: base_lie_algebra
 import Oscar: comm
 import Oscar: data
 import Oscar: edges
+import Oscar: gset_by_type
 import Oscar: n_edges
 import Oscar: neighbors
 import Oscar: n_vertices
