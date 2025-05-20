@@ -4,6 +4,8 @@ using Preferences: Preferences, @load_preference, @set_preferences!
 
 import ProgressMeter
 
+SHOW_PROGRESS_BARS() = parse(Bool, get(ENV, "SHOW_PROGRESS_BARS", "true"))
+
 using Oscar
 
 using Oscar.AbstractAlgebra: ProductIterator

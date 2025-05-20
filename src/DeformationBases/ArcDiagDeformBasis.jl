@@ -142,7 +142,7 @@ function arc_diag_based_basis_iteration(
             prog_meter = ProgressMeter.Progress(
                 len;
                 output=stderr,
-                enabled=true,
+                enabled=SHOW_PROGRESS_BARS(),
                 desc="Basis generation: deg $d, case $(sum_case)/$(n_sum_cases)",
             )
             generate_showvalues(counter, data) = () -> [("iteration", (counter, data))]
