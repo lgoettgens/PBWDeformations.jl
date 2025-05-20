@@ -31,6 +31,29 @@ struct GlnGraph
     end
 end
 
+function n_vertices(g::GlnGraph)
+    return g.n_left_verts + g.n_right_verts
+
+end
+
+function n_edges(g::GlnGraph)
+    return length(g.edges)
+end
+
+function Base.:(==)(g1::GlnGraph, g2::GlnGraph)
+    @req g1.n_left_verts == g2.n_left_verts && g1.n_right_verts == g2.n_right_verts "number of vertices mismatch"
+    @req g1.parity_verts == g2.parity_verts "parity mismatch"
+    return g1.edges == g2.edges
+end
+
+function Base.hash(g::GlnGraph, h::UInt)
+    h = hash(g.n_left_verts, h)
+    h = hash(g.n_right_verts, h)
+    h = hash(g.parity_verts, h)
+    h = hash(g.edges, h)
+    return h
+end
+
 function n_edges(g::GlnGraph)
     return length(g.edges)
 end
