@@ -228,11 +228,7 @@ arc_diagram_type(::SO) = Undirected
 arc_diagram_type(::GL) = Directed
 
 
-function is_tensor_generator(::SO, V::LieAlgebraModule)
-    return _is_standard_module(V)
-end
-
-function is_tensor_generator(::GL, V::LieAlgebraModule)
+function is_tensor_generator(V::LieAlgebraModule)
     if _is_standard_module(V)
         return true
     end
@@ -278,7 +274,7 @@ end
 
 
 function arc_diagram_upper_iss(T::Union{SO, GL}, V::LieAlgebraModule)
-    if is_tensor_generator(T, V)
+    if is_tensor_generator(V)
         return Vector{Int}[]
     elseif ((fl, inner_mods) = _is_tensor_product(V); fl)
         offset = 0
@@ -289,7 +285,7 @@ function arc_diagram_upper_iss(T::Union{SO, GL}, V::LieAlgebraModule)
         end
         return iss
     elseif ((fl, inner_mod, power) = is_power_with_data(V); fl)
-        if is_tensor_generator(T, inner_mod)
+        if is_tensor_generator(inner_mod)
             if _is_exterior_power(V)[1]
                 return [collect(1:power)]
             else
@@ -364,7 +360,7 @@ function arc_diagram_lower_pair_to_L(::GL, dim_stdmod_V::Int)
 end
 
 function arc_diagram_label_iterator(T::Union{SO, GL}, V::LieAlgebraModule, base_labels::AbstractVector{Int})
-    if is_tensor_generator(T, V)
+    if is_tensor_generator(V)
         return [[l] for l in base_labels]
     elseif ((fl, inner_mods) = _is_tensor_product(V); fl)
         return ProductIterator([
@@ -406,72 +402,11 @@ function basis_index_mapping(V::LieAlgebraModule)
     end
 end
 
-
 function arc_diagram_label_permutations(T::Union{SO, GL}, V::LieAlgebraModule, label::AbstractVector{Int})
-    if is_tensor_generator(T, V)
-        @req length(label) == 1 "Number of labels mismatch."
-        return [(label, 1)]
-    elseif ((fl, inner_mods) = _is_tensor_product(V); fl)
-        @req length(label) == sum(mod -> arc_diagram_num_upper_points(T, mod), inner_mods) "Number of labels mismatch."
-        return [
-            begin
-                inner_label = reduce(vcat, first.(inner_iter))
-                inner_sign = prod(last.(inner_iter))
-                (inner_label, inner_sign)
-            end for inner_iter in ProductIterator([
-                arc_diagram_label_permutations(
-                    T,
-                    inner_mod,
-                    label[sum(mod -> arc_diagram_num_upper_points(T, mod), inner_mods[1:i-1]; init=0)+1:sum(
-                        mod -> arc_diagram_num_upper_points(T, mod),
-                        inner_mods[1:i];
-                        init=0,
-                    )],
-                ) for (i, inner_mod) in enumerate(inner_mods)
-            ])
-        ]
-    elseif ((fl, inner_mod, power) = _is_exterior_power(V); fl)
-        m = arc_diagram_num_upper_points(T, inner_mod)
-        @req length(label) == m * power "Number of labels mismatch."
-        return [
-            begin
-                inner_label = reduce(vcat, first.(inner_iter))
-                inner_sign = prod(last.(inner_iter))
-                (inner_label, inner_sign * outer_sign)
-            end for (outer_perm, outer_sign) in permutations_with_sign(1:power) for inner_iter in ProductIterator([
-                arc_diagram_label_permutations(T, inner_mod, label[(outer_perm[i]-1)*m+1:outer_perm[i]*m]) for
-                i in 1:power
-            ])
-        ]
-    elseif ((fl, inner_mod, power) = _is_symmetric_power(V); fl)
-        m = arc_diagram_num_upper_points(T, inner_mod)
-        @req length(label) == m * power "Number of labels mismatch."
-        return [
-            begin
-                inner_label = reduce(vcat, first.(inner_iter))
-                inner_sign = prod(last.(inner_iter))
-                (inner_label, inner_sign)
-            end for outer_perm in permutations(1:power) for inner_iter in ProductIterator([
-                arc_diagram_label_permutations(T, inner_mod, label[(outer_perm[i]-1)*m+1:outer_perm[i]*m]) for
-                i in 1:power
-            ])
-        ]
-    elseif ((fl, inner_mod, power) = _is_tensor_power(V); fl)
-        m = arc_diagram_num_upper_points(T, inner_mod)
-        @req length(label) == m * power "Number of labels mismatch."
-        return [
-            begin
-                inner_label = reduce(vcat, first.(inner_iter))
-                inner_sign = prod(last.(inner_iter))
-                (inner_label, inner_sign)
-            end for inner_iter in
-            ProductIterator([arc_diagram_label_permutations(T, inner_mod, label[(i-1)*m+1:i*m]) for i in 1:power])
-        ]
-    else
-        error("Not implemented.")
-    end
+    G, h = acting_group_with_sgn(V)
+    @req length(label) == degree(G) "Number of labels mismatch."
+    return [(permuted(label, g), sign(h(g))) for g in G]
 end
-
 
 function arcdiag_is_lower_pair_label_bad(::SO, labeled_diag::Vector{Int}, k::Int)
     left_k = k % 2 == 1 ? k : k - 1

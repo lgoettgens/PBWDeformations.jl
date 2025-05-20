@@ -75,6 +75,7 @@ export SmashProductLieDeform, SmashProductLieDeformElem
 export StdDeformBasis
 
 export abstract_module
+export acting_group_with_sgn
 export all_arc_diagrams
 export all_pbwdeformations
 export all_pseudographs
@@ -152,6 +153,7 @@ include("SmashProductPBWDeformLie.jl")
 include("ArcDiagram.jl")
 include("Pseudograph.jl")
 
+include("DeformationBases/ActingGroup.jl")
 include("DeformationBases/ArcDiagDeformBasis.jl")
 include("DeformationBases/PseudographDeformBasis.jl")
 include("DeformationBases/StdDeformBasis.jl")
