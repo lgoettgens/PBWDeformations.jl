@@ -115,7 +115,7 @@ function _isomorphic_module__is_tensor_product(V::T, Bs::Vector{T}) where {T <: 
         )
             F = tensor_product([E_summands[i] for ((_, E_summands), i) in zip(Es_with_summands, summ_comb)]...)
             for (i, bi) in enumerate(basis(U))
-                pure_factors = inv_pure(bi)::Tuple{Vararg{T}}
+                pure_factors = inv_pure(bi)::Tuple{Vararg{elem_type(T)}}
                 dsmap = [
                     begin
                         local j, pr_f
