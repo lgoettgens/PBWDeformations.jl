@@ -9,6 +9,7 @@ SHOW_PROGRESS_BARS() = parse(Bool, get(ENV, "SHOW_PROGRESS_BARS", "true"))
 using Oscar
 
 using Oscar.AbstractAlgebra: ProductIterator
+using Oscar.AbstractAlgebra: WeakKeyIdDict
 
 using Oscar: IntegerUnion
 using Oscar: GSetByElements

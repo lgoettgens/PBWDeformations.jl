@@ -41,8 +41,9 @@ function n_edges(g::GlnGraph)
 end
 
 function Base.:(==)(g1::GlnGraph, g2::GlnGraph)
-    @req g1.n_left_verts == g2.n_left_verts && g1.n_right_verts == g2.n_right_verts "number of vertices mismatch"
-    @req g1.parity_verts == g2.parity_verts "parity mismatch"
+    g1.n_left_verts == g2.n_left_verts || return false
+    g1.n_right_verts == g2.n_right_verts || return false
+    g1.parity_verts == g2.parity_verts || return false
     return g1.edges == g2.edges
 end
 

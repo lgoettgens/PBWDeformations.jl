@@ -1,4 +1,4 @@
-const ActingGroupCache = Base.WeakKeyDict{LieAlgebraModule, Tuple{PermGroup, GAPGroupHomomorphism{PermGroup, PermGroup}}}()
+const ActingGroupCache = WeakKeyIdDict{LieAlgebraModule, Tuple{PermGroup, GAPGroupHomomorphism{PermGroup, PermGroup}}}()
 
 function acting_group_with_sgn(V::LieAlgebraModule)
     return get!(ActingGroupCache, V) do
