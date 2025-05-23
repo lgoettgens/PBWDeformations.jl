@@ -27,6 +27,14 @@ if !hasmethod(Oscar.permuted, (BitVector, PermGroupElem))
     end
 end
 
+if !isdefined(Oscar, :induced_action)
+    function induced_action(actfun::Function, phi::Map{<:PermGroup, <:PermGroup})
+        return function (omega, g)
+            return actfun(omega, phi(g))
+        end
+    end
+end
+
 function is_smallest_obj_in_orbit(g::T, G::PermGroup; lt::Function=_lt) where T
     is_fixpoint = true
     for p in gens(G)

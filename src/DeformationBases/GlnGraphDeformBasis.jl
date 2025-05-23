@@ -59,6 +59,8 @@ struct GlnGraphDeformBasis{T <: SmashProductLieElem} <: DeformBasis{T}
             return data_iter, len::Int
         end
 
+        should_graph_labeling_be_used_cache = Dict{Tuple{GlnGraph, Vector{Int}}, Bool}()
+
         function should_data_be_used(
             LieType::GL,
             data::GlnGraphDeformBasisDataT,
@@ -68,11 +70,31 @@ struct GlnGraphDeformBasis{T <: SmashProductLieElem} <: DeformBasis{T}
         )
             g, labeling, part = data
 
-            G, sgn = acting_group_with_sgn(V)
+            return get!(should_graph_labeling_be_used_cache, (g, labeling)) do
+                G, sgn = acting_group_with_sgn(V)
 
-            is_smallest_obj_in_orbit(g, G) || return false
+                g_orb = orbit(G, g)
+                # graph should be minimal in its orbit
+                any(g2 -> _lt(g2, g), g_orb) && return false
 
-            return true
+                # restrict action to stabilizer of the graph to examine action on the labeling
+                g_stab, _ = stabilizer(g_orb)
+                is_trivial(g_stab) && return true # nothing to do
+
+                permute_edge_action = action_homomorphism(gset(g_stab, findall(g.parity_verts); closed=true))
+                labeling_orb = orbit(g_stab, induced_action(permuted, permute_edge_action), labeling)
+
+                # labeling should be maximal in its orbit
+                any(>(labeling), labeling_orb) && return false
+
+                labeling_stab, _ = stabilizer(labeling_orb)
+
+                # signed orbit contains element twice with opposite signs
+                is_trivial(image(sgn, labeling_stab)[1]) || return false
+
+                # no criteria left to check
+                return true
+            end
         end
 
         iter1, len1 = arc_diag_based_basis_iteration(
@@ -84,6 +106,8 @@ struct GlnGraphDeformBasis{T <: SmashProductLieElem} <: DeformBasis{T}
             should_data_be_used,
             no_normalize,
         )
+
+        empty!(should_graph_labeling_be_used_cache)
 
         if no_normalize
             return new{elem_type(sp)}(len1, iter1, extra_data, no_normalize)
