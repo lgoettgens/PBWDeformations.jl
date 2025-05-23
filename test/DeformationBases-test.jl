@@ -222,4 +222,157 @@
 
     end
 
+    @testset "GlnGraphDeformBasis.jl" begin
+        @testset verbose=true "compare with ArcDiagDeformBasis" begin
+            function are_bases_span_equal(sp::SmashProductLie, degs)
+                b1 = ArcDiagDeformBasis(sp, degs)
+                b2 = GlnGraphDeformBasis(sp, degs)
+                return is_span_equal(QQ, collect(b1), collect(b2))
+            end
+
+            @testset "gl_$n, V ⊕ V*" for n in 2:3
+                L = general_linear_lie_algebra(QQ, n)
+                V = direct_sum(standard_module(L), dual(standard_module(L)))
+                sp = smash_product(L, V)
+
+                @test are_bases_span_equal(sp, 0:0)
+                @test are_bases_span_equal(sp, 1:1)
+                @test are_bases_span_equal(sp, 2:2)
+                @test are_bases_span_equal(sp, 3:3)
+                n == 2 && @test are_bases_span_equal(sp, 4:4)
+            end
+
+            @testset "gl_$n, V ⊗ V*" for n in 2:3
+                L = general_linear_lie_algebra(QQ, n)
+                V = tensor_product(standard_module(L), dual(standard_module(L)))
+                sp = smash_product(L, V)
+
+                @test are_bases_span_equal(sp, 0:0)
+                @test are_bases_span_equal(sp, 1:1)
+                @test are_bases_span_equal(sp, 2:2)
+                @test are_bases_span_equal(sp, 3:3)
+            end
+
+            @testset "gl_$n, ⋀²(V ⊕ V*)" for n in 2:3
+                L = general_linear_lie_algebra(QQ, n)
+                V = exterior_power_obj(direct_sum(standard_module(L), dual(standard_module(L))), 2)
+                sp = smash_product(L, V)
+
+                @test are_bases_span_equal(sp, 0:0)
+                @test are_bases_span_equal(sp, 1:1)
+                @test are_bases_span_equal(sp, 2:2)
+                @test are_bases_span_equal(sp, 3:3)
+            end
+
+            @testset "gl_$n, ⋀³(V ⊕ V*)" for n in 2:3
+                L = general_linear_lie_algebra(QQ, n)
+                V = exterior_power_obj(direct_sum(standard_module(L), dual(standard_module(L))), 3)
+                sp = smash_product(L, V)
+
+                @test are_bases_span_equal(sp, 0:0)
+                @test are_bases_span_equal(sp, 1:1)
+                n == 2 && @test are_bases_span_equal(sp, 2:2)
+            end
+
+            @testset "gl_$n, ⋀²(V ⊗ V*)" for n in 2:2
+                L = general_linear_lie_algebra(QQ, n)
+                V = exterior_power_obj(tensor_product(standard_module(L), dual(standard_module(L))), 2)
+                sp = smash_product(L, V)
+
+                @test are_bases_span_equal(sp, 0:0)
+                @test are_bases_span_equal(sp, 1:1)
+                @test are_bases_span_equal(sp, 2:2)
+            end
+
+            @testset "gl_$n, ⋀³(V ⊗ V*)" for n in 2:2
+                L = general_linear_lie_algebra(QQ, n)
+                V = exterior_power_obj(tensor_product(standard_module(L), dual(standard_module(L))), 3)
+                sp = smash_product(L, V)
+
+                @test are_bases_span_equal(sp, 0:0)
+            end
+
+            @testset "gl_$n, S²(V ⊕ V*)" for n in 2:3
+                L = general_linear_lie_algebra(QQ, n)
+                V = symmetric_power_obj(direct_sum(standard_module(L), dual(standard_module(L))), 2)
+                sp = smash_product(L, V)
+
+                @test are_bases_span_equal(sp, 0:0)
+                @test are_bases_span_equal(sp, 1:1)
+                @test are_bases_span_equal(sp, 2:2)
+                n == 2 && @test are_bases_span_equal(sp, 3:3)
+            end
+
+            @testset "gl_$n, S³(V ⊕ V*)" for n in 2:3
+                L = general_linear_lie_algebra(QQ, n)
+                V = symmetric_power_obj(direct_sum(standard_module(L), dual(standard_module(L))), 3)
+                sp = smash_product(L, V)
+
+                @test are_bases_span_equal(sp, 0:0)
+                @test are_bases_span_equal(sp, 1:1)
+                n == 2 && @test are_bases_span_equal(sp, 2:2)
+            end
+
+            @testset "gl_$n, S²(V ⊗ V*)" for n in 2:2
+                L = general_linear_lie_algebra(QQ, n)
+                V = symmetric_power_obj(tensor_product(standard_module(L), dual(standard_module(L))), 2)
+                sp = smash_product(L, V)
+
+                @test are_bases_span_equal(sp, 0:0)
+                @test are_bases_span_equal(sp, 1:1)
+            end
+
+            @testset "gl_$n, ⋀²⋀²(V ⊕ V*)" for n in 2:2
+                L = general_linear_lie_algebra(QQ, n)
+                V = exterior_power_obj(exterior_power_obj(direct_sum(standard_module(L), dual(standard_module(L))), 2), 2)
+                sp = smash_product(L, V)
+
+                @test are_bases_span_equal(sp, 0:0)
+                @test are_bases_span_equal(sp, 1:1)
+            end
+
+            @testset "gl_$n, ⋀²V ⊕ ⋀²V*" for n in 2:4
+                L = general_linear_lie_algebra(QQ, n)
+                V = direct_sum(exterior_power_obj(standard_module(L), 2), exterior_power_obj(dual(standard_module(L)), 2))
+                sp = smash_product(L, V)
+
+                @test are_bases_span_equal(sp, 0:0)
+                @test are_bases_span_equal(sp, 1:1)
+                @test are_bases_span_equal(sp, 2:2)
+                @test are_bases_span_equal(sp, 3:3)
+            end
+
+            @testset "gl_$n, ⋀²V ⊗ ⋀²V*" for n in 2:3
+                L = general_linear_lie_algebra(QQ, n)
+                V = tensor_product(exterior_power_obj(standard_module(L), 2), exterior_power_obj(dual(standard_module(L)), 2))
+                sp = smash_product(L, V)
+
+                @test are_bases_span_equal(sp, 0:0)
+                @test are_bases_span_equal(sp, 1:1)
+                @test are_bases_span_equal(sp, 2:2)
+            end
+
+            @testset "gl_$n, S²V ⊕ S²V*" for n in 2:4
+                L = general_linear_lie_algebra(QQ, n)
+                V = direct_sum(symmetric_power_obj(standard_module(L), 2), symmetric_power_obj(dual(standard_module(L)), 2))
+                sp = smash_product(L, V)
+
+                @test are_bases_span_equal(sp, 0:0)
+                @test are_bases_span_equal(sp, 1:1)
+                @test are_bases_span_equal(sp, 2:2)
+                @test are_bases_span_equal(sp, 3:3)
+            end
+
+            @testset "gl_$n, S²V ⊗ S²V*" for n in 2:2
+                L = general_linear_lie_algebra(QQ, n)
+                V = tensor_product(symmetric_power_obj(standard_module(L), 2), symmetric_power_obj(dual(standard_module(L)), 2))
+                sp = smash_product(L, V)
+
+                @test are_bases_span_equal(sp, 0:0)
+                @test are_bases_span_equal(sp, 1:1)
+                @test are_bases_span_equal(sp, 2:2)
+            end
+        end
+
+    end
 end

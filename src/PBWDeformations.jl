@@ -9,8 +9,10 @@ SHOW_PROGRESS_BARS() = parse(Bool, get(ENV, "SHOW_PROGRESS_BARS", "true"))
 using Oscar
 
 using Oscar.AbstractAlgebra: ProductIterator
+using Oscar.AbstractAlgebra: WeakKeyIdDict
 
 using Oscar: IntegerUnion
+using Oscar: GSetByElements
 
 using Oscar: _is_dual
 using Oscar: _is_direct_sum
@@ -41,6 +43,7 @@ import Oscar: base_lie_algebra
 import Oscar: comm
 import Oscar: data
 import Oscar: edges
+import Oscar: gset_by_type
 import Oscar: n_edges
 import Oscar: neighbors
 import Oscar: n_vertices
@@ -67,6 +70,7 @@ export ArcDiagramUndirected
 export ArcDiagramVertex
 export DeformationMap
 export DeformBasis
+export GlnGraphDeformBasis
 export LieAlgebra, LieAlgebraElem
 export LieAlgebraModule, LieAlgebraModuleElem
 export LinearLieAlgebra, LinearLieAlgebraElem
@@ -154,10 +158,12 @@ include("SmashProductLieDeform.jl")
 include("SmashProductPBWDeformLie.jl")
 include("ArcDiagram.jl")
 include("Pseudograph.jl")
+include("GlnGraph.jl")
 
 include("DeformationBases/ActingGroup.jl")
 include("DeformationBases/ArcDiagDeformBasis.jl")
 include("DeformationBases/PseudographDeformBasis.jl")
+include("DeformationBases/GlnGraphDeformBasis.jl")
 include("DeformationBases/StdDeformBasis.jl")
 
 end
