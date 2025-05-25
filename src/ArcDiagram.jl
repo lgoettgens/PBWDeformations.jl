@@ -469,8 +469,8 @@ function arc_diagram(
     ::Type{Directed},
     n_upper_verts::Int,
     n_lower_verts::Int,
-    parity_upper_verts::BitVector,
-    parity_lower_verts::BitVector,
+    parity_upper_verts::Vector{Bool},
+    parity_lower_verts::Vector{Bool},
     upper_neighbors::Vector{ArcDiagramVertex},
     lower_neighbors::Vector{ArcDiagramVertex};
     check::Bool=true,
@@ -488,8 +488,8 @@ end
 
 function arc_diagram(
     ::Type{Directed},
-    parity_upper_verts::Union{BitVector, Vector{<:Number}},
-    parity_lower_verts::Union{BitVector, Vector{<:Number}},
+    parity_upper_verts::AbstractVector{<:Number},
+    parity_lower_verts::AbstractVector{<:Number},
     upper_neighbors::Vector{ArcDiagramVertex},
     lower_neighbors::Vector{ArcDiagramVertex};
     check::Bool=true,
@@ -499,8 +499,8 @@ function arc_diagram(
     return ArcDiagramDirected(
         n_upper_verts,
         n_lower_verts,
-        BitVector(parity_upper_verts),
-        BitVector(parity_lower_verts),
+        parity_upper_verts isa Vector{Bool} ? parity_upper_verts : Vector{Bool}(parity_upper_verts),
+        parity_lower_verts isa Vector{Bool} ? parity_lower_verts : Vector{Bool}(parity_lower_verts),
         upper_neighbors,
         lower_neighbors;
         check,
@@ -509,8 +509,8 @@ end
 
 function arc_diagram(
     ::Type{Directed},
-    parity_upper_verts::Union{BitVector, Vector{<:Number}},
-    parity_lower_verts::Union{BitVector, Vector{<:Number}},
+    parity_upper_verts::AbstractVector{<:Number},
+    parity_lower_verts::AbstractVector{<:Number},
     upper_neighbor_inds::Vector{Int},
     lower_neighbor_inds::Vector{Int};
     check::Bool=true,
@@ -520,8 +520,8 @@ function arc_diagram(
     return ArcDiagramDirected(
         n_upper_verts,
         n_lower_verts,
-        BitVector(parity_upper_verts),
-        BitVector(parity_lower_verts),
+        parity_upper_verts isa Vector{Bool} ? parity_upper_verts : Vector{Bool}(parity_upper_verts),
+        parity_lower_verts isa Vector{Bool} ? parity_lower_verts : Vector{Bool}(parity_lower_verts),
         upper_neighbor_inds,
         lower_neighbor_inds;
         check,
@@ -533,8 +533,8 @@ function arc_diagram(::Type{Directed}, upper::AbstractString, lower::AbstractStr
     lower = strip(lower)
     n_upper_verts = length(upper)
     n_lower_verts = length(lower)
-    parity_upper_verts = BitVector([islowercase(s) for s in upper])
-    parity_lower_verts = BitVector([isuppercase(s) for s in lower])
+    parity_upper_verts = [islowercase(s) for s in upper]
+    parity_lower_verts = [isuppercase(s) for s in lower]
 
     str_cased = upper * lower
     @req all(isletter, str_cased) "Invalid symbol."
@@ -729,11 +729,11 @@ function all_arc_diagrams(
         return ArcDiagramIterator{Directed}(ArcDiagramDirected[], 0)
     end
     rets = if n_upper_verts == 0
-        [all_arc_diagrams(Directed, BitVector([]), n_lower_verts; indep_sets, check=false)]
+        [all_arc_diagrams(Directed, Bool[], n_lower_verts; indep_sets, check=false)]
     else
         [
             all_arc_diagrams(Directed, parity_upper_verts, n_lower_verts; indep_sets, check=false) for
-            parity_upper_verts in Iterators.map(BitVector, ProductIterator([false, true], n_upper_verts))
+            parity_upper_verts in ProductIterator([false, true], n_upper_verts)
         ]
     end
     iter = Iterators.flatten(rets)
@@ -743,12 +743,12 @@ end
 
 function all_arc_diagrams(
     ::Type{Directed},
-    parity_upper_verts::Union{BitVector, Vector{<:Number}},
+    parity_upper_verts_::AbstractVector{<:Number},
     n_lower_verts::Int;
     indep_sets::AbstractVector{<:AbstractVector{Int}}=Vector{Int}[],
     check::Bool=true,
 )
-    parity_upper_verts = BitVector(parity_upper_verts)
+    parity_upper_verts = parity_upper_verts_ isa Vector{Bool} ? parity_upper_verts_ : Vector{Bool}(parity_upper_verts_)
     n_upper_verts = length(parity_upper_verts)
     if check
         for is in indep_sets
@@ -762,11 +762,11 @@ function all_arc_diagrams(
         return ArcDiagramIterator{Directed}(ArcDiagramDirected[], 0)
     end
     rets = if n_lower_verts == 0
-        [all_arc_diagrams(Directed, parity_upper_verts, BitVector([]); indep_sets, check=false)]
+        [all_arc_diagrams(Directed, parity_upper_verts, Bool[]; indep_sets, check=false)]
     else
         [
             all_arc_diagrams(Directed, parity_upper_verts, parity_lower_verts; indep_sets, check=false) for
-            parity_lower_verts in Iterators.map(BitVector, ProductIterator([false, true], n_lower_verts)) if
+            parity_lower_verts in ProductIterator([false, true], n_lower_verts) if
             parity_diff(parity_upper_verts) == parity_diff(parity_lower_verts)
         ]
     end
@@ -777,13 +777,13 @@ end
 
 function all_arc_diagrams(
     ::Type{Directed},
-    parity_upper_verts::Union{BitVector, Vector{<:Number}},
-    parity_lower_verts::Union{BitVector, Vector{<:Number}};
+    parity_upper_verts_::AbstractVector{<:Number},
+    parity_lower_verts_::AbstractVector{<:Number};
     indep_sets::AbstractVector{<:AbstractVector{Int}}=Vector{Int}[],
     check::Bool=true,
 )
-    parity_upper_verts = BitVector(parity_upper_verts)
-    parity_lower_verts = BitVector(parity_lower_verts)
+    parity_upper_verts = parity_upper_verts_ isa Vector{Bool} ? parity_upper_verts_ : Vector{Bool}(parity_upper_verts_)
+    parity_lower_verts = parity_lower_verts_ isa Vector{Bool} ? parity_lower_verts_ : Vector{Bool}(parity_lower_verts_)
     n_upper_verts = length(parity_upper_verts)
     n_lower_verts = length(parity_lower_verts)
     if check
@@ -825,8 +825,8 @@ end
 function iter_possible_adjacencies_dir(
     n_upper_verts::Int,
     n_lower_verts::Int,
-    parity_upper_verts::BitVector,
-    parity_lower_verts::BitVector,
+    parity_upper_verts::Vector{Bool},
+    parity_lower_verts::Vector{Bool},
     partial_upper::Vector{Int},
     partial_lower::Vector{Int},
     forbidden_neighbors::Dict{Int, Vector{Int}},

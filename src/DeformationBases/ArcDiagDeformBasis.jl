@@ -251,9 +251,9 @@ end
 
 function arc_diagram_upper_points(T::GL, V::LieAlgebraModule)
     if _is_standard_module(V)
-        return BitVector([true])
+        return [true]
     elseif ((fl, W) = _is_dual(V); fl) && _is_standard_module(W)
-        return BitVector([false])
+        return [false]
     elseif ((fl, Ws) = _is_tensor_product(V); fl)
         return reduce(vcat, [arc_diagram_upper_points(T, W) for W in Ws])
     elseif ((fl, W, k) = is_power_with_data(V); fl)
