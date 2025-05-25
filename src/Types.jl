@@ -78,16 +78,16 @@ end
 struct ArcDiagramDirected <: ArcDiagram
     n_upper_verts::Int
     n_lower_verts::Int
-    parity_upper_verts::BitVector   # true is down
-    parity_lower_verts::BitVector   # true is down
+    parity_upper_verts::Vector{Bool}   # true is down
+    parity_lower_verts::Vector{Bool}   # true is down
     upper_neighbors::Vector{ArcDiagramVertex}
     lower_neighbors::Vector{ArcDiagramVertex}
 
     function ArcDiagramDirected(
         n_upper_verts::Int,
         n_lower_verts::Int,
-        parity_upper_verts::BitVector,
-        parity_lower_verts::BitVector,
+        parity_upper_verts::Vector{Bool},
+        parity_lower_verts::Vector{Bool},
         upper_neighbors::Vector{ArcDiagramVertex},
         lower_neighbors::Vector{ArcDiagramVertex};
         check::Bool=true,
@@ -145,8 +145,8 @@ struct ArcDiagramDirected <: ArcDiagram
     function ArcDiagramDirected(
         n_upper_verts::Int,
         n_lower_verts::Int,
-        parity_upper_verts::BitVector,
-        parity_lower_verts::BitVector,
+        parity_upper_verts::Vector{Bool},
+        parity_lower_verts::Vector{Bool},
         upper_neighbor_inds::Vector{Int},
         lower_neighbor_inds::Vector{Int};
         check::Bool=true,
