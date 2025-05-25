@@ -3,13 +3,13 @@ const GlnGraphEdge = Tuple{Int, Int}
 struct GlnGraph
     n_left_verts::Int
     n_right_verts::Int
-    parity_verts::BitVector    # true is out
+    parity_verts::Vector{Bool}    # true is out
     edges::Vector{GlnGraphEdge}
 
     function GlnGraph(
         n_left_verts::Int,
         n_right_verts::Int,
-        parity_verts::BitVector,
+        parity_verts::Vector{Bool},
         edges::Vector{GlnGraphEdge};
         check::Bool=true,
         sort::Bool=true,
@@ -84,7 +84,7 @@ end
 ################################################################################
 
 
-function all_gln_graphs(n_left_verts::Int, n_right_verts::Int, parity_verts::BitVector)
+function all_gln_graphs(n_left_verts::Int, n_right_verts::Int, parity_verts::Vector{Bool})
     @req n_left_verts + n_right_verts == length(parity_verts) "number of vertices mismatch"
 
     result = GlnGraph[]
@@ -101,7 +101,7 @@ function all_gln_graphs(n_left_verts::Int, n_right_verts::Int, parity_verts::Bit
     )
 end
 
-function number_of_gln_graphs(n_left_verts::Int, n_right_verts::Int, parity_verts::BitVector)
+function number_of_gln_graphs(n_left_verts::Int, n_right_verts::Int, parity_verts::Vector{Bool})
     @req n_left_verts + n_right_verts == length(parity_verts) "number of vertices mismatch"
     !iszero(parity_diff(parity_verts)) && return 0 # no graph if parity is not balanced
 
@@ -133,7 +133,7 @@ function arc_diagram(g::GlnGraph, labeling::Vector{Int}, part::Partition{Int}=Pa
 
     parity_upper_verts = g.parity_verts
     @assert length(parity_upper_verts) == n_upper_verts
-    parity_lower_verts = BitVector(undef, n_lower_verts)
+    parity_lower_verts = fill(false, n_lower_verts)
     parity_lower_verts[1:2:end] .= true
 
     upper_adj = zeros(Int, n_upper_verts)

@@ -20,14 +20,7 @@ function tensor_power_obj(V::LieAlgebraModule, k::Int)
     return tensor_power(V, k)[1]
 end
 
-if !hasmethod(Oscar.permuted, (BitVector, PermGroupElem))
-    function Oscar.permuted(pnt::BitVector, x::PermGroupElem)
-        invx = inv(x)
-        return pnt[[i^invx for i in 1:length(pnt)]]
-    end
-end
-
-if !isdefined(Oscar, :induced_action)
+if !isdefined(Oscar, :induced_action) # upstreamed in https://github.com/oscar-system/Oscar.jl/pull/4921
     function induced_action(actfun::Function, phi::Map{<:PermGroup, <:PermGroup})
         return function (omega, g)
             return actfun(omega, phi(g))
