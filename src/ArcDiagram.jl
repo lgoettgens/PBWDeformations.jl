@@ -778,7 +778,7 @@ end
 function all_arc_diagrams(
     ::Type{Directed},
     parity_upper_verts_::AbstractVector{<:Number},
-    parity_lower_verts_::AbstractVector{<:Number},
+    parity_lower_verts_::AbstractVector{<:Number};
     indep_sets::AbstractVector{<:AbstractVector{Int}}=Vector{Int}[],
     check::Bool=true,
 )
