@@ -1,4 +1,4 @@
-function parity_diff(v::BitVector)
+function parity_diff(v::AbstractVector{Bool})
     return 2 * sum(v) - length(v)
 end
 
