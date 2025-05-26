@@ -1,10 +1,13 @@
-function acting_group_with_sgn(V::LieAlgebraModule)
-    G, gens_and_sgn = _acting_group_with_gens_and_sgn(V)
-    @assert sub(G, first.(gens_and_sgn))[1] == G # TODO: remove this check
-    codom = symmetric_group(2)
-    h = hom(G, codom, [g for (g, sgn) in gens_and_sgn], [signbit(sgn) ? codom[1] : codom[0] for (g, sgn) in gens_and_sgn]; check=true) # TODO: set check=false
+const ActingGroupCache = WeakKeyIdDict{LieAlgebraModule, Tuple{PermGroup, GAPGroupHomomorphism{PermGroup, PermGroup}}}()
 
-    return G, h
+function acting_group_with_sgn(V::LieAlgebraModule)
+    return get!(ActingGroupCache, V) do
+        G, gens_and_sgn = _acting_group_with_gens_and_sgn(V)
+        @assert sub(G, first.(gens_and_sgn))[1] == G # TODO: remove this check
+        codom = symmetric_group(2)
+        h = hom(G, codom, [g for (g, sgn) in gens_and_sgn], [signbit(sgn) ? codom[1] : codom[0] for (g, sgn) in gens_and_sgn]; check=true) # TODO: set check=false
+        return G, h
+    end
 end
 
 function _acting_group_with_gens_and_sgn(V::LieAlgebraModule)
