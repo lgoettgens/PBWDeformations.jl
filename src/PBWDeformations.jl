@@ -50,6 +50,8 @@ import Oscar: n_vertices
 import Oscar: simplify
 import Oscar: vertices
 
+Oscar.@import_all_serialization_functions
+
 import Base: deepcopy_internal
 import Base: hash
 import Base: isone
@@ -139,6 +141,7 @@ export vertices
 
 function __init__()
     patch_oscar_serialization_namespace()
+    register_serialization_types()
 
     add_verbosity_scope(:PBWDeformations)
 end
