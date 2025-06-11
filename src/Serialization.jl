@@ -8,7 +8,6 @@ function patch_oscar_serialization_namespace()
 end
 
 function register_serialization_types()
-    # modifies Oscar global variables, so must be called from the __init__ function
     @eval @register_serialization_type SmashProductLie uses_id
     @eval @register_serialization_type SmashProductLieElem
 end

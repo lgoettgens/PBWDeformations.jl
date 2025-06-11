@@ -140,8 +140,11 @@ export vertex_index
 export vertices
 
 function __init__()
-    patch_oscar_serialization_namespace()
-    register_serialization_types()
+    if ccall(:jl_generating_output, Cint, ()) == 0 # use !Base.generating_output() from Julia 1.11
+        # modifies Oscar global variables, so must be called from the __init__ function
+        patch_oscar_serialization_namespace()
+        register_serialization_types()
+    end
 
     add_verbosity_scope(:PBWDeformations)
 end
@@ -173,5 +176,14 @@ include("DeformationBases/GlnGraphDeformBasis.jl")
 include("DeformationBases/StdDeformBasis.jl")
 
 include("Serialization.jl")
+
+
+###############################################################################
+#
+# The following function stubs' actual implementations are in the folder `ext/TestExt/`.
+#
+###############################################################################
+
+function test_save_load_roundtrip end
 
 end

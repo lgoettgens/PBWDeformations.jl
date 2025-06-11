@@ -11,6 +11,7 @@ Oscar.with_unicode(true) do
     include("SmashProductLie-test.jl")
     include("SmashProductLieDeform-test.jl")
     include("SmashProductPBWDeformLie-test.jl")
+    include("Serialization-test.jl")
 
     # long
     include("Aqua.jl")
