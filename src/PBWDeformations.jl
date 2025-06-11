@@ -138,6 +138,8 @@ export vertex_index
 export vertices
 
 function __init__()
+    patch_oscar_serialization_namespace()
+
     add_verbosity_scope(:PBWDeformations)
 end
 
@@ -166,5 +168,7 @@ include("DeformationBases/ArcDiagDeformBasis.jl")
 include("DeformationBases/PseudographDeformBasis.jl")
 include("DeformationBases/GlnGraphDeformBasis.jl")
 include("DeformationBases/StdDeformBasis.jl")
+
+include("Serialization.jl")
 
 end
