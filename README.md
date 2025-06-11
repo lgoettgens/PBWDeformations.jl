@@ -1,8 +1,8 @@
 # PBWDeformations.jl
 
-| **Documentation**                                                         | **Build Status**                                      |
-|:-------------------------------------------------------------------------:|:-----------------------------------------------------:|
-| [![](https://img.shields.io/badge/docs-stable-blue.svg)](https://lgoettgens.github.io/PBWDeformations.jl/stable/) [![](https://img.shields.io/badge/docs-dev-blue.svg)](https://lgoettgens.github.io/PBWDeformations.jl/dev/) | [![](https://github.com/lgoettgens/PBWDeformations.jl/actions/workflows/OscarTests.yml/badge.svg?branch=master)](https://github.com/lgoettgens/PBWDeformations.jl/actions/workflows/OscarTests.yml) [![](https://codecov.io/gh/lgoettgens/PBWDeformations.jl/branch/master/graph/badge.svg?token=J9XN35I1WU)](https://app.codecov.io/gh/lgoettgens/PBWDeformations.jl) |
+| **Documentation** | **Build Status** | **Zenodo** |
+|:-----------------:|:----------------:|:----------:|
+| [![](https://img.shields.io/badge/docs-stable-blue.svg)](https://lgoettgens.github.io/PBWDeformations.jl/stable/) [![](https://img.shields.io/badge/docs-dev-blue.svg)](https://lgoettgens.github.io/PBWDeformations.jl/dev/) | [![](https://github.com/lgoettgens/PBWDeformations.jl/actions/workflows/OscarTests.yml/badge.svg?branch=master)](https://github.com/lgoettgens/PBWDeformations.jl/actions/workflows/OscarTests.yml) [![](https://codecov.io/gh/lgoettgens/PBWDeformations.jl/branch/master/graph/badge.svg?token=J9XN35I1WU)](https://app.codecov.io/gh/lgoettgens/PBWDeformations.jl) | [![DOI](https://zenodo.org/badge/567263215.svg)](https://doi.org/10.5281/zenodo.15639841) |
 
 # PBWDeformations.jl Julia package
 
