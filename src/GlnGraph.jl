@@ -1,39 +1,5 @@
-const GlnGraphEdge = Tuple{Int, Int}
-
-struct GlnGraph
-    n_left_verts::Int
-    n_right_verts::Int
-    parity_verts::Vector{Bool}    # true is out
-    edges::Vector{GlnGraphEdge}
-
-    function GlnGraph(
-        n_left_verts::Int,
-        n_right_verts::Int,
-        parity_verts::Vector{Bool},
-        edges::Vector{GlnGraphEdge};
-        check::Bool=true,
-        sort::Bool=true,
-    )
-        if check
-            @req n_left_verts + n_right_verts == length(parity_verts) "number of vertices mismatch"
-            @req 2 * length(edges) == length(parity_verts) "number of edges mismatch"
-            out_verts = first.(edges)
-            @req allunique(out_verts) "out vertex with wrong degree"
-            @req all(parity_verts[out_verts]) "out vertex with wrong parity"
-            in_verts = last.(edges)
-            @req allunique(in_verts) "in vertex with wrong degree"
-            @req all(!, parity_verts[in_verts]) "in vertex with wrong parity"
-        end
-        if sort
-            sort!(edges)
-        end
-        return new(n_left_verts, n_right_verts, parity_verts, edges)
-    end
-end
-
 function n_vertices(g::GlnGraph)
     return g.n_left_verts + g.n_right_verts
-
 end
 
 function n_edges(g::GlnGraph)
