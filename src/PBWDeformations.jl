@@ -70,6 +70,7 @@ export ArcDiagramUndirected
 export ArcDiagramVertex
 export DeformationMap
 export DeformBasis
+export GlnGraph
 export GlnGraphDeformBasis
 export LieAlgebra, LieAlgebraElem
 export LieAlgebraModule, LieAlgebraModuleElem
