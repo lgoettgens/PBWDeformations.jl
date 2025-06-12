@@ -70,6 +70,7 @@ export ArcDiagramUndirected
 export ArcDiagramVertex
 export DeformationMap
 export DeformBasis
+export GlnGraph
 export GlnGraphDeformBasis
 export LieAlgebra, LieAlgebraElem
 export LieAlgebraModule, LieAlgebraModuleElem
@@ -143,9 +144,9 @@ end
 const SO = Val{:special_orthogonal}
 const GL = Val{:general_linear}
 
-include("OscarPatches.jl")
-
 include("Types.jl")
+
+include("OscarPatches.jl")
 
 include("LinearIndependence.jl")
 include("ModuleSimpleStructure.jl")
