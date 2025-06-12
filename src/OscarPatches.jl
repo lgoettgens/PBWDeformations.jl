@@ -50,3 +50,17 @@ function Oscar.load_object(s::DeserializerState, ::Type{<:AbstractAlgebra.Generi
 
   return finish(elem)
 end
+
+# upstreamed in https://github.com/oscar-system/Oscar.jl/pull/4997
+function Oscar.load_object(s::DeserializerState, T::Type{<:Matrix{S}}, params::SmashProductLie) where S
+  Oscar.load_node(s) do entries
+    if isempty(entries)
+      return T(undef, 0, 0)
+    end
+    len = length(entries)
+    m = reduce(vcat, [
+      permutedims(Oscar.load_object(s, Vector{S}, params, i)) for i in 1:len
+        ])
+    return T(m)
+  end
+end

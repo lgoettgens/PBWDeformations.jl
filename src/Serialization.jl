@@ -10,6 +10,9 @@ end
 function register_serialization_types()
     @eval @register_serialization_type SmashProductLie uses_id
     @eval @register_serialization_type SmashProductLieElem
+
+    @eval @register_serialization_type SmashProductLieDeform uses_id
+    @eval @register_serialization_type SmashProductLieDeformElem
 end
 
 ###############################################################################
@@ -52,6 +55,44 @@ end
 
 function load_object(s::DeserializerState, ::Type{<:SmashProductLieElem}, sp::SmashProductLie)
     e = sp(load_object(s, elem_type(underlying_algebra(sp)), underlying_algebra(sp), :data))
+    e.simplified = load_object(s, Bool, :is_simplified)
+    return e
+end
+
+
+###############################################################################
+#
+#   SmashProductLieDeform
+#
+###############################################################################
+
+function type_params(d::SmashProductLieDeform)
+    return TypeParams(SmashProductLieDeform, d.sp)
+end
+
+function save_object(s::SerializerState, d::SmashProductLieDeform)
+    save_data_dict(s) do
+        save_object(s, d.kappa, :kappa)
+    end
+end
+
+function load_object(s::DeserializerState, ::Type{<:SmashProductLieDeform}, sp::SmashProductLie{C, LieC, LieT}) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}}
+    mat_space = matrix_space(sp, dim(base_module(sp)), dim(base_module(sp)))
+    kappa = load_object(s, DeformationMap{SmashProductLieElem{C, LieC, LieT}}, mat_space, :kappa)
+    return deform(sp, kappa)
+end
+
+type_params(e::SmashProductLieDeformElem) = TypeParams(SmashProductLieDeformElem, parent(e))
+
+function save_object(s::SerializerState, e::SmashProductLieDeformElem)
+    save_data_dict(s) do
+        save_object(s, data(e), :data)
+        save_object(s, e.simplified, :is_simplified)
+    end
+end
+
+function load_object(s::DeserializerState, ::Type{<:SmashProductLieDeformElem}, d::SmashProductLieDeform)
+    e = d(load_object(s, elem_type(underlying_algebra(d)), underlying_algebra(d), :data))
     e.simplified = load_object(s, Bool, :is_simplified)
     return e
 end
