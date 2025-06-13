@@ -47,7 +47,9 @@ function data_iter_and_len(::Type{GlnGraphDeformBasis}, LieType::GL, W::LieAlgeb
     return data_iter, len::Int
 end
 
-# should_graph_labeling_be_used_cache = Dict{Tuple{GlnGraph, Vector{Int}}, Bool}()
+function should_data_be_used_cache_type(::Type{GlnGraphDeformBasis})
+    return Dict{Tuple{GlnGraph, Vector{Int}}, Bool}
+end
 
 function should_data_be_used(
     ::Type{GlnGraphDeformBasis},
@@ -56,10 +58,13 @@ function should_data_be_used(
     ::SmashProductLie,
     V::LieAlgebraModule,
     ::Symbol,
+    cache::Union{Dict{<:Any, Bool}, Nothing},
 )
+    @assert cache isa should_data_be_used_cache_type(GlnGraphDeformBasis)
+
     g, labeling, part = data
 
-    # return get!(should_graph_labeling_be_used_cache, (g, labeling)) do
+    return get!(cache, (g, labeling)) do
         G, sgn = acting_group_with_sgn(V)
 
         g_orb = orbit(G, g)
@@ -83,7 +88,5 @@ function should_data_be_used(
 
         # no criteria left to check
         return true
-    # end
+    end
 end
-
-# empty!(should_graph_labeling_be_used_cache)

@@ -42,8 +42,13 @@ function should_data_be_used(
     ::SmashProductLie,
     ::LieAlgebraModule,
     ::Symbol,
+    cache::Union{Dict{<:Any, Bool}, Nothing},
 )
     return true
+end
+
+function should_data_be_used_cache_type(::Type{<:ArcDiagBasedDeformBasis})
+    return Nothing
 end
 
 function should_diag_be_used(
@@ -111,12 +116,15 @@ function arc_diag_based_basis_iteration(
             )
             generate_showvalues(counter, data) = () -> [("iteration", (counter, data))]
 
+            should_data_be_used_cache = should_data_be_used_cache_type(ArcDiagBasedDeformBasis{DataT})()
+            @assert isnothing(should_data_be_used_cache) || should_data_be_used_cache isa Dict{<:Any, Bool}
+
             iter =
                 data_iter |>
                 enumerate |>
                 Fix1(Iterators.filter, arg -> begin
                     _, data = arg
-                    should_data_be_used(ArcDiagBasedDeformBasis{DataT}, LieType, data, sp, W, case)
+                    should_data_be_used(ArcDiagBasedDeformBasis{DataT}, LieType, data, sp, W, case, should_data_be_used_cache)
                 end) |>
                 Fix1(Iterators.map, arg -> begin
                     counter, data = arg
@@ -153,6 +161,7 @@ function arc_diag_based_basis_iteration(
             # push!(lens, len)
             # push!(iters, iter)
             collected = collect(iter)
+            isnothing(should_data_be_used_cache) || empty!(should_data_be_used_cache)
             push!(lens, length(collected))
             push!(iters, collected)
             ProgressMeter.finish!(prog_meter)

@@ -48,6 +48,7 @@ function should_data_be_used(
     ::SmashProductLie,
     ::LieAlgebraModule,
     ::Symbol,
+    cache::Union{Dict{<:Any, Bool}, Nothing},
 )
     pg, part = data
 
