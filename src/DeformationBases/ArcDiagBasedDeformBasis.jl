@@ -48,7 +48,7 @@ end
 Base.length(basis::ArcDiagBasedDeformBasis) = basis.len
 
 # fallbacks
-function should_data_be_used(
+function should_use_data(
     ::Type{<:ArcDiagBasedDeformBasis},
     ::Union{SO, GL},
     ::Any,
@@ -60,11 +60,11 @@ function should_data_be_used(
     return true
 end
 
-function should_data_be_used_cache_type(::Type{<:ArcDiagBasedDeformBasis})
+function should_use_data_cache_type(::Type{<:ArcDiagBasedDeformBasis})
     return Nothing
 end
 
-function should_diag_be_used(
+function should_use_arc_diagram(
     ::Type{<:ArcDiagBasedDeformBasis},
     ::Union{SO, GL},
     ::ArcDiagram,
@@ -129,15 +129,15 @@ function arc_diag_based_basis_iteration(
             )
             generate_showvalues(counter, data) = () -> [("iteration", (counter, data))]
 
-            should_data_be_used_cache = should_data_be_used_cache_type(ArcDiagBasedDeformBasis{DataT})()
-            @assert isnothing(should_data_be_used_cache) || should_data_be_used_cache isa Dict{<:Any, Bool}
+            should_use_data_cache = should_use_data_cache_type(ArcDiagBasedDeformBasis{DataT})()
+            @assert isnothing(should_use_data_cache) || should_use_data_cache isa Dict{<:Any, Bool}
 
             iter =
                 data_iter |>
                 enumerate |>
                 Fix1(Iterators.filter, arg -> begin
                     _, data = arg
-                    should_data_be_used(ArcDiagBasedDeformBasis{DataT}, LieType, data, sp, W, case, should_data_be_used_cache)
+                    should_use_data(ArcDiagBasedDeformBasis{DataT}, LieType, data, sp, W, case, should_use_data_cache)
                 end) |>
                 Fix1(Iterators.map, arg -> begin
                     counter, data = arg
@@ -145,7 +145,7 @@ function arc_diag_based_basis_iteration(
                 end) |>
                 Fix1(Iterators.filter, arg -> begin
                     _, _, diag = arg
-                    should_diag_be_used(ArcDiagBasedDeformBasis{DataT}, LieType, diag, sp, W, case)
+                    should_use_arc_diagram(ArcDiagBasedDeformBasis{DataT}, LieType, diag, sp, W, case)
                 end) |>
                 Fix1(
                     Iterators.map, arg -> begin
@@ -174,7 +174,7 @@ function arc_diag_based_basis_iteration(
             # push!(lens, len)
             # push!(iters, iter)
             collected = collect(iter)
-            isnothing(should_data_be_used_cache) || empty!(should_data_be_used_cache)
+            isnothing(should_use_data_cache) || empty!(should_use_data_cache)
             push!(lens, length(collected))
             push!(iters, collected)
             ProgressMeter.finish!(prog_meter)

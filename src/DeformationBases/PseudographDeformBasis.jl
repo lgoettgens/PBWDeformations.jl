@@ -37,7 +37,7 @@ function data_iter_and_len(::Type{PseudographDeformBasis}, LieType::SO, W::LieAl
     return pg_part_iter, len::Int
 end
 
-function should_data_be_used(
+function should_use_data(
     ::Type{PseudographDeformBasis},
     LieType::SO,
     data::PseudographDeformBasisDataT,

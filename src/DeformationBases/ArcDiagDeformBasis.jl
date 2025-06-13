@@ -31,7 +31,7 @@ function data_iter_and_len(
     return diag_iter, len::Int
 end
 
-function should_data_be_used(
+function should_use_data(
     ::Type{ArcDiagDeformBasis},
     LieType::Union{SO, GL},
     data::ArcDiagDeformBasisDataT,

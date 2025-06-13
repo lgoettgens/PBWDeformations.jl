@@ -45,11 +45,11 @@ function data_iter_and_len(::Type{GlnGraphDeformBasis}, LieType::GL, W::LieAlgeb
     return data_iter, len::Int
 end
 
-function should_data_be_used_cache_type(::Type{GlnGraphDeformBasis})
+function should_use_data_cache_type(::Type{GlnGraphDeformBasis})
     return Dict{Tuple{GlnGraph, Vector{Int}}, Bool}
 end
 
-function should_data_be_used(
+function should_use_data(
     ::Type{GlnGraphDeformBasis},
     LieType::GL,
     data::GlnGraphDeformBasisDataT,
@@ -58,7 +58,7 @@ function should_data_be_used(
     ::Symbol,
     cache::Union{Dict{<:Any, Bool}, Nothing},
 )
-    @assert cache isa should_data_be_used_cache_type(GlnGraphDeformBasis)
+    @assert cache isa should_use_data_cache_type(GlnGraphDeformBasis)
 
     g, labeling, part = data
 
