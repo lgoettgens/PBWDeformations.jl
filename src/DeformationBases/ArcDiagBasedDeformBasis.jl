@@ -47,6 +47,7 @@ end
 
 Base.length(basis::ArcDiagBasedDeformBasis) = basis.len
 
+
 # fallbacks
 function should_use_data(
     ::Type{<:ArcDiagBasedDeformBasis},
@@ -132,7 +133,7 @@ function arc_diag_based_basis_iteration(
             should_use_data_cache = should_use_data_cache_type(ArcDiagBasedDeformBasis{DataT})()
             @assert isnothing(should_use_data_cache) || should_use_data_cache isa Dict{<:Any, Bool}
 
-            iter =
+            iter = let W=W, case=case # avoid closure capture
                 data_iter |>
                 enumerate |>
                 Fix1(Iterators.filter, arg -> begin
@@ -171,6 +172,8 @@ function arc_diag_based_basis_iteration(
                         basis_elem
                     end,
                 )
+            end
+
             # push!(lens, len)
             # push!(iters, iter)
             collected = collect(iter)
