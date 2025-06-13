@@ -8,17 +8,15 @@ This process is due to [FM22](@cite).
 """
 const ArcDiagDeformBasis{T} = ArcDiagBasedDeformBasis{ArcDiagDeformBasisDataT, T} where {T <: SmashProductLieElem}
 
-function ArcDiagDeformBasis(
+function check_input(
+    ::Type{ArcDiagDeformBasis},
+    LieType,
     sp::SmashProductLie{C, LieC, LieT},
-    degs::AbstractVector{Int};
-    no_normalize::Bool=false,
 ) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}}
-    LieType = Val(get_attribute(base_lie_algebra(sp), :type, nothing)::Union{Nothing, Symbol})
     @req LieType isa Union{SO, GL} "Only works for so_n and gl_n."
-    if LieType isa SO && has_attribute(base_lie_algebra(sp), :form)
-        @req isone(get_attribute(base_lie_algebra(sp), :form)::dense_matrix_type(C)) "Only works for so_n represented as skew-symmetric matrices."
+    if LieType isa SO
+        @req has_attribute(base_lie_algebra(sp), :form) && isone(get_attribute(base_lie_algebra(sp), :form)::dense_matrix_type(LieC)) "Only works for so_n represented as skew-symmetric matrices."
     end
-    return ArcDiagDeformBasis(LieType, sp, degs; no_normalize)
 end
 
 function data_iter_and_len(

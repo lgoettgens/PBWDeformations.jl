@@ -5,11 +5,24 @@ struct ArcDiagBasedDeformBasis{DataT, T <: SmashProductLieElem} <: DeformBasis{T
     no_normalize::Bool
 
     function ArcDiagBasedDeformBasis{DataT}(
+        sp::SmashProductLie,
+        degs::AbstractVector{Int};
+        no_normalize::Bool=false,
+    ) where {DataT}
+        LieType = Val(get_attribute(base_lie_algebra(sp), :type, nothing)::Union{Nothing, Symbol})
+        @req !isnothing(LieType) "The type of Lie algebra cannot be deduced."
+        return ArcDiagBasedDeformBasis{DataT}(LieType, sp, degs; no_normalize)
+    end
+
+    function ArcDiagBasedDeformBasis{DataT}(
         LieType::Union{SO, GL},
         sp::SmashProductLie,
         degs::AbstractVector{Int};
         no_normalize::Bool=false,
     ) where {DataT}
+        check_input(ArcDiagBasedDeformBasis{DataT}, LieType, sp)
+        @req coefficient_ring(sp) === coefficient_ring(base_lie_algebra(sp)) "Deformation bases don't support extension of the coefficient ring of the smash product."
+
         extra_data = Dict{DeformationMap{elem_type(sp)}, Set{Tuple{Tuple{Int, Int}, DataT}}}()
 
         iter1, len1 =

@@ -9,14 +9,12 @@ This process is a generalization of [FM22](@cite).
 """
 const GlnGraphDeformBasis{T} = ArcDiagBasedDeformBasis{GlnGraphDeformBasisDataT, T} where {T <: SmashProductLieElem}
 
-function GlnGraphDeformBasis(
+function check_input(
+    ::Type{GlnGraphDeformBasis},
+    LieType,
     sp::SmashProductLie{C, LieC, LieT},
-    degs::AbstractVector{Int};
-    no_normalize::Bool=false,
 ) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}}
-    LieType = Val(get_attribute(base_lie_algebra(sp), :type, nothing))
     @req LieType isa GL "Only works for gl_n."
-    return GlnGraphDeformBasis(LieType, sp, degs; no_normalize)
 end
 
 function data_iter_and_len(::Type{GlnGraphDeformBasis}, LieType::GL, W::LieAlgebraModule, case::Symbol, d::Int)

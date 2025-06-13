@@ -10,17 +10,13 @@ This process is due to [FM22](@cite).
 const PseudographDeformBasis{T} =
     ArcDiagBasedDeformBasis{PseudographDeformBasisDataT, T} where {T <: SmashProductLieElem}
 
-function PseudographDeformBasis(
+function check_input(
+    ::Type{PseudographDeformBasis},
+    LieType,
     sp::SmashProductLie{C, LieC, LieT},
-    degs::AbstractVector{Int};
-    no_normalize::Bool=false,
 ) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}}
-    LieType = Val(get_attribute(base_lie_algebra(sp), :type, nothing)::Union{Nothing, Symbol})
     @req LieType isa SO "Only works for so_n."
-    if LieType isa SO && has_attribute(base_lie_algebra(sp), :form)
-        @req isone(get_attribute(base_lie_algebra(sp), :form)) "Only works for so_n represented as skew-symmetric matrices."
-    end
-    return PseudographDeformBasis(LieType, sp, degs; no_normalize)
+    @req has_attribute(base_lie_algebra(sp), :form) && isone(get_attribute(base_lie_algebra(sp), :form)::dense_matrix_type(LieC)) "Only works for so_n represented as skew-symmetric matrices."
 end
 
 function data_iter_and_len(::Type{PseudographDeformBasis}, LieType::SO, W::LieAlgebraModule, case::Symbol, d::Int)
