@@ -21,47 +21,28 @@ function ArcDiagDeformBasis(
     return ArcDiagDeformBasis(LieType, sp, degs; no_normalize)
 end
 
-function ArcDiagDeformBasis(
+function data_iter_and_len(
+    ::Type{ArcDiagDeformBasis},
     LieType::Union{SO, GL},
-    sp::SmashProductLie{C, LieC, LieT},
-    degs::AbstractVector{Int};
-    no_normalize::Bool=false,
-) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}}
-    extra_data = Dict{DeformationMap{elem_type(sp)}, Set{Tuple{Tuple{Int, Int}, ArcDiagDeformBasisDataT}}}()
+    W::LieAlgebraModule,
+    case::Symbol,
+    d::Int,
+)
+    diag_iter = pbw_arc_diagrams(LieType, W, d)
+    len = length(diag_iter)
+    return diag_iter, len::Int
+end
 
-    function data_iter_and_len(LieType::Union{SO, GL}, W::LieAlgebraModule, case::Symbol, d::Int)
-        diag_iter = pbw_arc_diagrams(LieType, W, d)
-        len = length(diag_iter)
-        return diag_iter, len::Int
-    end
-
-    function should_data_be_used(
-        LieType::Union{SO, GL},
-        data::ArcDiagDeformBasisDataT,
-        ::SmashProductLie{C, LieC, LieT},
-        ::LieAlgebraModule,
-        ::Symbol,
-    )
-        diag = data
-        is_crossing_free(diag; part=:lower)
-    end
-
-    iter1, len1 = arc_diag_based_basis_iteration(
-        LieType,
-        sp,
-        degs,
-        extra_data,
-        data_iter_and_len;
-        should_data_be_used,
-        no_normalize,
-    )
-
-    if no_normalize
-        return ArcDiagDeformBasis{elem_type(sp)}(len1, iter1, extra_data, no_normalize)
-    else
-        iter2, len2 = filter_independent(coefficient_ring(sp), iter1)
-        return ArcDiagDeformBasis{elem_type(sp)}(len2, iter2, extra_data, no_normalize)
-    end
+function should_data_be_used(
+    ::Type{ArcDiagDeformBasis},
+    LieType::Union{SO, GL},
+    data::ArcDiagDeformBasisDataT,
+    ::SmashProductLie,
+    ::LieAlgebraModule,
+    ::Symbol,
+)
+    diag = data
+    is_crossing_free(diag; part=:lower)
 end
 
 

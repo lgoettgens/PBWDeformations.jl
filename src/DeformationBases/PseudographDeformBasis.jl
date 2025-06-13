@@ -23,71 +23,46 @@ function PseudographDeformBasis(
     return PseudographDeformBasis(LieType, sp, degs; no_normalize)
 end
 
-function PseudographDeformBasis(
+function data_iter_and_len(::Type{PseudographDeformBasis}, LieType::SO, W::LieAlgebraModule, case::Symbol, d::Int)
+    @req case == :exterior_power "Not implemented for direct sums"
+    fl, V, e = _is_exterior_power(W)
+    @assert fl
+    @assert e == 2
+    fl, Vbase, e = _is_exterior_power(V)
+    @req fl && _is_standard_module(Vbase) "Only works for exterior powers of the standard module."
+
+    pg_part_iter = collect(
+        begin
+            (pg, part)
+        end for sumpg in 0:d for pg in all_pseudographs(2, e, sumpg; upto_iso=true) for
+        part in partitions(d - sumpg)
+    )
+    len = length(pg_part_iter) # TODO: implement without collect
+    return pg_part_iter, len::Int
+end
+
+function should_data_be_used(
+    ::Type{PseudographDeformBasis},
     LieType::SO,
-    sp::SmashProductLie{C, LieC, LieT},
-    degs::AbstractVector{Int};
-    no_normalize::Bool=false,
-) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}}
-    extra_data = Dict{DeformationMap{elem_type(sp)}, Set{Tuple{Tuple{Int, Int}, PseudographDeformBasisDataT}}}()
+    data::PseudographDeformBasisDataT,
+    ::SmashProductLie,
+    ::LieAlgebraModule,
+    ::Symbol,
+)
+    pg, part = data
 
-    function data_iter_and_len(LieType::SO, W::LieAlgebraModule, case::Symbol, d::Int)
-        @req case == :exterior_power "Not implemented for direct sums"
-        fl, V, e = _is_exterior_power(W)
-        @assert fl
-        @assert e == 2
-        fl, Vbase, e = _is_exterior_power(V)
-        @req fl && _is_standard_module(Vbase) "Only works for exterior powers of the standard module."
+    # length n lower cycles can be reversed in n lower flips of sgn -1 => odd n has sgn -1 in stabilizer
+    all(iseven, part) || return false
 
-        pg_part_iter = collect(
-            begin
-                (pg, part)
-            end for sumpg in 0:d for pg in all_pseudographs(2, e, sumpg; upto_iso=true) for
-            part in partitions(d - sumpg)
-        )
-        len = length(pg_part_iter) # TODO: implement without collect
-        return pg_part_iter, len::Int
-    end
+    # length n paths from 1 to 1 can be reversed with n-1 many lower flips of sgn -1 and one upper flip of sgn 1 => even n has sgn -1 in stabilizer
+    all(isodd, edge_labels(pg, MSet([1, 1]))) || return false
 
-    function should_data_be_used(
-        LieType::SO,
-        data::PseudographDeformBasisDataT,
-        ::SmashProductLie{C, LieC, LieT},
-        ::LieAlgebraModule,
-        ::Symbol,
-    )
-        pg, part = data
+    # even paths from 2 to 2 can be reversed with odd many lower flips of sgn -1 and one upper flip of sgn 1 => even n has sgn -1 in stabilizer
+    all(isodd, edge_labels(pg, MSet([2, 2]))) || return false
 
-        # length n lower cycles can be reversed in n lower flips of sgn -1 => odd n has sgn -1 in stabilizer
-        all(iseven, part) || return false
+    # if pg is symmetric, this symmetry needs one upper block flip of sgn -1 and sum(pg, MSet([1, 2])) many lower flips of sgn -1 => even sum has sgn -1 in stabilizer
+    (edges(pg, MSet([1, 1])) != edges(pg, MSet([2, 2])) || isodd(sum(pg, MSet([1, 2])))) || return false
 
-        # length n paths from 1 to 1 can be reversed with n-1 many lower flips of sgn -1 and one upper flip of sgn 1 => even n has sgn -1 in stabilizer
-        all(isodd, edge_labels(pg, MSet([1, 1]))) || return false
-
-        # even paths from 2 to 2 can be reversed with odd many lower flips of sgn -1 and one upper flip of sgn 1 => even n has sgn -1 in stabilizer
-        all(isodd, edge_labels(pg, MSet([2, 2]))) || return false
-
-        # if pg is symmetric, this symmetry needs one upper block flip of sgn -1 and sum(pg, MSet([1, 2])) many lower flips of sgn -1 => even sum has sgn -1 in stabilizer
-        (edges(pg, MSet([1, 1])) != edges(pg, MSet([2, 2])) || isodd(sum(pg, MSet([1, 2])))) || return false
-
-        return true
-    end
-
-    iter1, len1 = arc_diag_based_basis_iteration(
-        LieType,
-        sp,
-        degs,
-        extra_data,
-        data_iter_and_len;
-        should_data_be_used,
-        no_normalize,
-    )
-
-    if no_normalize
-        return PseudographDeformBasis{elem_type(sp)}(len1, iter1, extra_data, no_normalize)
-    else
-        iter2, len2 = filter_independent(coefficient_ring(sp), iter1)
-        return PseudographDeformBasis{elem_type(sp)}(len2, iter2, extra_data, no_normalize)
-    end
+    return true
 end
 

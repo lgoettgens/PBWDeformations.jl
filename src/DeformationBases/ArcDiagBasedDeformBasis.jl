@@ -4,7 +4,24 @@ struct ArcDiagBasedDeformBasis{DataT, T <: SmashProductLieElem} <: DeformBasis{T
     extra_data::Dict{DeformationMap{T}, Set{Tuple{Tuple{Int, Int}, DataT}}}
     no_normalize::Bool
 
-    # constructors are only defined for concrete DataT types
+    function ArcDiagBasedDeformBasis{DataT}(
+        LieType::Union{SO, GL},
+        sp::SmashProductLie,
+        degs::AbstractVector{Int};
+        no_normalize::Bool=false,
+    ) where {DataT}
+        extra_data = Dict{DeformationMap{elem_type(sp)}, Set{Tuple{Tuple{Int, Int}, DataT}}}()
+
+        iter1, len1 =
+            arc_diag_based_basis_iteration(ArcDiagBasedDeformBasis{DataT}, LieType, sp, degs, extra_data; no_normalize)
+
+        if no_normalize
+            return new{DataT, elem_type(sp)}(len1, iter1, extra_data, no_normalize)
+        else
+            iter2, len2 = filter_independent(coefficient_ring(sp), iter1)
+            return new{DataT, elem_type(sp)}(len2, iter2, extra_data, no_normalize)
+        end
+    end
 end
 
 function Base.iterate(i::ArcDiagBasedDeformBasis)
@@ -17,29 +34,38 @@ end
 
 Base.length(basis::ArcDiagBasedDeformBasis) = basis.len
 
+# fallbacks
+function should_data_be_used(
+    ::Type{<:ArcDiagBasedDeformBasis},
+    ::Union{SO, GL},
+    ::Any,
+    ::SmashProductLie,
+    ::LieAlgebraModule,
+    ::Symbol,
+)
+    return true
+end
+
+function should_diag_be_used(
+    ::Type{<:ArcDiagBasedDeformBasis},
+    ::Union{SO, GL},
+    ::ArcDiagram,
+    ::SmashProductLie,
+    ::LieAlgebraModule,
+    ::Symbol,
+)
+    return true
+end
+
 
 function arc_diag_based_basis_iteration(
+    ::Type{ArcDiagBasedDeformBasis{DataT}},
     LieType::Union{SO, GL},
     sp::SmashProductLie{C, LieC, LieT},
     degs::AbstractVector{Int},
-    extra_data::Dict{DeformationMap{SmashProductLieElem{C, LieC, LieT}}, Set{ExtraDataT}},
-    data_iter_and_len::Function;
-    should_data_be_used::Function=(
-        ::Union{SO, GL},
-        ::Any,
-        ::SmashProductLie{C, LieC, LieT},
-        ::LieAlgebraModule,
-        ::Symbol,
-    ) -> true,
-    should_diag_be_used::Function=(
-        ::Union{SO, GL},
-        ::ArcDiagram,
-        ::SmashProductLie{C, LieC, LieT},
-        ::LieAlgebraModule,
-        ::Symbol,
-    ) -> true,
+    extra_data::Dict{DeformationMap{SmashProductLieElem{C, LieC, LieT}}, Set{Tuple{Tuple{Int, Int}, DataT}}};
     no_normalize::Bool,
-) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}, ExtraDataT}
+) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}, DataT}
     V = base_module(sp)
 
     V_nice, h = isomorphic_module_with_simple_structure(V)
@@ -76,7 +102,7 @@ function arc_diag_based_basis_iteration(
                 case = :tensor_product
             end
 
-            data_iter, len = data_iter_and_len(LieType, W, case, d)
+            data_iter, len = data_iter_and_len(ArcDiagBasedDeformBasis{DataT}, LieType, W, case, d)
             prog_meter = ProgressMeter.Progress(
                 len;
                 output=stderr,
@@ -90,7 +116,7 @@ function arc_diag_based_basis_iteration(
                 enumerate |>
                 Fix1(Iterators.filter, arg -> begin
                     _, data = arg
-                    should_data_be_used(LieType, data, sp, W, case)
+                    should_data_be_used(ArcDiagBasedDeformBasis{DataT}, LieType, data, sp, W, case)
                 end) |>
                 Fix1(Iterators.map, arg -> begin
                     counter, data = arg
@@ -98,7 +124,7 @@ function arc_diag_based_basis_iteration(
                 end) |>
                 Fix1(Iterators.filter, arg -> begin
                     _, _, diag = arg
-                    should_diag_be_used(LieType, diag, sp, W, case)
+                    should_diag_be_used(ArcDiagBasedDeformBasis{DataT}, LieType, diag, sp, W, case)
                 end) |>
                 Fix1(
                     Iterators.map, arg -> begin
