@@ -10,10 +10,8 @@ struct StdDeformBasis{T <: SmashProductLieElem} <: DeformBasis{T}
     extra_data::Dict{DeformationMap{T}, Nothing}
     no_normalize::Bool
 
-    function StdDeformBasis(
-        sp::SmashProductLie{C, LieC, LieT},
-        degs::AbstractVector{Int},
-    ) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}}
+    function StdDeformBasis(sp::SmashProductLie, degs::AbstractVector{Int})
+        @req coefficient_ring(sp) === coefficient_ring(base_lie_algebra(sp)) "Deformation bases don't support extension of the coefficient ring of the smash product."
         dimL = dim(base_lie_algebra(sp))
         dimV = dim(base_module(sp))
         iter = (

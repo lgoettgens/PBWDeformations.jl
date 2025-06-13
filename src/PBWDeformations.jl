@@ -63,6 +63,7 @@ import Base: zero
 
 
 export AbstractLieAlgebra, AbstractLieAlgebraElem
+export ArcDiagBasedDeformBasis
 export ArcDiagDeformBasis
 export ArcDiagram
 export ArcDiagramDirected
@@ -162,6 +163,7 @@ include("Pseudograph.jl")
 include("GlnGraph.jl")
 
 include("DeformationBases/ActingGroup.jl")
+include("DeformationBases/ArcDiagBasedDeformBasis.jl")
 include("DeformationBases/ArcDiagDeformBasis.jl")
 include("DeformationBases/PseudographDeformBasis.jl")
 include("DeformationBases/GlnGraphDeformBasis.jl")

@@ -1,3 +1,5 @@
+# This needs to be an IdDict, as there are `==` LieAlgebraModules that have been created in different ways,
+# and thus need different acting groups.
 const ActingGroupCache = WeakKeyIdDict{LieAlgebraModule, Tuple{PermGroup, GAPGroupHomomorphism{PermGroup, PermGroup}}}()
 
 function acting_group_with_sgn(V::LieAlgebraModule)
