@@ -4,6 +4,33 @@
     QQi = cyclotomic_field(4)[1]
     QQx = polynomial_ring(QQ, 5)[1]
     mktempdir() do path
+        @testset verbose=true "GlnGraph" begin
+            g1 = GlnGraph(2, 2, [true, false, true, false], [(1, 4), (3, 2)])
+            test_save_load_roundtrip(path, g1) do loaded
+                @test loaded == g1
+            end
+
+            g2 = GlnGraph(4, 4, [true, false, true, false, true, false, true, false], [(1, 8), (3, 6), (5, 2), (7, 4)])
+            test_save_load_roundtrip(path, g2) do loaded
+                @test loaded == g2
+            end
+
+            test_save_load_roundtrip(path, (g1, g2)) do loaded
+                @test length(loaded) == 2
+                @test loaded == (g1, g2)
+            end
+
+            test_save_load_roundtrip(path, [g1, g2]) do loaded
+                @test length(loaded) == 2
+                @test loaded == [g1, g2]
+            end
+
+            test_save_load_roundtrip(path, Dict("foo" => g1, "bar" => g2)) do loaded
+                @test length(loaded) == 2
+                @test issetequal(values(loaded), [g1, g2])
+            end
+
+        end
         @testset verbose=true "SmashProductLie" begin
             @testset "R = $R, LieR = $LieR" for (LieR, R) in [(QQ, QQ), (QQi, QQi), (QQ, QQi), (QQ, QQx)]
                 instances = [

@@ -8,12 +8,41 @@ function patch_oscar_serialization_namespace()
 end
 
 function register_serialization_types()
+    @eval @register_serialization_type GlnGraph
+
     @eval @register_serialization_type SmashProductLie uses_id
     @eval @register_serialization_type SmashProductLieElem
 
     @eval @register_serialization_type SmashProductLieDeform uses_id
     @eval @register_serialization_type SmashProductLieDeformElem
 end
+
+###############################################################################
+#
+#   GlnGraph
+#
+###############################################################################
+
+type_params(g::GlnGraph) = TypeParams(GlnGraph, nothing)
+
+
+function save_object(s::SerializerState, g::GlnGraph)
+    save_data_dict(s) do
+        save_object(s, g.n_left_verts, :n_left_verts)
+        save_object(s, g.n_right_verts, :n_right_verts)
+        save_object(s, g.parity_verts, :parity_verts)
+        save_object(s, g.edges, :edges)
+    end
+end
+
+function load_object(s::DeserializerState, ::Type{<:GlnGraph})
+    n_left_verts = load_object(s, Int, :n_left_verts)
+    n_right_verts = load_object(s, Int, :n_right_verts)
+    parity_verts = load_object(s, Vector{Bool}, :parity_verts)
+    edges = load_object(s, Vector{GlnGraphEdge}, :edges)
+    return GlnGraph(n_left_verts, n_right_verts, parity_verts, edges; check=false, sort=false)
+end
+
 
 ###############################################################################
 #
