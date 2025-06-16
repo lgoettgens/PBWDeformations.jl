@@ -64,3 +64,10 @@ function Oscar.load_object(s::DeserializerState, T::Type{<:Matrix{S}}, params::S
     return T(m)
   end
 end
+
+# upstreamed in https://github.com/oscar-system/Oscar.jl/pull/4997
+function Oscar.load_object(s::DeserializerState, ::Type{MatSpace}, base_ring::SmashProductLie)
+  ncols = Oscar.load_object(s, Int, :ncols)
+  nrows = Oscar.load_object(s, Int, :nrows)
+  return matrix_space(base_ring, nrows, ncols)
+end
