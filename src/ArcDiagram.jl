@@ -598,10 +598,6 @@ function arc_diagram(::Type{Undirected}, a::ArcDiagramDirected)
     return ArcDiagramUndirected(a.n_upper_verts, a.n_lower_verts, a.upper_neighbors, a.lower_neighbors)
 end
 
-function arc_diagram(a::ArcDiagram)
-    return a
-end
-
 ################################################################################
 #
 # Iterators
