@@ -4,33 +4,37 @@
     QQi = cyclotomic_field(4)[1]
     QQx = polynomial_ring(QQ, 5)[1]
     mktempdir() do path
-        @testset verbose=true "GlnGraph" begin
-            g1 = GlnGraph(2, 2, [true, false, true, false], [(1, 4), (3, 2)])
-            test_save_load_roundtrip(path, g1) do loaded
-                @test loaded == g1
+        combinatorial_cases = [
+            (ArcDiagramUndirected, arc_diagram(Undirected, "DBAB", "AD"), arc_diagram(Undirected, "ABBD", "AFFHHDKLLNNK")),
+            (ArcDiagramDirected, arc_diagram(Directed, "dbAB", "aD"), arc_diagram(Directed, "aBbD", "AfFhHdKlLnNk")),
+            (GlnGraph, GlnGraph(2, 2, [true, false, true, false], [(1, 4), (3, 2)]), GlnGraph(4, 4, [true, false, true, false, true, false, true, false], [(1, 8), (3, 6), (5, 2), (7, 4)])),
+        ]
+
+        @testset verbose=true "$type" for (type, x, y) in combinatorial_cases
+            test_save_load_roundtrip(path, x) do loaded
+                @test loaded == x
             end
 
-            g2 = GlnGraph(4, 4, [true, false, true, false, true, false, true, false], [(1, 8), (3, 6), (5, 2), (7, 4)])
-            test_save_load_roundtrip(path, g2) do loaded
-                @test loaded == g2
+            test_save_load_roundtrip(path, y) do loaded
+                @test loaded == y
             end
 
-            test_save_load_roundtrip(path, (g1, g2)) do loaded
+            test_save_load_roundtrip(path, (x, y)) do loaded
                 @test length(loaded) == 2
-                @test loaded == (g1, g2)
+                @test loaded == (x, y)
             end
 
-            test_save_load_roundtrip(path, [g1, g2]) do loaded
+            test_save_load_roundtrip(path, [x, y]) do loaded
                 @test length(loaded) == 2
-                @test loaded == [g1, g2]
+                @test loaded == [x, y]
             end
 
-            test_save_load_roundtrip(path, Dict("foo" => g1, "bar" => g2)) do loaded
+            test_save_load_roundtrip(path, Dict("foo" => x, "bar" => y)) do loaded
                 @test length(loaded) == 2
-                @test issetequal(values(loaded), [g1, g2])
+                @test issetequal(values(loaded), [x, y])
             end
-
         end
+
         @testset verbose=true "SmashProductLie" begin
             @testset "R = $R, LieR = $LieR" for (LieR, R) in [(QQ, QQ), (QQi, QQi), (QQ, QQi), (QQ, QQx)]
                 instances = [

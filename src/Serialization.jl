@@ -8,6 +8,9 @@ function patch_oscar_serialization_namespace()
 end
 
 function register_serialization_types()
+    @eval @register_serialization_type ArcDiagramUndirected
+    @eval @register_serialization_type ArcDiagramDirected
+
     @eval @register_serialization_type GlnGraph
 
     @eval @register_serialization_type SmashProductLie uses_id
@@ -19,12 +22,61 @@ end
 
 ###############################################################################
 #
+#   ArcDiagram
+#
+###############################################################################
+
+type_params(_::ArcDiagramUndirected) = TypeParams(ArcDiagramUndirected, nothing)
+
+function save_object(s::SerializerState, a::ArcDiagramUndirected)
+    save_data_dict(s) do
+        save_object(s, n_upper_vertices(a), :n_upper_verts)
+        save_object(s, n_lower_vertices(a), :n_lower_verts)
+        save_object(s, a.upper_neighbors, :upper_neighbors) # TODO: negative ints instead of tuple
+        save_object(s, a.lower_neighbors, :lower_neighbors)
+    end
+end
+
+function load_object(s::DeserializerState, ::Type{<:ArcDiagramUndirected})
+    n_upper_verts = load_object(s, Int, :n_upper_verts)
+    n_lower_verts = load_object(s, Int, :n_lower_verts)
+    upper_neighbors = load_object(s, Vector{ArcDiagramVertex}, :upper_neighbors)
+    lower_neighbors = load_object(s, Vector{ArcDiagramVertex}, :lower_neighbors)
+    return arc_diagram(Undirected, n_upper_verts, n_lower_verts, upper_neighbors, lower_neighbors; check=false)
+end
+
+type_params(_::ArcDiagramDirected) = TypeParams(ArcDiagramDirected, nothing)
+
+function save_object(s::SerializerState, a::ArcDiagramDirected)
+    save_data_dict(s) do
+        save_object(s, n_upper_vertices(a), :n_upper_verts)
+        save_object(s, n_lower_vertices(a), :n_lower_verts)
+        save_object(s, a.parity_upper_verts, :parity_upper_verts)
+        save_object(s, a.parity_lower_verts, :parity_lower_verts)
+        save_object(s, a.upper_neighbors, :upper_neighbors)
+        save_object(s, a.lower_neighbors, :lower_neighbors)
+    end
+end
+
+function load_object(s::DeserializerState, ::Type{<:ArcDiagramDirected})
+    n_upper_verts = load_object(s, Int, :n_upper_verts)
+    n_lower_verts = load_object(s, Int, :n_lower_verts)
+    parity_upper_verts = load_object(s, Vector{Bool}, :parity_upper_verts)
+    parity_lower_verts = load_object(s, Vector{Bool}, :parity_lower_verts)
+    upper_neighbors = load_object(s, Vector{ArcDiagramVertex}, :upper_neighbors)
+    lower_neighbors = load_object(s, Vector{ArcDiagramVertex}, :lower_neighbors)
+    return arc_diagram(Directed, n_upper_verts, n_lower_verts, parity_upper_verts, parity_lower_verts,
+                       upper_neighbors, lower_neighbors; check=false)
+end
+
+
+###############################################################################
+#
 #   GlnGraph
 #
 ###############################################################################
 
-type_params(g::GlnGraph) = TypeParams(GlnGraph, nothing)
-
+type_params(_::GlnGraph) = TypeParams(GlnGraph, nothing)
 
 function save_object(s::SerializerState, g::GlnGraph)
     save_data_dict(s) do
