@@ -7,8 +7,6 @@ of the smash product, and the other entry is its additive inverse.
 struct StdDeformBasis{T <: SmashProductLieElem} <: DeformBasis{T}
     len::Int
     iter
-    extra_data::Dict{DeformationMap{T}, Nothing}
-    no_normalize::Bool
 
     function StdDeformBasis(sp::SmashProductLie, degs::AbstractVector{Int})
         @req coefficient_ring(sp) === coefficient_ring(base_lie_algebra(sp)) "Deformation bases don't support extension of the coefficient ring of the smash product."
@@ -25,7 +23,7 @@ struct StdDeformBasis{T <: SmashProductLieElem} <: DeformBasis{T}
         )
 
         len = div(dimV * (dimV - 1), 2) * sum(binomial(dimL + k - 1, k) for k in degs)
-        return new{elem_type(sp)}(len, iter, Dict{DeformationMap{elem_type(sp)}, Nothing}(), false)
+        return new{elem_type(sp)}(len, iter)
     end
 end
 
