@@ -5,10 +5,16 @@ where one entry is a pure tensor power of degree ∈ `degs` over the Lie algebra
 of the smash product, and the other entry is its additive inverse.
 """
 struct StdDeformBasis{T <: SmashProductLieElem} <: DeformBasis{T}
+    sp::SmashProductLie # parent_type(T)
+    degs::Vector{Int}
     len::Int
     iter
 
     function StdDeformBasis(sp::SmashProductLie, degs::AbstractVector{Int})
+        return StdDeformBasis(sp, collect(degs))
+    end
+
+    function StdDeformBasis(sp::SmashProductLie, degs::Vector{Int})
         @req coefficient_ring(sp) === coefficient_ring(base_lie_algebra(sp)) "Deformation bases don't support extension of the coefficient ring of the smash product."
         dimL = dim(base_lie_algebra(sp))
         dimV = dim(base_module(sp))
