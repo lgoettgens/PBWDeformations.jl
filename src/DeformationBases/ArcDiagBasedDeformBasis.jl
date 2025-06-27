@@ -40,11 +40,11 @@ struct ArcDiagBasedDeformBasis{ParamT, T <: SmashProductLieElem} <: DeformBasis{
             arc_diag_based_basis_iteration(ArcDiagBasedDeformBasis{ParamT}, LieType, sp, degs, param_reverse_map; no_normalize)
 
         if no_normalize
-            return ArcDiagBasedDeformBasis{ParamT, elem_type(sp)}(sp, degs, len1, iter1, extra_data; no_normalize, strict=false)
+            return ArcDiagBasedDeformBasis{ParamT, elem_type(sp)}(sp, degs, len1, iter1, param_reverse_map; no_normalize, strict=false)
         else
             iter2, len2 = filter_independent(coefficient_ring(sp), iter1)
             @assert iter2 isa Vector{<:DeformationMap{elem_type(sp)}}
-            return ArcDiagBasedDeformBasis{ParamT, elem_type(sp)}(sp, degs, len2, iter2, extra_data; no_normalize, strict=true)
+            return ArcDiagBasedDeformBasis{ParamT, elem_type(sp)}(sp, degs, len2, iter2, param_reverse_map; no_normalize, strict=true)
         end
     end
 
@@ -59,7 +59,7 @@ struct ArcDiagBasedDeformBasis{ParamT, T <: SmashProductLieElem} <: DeformBasis{
     ) where {ParamT, T <: SmashProductLieElem}
         @assert sp isa parent_type(T)
         # This inner constructor just sets the fields directly, without any checks.
-        return new{ParamT, T}(sp, degs, len, iter, extra_data, no_normalize, strict)
+        return new{ParamT, T}(sp, degs, len, iter, param_reverse_map, no_normalize, strict)
     end
 end
 

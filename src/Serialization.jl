@@ -243,8 +243,8 @@ end
 #
 ###############################################################################
 
-function type_params(b::ArcDiagBasedDeformBasis{DataT}) where {DataT}
-    return TypeParams(ArcDiagBasedDeformBasis{DataT}, b.sp)
+function type_params(b::ArcDiagBasedDeformBasis{ParamT}) where {ParamT}
+    return TypeParams(ArcDiagBasedDeformBasis{ParamT}, b.sp)
 end
 
 function save_object(s::SerializerState, b::ArcDiagBasedDeformBasis)
@@ -253,19 +253,19 @@ function save_object(s::SerializerState, b::ArcDiagBasedDeformBasis)
         save_object(s, b.degs, :degs)
         save_object(s, length(b), :len)
         save_object(s, b.iter, :iter)
-        save_object(s, b.extra_data, :extra_data)
+        save_object(s, b.param_reverse_map, :param_reverse_map)
         save_object(s, b.no_normalize, :no_normalize)
         save_object(s, b.strict, :strict)
     end
 end
 
-function load_object(s::DeserializerState, ::Type{<:ArcDiagBasedDeformBasis{DataT}}, sp::SmashProductLie) where {DataT}
+function load_object(s::DeserializerState, ::Type{<:ArcDiagBasedDeformBasis{ParamT}}, sp::SmashProductLie) where {ParamT}
     degs = load_object(s, Vector{Int}, :degs)
     len = load_object(s, Int, :len)
     mat_space = matrix_space(sp, dim(base_module(sp)), dim(base_module(sp)))
     iter = load_object(s, Vector{DeformationMap{elem_type(sp)}}, mat_space, :iter)
-    extra_data = load_object(s, Dict{DeformationMap{elem_type(sp)}, Set{Tuple{Tuple{Int, Int}, DataT}}}, Dict(:key_params => mat_space, :value_params => nothing), :extra_data)
+    param_reverse_map = load_object(s, Dict{DeformationMap{elem_type(sp)}, Set{Tuple{Tuple{Int, Int}, ParamT}}}, Dict(:key_params => mat_space, :value_params => nothing), :param_reverse_map)
     no_normalize = load_object(s, Bool, :no_normalize)
     strict = load_object(s, Bool, :strict)
-    return ArcDiagBasedDeformBasis{DataT, elem_type(sp)}(sp, degs, len, iter, extra_data; no_normalize=no_normalize, strict=strict)
+    return ArcDiagBasedDeformBasis{ParamT, elem_type(sp)}(sp, degs, len, iter, param_reverse_map; no_normalize=no_normalize, strict=strict)
 end

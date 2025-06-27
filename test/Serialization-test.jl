@@ -128,7 +128,7 @@
                         V = tensor_product(standard_module(L), dual(standard_module(L)))
                         sp = smash_product(R, L, V)
                         b = GlnGraphDeformBasis(sp, 4:4)
-                        kappa = only(Iterators.filter(m -> ((1, 1), (GlnGraph(2, 2, [true, false, true, false], [(1, 4), (3, 2)]), [2, 0], [2])) in lookup_data(m, b), b))
+                        kappa = only(Iterators.filter(m -> ((1, 1), (GlnGraph(2, 2, [true, false, true, false], [(1, 4), (3, 2)]), [2, 0], [2])) in lookup_params(m, b), b))
                         d = deform(sp, kappa)
                     end,
                 ]
