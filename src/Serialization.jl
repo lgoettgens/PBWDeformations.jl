@@ -18,6 +18,8 @@ function register_serialization_types()
 
     @eval @register_serialization_type SmashProductLieDeform uses_id
     @eval @register_serialization_type SmashProductLieDeformElem
+
+    @eval @register_serialization_type StdDeformBasis
 end
 
 ###############################################################################
@@ -176,4 +178,25 @@ function load_object(s::DeserializerState, ::Type{<:SmashProductLieDeformElem}, 
     e = d(load_object(s, elem_type(underlying_algebra(d)), underlying_algebra(d), :data))
     e.simplified = load_object(s, Bool, :is_simplified)
     return e
+end
+
+###############################################################################
+#
+#   StdDeformBasis
+#
+###############################################################################
+
+function type_params(b::StdDeformBasis)
+    return TypeParams(StdDeformBasis, b.sp)
+end
+
+function save_object(s::SerializerState, b::StdDeformBasis)
+    save_data_dict(s) do
+        save_object(s, b.degs, :degs)
+    end
+end
+
+function load_object(s::DeserializerState, ::Type{<:StdDeformBasis}, sp::SmashProductLie)
+    degs = load_object(s, Vector{Int}, :degs)
+    return StdDeformBasis(sp, degs)
 end

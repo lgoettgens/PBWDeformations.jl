@@ -162,5 +162,44 @@
                 end
             end
         end
+
+        @testset verbose=true "StdDeformBasis" begin
+            @testset "R = $R" for R in [QQ, QQi]
+                instances = [
+                    begin
+                        L = special_linear_lie_algebra(R, 2)
+                        V = standard_module(L)
+                        sp = smash_product(R, L, V)
+                        b = StdDeformBasis(sp, 0:3)
+                    end,
+                    begin
+                        L = special_orthogonal_lie_algebra(R, 4, identity_matrix(R, 4))
+                        V = exterior_power_obj(standard_module(L), 2)
+                        sp = smash_product(R, L, V)
+                        b = StdDeformBasis(sp, 0:2)
+                    end,
+                    begin
+                        L = general_linear_lie_algebra(R, 3)
+                        V = direct_sum(standard_module(L), dual(standard_module(L)))
+                        sp = smash_product(R, L, V)
+                        b = StdDeformBasis(sp, 1:2)
+                    end,
+                    begin
+                        L = general_linear_lie_algebra(R, 2)
+                        V = tensor_product(standard_module(L), dual(standard_module(L)))
+                        sp = smash_product(R, L, V)
+                        b = StdDeformBasis(sp, 1:1)
+                    end,
+                ]
+
+                @testset "instance $i" for (i, b) in enumerate(instances)
+                    test_save_load_roundtrip(path, b) do loaded
+                        @test loaded.sp === b.sp
+                        @test loaded.degs == b.degs
+                        @test collect(loaded) == collect(b)
+                    end
+                end
+            end
+        end
     end
 end
