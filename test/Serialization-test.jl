@@ -234,5 +234,32 @@
                 end
             end
         end
+
+        @testset verbose=true "GlnGraphDeformBasis" begin
+            @testset "R = $R" for R in [QQ, QQi]
+                instances = [
+                    begin
+                        L = general_linear_lie_algebra(R, 3)
+                        V = direct_sum(standard_module(L), dual(standard_module(L)))
+                        sp = smash_product(R, L, V)
+                        b = GlnGraphDeformBasis(sp, 1:3)
+                    end,
+                    begin
+                        L = general_linear_lie_algebra(R, 2)
+                        V = tensor_product(standard_module(L), dual(standard_module(L)))
+                        sp = smash_product(R, L, V)
+                        b = GlnGraphDeformBasis(sp, 0:2)
+                    end,
+                ]
+
+                @testset "instance $i" for (i, b) in enumerate(instances)
+                    test_save_load_roundtrip(path, b) do loaded
+                        @test loaded.sp === b.sp
+                        @test loaded.degs == b.degs
+                        @test collect(loaded) == collect(b)
+                    end
+                end
+            end
+        end
     end
 end

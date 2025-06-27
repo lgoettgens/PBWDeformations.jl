@@ -8,6 +8,8 @@ function patch_oscar_serialization_namespace()
 end
 
 function register_serialization_types()
+    @eval @register_serialization_type Partition
+
     @eval @register_serialization_type ArcDiagramUndirected
     @eval @register_serialization_type ArcDiagramDirected
 
@@ -22,6 +24,23 @@ function register_serialization_types()
     @eval @register_serialization_type StdDeformBasis
 
     @eval @register_serialization_type ArcDiagDeformBasis
+    @eval @register_serialization_type GlnGraphDeformBasis
+end
+
+###############################################################################
+#
+#   ArcDiagram
+#
+###############################################################################
+
+type_params(_::Partition{T}) where {T} = TypeParams(Partition, TypeParams(T, nothing))
+
+function save_object(s::SerializerState, p::Partition)
+    save_object(s, data(p))
+end
+
+function load_object(s::DeserializerState, ::Type{<:Partition{T}}) where {T}
+    return partition(load_object(s, Vector{T}))
 end
 
 ###############################################################################
