@@ -36,7 +36,7 @@ function save_object(s::SerializerState, a::ArcDiagramUndirected)
     save_data_dict(s) do
         save_object(s, n_upper_vertices(a), :n_upper_verts)
         save_object(s, n_lower_vertices(a), :n_lower_verts)
-        save_object(s, a.upper_neighbors, :upper_neighbors) # TODO: negative ints instead of tuple
+        save_object(s, a.upper_neighbors, :upper_neighbors)
         save_object(s, a.lower_neighbors, :lower_neighbors)
     end
 end
@@ -57,7 +57,7 @@ function save_object(s::SerializerState, a::ArcDiagramDirected)
         save_object(s, n_lower_vertices(a), :n_lower_verts)
         save_object(s, a.parity_upper_verts, :parity_upper_verts)
         save_object(s, a.parity_lower_verts, :parity_lower_verts)
-        save_object(s, a.upper_neighbors, :upper_neighbors) # TODO: negative ints instead of tuple
+        save_object(s, a.upper_neighbors, :upper_neighbors)
         save_object(s, a.lower_neighbors, :lower_neighbors)
     end
 end
@@ -141,13 +141,17 @@ type_params(e::SmashProductLieElem) = TypeParams(SmashProductLieElem, parent(e))
 function save_object(s::SerializerState, e::SmashProductLieElem)
     save_data_dict(s) do
         save_object(s, data(e), :data)
-        save_object(s, e.simplified, :is_simplified)
+        if !is_zero(data(e))
+            save_object(s, e.simplified, :is_simplified)
+        end
     end
 end
 
 function load_object(s::DeserializerState, ::Type{<:SmashProductLieElem}, sp::SmashProductLie)
     e = sp(load_object(s, elem_type(underlying_algebra(sp)), underlying_algebra(sp), :data))
-    e.simplified = load_object(s, Bool, :is_simplified)
+    if haskey(s, :is_simplified)
+        e.simplified = load_object(s, Bool, :is_simplified)
+    end
     return e
 end
 
@@ -179,13 +183,17 @@ type_params(e::SmashProductLieDeformElem) = TypeParams(SmashProductLieDeformElem
 function save_object(s::SerializerState, e::SmashProductLieDeformElem)
     save_data_dict(s) do
         save_object(s, data(e), :data)
-        save_object(s, e.simplified, :is_simplified)
+        if !is_zero(data(e))
+            save_object(s, e.simplified, :is_simplified)
+        end
     end
 end
 
 function load_object(s::DeserializerState, ::Type{<:SmashProductLieDeformElem}, d::SmashProductLieDeform)
     e = d(load_object(s, elem_type(underlying_algebra(d)), underlying_algebra(d), :data))
-    e.simplified = load_object(s, Bool, :is_simplified)
+    if haskey(s, :is_simplified)
+        e.simplified = load_object(s, Bool, :is_simplified)
+    end
     return e
 end
 
@@ -220,15 +228,6 @@ function type_params(b::ArcDiagBasedDeformBasis{DataT}) where {DataT}
     return TypeParams(ArcDiagBasedDeformBasis{DataT}, b.sp)
 end
 
-#=
-sp::SmashProductLie,
-        degs::Vector{Int},
-        len::Int,
-        iter,
-        extra_data::Dict{DeformationMap{T}, Set{Tuple{Tuple{Int, Int}, DataT}}};
-        no_normalize::Bool=false,
-        strict::Bool
-        =#
 function save_object(s::SerializerState, b::ArcDiagBasedDeformBasis)
     @req b.strict "Serialization is only supported for ArcDiagBasedDeformBasis that are constructor non-lazy"
     save_data_dict(s) do
