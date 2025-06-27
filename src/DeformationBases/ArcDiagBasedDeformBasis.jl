@@ -72,12 +72,12 @@ Base.length(basis::ArcDiagBasedDeformBasis) = basis.len
 
 
 """
-    lookup_data(m::DeformationMap{T}, basis::ArcDiagBasedDeformBasis{ParamT, T}) where {T <: SmashProductLieElem}
+    lookup_params(m::DeformationMap{T}, basis::ArcDiagBasedDeformBasis{ParamT, T}) where {T <: SmashProductLieElem}
 
 Look up additional data that was used to generate the deformation map `m` in the basis `basis`.
 This can e.g. be an arc diagram or a pseudograph.
 """
-function lookup_data(m::DeformationMap{T}, basis::ArcDiagBasedDeformBasis{ParamT, T}) where {ParamT, T <: SmashProductLieElem}
+function lookup_params(m::DeformationMap{T}, basis::ArcDiagBasedDeformBasis{ParamT, T}) where {ParamT, T <: SmashProductLieElem}
     if !basis.no_normalize
         m = normalize(m)
     end
