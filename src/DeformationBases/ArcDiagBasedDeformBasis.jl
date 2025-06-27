@@ -1,62 +1,62 @@
-struct ArcDiagBasedDeformBasis{DataT, T <: SmashProductLieElem} <: DeformBasis{T}
+struct ArcDiagBasedDeformBasis{ParamT, T <: SmashProductLieElem} <: DeformBasis{T}
     sp::SmashProductLie # parent_type(T)
     degs::Vector{Int}
     len::Int
     iter
-    extra_data::Dict{DeformationMap{T}, Set{Tuple{Tuple{Int, Int}, DataT}}}
+    param_reverse_map::Dict{DeformationMap{T}, Set{Tuple{Tuple{Int, Int}, ParamT}}}
     no_normalize::Bool
 
-    function ArcDiagBasedDeformBasis{DataT}(
+    function ArcDiagBasedDeformBasis{ParamT}(
         sp::SmashProductLie,
         degs::AbstractVector{Int};
         no_normalize::Bool=false,
-    ) where {DataT}
-        return ArcDiagBasedDeformBasis{DataT}(sp, collect(degs); no_normalize)
+    ) where {ParamT}
+        return ArcDiagBasedDeformBasis{ParamT}(sp, collect(degs); no_normalize)
     end
 
-    function ArcDiagBasedDeformBasis{DataT}(
+    function ArcDiagBasedDeformBasis{ParamT}(
         sp::SmashProductLie,
         degs::Vector{Int};
         no_normalize::Bool=false,
-    ) where {DataT}
+    ) where {ParamT}
         LieType = Val(get_attribute(base_lie_algebra(sp), :type, nothing)::Union{Nothing, Symbol})
         @req !isnothing(LieType) "The type of Lie algebra cannot be deduced."
-        return ArcDiagBasedDeformBasis{DataT}(LieType, sp, degs; no_normalize)
+        return ArcDiagBasedDeformBasis{ParamT}(LieType, sp, degs; no_normalize)
     end
 
-    function ArcDiagBasedDeformBasis{DataT}(
+    function ArcDiagBasedDeformBasis{ParamT}(
         LieType::Union{SO, GL},
         sp::SmashProductLie,
         degs::Vector{Int};
         no_normalize::Bool=false,
-    ) where {DataT}
-        check_input(ArcDiagBasedDeformBasis{DataT}, LieType, sp)
+    ) where {ParamT}
+        check_input(ArcDiagBasedDeformBasis{ParamT}, LieType, sp)
         @req coefficient_ring(sp) === coefficient_ring(base_lie_algebra(sp)) "Deformation bases don't support extension of the coefficient ring of the smash product."
 
-        extra_data = Dict{DeformationMap{elem_type(sp)}, Set{Tuple{Tuple{Int, Int}, DataT}}}()
+        param_reverse_map = Dict{DeformationMap{elem_type(sp)}, Set{Tuple{Tuple{Int, Int}, ParamT}}}()
 
         iter1, len1 =
-            arc_diag_based_basis_iteration(ArcDiagBasedDeformBasis{DataT}, LieType, sp, degs, extra_data; no_normalize)
+            arc_diag_based_basis_iteration(ArcDiagBasedDeformBasis{ParamT}, LieType, sp, degs, param_reverse_map; no_normalize)
 
         if no_normalize
-            return ArcDiagBasedDeformBasis{DataT, elem_type(sp)}(sp, degs, len1, iter1, extra_data; no_normalize)
+            return ArcDiagBasedDeformBasis{ParamT, elem_type(sp)}(sp, degs, len1, iter1, param_reverse_map; no_normalize)
         else
             iter2, len2 = filter_independent(coefficient_ring(sp), iter1)
-            return ArcDiagBasedDeformBasis{DataT, elem_type(sp)}(sp, degs, len2, iter2, extra_data; no_normalize)
+            return ArcDiagBasedDeformBasis{ParamT, elem_type(sp)}(sp, degs, len2, iter2, param_reverse_map; no_normalize)
         end
     end
 
-    function ArcDiagBasedDeformBasis{DataT, T}(
+    function ArcDiagBasedDeformBasis{ParamT, T}(
         sp::SmashProductLie,
         degs::Vector{Int},
         len::Int,
         iter,
-        extra_data::Dict{DeformationMap{T}, Set{Tuple{Tuple{Int, Int}, DataT}}};
+        param_reverse_map::Dict{DeformationMap{T}, Set{Tuple{Tuple{Int, Int}, ParamT}}};
         no_normalize::Bool=false,
-    ) where {DataT, T <: SmashProductLieElem}
+    ) where {ParamT, T <: SmashProductLieElem}
         @assert sp isa parent_type(T)
         # This inner constructor just sets the fields directly, without any checks.
-        return new{DataT, T}(sp, degs, len, iter, extra_data, no_normalize)
+        return new{ParamT, T}(sp, degs, len, iter, param_reverse_map, no_normalize)
     end
 end
 
@@ -72,17 +72,17 @@ Base.length(basis::ArcDiagBasedDeformBasis) = basis.len
 
 
 """
-    lookup_data(m::DeformationMap{T}, basis::ArcDiagBasedDeformBasis{DataT, T}) where {T <: SmashProductLieElem}
+    lookup_params(m::DeformationMap{T}, basis::ArcDiagBasedDeformBasis{ParamT, T}) where {T <: SmashProductLieElem}
 
 Look up additional data that was used to generate the deformation map `m` in the basis `basis`.
 This can e.g. be an arc diagram or a pseudograph.
 """
-function lookup_data(m::DeformationMap{T}, basis::ArcDiagBasedDeformBasis{DataT, T}) where {DataT, T <: SmashProductLieElem}
+function lookup_params(m::DeformationMap{T}, basis::ArcDiagBasedDeformBasis{ParamT, T}) where {ParamT, T <: SmashProductLieElem}
     if !basis.no_normalize
         m = normalize(m)
     end
-    if haskey(basis.extra_data, m)
-        return basis.extra_data[m]
+    if haskey(basis.param_reverse_map, m)
+        return basis.param_reverse_map[m]
     else
         return nothing
     end
@@ -118,13 +118,13 @@ end
 
 
 function arc_diag_based_basis_iteration(
-    ::Type{ArcDiagBasedDeformBasis{DataT}},
+    ::Type{ArcDiagBasedDeformBasis{ParamT}},
     LieType::Union{SO, GL},
     sp::SmashProductLie{C, LieC, LieT},
     degs::AbstractVector{Int},
-    extra_data::Dict{DeformationMap{SmashProductLieElem{C, LieC, LieT}}, Set{Tuple{Tuple{Int, Int}, DataT}}};
+    param_reverse_map::Dict{DeformationMap{SmashProductLieElem{C, LieC, LieT}}, Set{Tuple{Tuple{Int, Int}, ParamT}}};
     no_normalize::Bool,
-) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}, DataT}
+) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}, ParamT}
     V = base_module(sp)
 
     V_nice, h = isomorphic_module_with_simple_structure(V)
@@ -161,7 +161,7 @@ function arc_diag_based_basis_iteration(
                 case = :tensor_product
             end
 
-            data_iter, len = data_iter_and_len(ArcDiagBasedDeformBasis{DataT}, LieType, W, case, d)
+            data_iter, len = data_iter_and_len(ArcDiagBasedDeformBasis{ParamT}, LieType, W, case, d)
             prog_meter = ProgressMeter.Progress(
                 len;
                 output=stderr,
@@ -170,7 +170,7 @@ function arc_diag_based_basis_iteration(
             )
             generate_showvalues(counter, data) = () -> [("iteration", (counter, data))]
 
-            should_use_data_cache = should_use_data_cache_type(ArcDiagBasedDeformBasis{DataT})()
+            should_use_data_cache = should_use_data_cache_type(ArcDiagBasedDeformBasis{ParamT})()
             @assert isnothing(should_use_data_cache) || should_use_data_cache isa Dict{<:Any, Bool}
 
             iter = let W=W, case=case # avoid closure capture
@@ -178,7 +178,7 @@ function arc_diag_based_basis_iteration(
                 enumerate |>
                 Fix1(Iterators.filter, arg -> begin
                     _, data = arg
-                    should_use_data(ArcDiagBasedDeformBasis{DataT}, LieType, data, sp, W, case, should_use_data_cache)
+                    should_use_data(ArcDiagBasedDeformBasis{ParamT}, LieType, data, sp, W, case, should_use_data_cache)
                 end) |>
                 Fix1(Iterators.map, arg -> begin
                     counter, data = arg
@@ -186,7 +186,7 @@ function arc_diag_based_basis_iteration(
                 end) |>
                 Fix1(Iterators.filter, arg -> begin
                     _, _, diag = arg
-                    should_use_arc_diagram(ArcDiagBasedDeformBasis{DataT}, LieType, diag, sp, W, case)
+                    should_use_arc_diagram(ArcDiagBasedDeformBasis{ParamT}, LieType, diag, sp, W, case)
                 end) |>
                 Fix1(
                     Iterators.map, arg -> begin
@@ -203,10 +203,10 @@ function arc_diag_based_basis_iteration(
                         if !no_normalize
                             basis_elem = normalize(basis_elem)
                         end
-                        if haskey(extra_data, basis_elem)
-                            push!(extra_data[basis_elem], ((i_l, i_r), data))
+                        if haskey(param_reverse_map, basis_elem)
+                            push!(param_reverse_map[basis_elem], ((i_l, i_r), data))
                         else
-                            extra_data[basis_elem] = Set([((i_l, i_r), data)])
+                            param_reverse_map[basis_elem] = Set([((i_l, i_r), data)])
                         end
                         ProgressMeter.update!(prog_meter, counter; showvalues=generate_showvalues(counter, data))
                         basis_elem

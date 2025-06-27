@@ -1,4 +1,4 @@
-const GlnGraphDeformBasisDataT = Tuple{GlnGraph, Vector{Int}, Partition{Int}}
+const GlnGraphDeformBasisParamT = Tuple{GlnGraph, Vector{Int}, Partition{Int}}
 
 """
 Concrete subtype of [`DeformBasis`](@ref).
@@ -7,7 +7,7 @@ which gets transformed to an arc diagram and then handled as
 in [`ArcDiagDeformBasis`](@ref).
 This process is a generalization of [FM22](@cite).
 """
-const GlnGraphDeformBasis{T} = ArcDiagBasedDeformBasis{GlnGraphDeformBasisDataT, T} where {T <: SmashProductLieElem}
+const GlnGraphDeformBasis{T} = ArcDiagBasedDeformBasis{GlnGraphDeformBasisParamT, T} where {T <: SmashProductLieElem}
 
 function check_input(
     ::Type{GlnGraphDeformBasis},
@@ -52,7 +52,7 @@ end
 function should_use_data(
     ::Type{GlnGraphDeformBasis},
     LieType::GL,
-    data::GlnGraphDeformBasisDataT,
+    data::GlnGraphDeformBasisParamT,
     ::SmashProductLie,
     V::LieAlgebraModule,
     ::Symbol,

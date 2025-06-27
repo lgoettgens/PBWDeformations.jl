@@ -22,4 +22,4 @@ PseudographDeformBasis
 
 ## Reverse direction
 Given a basis element of an above basis, one can lookup all pseudographs that induce it (up to a scalar).
-See [`lookup_data`](@ref) for more details.
+See [`lookup_params`](@ref) for more details.

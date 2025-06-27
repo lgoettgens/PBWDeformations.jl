@@ -23,5 +23,5 @@ ArcDiagDeformBasis
 ## Reverse direction
 Given a basis element of an above basis, one can lookup all arc diagrams that induce it (up to a scalar).
 ```@docs
-lookup_data
+lookup_params
 ```
