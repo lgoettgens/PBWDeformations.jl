@@ -3,7 +3,7 @@ struct ArcDiagBasedDeformBasis{ParamT, T <: SmashProductLieElem} <: DeformBasis{
     degs::Vector{Int}
     len::Int
     iter
-    extra_data::Dict{DeformationMap{T}, Set{Tuple{Tuple{Int, Int}, ParamT}}}
+    param_reverse_map::Dict{DeformationMap{T}, Set{Tuple{Tuple{Int, Int}, ParamT}}}
     no_normalize::Bool
 
     function ArcDiagBasedDeformBasis{ParamT}(
@@ -33,16 +33,16 @@ struct ArcDiagBasedDeformBasis{ParamT, T <: SmashProductLieElem} <: DeformBasis{
         check_input(ArcDiagBasedDeformBasis{ParamT}, LieType, sp)
         @req coefficient_ring(sp) === coefficient_ring(base_lie_algebra(sp)) "Deformation bases don't support extension of the coefficient ring of the smash product."
 
-        extra_data = Dict{DeformationMap{elem_type(sp)}, Set{Tuple{Tuple{Int, Int}, ParamT}}}()
+        param_reverse_map = Dict{DeformationMap{elem_type(sp)}, Set{Tuple{Tuple{Int, Int}, ParamT}}}()
 
         iter1, len1 =
-            arc_diag_based_basis_iteration(ArcDiagBasedDeformBasis{ParamT}, LieType, sp, degs, extra_data; no_normalize)
+            arc_diag_based_basis_iteration(ArcDiagBasedDeformBasis{ParamT}, LieType, sp, degs, param_reverse_map; no_normalize)
 
         if no_normalize
-            return ArcDiagBasedDeformBasis{ParamT, elem_type(sp)}(sp, degs, len1, iter1, extra_data; no_normalize)
+            return ArcDiagBasedDeformBasis{ParamT, elem_type(sp)}(sp, degs, len1, iter1, param_reverse_map; no_normalize)
         else
             iter2, len2 = filter_independent(coefficient_ring(sp), iter1)
-            return ArcDiagBasedDeformBasis{ParamT, elem_type(sp)}(sp, degs, len2, iter2, extra_data; no_normalize)
+            return ArcDiagBasedDeformBasis{ParamT, elem_type(sp)}(sp, degs, len2, iter2, param_reverse_map; no_normalize)
         end
     end
 
@@ -51,12 +51,12 @@ struct ArcDiagBasedDeformBasis{ParamT, T <: SmashProductLieElem} <: DeformBasis{
         degs::Vector{Int},
         len::Int,
         iter,
-        extra_data::Dict{DeformationMap{T}, Set{Tuple{Tuple{Int, Int}, ParamT}}};
+        param_reverse_map::Dict{DeformationMap{T}, Set{Tuple{Tuple{Int, Int}, ParamT}}};
         no_normalize::Bool=false,
     ) where {ParamT, T <: SmashProductLieElem}
         @assert sp isa parent_type(T)
         # This inner constructor just sets the fields directly, without any checks.
-        return new{ParamT, T}(sp, degs, len, iter, extra_data, no_normalize)
+        return new{ParamT, T}(sp, degs, len, iter, param_reverse_map, no_normalize)
     end
 end
 
@@ -81,8 +81,8 @@ function lookup_data(m::DeformationMap{T}, basis::ArcDiagBasedDeformBasis{ParamT
     if !basis.no_normalize
         m = normalize(m)
     end
-    if haskey(basis.extra_data, m)
-        return basis.extra_data[m]
+    if haskey(basis.param_reverse_map, m)
+        return basis.param_reverse_map[m]
     else
         return nothing
     end
@@ -122,7 +122,7 @@ function arc_diag_based_basis_iteration(
     LieType::Union{SO, GL},
     sp::SmashProductLie{C, LieC, LieT},
     degs::AbstractVector{Int},
-    extra_data::Dict{DeformationMap{SmashProductLieElem{C, LieC, LieT}}, Set{Tuple{Tuple{Int, Int}, ParamT}}};
+    param_reverse_map::Dict{DeformationMap{SmashProductLieElem{C, LieC, LieT}}, Set{Tuple{Tuple{Int, Int}, ParamT}}};
     no_normalize::Bool,
 ) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}, ParamT}
     V = base_module(sp)
@@ -203,10 +203,10 @@ function arc_diag_based_basis_iteration(
                         if !no_normalize
                             basis_elem = normalize(basis_elem)
                         end
-                        if haskey(extra_data, basis_elem)
-                            push!(extra_data[basis_elem], ((i_l, i_r), data))
+                        if haskey(param_reverse_map, basis_elem)
+                            push!(param_reverse_map[basis_elem], ((i_l, i_r), data))
                         else
-                            extra_data[basis_elem] = Set([((i_l, i_r), data)])
+                            param_reverse_map[basis_elem] = Set([((i_l, i_r), data)])
                         end
                         ProgressMeter.update!(prog_meter, counter; showvalues=generate_showvalues(counter, data))
                         basis_elem
