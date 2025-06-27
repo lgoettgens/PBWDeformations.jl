@@ -1,4 +1,4 @@
-const PseudographDeformBasisDataT = Tuple{PseudographLabelled{Int}, Partition{Int}}
+const PseudographDeformBasisParamT = Tuple{PseudographLabelled{Int}, Partition{Int}}
 
 """
 Concrete subtype of [`DeformBasis`](@ref).
@@ -8,7 +8,7 @@ in [`ArcDiagDeformBasis`](@ref).
 This process is due to [FM22](@cite).
 """
 const PseudographDeformBasis{T} =
-    ArcDiagBasedDeformBasis{PseudographDeformBasisDataT, T} where {T <: SmashProductLieElem}
+    ArcDiagBasedDeformBasis{PseudographDeformBasisParamT, T} where {T <: SmashProductLieElem}
 
 function check_input(
     ::Type{PseudographDeformBasis},
@@ -40,7 +40,7 @@ end
 function should_use_data(
     ::Type{PseudographDeformBasis},
     LieType::SO,
-    data::PseudographDeformBasisDataT,
+    data::PseudographDeformBasisParamT,
     ::SmashProductLie,
     ::LieAlgebraModule,
     ::Symbol,

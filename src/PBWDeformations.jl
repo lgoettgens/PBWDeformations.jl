@@ -109,7 +109,7 @@ export is_pbwdeformation
 export is_span_equal
 export is_span_subset
 export isomorphic_module_with_simple_structure
-export lookup_data
+export lookup_params
 export lower_vertex, is_lower_vertex
 export lower_vertices
 export matrix_repr_basis

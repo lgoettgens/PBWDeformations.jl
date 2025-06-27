@@ -1,4 +1,4 @@
-const ArcDiagDeformBasisDataT = ArcDiagram
+const ArcDiagDeformBasisParamT = ArcDiagram
 
 """
 Concrete subtype of [`DeformBasis`](@ref).
@@ -6,7 +6,7 @@ Each element of the basis is induced by an arc diagram of a suitable size,
 which gets symmetrized and specialised to the given smash product.
 This process is due to [FM22](@cite).
 """
-const ArcDiagDeformBasis{T} = ArcDiagBasedDeformBasis{ArcDiagDeformBasisDataT, T} where {T <: SmashProductLieElem}
+const ArcDiagDeformBasis{T} = ArcDiagBasedDeformBasis{ArcDiagDeformBasisParamT, T} where {T <: SmashProductLieElem}
 
 function check_input(
     ::Type{ArcDiagDeformBasis},
@@ -34,7 +34,7 @@ end
 function should_use_data(
     ::Type{ArcDiagDeformBasis},
     LieType::Union{SO, GL},
-    data::ArcDiagDeformBasisDataT,
+    data::ArcDiagDeformBasisParamT,
     ::SmashProductLie,
     ::LieAlgebraModule,
     ::Symbol,
