@@ -1,4 +1,6 @@
 struct ArcDiagBasedDeformBasis{DataT, T <: SmashProductLieElem} <: DeformBasis{T}
+    sp::SmashProductLie # parent_type(T)
+    degs::Vector{Int}
     len::Int
     iter
     extra_data::Dict{DeformationMap{T}, Set{Tuple{Tuple{Int, Int}, DataT}}}
@@ -9,6 +11,14 @@ struct ArcDiagBasedDeformBasis{DataT, T <: SmashProductLieElem} <: DeformBasis{T
         degs::AbstractVector{Int};
         no_normalize::Bool=false,
     ) where {DataT}
+        return ArcDiagBasedDeformBasis{DataT}(sp, collect(degs); no_normalize)
+    end
+
+    function ArcDiagBasedDeformBasis{DataT}(
+        sp::SmashProductLie,
+        degs::Vector{Int};
+        no_normalize::Bool=false,
+    ) where {DataT}
         LieType = Val(get_attribute(base_lie_algebra(sp), :type, nothing)::Union{Nothing, Symbol})
         @req !isnothing(LieType) "The type of Lie algebra cannot be deduced."
         return ArcDiagBasedDeformBasis{DataT}(LieType, sp, degs; no_normalize)
@@ -17,7 +27,7 @@ struct ArcDiagBasedDeformBasis{DataT, T <: SmashProductLieElem} <: DeformBasis{T
     function ArcDiagBasedDeformBasis{DataT}(
         LieType::Union{SO, GL},
         sp::SmashProductLie,
-        degs::AbstractVector{Int};
+        degs::Vector{Int};
         no_normalize::Bool=false,
     ) where {DataT}
         check_input(ArcDiagBasedDeformBasis{DataT}, LieType, sp)
@@ -29,11 +39,24 @@ struct ArcDiagBasedDeformBasis{DataT, T <: SmashProductLieElem} <: DeformBasis{T
             arc_diag_based_basis_iteration(ArcDiagBasedDeformBasis{DataT}, LieType, sp, degs, extra_data; no_normalize)
 
         if no_normalize
-            return new{DataT, elem_type(sp)}(len1, iter1, extra_data, no_normalize)
+            return ArcDiagBasedDeformBasis{DataT, elem_type(sp)}(sp, degs, len1, iter1, extra_data; no_normalize)
         else
             iter2, len2 = filter_independent(coefficient_ring(sp), iter1)
-            return new{DataT, elem_type(sp)}(len2, iter2, extra_data, no_normalize)
+            return ArcDiagBasedDeformBasis{DataT, elem_type(sp)}(sp, degs, len2, iter2, extra_data; no_normalize)
         end
+    end
+
+    function ArcDiagBasedDeformBasis{DataT, T}(
+        sp::SmashProductLie,
+        degs::Vector{Int},
+        len::Int,
+        iter,
+        extra_data::Dict{DeformationMap{T}, Set{Tuple{Tuple{Int, Int}, DataT}}};
+        no_normalize::Bool=false,
+    ) where {DataT, T <: SmashProductLieElem}
+        @assert sp isa parent_type(T)
+        # This inner constructor just sets the fields directly, without any checks.
+        return new{DataT, T}(sp, degs, len, iter, extra_data, no_normalize)
     end
 end
 
@@ -47,6 +70,23 @@ end
 
 Base.length(basis::ArcDiagBasedDeformBasis) = basis.len
 
+
+"""
+    lookup_data(m::DeformationMap{T}, basis::ArcDiagBasedDeformBasis{DataT, T}) where {T <: SmashProductLieElem}
+
+Look up additional data that was used to generate the deformation map `m` in the basis `basis`.
+This can e.g. be an arc diagram or a pseudograph.
+"""
+function lookup_data(m::DeformationMap{T}, basis::ArcDiagBasedDeformBasis{DataT, T}) where {DataT, T <: SmashProductLieElem}
+    if !basis.no_normalize
+        m = normalize(m)
+    end
+    if haskey(basis.extra_data, m)
+        return basis.extra_data[m]
+    else
+        return nothing
+    end
+end
 
 # fallbacks
 function should_use_data(
