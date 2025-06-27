@@ -5,6 +5,7 @@ struct ArcDiagBasedDeformBasis{DataT, T <: SmashProductLieElem} <: DeformBasis{T
     iter
     extra_data::Dict{DeformationMap{T}, Set{Tuple{Tuple{Int, Int}, DataT}}}
     no_normalize::Bool
+    strict::Bool
 
     function ArcDiagBasedDeformBasis{DataT}(
         sp::SmashProductLie,
@@ -39,10 +40,11 @@ struct ArcDiagBasedDeformBasis{DataT, T <: SmashProductLieElem} <: DeformBasis{T
             arc_diag_based_basis_iteration(ArcDiagBasedDeformBasis{DataT}, LieType, sp, degs, extra_data; no_normalize)
 
         if no_normalize
-            return ArcDiagBasedDeformBasis{DataT, elem_type(sp)}(sp, degs, len1, iter1, extra_data; no_normalize)
+            return ArcDiagBasedDeformBasis{DataT, elem_type(sp)}(sp, degs, len1, iter1, extra_data; no_normalize, strict=false)
         else
             iter2, len2 = filter_independent(coefficient_ring(sp), iter1)
-            return ArcDiagBasedDeformBasis{DataT, elem_type(sp)}(sp, degs, len2, iter2, extra_data; no_normalize)
+            @assert iter2 isa Vector{<:DeformationMap{elem_type(sp)}}
+            return ArcDiagBasedDeformBasis{DataT, elem_type(sp)}(sp, degs, len2, iter2, extra_data; no_normalize, strict=true)
         end
     end
 
@@ -53,10 +55,11 @@ struct ArcDiagBasedDeformBasis{DataT, T <: SmashProductLieElem} <: DeformBasis{T
         iter,
         extra_data::Dict{DeformationMap{T}, Set{Tuple{Tuple{Int, Int}, DataT}}};
         no_normalize::Bool=false,
+        strict::Bool,
     ) where {DataT, T <: SmashProductLieElem}
         @assert sp isa parent_type(T)
         # This inner constructor just sets the fields directly, without any checks.
-        return new{DataT, T}(sp, degs, len, iter, extra_data, no_normalize)
+        return new{DataT, T}(sp, degs, len, iter, extra_data, no_normalize, strict)
     end
 end
 

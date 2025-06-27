@@ -20,6 +20,8 @@ function register_serialization_types()
     @eval @register_serialization_type SmashProductLieDeformElem
 
     @eval @register_serialization_type StdDeformBasis
+
+    @eval @register_serialization_type ArcDiagDeformBasis
 end
 
 ###############################################################################
@@ -55,7 +57,7 @@ function save_object(s::SerializerState, a::ArcDiagramDirected)
         save_object(s, n_lower_vertices(a), :n_lower_verts)
         save_object(s, a.parity_upper_verts, :parity_upper_verts)
         save_object(s, a.parity_lower_verts, :parity_lower_verts)
-        save_object(s, a.upper_neighbors, :upper_neighbors)
+        save_object(s, a.upper_neighbors, :upper_neighbors) # TODO: negative ints instead of tuple
         save_object(s, a.lower_neighbors, :lower_neighbors)
     end
 end
@@ -71,6 +73,13 @@ function load_object(s::DeserializerState, ::Type{<:ArcDiagramDirected})
                        upper_neighbors, lower_neighbors; check=false)
 end
 
+function load_object(s::DeserializerState, ::Type{ArcDiagram})
+    if haskey(s, :parity_upper_verts)
+        return load_object(s, ArcDiagramDirected)
+    else
+        return load_object(s, ArcDiagramUndirected)
+    end
+end
 
 ###############################################################################
 #
@@ -199,4 +208,46 @@ end
 function load_object(s::DeserializerState, ::Type{<:StdDeformBasis}, sp::SmashProductLie)
     degs = load_object(s, Vector{Int}, :degs)
     return StdDeformBasis(sp, degs)
+end
+
+###############################################################################
+#
+#   ArcDiagBasedDeformBasis
+#
+###############################################################################
+
+function type_params(b::ArcDiagBasedDeformBasis{DataT}) where {DataT}
+    return TypeParams(ArcDiagBasedDeformBasis{DataT}, b.sp)
+end
+
+#=
+sp::SmashProductLie,
+        degs::Vector{Int},
+        len::Int,
+        iter,
+        extra_data::Dict{DeformationMap{T}, Set{Tuple{Tuple{Int, Int}, DataT}}};
+        no_normalize::Bool=false,
+        strict::Bool
+        =#
+function save_object(s::SerializerState, b::ArcDiagBasedDeformBasis)
+    @req b.strict "Serialization is only supported for ArcDiagBasedDeformBasis that are constructor non-lazy"
+    save_data_dict(s) do
+        save_object(s, b.degs, :degs)
+        save_object(s, length(b), :len)
+        save_object(s, b.iter, :iter)
+        save_object(s, b.extra_data, :extra_data)
+        save_object(s, b.no_normalize, :no_normalize)
+        save_object(s, b.strict, :strict)
+    end
+end
+
+function load_object(s::DeserializerState, ::Type{<:ArcDiagBasedDeformBasis{DataT}}, sp::SmashProductLie) where {DataT}
+    degs = load_object(s, Vector{Int}, :degs)
+    len = load_object(s, Int, :len)
+    mat_space = matrix_space(sp, dim(base_module(sp)), dim(base_module(sp)))
+    iter = load_object(s, Vector{DeformationMap{elem_type(sp)}}, mat_space, :iter)
+    extra_data = load_object(s, Dict{DeformationMap{elem_type(sp)}, Set{Tuple{Tuple{Int, Int}, DataT}}}, Dict(:key_params => mat_space, :value_params => nothing), :extra_data)
+    no_normalize = load_object(s, Bool, :no_normalize)
+    strict = load_object(s, Bool, :strict)
+    return ArcDiagBasedDeformBasis{DataT, elem_type(sp)}(sp, degs, len, iter, extra_data; no_normalize=no_normalize, strict=strict)
 end
