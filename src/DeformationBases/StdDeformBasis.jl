@@ -29,7 +29,13 @@ struct StdDeformBasis{T <: SmashProductLieElem} <: DeformBasis{T}
         )
 
         len = div(dimV * (dimV - 1), 2) * sum(binomial(dimL + k - 1, k) for k in degs)
-        return new{elem_type(sp)}(len, iter)
+        return StdDeformBasis{elem_type(sp)}(sp, degs, len, iter)
+    end
+
+    function StdDeformBasis{T}(sp::SmashProductLie, degs::Vector{Int}, len::Int, iter) where {T <: SmashProductLieElem}
+        @assert sp isa parent_type(T)
+        # This inner constructor just sets the fields directly, without any checks.
+        return new{T}(sp, degs, len, iter)
     end
 end
 
