@@ -50,7 +50,12 @@ import Oscar: n_vertices
 import Oscar: simplify
 import Oscar: vertices
 
-Oscar.@import_all_serialization_functions
+@static if !isdefined(Oscar, :Serialization) # introduced in https://github.com/oscar-system/Oscar.jl/pull/5024 in Oscar v1.5
+    Oscar.@import_all_serialization_functions
+else
+    using Oscar.Serialization
+    import Oscar.Serialization: load_object, save_object, type_params
+end
 
 import Base: deepcopy_internal
 import Base: hash

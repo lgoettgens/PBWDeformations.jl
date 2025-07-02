@@ -1,10 +1,21 @@
-function patch_oscar_serialization_namespace()
-    Oscar.get_oscar_serialization_version() # call once to ensure the Oscar version is set
+@static if !isdefined(Oscar, :Serialization) # introduced in https://github.com/oscar-system/Oscar.jl/pull/5024 in Oscar v1.5
+    function patch_oscar_serialization_namespace()
+        Oscar.get_oscar_serialization_version() # call once to ensure the Oscar version is set
 
-    push!(
-        Oscar.oscar_serialization_version[],
-        :PBWDeformations => ["https://github.com/lgoettgens/PBWDeformations.jl", Base.get_pkgversion_from_path(dirname(@__DIR__))],
-    )
+        push!(
+            Oscar.oscar_serialization_version[],
+            :PBWDeformations => ["https://github.com/lgoettgens/PBWDeformations.jl", Base.get_pkgversion_from_path(dirname(@__DIR__))],
+        )
+    end
+else
+    function patch_oscar_serialization_namespace()
+        Oscar.Serialization.get_oscar_serialization_version() # call once to ensure the Oscar version is set
+
+        push!(
+            Oscar.Serialization.oscar_serialization_version[],
+            :PBWDeformations => ["https://github.com/lgoettgens/PBWDeformations.jl", Base.get_pkgversion_from_path(dirname(@__DIR__))],
+        )
+    end
 end
 
 function register_serialization_types()
