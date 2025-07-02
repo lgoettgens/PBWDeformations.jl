@@ -30,3 +30,44 @@ function is_smallest_obj_in_orbit(g::T, G::PermGroup; lt::Function=_lt) where T
     is_fixpoint && return true
     return !any(gp -> lt(gp, g), orbit(G, ^, g))
 end
+
+# upstreamed in https://github.com/oscar-system/Oscar.jl/pull/4992
+function Oscar.load_object(s::DeserializerState, ::Type{<:AbstractAlgebra.Generic.FreeAssociativeAlgebraElem},
+                     parent_algebra::FreeAssociativeAlgebra)
+  coeff_type = elem_type(base_ring(parent_algebra))
+  elem = MPolyBuildCtx(parent_algebra)
+
+  Oscar.load_array_node(s) do _
+    loaded_coeff = Oscar.load_object(s, coeff_type, base_ring(parent_algebra), 2)
+    loaded_term = parent_algebra(loaded_coeff)
+    e = Oscar.load_array_node(s, 1) do _
+      Oscar.load_object(s, Int)
+    end
+    # guarantees e is a Int[]
+    e = convert(Vector{Int}, e)
+    push_term!(elem, loaded_coeff, e)
+  end
+
+  return finish(elem)
+end
+
+# upstreamed in https://github.com/oscar-system/Oscar.jl/pull/4997
+function Oscar.load_object(s::DeserializerState, T::Type{<:Matrix{S}}, params::SmashProductLie) where S
+  Oscar.load_node(s) do entries
+    if isempty(entries)
+      return T(undef, 0, 0)
+    end
+    len = length(entries)
+    m = reduce(vcat, [
+      permutedims(Oscar.load_object(s, Vector{S}, params, i)) for i in 1:len
+        ])
+    return T(m)
+  end
+end
+
+# upstreamed in https://github.com/oscar-system/Oscar.jl/pull/4997
+function Oscar.load_object(s::DeserializerState, ::Type{MatSpace}, base_ring::SmashProductLie)
+  ncols = Oscar.load_object(s, Int, :ncols)
+  nrows = Oscar.load_object(s, Int, :nrows)
+  return matrix_space(base_ring, nrows, ncols)
+end

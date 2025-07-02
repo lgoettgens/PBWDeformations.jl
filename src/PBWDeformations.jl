@@ -50,6 +50,13 @@ import Oscar: n_vertices
 import Oscar: simplify
 import Oscar: vertices
 
+@static if !isdefined(Oscar, :Serialization) # introduced in https://github.com/oscar-system/Oscar.jl/pull/5024 in Oscar v1.5
+    Oscar.@import_all_serialization_functions
+else
+    using Oscar.Serialization
+    import Oscar.Serialization: load_object, save_object, type_params
+end
+
 import Base: deepcopy_internal
 import Base: hash
 import Base: isone
@@ -139,6 +146,12 @@ export vertex_index
 export vertices
 
 function __init__()
+    if ccall(:jl_generating_output, Cint, ()) == 0 # use !Base.generating_output() from Julia 1.11
+        # modifies Oscar global variables, so must be called from the __init__ function
+        patch_oscar_serialization_namespace()
+        register_serialization_types()
+    end
+
     add_verbosity_scope(:PBWDeformations)
 end
 
@@ -168,5 +181,16 @@ include("DeformationBases/ArcDiagDeformBasis.jl")
 include("DeformationBases/PseudographDeformBasis.jl")
 include("DeformationBases/GlnGraphDeformBasis.jl")
 include("DeformationBases/StdDeformBasis.jl")
+
+include("Serialization.jl")
+
+
+###############################################################################
+#
+# The following function stubs' actual implementations are in the folder `ext/TestExt/`.
+#
+###############################################################################
+
+function test_save_load_roundtrip end
 
 end
