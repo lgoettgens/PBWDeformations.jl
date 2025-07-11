@@ -71,3 +71,20 @@ function Oscar.load_object(s::DeserializerState, ::Type{MatSpace}, base_ring::Sm
   nrows = Oscar.load_object(s, Int, :nrows)
   return matrix_space(base_ring, nrows, ncols)
 end
+
+# upstreamed in https://github.com/oscar-system/Oscar.jl/pull/5094
+@static if !isdefined(Oscar, :Serialization)
+    struct JSONSerializerNoRefs <: Oscar.OscarSerializer end
+
+    function Oscar.handle_refs(s::Oscar.SerializerState{JSONSerializerNoRefs}) end
+
+elseif !isdefined(Oscar.Serialization, :should_handle_refs)
+    struct JSONSerializerNoRefs <: Oscar.Serialization.OscarSerializer end
+
+    function Oscar.Serialization.handle_refs(s::Oscar.Serialization.SerializerState{JSONSerializerNoRefs}) end
+
+else
+    function JSONSerializerNoRefs()
+        return Oscar.Serialization.JSONSerializer(serialize_refs=false)
+    end
+end
