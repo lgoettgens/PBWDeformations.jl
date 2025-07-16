@@ -153,6 +153,7 @@ function __init__()
     end
 
     add_verbosity_scope(:PBWDeformations)
+    add_verbosity_scope(:PBWDeformationsDatabase)
 end
 
 const SO = Val{:special_orthogonal}
@@ -183,6 +184,7 @@ include("DeformationBases/GlnGraphDeformBasis.jl")
 include("DeformationBases/StdDeformBasis.jl")
 
 include("Serialization.jl")
+include("Database.jl")
 
 
 ###############################################################################
@@ -193,4 +195,4 @@ include("Serialization.jl")
 
 function test_save_load_roundtrip end
 
-end
+end # module
