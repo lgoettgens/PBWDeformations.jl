@@ -3,6 +3,7 @@ docs/build
 
 # db artifacts
 db
+db_old
 
 # jupyter artifacts
 *.ipynb
