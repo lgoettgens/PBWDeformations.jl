@@ -266,11 +266,14 @@ function _normal_form(a::F, rels::Matrix{Union{Nothing, F}}) where {C <: RingEle
     result = zero(parent(a))
     CR = coefficient_ring(a)
     A = parent(a)
+    tmp = zero(A)
     while a.length > 0
         c = leading_coefficient(a)
         exp = leading_exponent_word(a)
         t = leading_term(a)
-        a -= t
+        # 2-arg mutable arithmetic are way slower than 3-arg at the time of writing. TODO: replace once the situation has improved
+        tmp = sub!(tmp, a, t)
+        a, tmp = tmp, a
 
         changed = false
         for i in 1:length(exp)-1
@@ -278,12 +281,15 @@ function _normal_form(a::F, rels::Matrix{Union{Nothing, F}}) where {C <: RingEle
             rel = rels[exp[i], exp[i+1]]
             if !isnothing(rel)
                 changed = true
-                a += A([c], [exp[1:i-1]]) * rel * A([one(CR)], [exp[i+2:end]])
+                new_term = A([c], [exp[1:i-1]]) * rel * A([one(CR)], [exp[i+2:end]])
+                tmp = add!(tmp, a, new_term)
+                a, tmp = tmp, a
                 break
             end
         end
         if !changed
-            result += t
+            tmp = add!(tmp, result, t)
+            result, tmp = tmp, result
         end
     end
     return result
