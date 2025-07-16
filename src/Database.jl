@@ -20,32 +20,92 @@ using Oscar: _is_standard_module
 function compute_and_save_instance(base_path::String, sp::SmashProductLie, maxdeg::Int)
     path = joinpath(base_path, string_for_path(sp))
     mkpath(path)
-    setup_filepath = joinpath(path, string_for_filename_setup(sp)) * ".mrdi"
+    setup_filepath = joinpath(path, string_for_filename_setup(sp)) * file_ext
     if isfile(setup_filepath)
-        @vprintln :PBWDeformationsDatabase "Setup file already exists, loading it..."
+        @vprint :PBWDeformationsDatabase "Setup file already exists, loading it..."
         sp, _ = load(setup_filepath)::Tuple{typeof(sp), MatSpace{elem_type(sp)}}
         @vprintln :PBWDeformationsDatabase " Done"
     else
-        @vprintln :PBWDeformationsDatabase "Saving setup file..."
-        save(joinpath(path, string_for_filename_setup(sp))* ".mrdi", (sp, parent(zero_matrix(sp, dim(base_module(sp)), dim(base_module(sp))))))
+        @vprint :PBWDeformationsDatabase "Saving setup file..."
+        save(joinpath(path, string_for_filename_setup(sp)) * file_ext, (sp, parent(zero_matrix(sp, dim(base_module(sp)), dim(base_module(sp))))))
         @vprintln :PBWDeformationsDatabase " Done"
     end
     for deg in 0:maxdeg
         for degs in [deg:deg, 0:deg]
-            @vprintln :PBWDeformationsDatabase "Computing GlnGraphDeformBasis for degrees $(degs)..."
+            @vprintln :PBWDeformationsDatabase "Computing GlnGraphDeformBasis for degrees $(degs)..." # ProgressMeter needs a linebreak
             b = GlnGraphDeformBasis(sp, degs)
             @vprintln :PBWDeformationsDatabase " Done"
-            @vprintln :PBWDeformationsDatabase "Saving GlnGraphDeformBasis..."
-            save(joinpath(path, string_for_filename(b)) * ".mrdi", b; serializer=PBWDeformations.JSONSerializerNoRefs())
+            @vprint :PBWDeformationsDatabase "Saving GlnGraphDeformBasis..."
+            save(joinpath(path, string_for_filename(b)) * file_ext, b; serializer=PBWDeformations.JSONSerializerNoRefs())
             @vprintln :PBWDeformationsDatabase " Done"
-            @vprintln :PBWDeformationsDatabase "Computing PBW deformations for degrees $(degs)..."
+            @vprint :PBWDeformationsDatabase "Computing PBW deformations for degrees $(degs)..."
             ms = all_pbwdeformations(sp, b)
             @vprintln :PBWDeformationsDatabase " Done"
-            @vprintln :PBWDeformationsDatabase "Saving PBW deformations..."
-            save(joinpath(path, string_for_filename_pbwdeforms(b))* ".mrdi", ms; serializer=PBWDeformations.JSONSerializerNoRefs())
+            @vprint :PBWDeformationsDatabase "Saving PBW deformations..."
+            save(joinpath(path, string_for_filename_pbwdeforms(b)) * file_ext, ms; serializer=PBWDeformations.JSONSerializerNoRefs())
             @vprintln :PBWDeformationsDatabase " Done"
         end
     end
+end
+
+function prepare_loading(base_path::String, sp::SmashProductLie)
+    @req isdir(base_path) "Base path must be an existing directory"
+    path = joinpath(base_path, string_for_path(sp))
+    @req isdir(path) "This instance does not exist in the database"
+    setup_filepath = joinpath(path, string_for_filename_setup(sp)) * file_ext
+    @req isfile(setup_filepath) "This instance does not exist in the database"
+    @vprint :PBWDeformationsDatabase "Setup file exists, loading it..."
+    sp, _ = load(setup_filepath)::Tuple{typeof(sp), MatSpace{elem_type(sp)}}
+    @vprintln :PBWDeformationsDatabase " Done"
+    return path
+end
+
+function load_glngraph_deform_basis(base_path::String, sp::SmashProductLie, degs::AbstractVector{Int})
+    path = prepare_loading(base_path, sp)
+
+    filepath = joinpath(path, string_for_filename(GlnGraphDeformBasis, sp, degs)) * file_ext
+    @req isfile(filepath) "The requested degree does not exist in the database"
+    @vprint :PBWDeformationsDatabase "Found GlnGraphDeformBasis for degree $(degs). Loading..."
+    b = load(filepath)::GlnGraphDeformBasis{elem_type(sp)}
+    @vprintln :PBWDeformationsDatabase " Done"
+    return b
+end
+
+function load_glngraph_deform_bases(base_path::String, sp::SmashProductLie)
+    path = prepare_loading(base_path, sp)
+    deg = 0
+    bs = GlnGraphDeformBasis{elem_type(sp)}[]
+    while (degs = deg:deg; filepath = joinpath(path, string_for_filename(GlnGraphDeformBasis, sp, degs)) * file_ext; isfile(filepath))
+        @vprint :PBWDeformationsDatabase "Found GlnGraphDeformBasis for degree $(degs). Loading..."
+        push!(bs, load(filepath)::GlnGraphDeformBasis{elem_type(sp)})
+        @vprintln :PBWDeformationsDatabase " Done"
+        deg += 1
+    end
+    return bs
+end
+
+function load_pbwdeformations(base_path::String, sp::SmashProductLie, degs::AbstractVector{Int})
+    path = prepare_loading(base_path, sp)
+
+    filepath = joinpath(path, string_for_filename_pbwdeforms(sp, degs)) * file_ext
+    @req isfile(filepath) "The requested degree does not exist in the database"
+    @vprint :PBWDeformationsDatabase "Found PBW deformations for degree $(degs). Loading..."
+    ms = load(filepath)::Vector{DeformationMap{elem_type(sp)}}
+    @vprintln :PBWDeformationsDatabase " Done"
+    return ms
+end
+
+function load_pbwdeformations(base_path::String, sp::SmashProductLie)
+    path = prepare_loading(base_path, sp)
+    deg = 0
+    mss = Vector{DeformationMap{elem_type(sp)}}[]
+    while (degs = deg:deg; filepath = joinpath(path, string_for_filename_pbwdeforms(sp, degs)) * file_ext; isfile(filepath))
+        @vprint :PBWDeformationsDatabase "Found PBW deformations for degree $(degs). Loading..."
+        push!(mss, load(filepath)::Vector{DeformationMap{elem_type(sp)}})
+        @vprintln :PBWDeformationsDatabase " Done"
+        deg += 1
+    end
+    return mss
 end
 
 
@@ -54,6 +114,8 @@ end
 # File path helpers
 #
 ################################################################################
+
+const file_ext = ".mrdi"
 
 function type_as_string(L::LinearLieAlgebra)
     type = get_attribute(L, :type, nothing)
@@ -98,16 +160,28 @@ function string_for_filename(sp::SmashProductLie)
 end
 
 function string_for_filename(b::ArcDiagDeformBasis)
-    return "ArcDiagDeformBasis-" * string_for_filename(b.sp) * join(b.degs, "_")
+    return string_for_filename(typeof(b), b.sp, b.degs)
+end
+
+function string_for_filename(::Type{<:ArcDiagDeformBasis}, sp::SmashProductLie, degs::AbstractVector{Int})
+    return "ArcDiagDeformBasis-" * string_for_filename(sp) * join(degs, "_")
 end
 
 function string_for_filename(b::GlnGraphDeformBasis)
-    return "GlnGraphDeformBasis-" * string_for_filename(b.sp) * join(b.degs, "_")
+    return string_for_filename(typeof(b), b.sp, b.degs)
+end
+
+function string_for_filename(::Type{<:GlnGraphDeformBasis}, sp::SmashProductLie, degs::AbstractVector{Int})
+    return "GlnGraphDeformBasis-" * string_for_filename(sp) * join(degs, "_")
 end
 
 
 function string_for_filename_pbwdeforms(b::Union{ArcDiagDeformBasis, GlnGraphDeformBasis})
-    return "PBWDeformations-" * string_for_filename(b.sp) * join(b.degs, "_")
+    return string_for_filename_pbwdeforms(b.sp, b.degs)
+end
+
+function string_for_filename_pbwdeforms(sp::SmashProductLie, degs::AbstractVector{Int})
+    return "PBWDeformations-" * string_for_filename(sp) * join(degs, "_")
 end
 
 
