@@ -131,7 +131,7 @@ function load_pbwdeformations(base_path::String, sp::SmashProductLie)
     mss = Vector{DeformationMap{elem_type(sp)}}[]
     while (degs = deg:deg; filepath = joinpath(path, string_for_filename_pbwdeforms(sp, degs)) * file_ext; isfile(filepath))
         @vprint :PBWDeformationsDatabase "Found PBW deformations for degree $(degs). Loading..."
-        push!(mss, load(filepath)::Vector{DeformationMap{elem_type(sp)}})
+        push!(mss, Vector{DeformationMap{elem_type(sp)}}(load(filepath))::Vector{DeformationMap{elem_type(sp)}}) # see https://github.com/oscar-system/Oscar.jl/issues/3983
         @vprintln :PBWDeformationsDatabase " Done"
         deg += 1
     end
@@ -168,9 +168,9 @@ function string_for_filename(V::LieAlgebraModule)
         return "V"
     elseif ((fl, B) = _is_dual(V); fl)
         if _is_standard_module(B)
-            return "Vd"
+            return "DV"
         end
-        return "dual_" * string_for_filename(B) * "_"
+        return "D_" * string_for_filename(B) * "_"
     elseif ((fl, Bs) = _is_direct_sum(V); fl)
         return "_" * join(string_for_filename.(Bs), "_+_") * "_"
     elseif ((fl, Bs) = _is_tensor_product(V); fl)
@@ -194,7 +194,7 @@ function string_for_filename(b::ArcDiagDeformBasis)
 end
 
 function string_for_filename(::Type{<:ArcDiagDeformBasis}, sp::SmashProductLie, degs::AbstractVector{Int})
-    return "ArcDiagDeformBasis-" * string_for_filename(sp) * join(degs, "_")
+    return "ArcDiagDeformBasis-" * string_for_filename(sp) * "-" * join(degs, "_")
 end
 
 function string_for_filename(b::GlnGraphDeformBasis)
@@ -202,7 +202,7 @@ function string_for_filename(b::GlnGraphDeformBasis)
 end
 
 function string_for_filename(::Type{<:GlnGraphDeformBasis}, sp::SmashProductLie, degs::AbstractVector{Int})
-    return "GlnGraphDeformBasis-" * string_for_filename(sp) * join(degs, "_")
+    return "GlnGraphDeformBasis-" * string_for_filename(sp) * "-" * join(degs, "_")
 end
 
 
@@ -211,7 +211,7 @@ function string_for_filename_pbwdeforms(b::Union{ArcDiagDeformBasis, GlnGraphDef
 end
 
 function string_for_filename_pbwdeforms(sp::SmashProductLie, degs::AbstractVector{Int})
-    return "PBWDeformations-" * string_for_filename(sp) * join(degs, "_")
+    return "PBWDeformations-" * string_for_filename(sp) * "-" * join(degs, "_")
 end
 
 
