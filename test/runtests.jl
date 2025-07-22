@@ -4,6 +4,7 @@ Oscar.with_unicode(true) do
     # short
     include("ActingGroup-test.jl")
     include("ArcDiagram-test.jl")
+    include("Database-test.jl")
     include("DeformationBases-test.jl")
     include("LinearIndependence-test.jl")
     include("Misc-test.jl")
