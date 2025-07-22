@@ -71,8 +71,23 @@ function load_glngraph_deform_basis(base_path::String, sp::SmashProductLie, degs
     return b
 end
 
+function load_glngraph_deform_bases(base_path::String, sp::SmashProductLie, degss::AbstractVector{<:AbstractVector{Int}})
+    path = prepare_loading(base_path, sp)
+
+    bs = GlnGraphDeformBasis{elem_type(sp)}[]
+    for degs in degss
+        filepath = joinpath(path, string_for_filename(GlnGraphDeformBasis, sp, degs)) * file_ext
+        @req isfile(filepath) "The requested degree does not exist in the database"
+        @vprint :PBWDeformationsDatabase "Found GlnGraphDeformBasis for degree $(degs). Loading..."
+        push!(bs, load(filepath)::GlnGraphDeformBasis{elem_type(sp)})
+        @vprintln :PBWDeformationsDatabase " Done"
+    end
+    return bs
+end
+
 function load_glngraph_deform_bases(base_path::String, sp::SmashProductLie)
     path = prepare_loading(base_path, sp)
+
     deg = 0
     bs = GlnGraphDeformBasis{elem_type(sp)}[]
     while (degs = deg:deg; filepath = joinpath(path, string_for_filename(GlnGraphDeformBasis, sp, degs)) * file_ext; isfile(filepath))
@@ -95,8 +110,23 @@ function load_pbwdeformations(base_path::String, sp::SmashProductLie, degs::Abst
     return ms
 end
 
+function load_pbwdeformations(base_path::String, sp::SmashProductLie, degss::AbstractVector{<:AbstractVector{Int}})
+    path = prepare_loading(base_path, sp)
+
+    ms = Vector{DeformationMap{elem_type(sp)}}[]
+    for degs in degss
+        filepath = joinpath(path, string_for_filename_pbwdeforms(sp, degs)) * file_ext
+        @req isfile(filepath) "The requested degree does not exist in the database"
+        @vprint :PBWDeformationsDatabase "Found PBW deformations for degree $(degs). Loading..."
+        push!(ms, load(filepath)::Vector{DeformationMap{elem_type(sp)}})
+        @vprintln :PBWDeformationsDatabase " Done"
+    end
+    return ms
+end
+
 function load_pbwdeformations(base_path::String, sp::SmashProductLie)
     path = prepare_loading(base_path, sp)
+
     deg = 0
     mss = Vector{DeformationMap{elem_type(sp)}}[]
     while (degs = deg:deg; filepath = joinpath(path, string_for_filename_pbwdeforms(sp, degs)) * file_ext; isfile(filepath))
