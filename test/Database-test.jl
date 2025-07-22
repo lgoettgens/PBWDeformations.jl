@@ -4,8 +4,8 @@
         string_for_filename_setup = PBWDeformations.Database.string_for_filename_setup
         string_for_filename_pbwdeforms = PBWDeformations.Database.string_for_filename_pbwdeforms
 
-        @test string_for_filename(general_linear_lie_algebra(QQ, 3)) == "gl_3"
-        @test string_for_filename(special_orthogonal_lie_algebra(QQ, 4)) == "so_4"
+        @test string_for_filename(general_linear_lie_algebra(QQ, 3)) == "gl_3_QQ"
+        @test string_for_filename(special_orthogonal_lie_algebra(QQ, 4)) == "so_4_QQ"
 
         L = general_linear_lie_algebra(QQ, 2)
 
@@ -29,13 +29,13 @@
 
         V = direct_sum(standard_module(L), dual(standard_module(L)))
         sp = smash_product(L, V)
-        @test string_for_filename(sp) == "gl_2-_V_+_DV_"
-        @test string_for_filename_setup(sp) == "setup-gl_2-_V_+_DV_"
+        @test string_for_filename(sp) == "gl_2_QQ-_V_+_DV_"
+        @test string_for_filename_setup(sp) == "setup-gl_2_QQ-_V_+_DV_"
 
-        @test string_for_filename(ArcDiagDeformBasis, sp, [1, 2]) == "ArcDiagDeformBasis-gl_2-_V_+_DV_-1_2"
-        @test string_for_filename(GlnGraphDeformBasis, sp, 3:3) == "GlnGraphDeformBasis-gl_2-_V_+_DV_-3"
-        @test string_for_filename_pbwdeforms(sp, [1, 2]) == "PBWDeformations-gl_2-_V_+_DV_-1_2"
-        @test string_for_filename_pbwdeforms(sp, 3:3) == "PBWDeformations-gl_2-_V_+_DV_-3"
+        @test string_for_filename(ArcDiagDeformBasis, sp, [1, 2]) == "ArcDiagDeformBasis-gl_2_QQ-_V_+_DV_-1_2"
+        @test string_for_filename(GlnGraphDeformBasis, sp, 3:3) == "GlnGraphDeformBasis-gl_2_QQ-_V_+_DV_-3"
+        @test string_for_filename_pbwdeforms(sp, [1, 2]) == "PBWDeformations-gl_2_QQ-_V_+_DV_-1_2"
+        @test string_for_filename_pbwdeforms(sp, 3:3) == "PBWDeformations-gl_2_QQ-_V_+_DV_-3"
     end
 
     @testset verbose=true "saving and loading" begin

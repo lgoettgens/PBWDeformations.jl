@@ -160,7 +160,12 @@ end
 function string_for_filename(L::LinearLieAlgebra)
     type = type_as_string(L)
     n = L.n
-    return "$(type)_$(n)"
+    if coefficient_ring(L) isa QQField
+        F_str = "QQ"
+    else
+        error("string_for_filename not implemented for this type of coefficient ring")
+    end
+    return "$(type)_$(n)_$(F_str)"
 end
 
 function string_for_filename(V::LieAlgebraModule)
