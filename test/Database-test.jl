@@ -1,4 +1,4 @@
-@testset verbose=true "Database.jl tests" begin
+@testset "Database.jl tests" begin
     @testset "string_for_filename" begin
         string_for_filename = PBWDeformations.Database.string_for_filename
         string_for_filename_setup = PBWDeformations.Database.string_for_filename_setup
@@ -38,7 +38,7 @@
         @test string_for_filename_pbwdeforms(sp, 3:3) == "PBWDeformations-gl_2_QQ-_V_+_DV_-3"
     end
 
-    @testset verbose=true "saving and loading" begin
+    @testset "saving and loading" begin
         compute_and_save_instance = PBWDeformations.Database.compute_and_save_instance
         load_glngraph_deform_basis = PBWDeformations.Database.load_glngraph_deform_basis
         load_glngraph_deform_bases = PBWDeformations.Database.load_glngraph_deform_bases

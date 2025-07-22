@@ -4,7 +4,6 @@ Oscar.with_unicode(true) do
     # short
     include("ActingGroup-test.jl")
     include("ArcDiagram-test.jl")
-    include("Database-test.jl")
     include("DeformationBases-test.jl")
     include("LinearIndependence-test.jl")
     include("Misc-test.jl")
@@ -13,6 +12,7 @@ Oscar.with_unicode(true) do
     include("SmashProductLieDeform-test.jl")
     include("SmashProductPBWDeformLie-test.jl")
     include("Serialization-test.jl")
+    include("Database-test.jl")
 
     # long
     include("Aqua.jl")
