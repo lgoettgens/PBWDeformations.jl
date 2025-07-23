@@ -31,19 +31,23 @@ function compute_and_save_instance(base_path::String, sp::SmashProductLie, maxde
         @vprintln :PBWDeformationsDatabase " Done"
     end
     for deg in 0:maxdeg
-        for degs in [deg:deg, 0:deg]
+        for (degs, save_basis, save_pbw) in [(deg:deg, true, true), (0:deg, false, true)]
             @vprintln :PBWDeformationsDatabase "Computing GlnGraphDeformBasis for degrees $(degs)..." # ProgressMeter needs a linebreak
             b = GlnGraphDeformBasis(sp, degs)
             @vprintln :PBWDeformationsDatabase " Done"
-            @vprint :PBWDeformationsDatabase "Saving GlnGraphDeformBasis..."
-            save(joinpath(path, string_for_filename(b)) * file_ext, b; serializer=PBWDeformations.JSONSerializerNoRefs())
-            @vprintln :PBWDeformationsDatabase " Done"
+            if save_basis
+                @vprint :PBWDeformationsDatabase "Saving GlnGraphDeformBasis..."
+                save(joinpath(path, string_for_filename(b)) * file_ext, b; serializer=PBWDeformations.JSONSerializerNoRefs())
+                @vprintln :PBWDeformationsDatabase " Done"
+            end
             @vprint :PBWDeformationsDatabase "Computing PBW deformations for degrees $(degs)..."
             ms = all_pbwdeformations(sp, b)
             @vprintln :PBWDeformationsDatabase " Done"
-            @vprint :PBWDeformationsDatabase "Saving PBW deformations..."
-            save(joinpath(path, string_for_filename_pbwdeforms(b)) * file_ext, ms; serializer=PBWDeformations.JSONSerializerNoRefs())
-            @vprintln :PBWDeformationsDatabase " Done"
+            if save_pbw
+                @vprint :PBWDeformationsDatabase "Saving PBW deformations..."
+                save(joinpath(path, string_for_filename_pbwdeforms(b)) * file_ext, ms; serializer=PBWDeformations.JSONSerializerNoRefs())
+                @vprintln :PBWDeformationsDatabase " Done"
+            end
         end
     end
 end
