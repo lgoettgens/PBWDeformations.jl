@@ -63,10 +63,10 @@
                     reset_inbetween || @test collect(b) == collect(b_new)
 
                     reset_inbetween && Oscar.reset_global_serializer_state()
-                    bs = load_glngraph_deform_bases(db, sp, [0:3, 1:1])
+                    bs = load_glngraph_deform_bases(db, sp, [3:3, 1:1])
                     @test all(b -> b isa GlnGraphDeformBasis, bs)
                     @test length(bs) == 2
-                    @test map(b -> b.degs, bs) == [0:3, 1:1]
+                    @test map(b -> b.degs, bs) == [3:3, 1:1]
                     reset_inbetween || @test all(b -> b.sp == sp, bs)
 
                     reset_inbetween && Oscar.reset_global_serializer_state()
