@@ -4,7 +4,7 @@
 
         push!(
             Oscar.oscar_serialization_version[],
-            :PBWDeformations => ["https://github.com/lgoettgens/PBWDeformations.jl", Base.get_pkgversion_from_path(dirname(@__DIR__))],
+            :PBWDeformations => ["https://github.com/lgoettgens/PBWDeformations.jl", VERSION_NUMBER],
         )
     end
 else
@@ -13,7 +13,7 @@ else
 
         push!(
             Oscar.Serialization.oscar_serialization_version[],
-            :PBWDeformations => ["https://github.com/lgoettgens/PBWDeformations.jl", Base.get_pkgversion_from_path(dirname(@__DIR__))],
+            :PBWDeformations => ["https://github.com/lgoettgens/PBWDeformations.jl", VERSION_NUMBER],
         )
     end
 end
