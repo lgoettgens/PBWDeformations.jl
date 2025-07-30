@@ -2,6 +2,10 @@ function parity_diff(v::AbstractVector{Bool})
     return 2 * sum(v) - length(v)
 end
 
+function is_prefix_equal(a::AbstractVector{T}, b::AbstractVector{T}) where T
+    return all(splat(==), zip(a, b))
+end
+
 function symmetrize(f::FreeAssociativeAlgebraElem)
     R = parent(f)
     g = zero(R)

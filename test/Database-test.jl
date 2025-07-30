@@ -99,6 +99,12 @@
                     reset_inbetween || @test all(ms -> all(m -> base_ring(m) == sp, ms), mss)
                     @test length(mss) == 5
                     reset_inbetween || @test mss[3] == ms_new
+
+                    reset_inbetween && Oscar.reset_global_serializer_state()
+                    mss = load_pbwdeformations(db, sp; degree_type=:upto)
+                    @test all(ms -> ms isa Vector{<:DeformationMap}, mss)
+                    reset_inbetween || @test all(ms -> all(m -> base_ring(m) == sp, ms), mss)
+                    @test length(mss) == 5
                 end
 
             end

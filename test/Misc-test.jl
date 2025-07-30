@@ -1,4 +1,14 @@
 @testset "Misc.jl tests" begin
+    @testset "is_prefix_equal" begin
+        is_prefix_equal = PBWDeformations.is_prefix_equal
+
+        @test is_prefix_equal([1, 2, 3], [1, 2, 3])
+        @test !is_prefix_equal([1, 2, 3], [1, 2, 4])
+        @test is_prefix_equal([1, 2], [1, 2, 3])
+        @test is_prefix_equal([1, 2, 3], [1, 2])
+        @test !is_prefix_equal([1, 2], [1, 3])
+    end
+
     @testset "symmetrize" begin
         R, (x,y,z, t) = free_associative_algebra(QQ, [:x,:y,:z, :t])
 
