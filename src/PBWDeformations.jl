@@ -145,6 +145,8 @@ export upper_vertices
 export vertex_index
 export vertices
 
+const VERSION_NUMBER = Base.pkgversion(@__MODULE__)
+
 function __init__()
     if ccall(:jl_generating_output, Cint, ()) == 0 # use !Base.generating_output() from Julia 1.11
         # modifies Oscar global variables, so must be called from the __init__ function
