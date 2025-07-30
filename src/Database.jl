@@ -3,6 +3,8 @@ module Database
 using ..PBWDeformations
 using Oscar
 
+using ..PBWDeformations: is_prefix_equal
+
 using Oscar: _is_dual
 using Oscar: _is_direct_sum
 using Oscar: _is_exterior_power
@@ -89,12 +91,13 @@ function load_glngraph_deform_bases(base_path::String, sp::SmashProductLie, degs
     return bs
 end
 
-function load_glngraph_deform_bases(base_path::String, sp::SmashProductLie)
+function load_glngraph_deform_bases(base_path::String, sp::SmashProductLie; degree_type::Symbol=:pure)
+    @req degree_type in [:pure] "`degree_type` must be `:pure`"
     path = prepare_loading(base_path, sp)
 
     deg = 0
     bs = GlnGraphDeformBasis{elem_type(sp)}[]
-    while (degs = deg:deg; filepath = joinpath(path, string_for_filename(GlnGraphDeformBasis, sp, degs)) * file_ext; isfile(filepath))
+    while (degs = (deg:deg); filepath = joinpath(path, string_for_filename(GlnGraphDeformBasis, sp, degs)) * file_ext; isfile(filepath))
         @vprint :PBWDeformationsDatabase "Found GlnGraphDeformBasis for degree $(degs). Loading..."
         push!(bs, load(filepath)::GlnGraphDeformBasis{elem_type(sp)})
         @vprintln :PBWDeformationsDatabase " Done"
@@ -128,18 +131,25 @@ function load_pbwdeformations(base_path::String, sp::SmashProductLie, degss::Abs
     return ms
 end
 
-function load_pbwdeformations(base_path::String, sp::SmashProductLie)
+function load_pbwdeformations(base_path::String, sp::SmashProductLie; degree_type::Symbol=:pure)
+    @req degree_type in [:pure, :upto] "`degree_type` must be either `:pure` or `:upto`"
     path = prepare_loading(base_path, sp)
 
     deg = 0
     mss = Vector{DeformationMap{elem_type(sp)}}[]
-    while (degs = deg:deg; filepath = joinpath(path, string_for_filename_pbwdeforms(sp, degs)) * file_ext; isfile(filepath))
+    while (degs = degree_type == :pure ? (deg:deg) : (0:deg); filepath = joinpath(path, string_for_filename_pbwdeforms(sp, degs)) * file_ext; isfile(filepath))
         @vprint :PBWDeformationsDatabase "Found PBW deformations for degree $(degs). Loading..."
         push!(mss, Vector{DeformationMap{elem_type(sp)}}(load(filepath))::Vector{DeformationMap{elem_type(sp)}}) # see https://github.com/oscar-system/Oscar.jl/issues/3983
         @vprintln :PBWDeformationsDatabase " Done"
         deg += 1
     end
     return mss
+end
+
+function are_all_pbwdeformations_puredimensional(base_path::String, sp::SmashProductLie)
+    pure_dims = length.(load_pbwdeformations(base_path, sp; degree_type=:pure))
+    upto_dims = length.(load_pbwdeformations(base_path, sp; degree_type=:upto))
+    return is_prefix_equal(cumsum(pure_dims), upto_dims)
 end
 
 
