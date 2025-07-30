@@ -206,10 +206,12 @@ function arc_diag_based_basis_iteration(
                         if !no_normalize
                             basis_elem = normalize(basis_elem)
                         end
-                        if haskey(param_reverse_map, basis_elem)
-                            push!(param_reverse_map[basis_elem], ((i_l, i_r), data))
-                        else
-                            param_reverse_map[basis_elem] = Set([((i_l, i_r), data)])
+                        if !iszero(basis_elem)
+                            if haskey(param_reverse_map, basis_elem)
+                                push!(param_reverse_map[basis_elem], ((i_l, i_r), data))
+                            else
+                                param_reverse_map[basis_elem] = Set([((i_l, i_r), data)])
+                            end
                         end
                         ProgressMeter.update!(prog_meter, counter; showvalues=generate_showvalues(counter, data))
                         basis_elem
