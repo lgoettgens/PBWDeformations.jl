@@ -1,5 +1,7 @@
 @testset "Misc.jl tests" begin
     @testset "is_prefix_equal" begin
+        is_prefix_equal = PBWDeformations.is_prefix_equal
+
         @test is_prefix_equal([1, 2, 3], [1, 2, 3])
         @test !is_prefix_equal([1, 2, 3], [1, 2, 4])
         @test is_prefix_equal([1, 2], [1, 2, 3])
