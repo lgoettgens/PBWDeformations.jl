@@ -19,17 +19,25 @@ using Oscar: _is_standard_module
 #
 ################################################################################
 
-struct DBLieAlgebraKey
+struct DBLieAlgebraKey{C <: FieldElem}
     type::Symbol
     n::Int
-    F::String
+    F_str::String
 
-    function DBLieAlgebraKey(type::Symbol, n::Int, F::String)
+    function DBLieAlgebraKey(type::Symbol, n::Int, F::Field)
         @req type in [:gl, :so] "type must be either :gl or :so"
         @req n > 0 "n must be a positive integer"
-        return new(type, n, F)
+        F_str = if F isa QQField
+            "QQ"
+        else
+            error("currently only QQ is supported for the coefficient field")
+        end
+        return new{elem_type(F)}(type, n, F_str)
     end
 end
+
+const DBLieAlgebraKeyUnion = Union{DBLieAlgebraKey, LinearLieAlgebra, Tuple{Union{Symbol, String}, Int, Field}}
+
 
 struct DBLieAlgebraModuleKey
     modstring::String
@@ -40,14 +48,19 @@ struct DBLieAlgebraModuleKey
     end
 end
 
-struct DBSmashProductKey
-    L::DBLieAlgebraKey
+const DBLieAlgebraModuleKeyUnion = Union{DBLieAlgebraModuleKey, LieAlgebraModule, String}
+
+
+struct DBSmashProductKey{C <: FieldElem}
+    L::DBLieAlgebraKey{C}
     V::DBLieAlgebraModuleKey
 
-    function DBSmashProductKey(Lk::DBLieAlgebraKey, Vk::DBLieAlgebraModuleKey)
-        return new(Lk, Vk)
+    function DBSmashProductKey(Lk::DBLieAlgebraKey{C}, Vk::DBLieAlgebraModuleKey) where {C <: FieldElem}
+        return new{C}(Lk, Vk)
     end
 end
+
+const DBSmashProductKeyUnion = Union{DBSmashProductKey, SmashProductLie, Tuple{DBLieAlgebraKeyUnion, DBLieAlgebraModuleKeyUnion}}
 
 
 ################################################################################
@@ -91,99 +104,106 @@ function compute_and_save_instance(base_path::String, sp::SmashProductLie, maxde
     end
 end
 
-function prepare_loading(base_path::String, sp::SmashProductLie)
+function prepare_loading(base_path::String, sp::DBSmashProductKeyUnion)
+    spk = DBSmashProductKey(sp)
     @req isdir(base_path) "Base path must be an existing directory"
-    path = joinpath(base_path, string_for_path(sp))
+    path = joinpath(base_path, string_for_path(spk))
     @req isdir(path) "This instance does not exist in the database"
-    setup_filepath = joinpath(path, string_for_filename_setup(sp)) * file_ext
+    setup_filepath = joinpath(path, string_for_filename_setup(spk)) * file_ext
     @req isfile(setup_filepath) "This instance does not exist in the database"
     @vprint :PBWDeformationsDatabase "Setup file exists, loading it..."
-    sp, _ = load(setup_filepath)::Tuple{typeof(sp), MatSpace{elem_type(sp)}}
+    _ = load(setup_filepath)::Tuple{smash_product_type(spk), MatSpace{elem_type(smash_product_type(spk))}}
     @vprintln :PBWDeformationsDatabase " Done"
     return path
 end
 
-function load_glngraph_deform_basis(base_path::String, sp::SmashProductLie, degs::AbstractVector{Int})
-    path = prepare_loading(base_path, sp)
+function load_glngraph_deform_basis(base_path::String, sp::DBSmashProductKeyUnion, degs::AbstractVector{Int})
+    spk = DBSmashProductKey(sp)
+    path = prepare_loading(base_path, spk)
 
-    filepath = joinpath(path, string_for_filename(GlnGraphDeformBasis, sp, degs)) * file_ext
+    filepath = joinpath(path, string_for_filename(GlnGraphDeformBasis, spk, degs)) * file_ext
     @req isfile(filepath) "The requested degree does not exist in the database"
     @vprint :PBWDeformationsDatabase "Found GlnGraphDeformBasis for degree $(degs). Loading..."
-    b = load(filepath)::GlnGraphDeformBasis{elem_type(sp)}
+    b = load(filepath)::GlnGraphDeformBasis{elem_type(smash_product_type(spk))}
     @vprintln :PBWDeformationsDatabase " Done"
     return b
 end
 
-function load_glngraph_deform_bases(base_path::String, sp::SmashProductLie, degss::AbstractVector{<:AbstractVector{Int}})
-    path = prepare_loading(base_path, sp)
+function load_glngraph_deform_bases(base_path::String, sp::DBSmashProductKeyUnion, degss::AbstractVector{<:AbstractVector{Int}})
+    spk = DBSmashProductKey(sp)
+    path = prepare_loading(base_path, spk)
 
-    bs = GlnGraphDeformBasis{elem_type(sp)}[]
+    bs = GlnGraphDeformBasis{elem_type(smash_product_type(spk))}[]
     for degs in degss
-        filepath = joinpath(path, string_for_filename(GlnGraphDeformBasis, sp, degs)) * file_ext
+        filepath = joinpath(path, string_for_filename(GlnGraphDeformBasis, spk, degs)) * file_ext
         @req isfile(filepath) "The requested degree does not exist in the database"
         @vprint :PBWDeformationsDatabase "Found GlnGraphDeformBasis for degree $(degs). Loading..."
-        push!(bs, load(filepath)::GlnGraphDeformBasis{elem_type(sp)})
+        push!(bs, load(filepath)::GlnGraphDeformBasis{elem_type(smash_product_type(spk))})
         @vprintln :PBWDeformationsDatabase " Done"
     end
     return bs
 end
 
-function load_glngraph_deform_bases(base_path::String, sp::SmashProductLie; degree_type::Symbol=:pure)
+function load_glngraph_deform_bases(base_path::String, sp::DBSmashProductKeyUnion; degree_type::Symbol=:pure)
     @req degree_type in [:pure] "`degree_type` must be `:pure`"
-    path = prepare_loading(base_path, sp)
+    spk = DBSmashProductKey(sp)
+    path = prepare_loading(base_path, spk)
 
     deg = 0
-    bs = GlnGraphDeformBasis{elem_type(sp)}[]
-    while (degs = (deg:deg); filepath = joinpath(path, string_for_filename(GlnGraphDeformBasis, sp, degs)) * file_ext; isfile(filepath))
+    bs = GlnGraphDeformBasis{elem_type(smash_product_type(spk))}[]
+    while (degs = (deg:deg); filepath = joinpath(path, string_for_filename(GlnGraphDeformBasis, spk, degs)) * file_ext; isfile(filepath))
         @vprint :PBWDeformationsDatabase "Found GlnGraphDeformBasis for degree $(degs). Loading..."
-        push!(bs, load(filepath)::GlnGraphDeformBasis{elem_type(sp)})
+        push!(bs, load(filepath)::GlnGraphDeformBasis{elem_type(smash_product_type(spk))})
         @vprintln :PBWDeformationsDatabase " Done"
         deg += 1
     end
     return bs
 end
 
-function load_pbwdeformations(base_path::String, sp::SmashProductLie, degs::AbstractVector{Int})
-    path = prepare_loading(base_path, sp)
+function load_pbwdeformations(base_path::String, sp::DBSmashProductKeyUnion, degs::AbstractVector{Int})
+    spk = DBSmashProductKey(sp)
+    path = prepare_loading(base_path, spk)
 
-    filepath = joinpath(path, string_for_filename_pbwdeforms(sp, degs)) * file_ext
+    filepath = joinpath(path, string_for_filename_pbwdeforms(spk, degs)) * file_ext
     @req isfile(filepath) "The requested degree does not exist in the database"
     @vprint :PBWDeformationsDatabase "Found PBW deformations for degree $(degs). Loading..."
-    ms = load(filepath)::Vector{DeformationMap{elem_type(sp)}}
+    ms = load(filepath)::Vector{DeformationMap{elem_type(smash_product_type(spk))}}
     @vprintln :PBWDeformationsDatabase " Done"
     return ms
 end
 
-function load_pbwdeformations(base_path::String, sp::SmashProductLie, degss::AbstractVector{<:AbstractVector{Int}})
-    path = prepare_loading(base_path, sp)
+function load_pbwdeformations(base_path::String, sp::DBSmashProductKeyUnion, degss::AbstractVector{<:AbstractVector{Int}})
+    spk = DBSmashProductKey(sp)
+    path = prepare_loading(base_path, spk)
 
-    ms = Vector{DeformationMap{elem_type(sp)}}[]
+    ms = Vector{DeformationMap{elem_type(smash_product_type(spk))}}[]
     for degs in degss
-        filepath = joinpath(path, string_for_filename_pbwdeforms(sp, degs)) * file_ext
+        filepath = joinpath(path, string_for_filename_pbwdeforms(spk, degs)) * file_ext
         @req isfile(filepath) "The requested degree does not exist in the database"
         @vprint :PBWDeformationsDatabase "Found PBW deformations for degree $(degs). Loading..."
-        push!(ms, load(filepath)::Vector{DeformationMap{elem_type(sp)}})
+        push!(ms, load(filepath)::Vector{DeformationMap{elem_type(smash_product_type(spk))}})
         @vprintln :PBWDeformationsDatabase " Done"
     end
     return ms
 end
 
-function load_pbwdeformations(base_path::String, sp::SmashProductLie; degree_type::Symbol=:pure)
+function load_pbwdeformations(base_path::String, sp::DBSmashProductKeyUnion; degree_type::Symbol=:pure)
     @req degree_type in [:pure, :upto] "`degree_type` must be either `:pure` or `:upto`"
-    path = prepare_loading(base_path, sp)
+    spk = DBSmashProductKey(sp)
+    path = prepare_loading(base_path, spk)
 
     deg = 0
-    mss = Vector{DeformationMap{elem_type(sp)}}[]
-    while (degs = degree_type == :pure ? (deg:deg) : (0:deg); filepath = joinpath(path, string_for_filename_pbwdeforms(sp, degs)) * file_ext; isfile(filepath))
+    mss = Vector{DeformationMap{elem_type(smash_product_type(spk))}}[]
+    while (degs = degree_type == :pure ? (deg:deg) : (0:deg); filepath = joinpath(path, string_for_filename_pbwdeforms(spk, degs)) * file_ext; isfile(filepath))
         @vprint :PBWDeformationsDatabase "Found PBW deformations for degree $(degs). Loading..."
-        push!(mss, Vector{DeformationMap{elem_type(sp)}}(load(filepath))::Vector{DeformationMap{elem_type(sp)}}) # see https://github.com/oscar-system/Oscar.jl/issues/3983
+        push!(mss, Vector{DeformationMap{elem_type(smash_product_type(spk))}}(load(filepath))::Vector{DeformationMap{elem_type(smash_product_type(spk))}}) # see https://github.com/oscar-system/Oscar.jl/issues/3983
         @vprintln :PBWDeformationsDatabase " Done"
         deg += 1
     end
     return mss
 end
 
-function are_all_pbwdeformations_puredimensional(base_path::String, sp::SmashProductLie)
+function are_all_pbwdeformations_puredimensional(base_path::String, sp::DBSmashProductKeyUnion)
     pure_dims = length.(load_pbwdeformations(base_path, sp; degree_type=:pure))
     upto_dims = length.(load_pbwdeformations(base_path, sp; degree_type=:upto))
     return is_prefix_equal(cumsum(pure_dims), upto_dims)
@@ -198,19 +218,16 @@ end
 
 const file_ext = ".mrdi"
 
-function DBLieAlgebraKey(type::Union{Symbol, String}, n::Int, F::Union{Field, Symbol, String})
-    F_str = if F isa Field
-        if F isa QQField
-            "QQ"
-        else
-            error("currently only QQ is supported for the coefficient field")
-        end
-    elseif F isa Symbol
-        string(F)
-    elseif F isa String
-        F
-    end
-    return DBLieAlgebraKey(Symbol(type), n, F_str)
+function DBLieAlgebraKey(Lk::DBLieAlgebraKey)
+    return Lk
+end
+
+function DBLieAlgebraKey(t::Tuple)
+    return DBLieAlgebraKey(t...)
+end
+
+function DBLieAlgebraKey(type::Union{Symbol, String}, n::Int, F::Field)
+    return DBLieAlgebraKey(Symbol(type), n, F)
 end
 
 function DBLieAlgebraKey(L::LinearLieAlgebra)
@@ -225,7 +242,7 @@ function string_for_filename(L::LinearLieAlgebra)
 end
 
 function string_for_filename(Lk::DBLieAlgebraKey)
-    return "$(Lk.type)_$(Lk.n)_$(Lk.F)"
+    return "$(Lk.type)_$(Lk.n)_$(Lk.F_str)"
 end
 
 function type_short(L::LinearLieAlgebra)
@@ -238,6 +255,14 @@ function type_short(L::LinearLieAlgebra)
     error("type_short not implemented for this type of Lie algebra")
 end
 
+
+function DBLieAlgebraModuleKey(Vk::DBLieAlgebraModuleKey)
+    return Vk
+end
+
+function DBLieAlgebraModuleKey(t::Tuple)
+    return DBLieAlgebraModuleKey(t...)
+end
 
 function DBLieAlgebraModuleKey(V::LieAlgebraModule)
     return DBLieAlgebraModuleKey(module_as_string(V))
@@ -274,12 +299,28 @@ function module_as_string(V::LieAlgebraModule)
 end
 
 
-function DBSmashProductKey(L::LinearLieAlgebra, V::LieAlgebraModule)
-    return DBSmashProductKey(DBLieAlgebraKey(L), DBLieAlgebraModuleKey(V))
+function DBSmashProductKey(spk::DBSmashProductKey)
+    return spk
+end
+
+function DBSmashProductKey(t::Tuple)
+    return DBSmashProductKey(t...)
 end
 
 function DBSmashProductKey(sp::SmashProductLie)
     return DBSmashProductKey(base_lie_algebra(sp), base_module(sp))
+end
+
+function DBSmashProductKey(L::DBLieAlgebraKeyUnion, V::DBLieAlgebraModuleKeyUnion)
+    return DBSmashProductKey(DBLieAlgebraKey(L), DBLieAlgebraModuleKey(V))
+end
+
+function smash_product_type(spk::DBSmashProductKey)
+    return smash_product_type(typeof(spk))
+end
+
+function smash_product_type(::Type{DBSmashProductKey{C}}) where {C <: FieldElem}
+    return SmashProductLie{C, C, LinearLieAlgebraElem{C}}
 end
 
 function string_for_filename(sp::SmashProductLie)
