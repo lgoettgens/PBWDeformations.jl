@@ -15,6 +15,43 @@ using Oscar: _is_standard_module
 
 ################################################################################
 #
+# Auxiliary types
+#
+################################################################################
+
+struct DBLieAlgebraKey
+    type::Symbol
+    n::Int
+    F::String
+
+    function DBLieAlgebraKey(type::Symbol, n::Int, F::String)
+        @req type in [:gl, :so] "type must be either :gl or :so"
+        @req n > 0 "n must be a positive integer"
+        return new(type, n, F)
+    end
+end
+
+struct DBLieAlgebraModuleKey
+    modstring::String
+
+    function DBLieAlgebraModuleKey(modstring::String)
+        @req !isempty(modstring) "Module string must not be empty"
+        return new(modstring)
+    end
+end
+
+struct DBSmashProductKey
+    L::DBLieAlgebraKey
+    V::DBLieAlgebraModuleKey
+
+    function DBSmashProductKey(Lk::DBLieAlgebraKey, Vk::DBLieAlgebraModuleKey)
+        return new(Lk, Vk)
+    end
+end
+
+
+################################################################################
+#
 # Main function
 #
 ################################################################################
@@ -161,96 +198,152 @@ end
 
 const file_ext = ".mrdi"
 
-function type_as_string(L::LinearLieAlgebra)
-    type = get_attribute(L, :type, nothing)
-    if type == :general_linear
-        return "gl"
-    elseif type == :special_orthogonal
-        return "so"
+function DBLieAlgebraKey(type::Union{Symbol, String}, n::Int, F::Union{Field, Symbol, String})
+    F_str = if F isa Field
+        if F isa QQField
+            "QQ"
+        else
+            error("currently only QQ is supported for the coefficient field")
+        end
+    elseif F isa Symbol
+        string(F)
+    elseif F isa String
+        F
     end
-    error("type_as_string not implemented for this type of Lie algebra")
+    return DBLieAlgebraKey(Symbol(type), n, F_str)
+end
+
+function DBLieAlgebraKey(L::LinearLieAlgebra)
+    type = type_short(L)
+    n = L.n
+    F = coefficient_ring(L)
+    return DBLieAlgebraKey(type, n, F)
 end
 
 function string_for_filename(L::LinearLieAlgebra)
-    type = type_as_string(L)
-    n = L.n
-    if coefficient_ring(L) isa QQField
-        F_str = "QQ"
-    else
-        error("string_for_filename not implemented for this type of coefficient ring")
+    return string_for_filename(DBLieAlgebraKey(L))
+end
+
+function string_for_filename(Lk::DBLieAlgebraKey)
+    return "$(Lk.type)_$(Lk.n)_$(Lk.F)"
+end
+
+function type_short(L::LinearLieAlgebra)
+    type = get_attribute(L, :type, nothing)
+    if type == :general_linear
+        return :gl
+    elseif type == :special_orthogonal
+        return :so
     end
-    return "$(type)_$(n)_$(F_str)"
+    error("type_short not implemented for this type of Lie algebra")
+end
+
+
+function DBLieAlgebraModuleKey(V::LieAlgebraModule)
+    return DBLieAlgebraModuleKey(module_as_string(V))
 end
 
 function string_for_filename(V::LieAlgebraModule)
+    return string_for_filename(DBLieAlgebraModuleKey(V))
+end
+
+function string_for_filename(Vk::DBLieAlgebraModuleKey)
+    return Vk.modstring
+end
+
+function module_as_string(V::LieAlgebraModule)
     if _is_standard_module(V)
         return "V"
     elseif ((fl, B) = _is_dual(V); fl)
         if _is_standard_module(B)
             return "DV"
         end
-        return "D_" * string_for_filename(B) * "_"
+        return "D_" * module_as_string(B) * "_"
     elseif ((fl, Bs) = _is_direct_sum(V); fl)
-        return "_" * join(string_for_filename.(Bs), "_+_") * "_"
+        return "_" * join(module_as_string.(Bs), "_+_") * "_"
     elseif ((fl, Bs) = _is_tensor_product(V); fl)
-        return "_" * join(string_for_filename.(Bs), "_x_") * "_"
+        return "_" * join(module_as_string.(Bs), "_x_") * "_"
     elseif ((fl, B, k) = _is_exterior_power(V); fl)
-        return "E$(k)_" * string_for_filename(B) * "_"
+        return "E$(k)_" * module_as_string(B) * "_"
     elseif ((fl, B, k) = _is_symmetric_power(V); fl)
-        return "S$(k)_" * string_for_filename(B) * "_"
+        return "S$(k)_" * module_as_string(B) * "_"
     elseif ((fl, B, k) = _is_tensor_power(V); fl)
-        return "T$(k)_" * string_for_filename(B) * "_"
+        return "T$(k)_" * module_as_string(B) * "_"
     end
     error("not implemented for this type of module")
 end
 
+
+function DBSmashProductKey(L::LinearLieAlgebra, V::LieAlgebraModule)
+    return DBSmashProductKey(DBLieAlgebraKey(L), DBLieAlgebraModuleKey(V))
+end
+
+function DBSmashProductKey(sp::SmashProductLie)
+    return DBSmashProductKey(base_lie_algebra(sp), base_module(sp))
+end
+
 function string_for_filename(sp::SmashProductLie)
-    return string_for_filename(base_lie_algebra(sp)) * "-" * string_for_filename(base_module(sp))
+    return string_for_filename(DBSmashProductKey(sp))
 end
 
-function string_for_filename(b::ArcDiagDeformBasis)
+function string_for_filename(spk::DBSmashProductKey)
+    return string_for_filename(spk.L) * "-" * string_for_filename(spk.V)
+end
+
+
+function string_for_filename(b::ArcDiagBasedDeformBasis)
     return string_for_filename(typeof(b), b.sp, b.degs)
 end
 
-function string_for_filename(::Type{<:ArcDiagDeformBasis}, sp::SmashProductLie, degs::AbstractVector{Int})
-    return "ArcDiagDeformBasis-" * string_for_filename(sp) * "-" * join(degs, "_")
+function string_for_filename(T::Type{<:ArcDiagBasedDeformBasis}, sp::SmashProductLie, degs::AbstractVector{Int})
+    return string_for_filename(T, DBSmashProductKey(sp), degs)
 end
 
-function string_for_filename(b::GlnGraphDeformBasis)
-    return string_for_filename(typeof(b), b.sp, b.degs)
+function string_for_filename(T::Type{<:ArcDiagDeformBasis}, spk::DBSmashProductKey, degs::AbstractVector{Int})
+    return "ArcDiagDeformBasis-" * string_for_filename(spk) * "-" * join(degs, "_")
 end
 
-function string_for_filename(::Type{<:GlnGraphDeformBasis}, sp::SmashProductLie, degs::AbstractVector{Int})
-    return "GlnGraphDeformBasis-" * string_for_filename(sp) * "-" * join(degs, "_")
+function string_for_filename(::Type{<:GlnGraphDeformBasis}, spk::DBSmashProductKey, degs::AbstractVector{Int})
+    return "GlnGraphDeformBasis-" * string_for_filename(spk) * "-" * join(degs, "_")
 end
 
 
-function string_for_filename_pbwdeforms(b::Union{ArcDiagDeformBasis, GlnGraphDeformBasis})
+function string_for_filename_pbwdeforms(b::ArcDiagBasedDeformBasis)
     return string_for_filename_pbwdeforms(b.sp, b.degs)
 end
 
 function string_for_filename_pbwdeforms(sp::SmashProductLie, degs::AbstractVector{Int})
-    return "PBWDeformations-" * string_for_filename(sp) * "-" * join(degs, "_")
+    return string_for_filename_pbwdeforms(DBSmashProductKey(sp), degs)
+end
+
+function string_for_filename_pbwdeforms(spk::DBSmashProductKey, degs::AbstractVector{Int})
+    return "PBWDeformations-" * string_for_filename(spk) * "-" * join(degs, "_")
 end
 
 
-function string_for_filename_setup(b::Union{ArcDiagDeformBasis, GlnGraphDeformBasis})
+function string_for_filename_setup(b::ArcDiagBasedDeformBasis)
     return string_for_filename_setup(b.sp)
 end
 
 function string_for_filename_setup(sp::SmashProductLie)
-    return "setup-" * string_for_filename(sp)
+    return string_for_filename_setup(DBSmashProductKey(sp))
+end
+
+function string_for_filename_setup(spk::DBSmashProductKey)
+    return "setup-" * string_for_filename(spk)
 end
 
 
-function string_for_path(b::Union{ArcDiagDeformBasis, GlnGraphDeformBasis})
+function string_for_path(b::ArcDiagBasedDeformBasis)
     return string_for_path(b.sp)
 end
 
 function string_for_path(sp::SmashProductLie)
-    L = base_lie_algebra(sp)
-    V = base_module(sp)
-    return joinpath(type_as_string(L), string_for_filename(V))
+    return string_for_path(DBSmashProductKey(sp))
+end
+
+function string_for_path(spk::DBSmashProductKey)
+    return joinpath(string(spk.L.type), string_for_filename(spk.V))
 end
 
 end # module
