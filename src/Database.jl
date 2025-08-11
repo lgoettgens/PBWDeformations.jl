@@ -209,6 +209,45 @@ function are_all_pbwdeformations_puredimensional(base_path::String, sp::DBSmashP
     return is_prefix_equal(cumsum(pure_dims), upto_dims)
 end
 
+function generate_pbwdeformation_summary(base_path::String, spks::Tuple{Tuple{Symbol, AbstractVector{Int}, Field}, String})
+    filename = joinpath(base_path, string_for_path(spks), string_for_filename_pbwdeforms_summary(spks)) * ".txt"
+
+    @vprintln :PBWDeformationsDatabase "Starting summary generation..."
+    data = generate_pbwdeformation_summary_data(base_path, spks)
+    @vprintln :PBWDeformationsDatabase "Saving summary to $(filename)..."
+    open(filename, "w") do io
+        print_pbwdeformation_summary(io, data)
+    end
+end
+
+function generate_pbwdeformation_summary_data(base_path::String, spks::Tuple{Tuple{Symbol, AbstractVector{Int}, Field}, String})
+    (type, ns, F), modstring = spks
+    summary = Vector{Pair{Int, Tuple{Bool, Vector{Int}}}}()
+    for n in ns
+        spk = DBSmashProductKey((type, n, F), modstring)
+        try
+            @vprintln :PBWDeformationsDatabase "Collecting data for $(type)_$(n)..."
+            pure_dims = length.(load_pbwdeformations(base_path, spk; degree_type=:pure))
+            upto_dims = length.(load_pbwdeformations(base_path, spk; degree_type=:upto))
+            push!(summary, n => (is_prefix_equal(cumsum(pure_dims), upto_dims), pure_dims))
+        catch
+            @vprintln :PBWDeformationsDatabase "No data found for $(type)_$(n). Skipping..."
+            continue
+        end
+    end
+    return summary
+end
+
+function print_pbwdeformation_summary(io::IO, summ::Vector{Pair{Int, Tuple{Bool, Vector{Int}}}})
+    print(io, "       ", "\t\t", "puredim", "\t\t")
+    join(io, 0:maximum(length ∘ last ∘ last, values(summ))-1, "\t")
+    println(io)
+    for (k,v) in summ
+        print(io, "gl_", k, "_QQ", "\t\t", first(v), "\t\t")
+        join(io, last(v), "\t")
+        println(io)
+    end
+end
 
 ################################################################################
 #
@@ -362,6 +401,11 @@ function string_for_filename_pbwdeforms(spk::DBSmashProductKey, degs::AbstractVe
 end
 
 
+function string_for_filename_pbwdeforms_summary(spks::Tuple{Tuple{Symbol, AbstractVector{Int}, Field}, String})
+    return "PBWDeformations-summary-" * string(spks[1][1]) * "-" * string_for_filename(DBLieAlgebraModuleKey(spks[2]))
+end
+
+
 function string_for_filename_setup(b::ArcDiagBasedDeformBasis)
     return string_for_filename_setup(b.sp)
 end
@@ -381,6 +425,12 @@ end
 
 function string_for_path(sp::SmashProductLie)
     return string_for_path(DBSmashProductKey(sp))
+end
+
+function string_for_path(spk_::Tuple{Tuple{Symbol, AbstractVector{Int}, Field}, String})
+    (type, ns, F), modstring = spk_
+    spk = DBSmashProductKey((type, first(ns), F), modstring)
+    return joinpath(string(spk.L.type), string_for_filename(spk.V))
 end
 
 function string_for_path(spk::DBSmashProductKey)
