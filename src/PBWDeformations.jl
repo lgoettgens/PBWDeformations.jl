@@ -108,6 +108,7 @@ export inneighbor
 export inneighbors
 export is_crossing_free
 export is_in_span
+export is_in_span_with_relation
 export is_linearly_independent
 export is_linearly_independent_with_relations
 export is_pbwdeformation
