@@ -203,6 +203,48 @@ function load_pbwdeformations(base_path::String, sp::DBSmashProductKeyUnion; deg
     return mss
 end
 
+function load_pbwdeformations_and_params(base_path::String, sp::DBSmashProductKeyUnion, degs::AbstractVector{Int})
+    b = load_glngraph_deform_basis(base_path, sp, degs)
+    ms = load_pbwdeformations(base_path, sp, degs)
+
+    return [(lookup_params(m, b) => m) for m in ms]
+end
+
+function load_pbwdeformations_and_params(base_path::String, sp::DBSmashProductKeyUnion, degss::AbstractVector{<:AbstractVector{Int}})
+    bs = load_glngraph_deform_bases(base_path, sp, degss)
+    mss = load_pbwdeformations(base_path, sp, degss)
+
+    return [[(lookup_params(m, b) => m) for m in ms] for (b, ms) in zip(bs, mss)]
+end
+
+function load_pbwdeformations_and_params(base_path::String, sp::DBSmashProductKeyUnion; degree_type::Symbol=:pure)
+    bs = load_glngraph_deform_bases(base_path, sp; degree_type)
+    mss = load_pbwdeformations(base_path, sp; degree_type)
+
+    return [[(lookup_params(m, b) => m) for m in ms] for (b, ms) in zip(bs, mss)]
+end
+
+function load_pbwdeformation_params(base_path::String, sp::DBSmashProductKeyUnion, degs::AbstractVector{Int})
+    b = load_glngraph_deform_basis(base_path, sp, degs)
+    ms = load_pbwdeformations(base_path, sp, degs)
+
+    return [lookup_params(m, b) for m in ms]
+end
+
+function load_pbwdeformation_params(base_path::String, sp::DBSmashProductKeyUnion, degss::AbstractVector{<:AbstractVector{Int}})
+    bs = load_glngraph_deform_bases(base_path, sp, degss)
+    mss = load_pbwdeformations(base_path, sp, degss)
+
+    return [[lookup_params(m, b) for m in ms] for (b, ms) in zip(bs, mss)]
+end
+
+function load_pbwdeformation_params(base_path::String, sp::DBSmashProductKeyUnion; degree_type::Symbol=:pure)
+    bs = load_glngraph_deform_bases(base_path, sp; degree_type)
+    mss = load_pbwdeformations(base_path, sp; degree_type)
+
+    return [[lookup_params(m, b) for m in ms] for (b, ms) in zip(bs, mss)]
+end
+
 function are_all_pbwdeformations_puredimensional(base_path::String, sp::DBSmashProductKeyUnion)
     pure_dims = length.(load_pbwdeformations(base_path, sp; degree_type=:pure))
     upto_dims = length.(load_pbwdeformations(base_path, sp; degree_type=:upto))
