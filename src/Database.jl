@@ -176,7 +176,7 @@ function load_pbwdeformations(base_path::String, sp::DBSmashProductKeyUnion, deg
     spk = DBSmashProductKey(sp)
     path = prepare_loading(base_path, spk)
 
-    ms = Vector{DeformationMap{elem_type(smash_product_type(spk))}}[]
+    mss = Vector{DeformationMap{elem_type(smash_product_type(spk))}}[]
     for degs in degss
         filepath = joinpath(path, string_for_filename_pbwdeforms(spk, degs)) * file_ext
         @req isfile(filepath) "The requested degree does not exist in the database"
@@ -184,7 +184,7 @@ function load_pbwdeformations(base_path::String, sp::DBSmashProductKeyUnion, deg
         push!(mss, Vector{DeformationMap{elem_type(smash_product_type(spk))}}(load(filepath))::Vector{DeformationMap{elem_type(smash_product_type(spk))}}) # see https://github.com/oscar-system/Oscar.jl/issues/3983
         @vprintln :PBWDeformationsDatabase " Done"
     end
-    return ms
+    return mss
 end
 
 function load_pbwdeformations(base_path::String, sp::DBSmashProductKeyUnion; degree_type::Symbol=:pure)
