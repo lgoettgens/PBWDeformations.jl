@@ -10,6 +10,10 @@ This process is due to [FM22](@cite).
 const PseudographDeformBasis{T} =
     ArcDiagBasedDeformBasis{PseudographDeformBasisParamT, T} where {T <: SmashProductLieElem}
 
+function Base.show(io::IO, basis::PseudographDeformBasis)
+    print(terse(pretty(io)), "PseudographDeformBasis of ", Lowercase(), basis.sp, " with degrees ", basis.degs)
+end
+
 function check_input(
     ::Type{PseudographDeformBasis},
     LieType,
