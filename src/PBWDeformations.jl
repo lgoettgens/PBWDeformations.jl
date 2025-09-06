@@ -32,13 +32,16 @@ using Base: Fix1
 using Base: Fix2
 
 
+import Oscar.AbstractAlgebra: add!
 import Oscar.AbstractAlgebra: change_base_ring
 import Oscar.AbstractAlgebra: coefficient_ring
 import Oscar.AbstractAlgebra: elem_type
 import Oscar.AbstractAlgebra: gen
 import Oscar.AbstractAlgebra: gens
+import Oscar.AbstractAlgebra: mul!
 import Oscar.AbstractAlgebra: ngens
 import Oscar.AbstractAlgebra: parent_type
+import Oscar.AbstractAlgebra: sub!
 
 import Oscar: base_lie_algebra
 import Oscar: comm

@@ -250,6 +250,30 @@ end
 
 ###############################################################################
 #
+#   Mutable arithmetic
+#
+###############################################################################
+
+function add!(z::SmashProductLieElem, x::SmashProductLieElem, y::SmashProductLieElem)
+    z.alg_elem = add!(z.alg_elem, data(x), data(y))
+    z.simplified = false
+    return z
+end
+
+function sub!(z::SmashProductLieElem, x::SmashProductLieElem, y::SmashProductLieElem)
+    z.alg_elem = sub!(z.alg_elem, data(x), data(y))
+    z.simplified = false
+    return z
+end
+
+function mul!(z::SmashProductLieElem{C}, x::SmashProductLieElem{C}, c::Union{Integer, C}) where {C <: RingElem}
+    z.alg_elem = mul!(z.alg_elem, data(x), c)
+    z.simplified = false
+    return z
+end
+
+###############################################################################
+#
 #   Simplification
 #
 ###############################################################################
