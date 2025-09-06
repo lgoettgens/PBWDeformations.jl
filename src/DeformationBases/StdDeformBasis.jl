@@ -48,3 +48,7 @@ function Base.iterate(i::StdDeformBasis, s)
 end
 
 Base.length(basis::StdDeformBasis) = basis.len
+
+function Base.show(io::IO, basis::StdDeformBasis)
+    print(terse(pretty(io)), "StdDeformBasis of ", Lowercase(), basis.sp, " with degrees ", basis.degs)
+end

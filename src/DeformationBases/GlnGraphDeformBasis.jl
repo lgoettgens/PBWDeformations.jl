@@ -9,6 +9,10 @@ This process is a generalization of [FM22](@cite).
 """
 const GlnGraphDeformBasis{T} = ArcDiagBasedDeformBasis{GlnGraphDeformBasisParamT, T} where {T <: SmashProductLieElem}
 
+function Base.show(io::IO, basis::GlnGraphDeformBasis)
+    print(terse(pretty(io)), "GlnGraphDeformBasis of ", Lowercase(), basis.sp, " with degrees ", basis.degs)
+end
+
 function check_input(
     ::Type{GlnGraphDeformBasis},
     LieType,
