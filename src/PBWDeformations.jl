@@ -83,6 +83,7 @@ export GlnGraph
 export GlnGraphDeformBasis
 export LieAlgebra, LieAlgebraElem
 export LieAlgebraModule, LieAlgebraModuleElem
+export LinearCombination
 export LinearLieAlgebra, LinearLieAlgebraElem
 export PseudographDeformBasis
 export PseudographLabelled
@@ -116,6 +117,7 @@ export is_pbwdeformation
 export is_span_equal
 export is_span_subset
 export isomorphic_module_with_simple_structure
+export linear_combination
 export lookup_params
 export lower_vertex, is_lower_vertex
 export lower_vertices
@@ -168,6 +170,7 @@ include("Types.jl")
 include("OscarPatches.jl")
 
 include("LinearIndependence.jl")
+include("LinearCombination.jl")
 include("ModuleSimpleStructure.jl")
 include("Misc.jl")
 
