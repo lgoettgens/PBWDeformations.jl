@@ -68,7 +68,7 @@ function is_in_span_with_relation(F::Field, x::T, V::Vector{T}) where {T}
     if is_in_span
         return is_in_span, -ker[1, 2:end]
     else
-        return is_in_span, zero_matrix(F, 1, length(V))
+        return is_in_span, [zero(F) for _ in 1:length(V)]
     end
 end
 
