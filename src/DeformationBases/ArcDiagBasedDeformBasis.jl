@@ -84,11 +84,7 @@ function lookup_params(m::DeformationMap{T}, basis::ArcDiagBasedDeformBasis{Para
     if !basis.no_normalize
         m = normalize(m)
     end
-    if haskey(basis.param_reverse_map, m)
-        return basis.param_reverse_map[m]
-    else
-        return nothing
-    end
+    return get(basis.param_reverse_map, m, nothing)
 end
 
 # fallbacks
