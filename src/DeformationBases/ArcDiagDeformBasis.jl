@@ -8,6 +8,10 @@ This process is due to [FM22](@cite).
 """
 const ArcDiagDeformBasis{T} = ArcDiagBasedDeformBasis{ArcDiagDeformBasisParamT, T} where {T <: SmashProductLieElem}
 
+function Base.show(io::IO, basis::ArcDiagDeformBasis)
+    print(terse(pretty(io)), "ArcDiagDeformBasis of ", Lowercase(), basis.sp, " with degrees ", basis.degs)
+end
+
 function check_input(
     ::Type{ArcDiagDeformBasis},
     LieType,

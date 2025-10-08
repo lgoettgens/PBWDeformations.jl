@@ -102,15 +102,17 @@ end
 ###############################################################################
 
 function show(io::IO, Sp::SmashProductLie{C, LieC}) where {C <: RingElem, LieC <: FieldElem}
+    @show_name(io, Sp)
+    @show_special(io, Sp)
     print(io, "Smash Product")
     if LieC != C
         print(io, " over ")
-        print(IOContext(io, :supercompact => true), coefficient_ring(underlying_algebra(Sp)))
+        print(terse(io), coefficient_ring(underlying_algebra(Sp)))
     end
     print(io, " of ")
-    print(IOContext(io, :compact => true), base_lie_algebra(Sp))
+    print(terse(io), base_lie_algebra(Sp))
     print(io, " and ")
-    print(IOContext(io, :compact => true), base_module(Sp))
+    print(terse(io), base_module(Sp))
 end
 
 

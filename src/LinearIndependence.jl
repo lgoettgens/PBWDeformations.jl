@@ -54,6 +54,25 @@ function is_in_span(F::Field, x::T, V::Vector{T}) where {T}
 end
 
 """
+    is_in_span_with_relation(F::Field, x::T, V::Vector{T}) where {T}
+
+This function returns a tuple `(is_in_span, relation)` where `is_in_span`
+is a boolean indicating whether `x` is in the `F`-span of `V` and `relations`
+is a vector with (one possibility of) coefficients of `V` that result in `x`.
+"""
+function is_in_span_with_relation(F::Field, x::T, V::Vector{T}) where {T}
+    cm = _linear_independence_coeff_matrix(F, [x; V])
+    ker = kernel(cm; side=:left)
+    rref!(ker)
+    is_in_span = nrows(ker) > 0 && isone(ker[1, 1])
+    if is_in_span
+        return is_in_span, -ker[1, 2:end]
+    else
+        return is_in_span, zero_matrix(F, 1, length(V))
+    end
+end
+
+"""
     is_span_subset(F::Field, V::Vector{T}, W::Vector{T}) where {T} -> Bool
 
 Checks whether the `F`-span of `V` is a subset of the `F`-span of `W`.
