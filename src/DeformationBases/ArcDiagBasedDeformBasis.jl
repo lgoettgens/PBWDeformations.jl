@@ -95,7 +95,7 @@ function lookup_params(
             @assert !isnothing(params)
             (params => c)
         end for (e, c) in m.data
-    ],)
+    ])
 end
 
 function lookup_params_direct(m::DeformationMap{T}, basis::ArcDiagBasedDeformBasis{ParamT, T}) where {ParamT, T <: SmashProductLieElem}
