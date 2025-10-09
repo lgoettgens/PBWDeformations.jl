@@ -81,14 +81,28 @@ Look up additional data that was used to generate the deformation map `m` in the
 This can e.g. be an arc diagram or a pseudograph.
 """
 function lookup_params(m::DeformationMap{T}, basis::ArcDiagBasedDeformBasis{ParamT, T}) where {ParamT, T <: SmashProductLieElem}
-    if !basis.no_normalize
-        m = normalize(m)
-    end
-    if haskey(basis.param_reverse_map, m)
-        return basis.param_reverse_map[m]
-    else
-        return nothing
-    end
+    @assert basis.strict
+    return lookup_params(write_in_basis(coefficient_ring(basis.sp), m, basis.iter), basis)
+end
+
+function lookup_params(
+    m::LinearCombination{C, DeformationMap{T}},
+    basis::ArcDiagBasedDeformBasis{ParamT, T},
+) where {ParamT, T <: SmashProductLieElem, C}
+    return linear_combination([
+        begin
+            params = lookup_params_direct(e, basis)
+            @assert !isnothing(params)
+            (params => c)
+        end for (e, c) in m.data
+    ])
+end
+
+function lookup_params_direct(m::DeformationMap{T}, basis::ArcDiagBasedDeformBasis{ParamT, T}) where {ParamT, T <: SmashProductLieElem}
+    # if !basis.no_normalize
+    #     m = normalize(m)
+    # end
+    return get(basis.param_reverse_map, m, nothing)
 end
 
 # fallbacks

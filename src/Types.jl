@@ -1,5 +1,19 @@
 ################################################################################
 #
+# Formal linear combinations
+#
+################################################################################
+
+struct LinearCombination{C<:RingElem, T}
+    data::Dict{T, C}   # maps elements to coefficients
+
+    function LinearCombination{C,T}() where {C<:RingElem, T}
+        return new{C,T}(Dict{T, C}())
+    end
+end
+
+################################################################################
+#
 # Arc diagrams
 #
 ################################################################################
