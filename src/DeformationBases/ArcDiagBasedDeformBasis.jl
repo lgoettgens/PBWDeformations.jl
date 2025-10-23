@@ -260,6 +260,59 @@ function to_arc_diagram(data)
     return arc_diagram(data)
 end
 
+function deformation_map(
+    sp::SmashProductLie{C, LieC, LieT},
+    param,
+) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}}
+    LieType = Val(get_attribute(base_lie_algebra(sp), :type, nothing)::Union{Nothing, Symbol})
+    @req !isnothing(LieType) "The type of Lie algebra cannot be deduced."
+    return deformation_map(LieType, sp, param)
+end
+
+function deformation_map(
+    LieType::Union{SO, GL},
+    sp::SmashProductLie{C, LieC, LieT},
+    param::Tuple{Tuple{Int, Int}, ParamT},
+) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}, ParamT}
+    V = base_module(sp)
+
+    V_nice, h = isomorphic_module_with_simple_structure(V)
+    fl, V_nice_summands = _is_direct_sum(V_nice)
+    if !fl
+        temp = direct_sum(V_nice)
+        h = compose(h, hom(V_nice, temp, identity_matrix(coefficient_ring(temp), dim(temp))))
+        V_nice_summands = [V_nice]
+        V_nice = temp
+    end
+
+    (i_l, i_r), data = param
+
+    V_nice_summand_i_l = V_nice_summands[i_l]
+    V_nice_summand_i_r = V_nice_summands[i_r]
+
+    proj_to_summand_l = compose(h, canonical_projection(V_nice, i_l))
+    proj_to_summand_r = compose(h, canonical_projection(V_nice, i_r))
+
+    if i_l == i_r
+        W = exterior_power_obj(V_nice_summand_i_l, 2)
+        case = :exterior_power
+    else
+        W = tensor_product(V_nice_summand_i_l, V_nice_summand_i_r)
+        case = :tensor_product
+    end
+
+    diag = to_arc_diagram(data)
+
+    _basis_elem = arcdiag_to_deformationmap(LieType, diag, sp, W, case)
+    basis_elem = matrix(proj_to_summand_l) * _basis_elem * transpose(matrix(proj_to_summand_r))
+    if i_l != i_r
+        basis_elem -= transpose(basis_elem)
+    end
+    @assert is_skew_symmetric(basis_elem)
+
+    return basis_elem
+end
+
 
 function arc_diagram_lower_pair_to_L(::SO, dim_stdmod_V::Int)
     # L ≅ Sᵈ ⋀² V
