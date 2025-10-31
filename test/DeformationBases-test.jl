@@ -132,7 +132,7 @@
                 @test length(b) == 3
                 ms = all_pbwdeformations(sp, b)
                 @test length(ms) == 3
-                @test is_span_equal(ms, [
+                @test is_span_equal(QQ, ms, [
                     deformmap(sp, "AACCEE,"), # same as "ABBDDA,"
                     deformmap(sp, "AACDCD,"), # same as "ABADDB,"
                     deformmap(sp, "ABABEE,"), # same as "ABBDAD,"
@@ -152,6 +152,7 @@
                 ms = all_pbwdeformations(sp, b)
                 @test length(ms) == 4
                 @test is_span_equal(
+                    QQ,
                     ms,
                     [
                         deformmap(sp, "AACCEE,"), # same as "ABBDDA,"
