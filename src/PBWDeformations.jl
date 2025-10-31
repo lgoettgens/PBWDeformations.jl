@@ -100,6 +100,7 @@ export arc_diagram
 export base_lie_algebra
 export base_module
 export deform
+export deformation_map
 export edge_labels
 export edges
 export exterior_power
