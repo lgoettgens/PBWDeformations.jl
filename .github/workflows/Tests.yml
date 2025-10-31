@@ -43,11 +43,11 @@ jobs:
           - 'devel'
         os:
           - ubuntu-latest
-        # exclude:
-        #   - julia-version: '1.12-nightly'
-        #     oscar-version: '1.2'
-        #   - julia-version: 'nightly'
-        #     oscar-version: '1.2'
+        exclude:
+          - julia-version: '1.13-nightly'
+            oscar-version: '1.4'
+          - julia-version: 'nightly'
+            oscar-version: '1.4'
 
     steps:
       - uses: actions/checkout@v5
