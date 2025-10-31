@@ -1,6 +1,6 @@
 @testset "DeformationBases/*.jl tests" begin
     @testset "ArcDiagDeformBasis.jl" begin
-        @testset "arcdiag_to_deformationmap(:special_orthogonal, :exterior)" begin
+        @testset "deformation_map(:special_orthogonal, :exterior)" begin
             L = special_orthogonal_lie_algebra(QQ, 4, identity_matrix(QQ, 4))
             LieType = PBWDeformations.SO()
             V = exterior_power_obj(standard_module(L), 2)
@@ -8,13 +8,14 @@
 
             @testset "not all specialisations are zero" begin
                 diag = arc_diagram(Undirected, "ABBD,AD")
-                dm = PD.arcdiag_to_deformationmap(LieType, diag, sp)
+                dm = deformation_map(sp, diag)
                 @test !iszero(dm)
             end
 
             @testset "deformation is equivariant, d = $deg" for deg in 1:3
                 for diag in PD.pbw_arc_diagrams(LieType, V, deg)
-                    dm = PD.arcdiag_to_deformationmap(LieType, diag, sp)
+                    dm = deformation_map(sp, diag)
+                    @test dm == deformation_map(sp, ((1, 1), diag))
                     d = deform(sp, dm)
                     @test all(iszero, pbwdeform_eqs(d, disabled=[:b, :c, :d]))
                 end
@@ -121,9 +122,7 @@
             end
 
             @testset "SO_2, T³V" begin
-                deformmap(sp::SmashProductLie, diag::String) = PBWDeformations.normalize(
-                    PBWDeformations.arcdiag_to_deformationmap(PBWDeformations.SO(), arc_diagram(Undirected, diag), sp),
-                )
+                deformmap(sp::SmashProductLie, diag::String) = deformation_map(sp, arc_diagram(Undirected, diag))
 
                 L = special_orthogonal_lie_algebra(QQ, 2, identity_matrix(QQ, 2))
                 V = tensor_power_obj(standard_module(L), 3)
@@ -133,7 +132,7 @@
                 @test length(b) == 3
                 ms = all_pbwdeformations(sp, b)
                 @test length(ms) == 3
-                @test issetequal(ms, [
+                @test is_span_equal(ms, [
                     deformmap(sp, "AACCEE,"), # same as "ABBDDA,"
                     deformmap(sp, "AACDCD,"), # same as "ABADDB,"
                     deformmap(sp, "ABABEE,"), # same as "ABBDAD,"
@@ -142,9 +141,7 @@
             end
 
             @testset "SO_3, T³V" begin
-                deformmap(sp::SmashProductLie, diag::String) = PBWDeformations.normalize(
-                    PBWDeformations.arcdiag_to_deformationmap(PBWDeformations.SO(), arc_diagram(Undirected, diag), sp),
-                )
+                deformmap(sp::SmashProductLie, diag::String) = deformation_map(sp, arc_diagram(Undirected, diag))
 
                 L = special_orthogonal_lie_algebra(QQ, 3, identity_matrix(QQ, 3))
                 V = tensor_power_obj(standard_module(L), 3)
@@ -154,7 +151,7 @@
                 @test length(b) == 4
                 ms = all_pbwdeformations(sp, b)
                 @test length(ms) == 4
-                @test issetequal(
+                @test is_span_equal(
                     ms,
                     [
                         deformmap(sp, "AACCEE,"), # same as "ABBDDA,"

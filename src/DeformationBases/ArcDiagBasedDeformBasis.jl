@@ -272,26 +272,46 @@ end
 function deformation_map(
     LieType::Union{SO, GL},
     sp::SmashProductLie{C, LieC, LieT},
-    param::Tuple{Tuple{Int, Int}, ParamT},
+    param,
+) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}}
+    return deformation_map(LieType, sp, ((1, 1), param); no_direct_sum=true)
+end
+
+function deformation_map(
+    LieType::Union{SO, GL},
+    sp::SmashProductLie{C, LieC, LieT},
+    param::Tuple{Tuple{Int, Int}, ParamT};
+    no_direct_sum::Bool=false,
 ) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}, ParamT}
     V = base_module(sp)
-
-    V_nice, h = isomorphic_module_with_simple_structure(V)
-    fl, V_nice_summands = _is_direct_sum(V_nice)
-    if !fl
-        temp = direct_sum(V_nice)
-        h = compose(h, hom(V_nice, temp, identity_matrix(coefficient_ring(temp), dim(temp))))
-        V_nice_summands = [V_nice]
-        V_nice = temp
-    end
-
     (i_l, i_r), data = param
 
-    V_nice_summand_i_l = V_nice_summands[i_l]
-    V_nice_summand_i_r = V_nice_summands[i_r]
+    if no_direct_sum
+        V_nice = V
+        h = identity_hom(V)
+        V_nice_summands = [V_nice]
+        @assert i_l == 1 && i_r == 1 "With no_direct_sum=true, only (1,1) is allowed."
+        V_nice_summand_i_l = V
+        V_nice_summand_i_r = V
+        proj_to_summand_l = identity_hom(V)
+        proj_to_summand_r = identity_hom(V)
+    else
+        V_nice, h = isomorphic_module_with_simple_structure(V)
+        fl, V_nice_summands = _is_direct_sum(V_nice)
+        if !fl
+            temp = direct_sum(V_nice)
+            h = compose(h, hom(V_nice, temp, identity_matrix(coefficient_ring(temp), dim(temp))))
+            V_nice_summands = [V_nice]
+            V_nice = temp
+        end
 
-    proj_to_summand_l = compose(h, canonical_projection(V_nice, i_l))
-    proj_to_summand_r = compose(h, canonical_projection(V_nice, i_r))
+
+        V_nice_summand_i_l = V_nice_summands[i_l]
+        V_nice_summand_i_r = V_nice_summands[i_r]
+
+        proj_to_summand_l = compose(h, canonical_projection(V_nice, i_l))
+        proj_to_summand_r = compose(h, canonical_projection(V_nice, i_r))
+    end
 
     if i_l == i_r
         W = exterior_power_obj(V_nice_summand_i_l, 2)
