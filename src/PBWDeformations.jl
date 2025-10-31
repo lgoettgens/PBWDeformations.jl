@@ -168,6 +168,7 @@ const GL = Val{:general_linear}
 
 include("Types.jl")
 
+include("LazyModule.jl")
 include("OscarPatches.jl")
 
 include("LinearIndependence.jl")
