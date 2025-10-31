@@ -1,8 +1,8 @@
 # This needs to be an IdDict, as there are `==` LieAlgebraModules that have been created in different ways,
 # and thus need different acting groups.
-const ActingGroupCache = WeakKeyIdDict{LieAlgebraModule, Tuple{PermGroup, GAPGroupHomomorphism{PermGroup, PermGroup}}}()
+const ActingGroupCache = WeakKeyIdDict{LieAlgebraModuleOrLazy, Tuple{PermGroup, GAPGroupHomomorphism{PermGroup, PermGroup}}}()
 
-function acting_group_with_sgn(V::LieAlgebraModule)
+function acting_group_with_sgn(V::LieAlgebraModuleOrLazy)
     return get!(ActingGroupCache, V) do
         G, gens_and_sgn = _acting_group_with_gens_and_sgn(V)
         @assert sub(G, first.(gens_and_sgn))[1] == G # TODO: remove this check
@@ -12,7 +12,7 @@ function acting_group_with_sgn(V::LieAlgebraModule)
     end
 end
 
-function _acting_group_with_gens_and_sgn(V::LieAlgebraModule)
+function _acting_group_with_gens_and_sgn(V::LieAlgebraModuleOrLazy)
     if is_tensor_generator(V)
         G = symmetric_group(1)
         gens_and_sgn = Tuple{PermGroupElem, Int}[]

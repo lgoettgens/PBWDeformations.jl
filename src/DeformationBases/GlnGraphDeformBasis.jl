@@ -21,7 +21,7 @@ function check_input(
     @req LieType isa GL "Only works for gl_n."
 end
 
-function data_iter_and_len(::Type{GlnGraphDeformBasis}, LieType::GL, W::LieAlgebraModule, case::Symbol, d::Int)
+function data_iter_and_len(::Type{GlnGraphDeformBasis}, LieType::GL, W::LieAlgebraModuleOrLazy, case::Symbol, d::Int)
     parity_verts = arc_diagram_upper_points(LieType, W)
     if case == :exterior_power
         fl, Wbase, k = _is_exterior_power(W)
@@ -58,7 +58,7 @@ function should_use_data(
     LieType::GL,
     data::GlnGraphDeformBasisParamT,
     ::SmashProductLie,
-    V::LieAlgebraModule,
+    V::LieAlgebraModuleOrLazy,
     ::Symbol,
     cache::Union{Dict{<:Any, Bool}, Nothing},
 )

@@ -1,4 +1,4 @@
-function is_power_with_data(V::LieAlgebraModule)
+function is_power_with_data(V::LieAlgebraModuleOrLazy)
     data = _is_exterior_power(V)
     data[1] && return data
     data = _is_symmetric_power(V)
