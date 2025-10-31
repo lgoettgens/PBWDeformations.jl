@@ -288,13 +288,13 @@ function deformation_map(
 
     if no_direct_sum
         V_nice = V
-        h = identity_hom(V)
+        h = identity_map(V)
         V_nice_summands = [V_nice]
         @assert i_l == 1 && i_r == 1 "With no_direct_sum=true, only (1,1) is allowed."
         V_nice_summand_i_l = V
         V_nice_summand_i_r = V
-        proj_to_summand_l = identity_hom(V)
-        proj_to_summand_r = identity_hom(V)
+        proj_to_summand_l = identity_map(V)
+        proj_to_summand_r = identity_map(V)
     else
         V_nice, h = isomorphic_module_with_simple_structure(V)
         fl, V_nice_summands = _is_direct_sum(V_nice)
