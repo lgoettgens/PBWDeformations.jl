@@ -174,7 +174,7 @@ function arc_diag_based_basis_iteration(
                 W = lazy_exterior_power_obj(V_nice_summand_i_l, 2)
                 case = :exterior_power
             else
-                W = tensor_product(V_nice_summand_i_l, V_nice_summand_i_r)
+                W = lazy_tensor_product(V_nice_summand_i_l, V_nice_summand_i_r)
                 case = :tensor_product
             end
 
@@ -317,7 +317,7 @@ function deformation_map(
         W = lazy_exterior_power_obj(V_nice_summand_i_l, 2)
         case = :exterior_power
     else
-        W = tensor_product(V_nice_summand_i_l, V_nice_summand_i_r)
+        W = lazy_tensor_product(V_nice_summand_i_l, V_nice_summand_i_r)
         case = :tensor_product
     end
 
