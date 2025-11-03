@@ -20,7 +20,7 @@ Oscar._is_tensor_power(::LazyLieAlgebraModule) = (false, nothing, nothing)
 mutable struct LazyTensorProductLieAlgebraModule{
     C <: FieldElem,
     LieT <: LieAlgebraElem{C},
-    FactorsT <: Tuple{Vararg{<: Union{LieAlgebraModule{C, LieT}, LazyLieAlgebraModule{C, LieT}}}},
+    FactorsT <: Tuple{Vararg{Union{LieAlgebraModule{C, LieT}, LazyLieAlgebraModule{C, LieT}}}},
 } <: LazyLieAlgebraModule{C, LieT}
     Ls::FactorsT
 end
