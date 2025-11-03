@@ -23,6 +23,12 @@ mutable struct LazyTensorProductLieAlgebraModule{
     FactorsT <: Tuple{Vararg{Union{LieAlgebraModule{C, LieT}, LazyLieAlgebraModule{C, LieT}}}},
 } <: LazyLieAlgebraModule{C, LieT}
     Ls::FactorsT
+
+    # add explicit default constructor to avoid issues with unbounded type parameters
+    # in other variants of the default constructor with julia versions < 1.12
+    function LazyTensorProductLieAlgebraModule{C, LieT, FactorsT}(Ls::FactorsT) where {C <: FieldElem, LieT <: LieAlgebraElem{C}, FactorsT <: Tuple{Vararg{Union{LieAlgebraModule{C, LieT}, LazyLieAlgebraModule{C, LieT}}}}}
+        new{C, LieT, FactorsT}(Ls)
+    end
 end
 
 function lazy_tensor_product(V::LieAlgebraModuleOrLazy{C, LieT}, Vs::LieAlgebraModuleOrLazy{C, LieT}...) where {C <: FieldElem, LieT <: LieAlgebraElem{C}}
@@ -45,6 +51,12 @@ mutable struct LazyExteriorPowerLieAlgebraModule{
 } <: LazyLieAlgebraModule{C, LieT}
     L::InnerT
     k::Int
+
+    # add explicit default constructor to avoid issues with unbounded type parameters
+    # in other variants of the default constructor with julia versions < 1.12
+    function LazyExteriorPowerLieAlgebraModule{C, LieT, InnerT}(L::InnerT, k::Int) where {C <: FieldElem, LieT <: LieAlgebraElem{C}, InnerT <: Union{LieAlgebraModule{C, LieT}, LazyLieAlgebraModule{C, LieT}}}
+        new{C, LieT, InnerT}(L, k)
+    end
 end
 
 function lazy_exterior_power_obj(L::LieAlgebraModuleOrLazy{C, LieT}, k::Int) where {C <: FieldElem, LieT <: LieAlgebraElem{C}}
