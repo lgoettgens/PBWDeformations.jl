@@ -23,7 +23,7 @@ function check_input(
     @req has_attribute(base_lie_algebra(sp), :form) && isone(get_attribute(base_lie_algebra(sp), :form)::dense_matrix_type(LieC)) "Only works for so_n represented as skew-symmetric matrices."
 end
 
-function data_iter_and_len(::Type{PseudographDeformBasis}, LieType::SO, W::LieAlgebraModule, case::Symbol, d::Int)
+function data_iter_and_len(::Type{PseudographDeformBasis}, LieType::SO, W::LieAlgebraModuleOrLazy, case::Symbol, d::Int)
     @req case == :exterior_power "Not implemented for direct sums"
     fl, V, e = _is_exterior_power(W)
     @assert fl
@@ -46,7 +46,7 @@ function should_use_data(
     LieType::SO,
     data::PseudographDeformBasisParamT,
     ::SmashProductLie,
-    ::LieAlgebraModule,
+    ::LieAlgebraModuleOrLazy,
     ::Symbol,
     cache::Union{Dict{<:Any, Bool}, Nothing},
 )

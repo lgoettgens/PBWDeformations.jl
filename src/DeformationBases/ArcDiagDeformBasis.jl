@@ -26,7 +26,7 @@ end
 function data_iter_and_len(
     ::Type{ArcDiagDeformBasis},
     LieType::Union{SO, GL},
-    W::LieAlgebraModule,
+    W::LieAlgebraModuleOrLazy,
     case::Symbol,
     d::Int,
 )
@@ -40,7 +40,7 @@ function should_use_data(
     LieType::Union{SO, GL},
     data::ArcDiagDeformBasisParamT,
     ::SmashProductLie,
-    ::LieAlgebraModule,
+    ::LieAlgebraModuleOrLazy,
     ::Symbol,
     cache::Union{Dict{<:Any, Bool}, Nothing},
 )
@@ -49,7 +49,7 @@ function should_use_data(
 end
 
 
-function pbw_arc_diagrams(T::Union{SO, GL}, V::LieAlgebraModule, d::Int)
+function pbw_arc_diagrams(T::Union{SO, GL}, V::LieAlgebraModuleOrLazy, d::Int)
     upper_verts = arc_diagram_upper_points(T, V)
     lower_verts = arc_diagram_lower_points(T, V, d)
     upper_iss = arc_diagram_upper_iss(T, V)
@@ -64,7 +64,7 @@ arc_diagram_type(::SO) = Undirected
 arc_diagram_type(::GL) = Directed
 
 
-function is_tensor_generator(V::LieAlgebraModule)
+function is_tensor_generator(V::LieAlgebraModuleOrLazy)
     if _is_standard_module(V)
         return true
     end
@@ -73,7 +73,7 @@ function is_tensor_generator(V::LieAlgebraModule)
 end
 
 
-function arc_diagram_upper_points(T::SO, V::LieAlgebraModule)
+function arc_diagram_upper_points(T::SO, V::LieAlgebraModuleOrLazy)
     if _is_standard_module(V)
         return 1
     elseif ((fl, Ws) = _is_tensor_product(V); fl)
@@ -85,7 +85,7 @@ function arc_diagram_upper_points(T::SO, V::LieAlgebraModule)
     end
 end
 
-function arc_diagram_upper_points(T::GL, V::LieAlgebraModule)
+function arc_diagram_upper_points(T::GL, V::LieAlgebraModuleOrLazy)
     if _is_standard_module(V)
         return [true]
     elseif ((fl, W) = _is_dual(V); fl) && _is_standard_module(W)
@@ -100,16 +100,16 @@ function arc_diagram_upper_points(T::GL, V::LieAlgebraModule)
     end
 end
 
-function arc_diagram_num_upper_points(T::SO, V::LieAlgebraModule)
+function arc_diagram_num_upper_points(T::SO, V::LieAlgebraModuleOrLazy)
     return arc_diagram_upper_points(T, V)
 end
 
-function arc_diagram_num_upper_points(T::GL, V::LieAlgebraModule)
+function arc_diagram_num_upper_points(T::GL, V::LieAlgebraModuleOrLazy)
     return length(arc_diagram_upper_points(T, V))
 end
 
 
-function arc_diagram_upper_iss(T::Union{SO, GL}, V::LieAlgebraModule)
+function arc_diagram_upper_iss(T::Union{SO, GL}, V::LieAlgebraModuleOrLazy)
     if is_tensor_generator(V)
         return Vector{Int}[]
     elseif ((fl, inner_mods) = _is_tensor_product(V); fl)
@@ -137,31 +137,31 @@ function arc_diagram_upper_iss(T::Union{SO, GL}, V::LieAlgebraModule)
 end
 
 
-function arc_diagram_lower_points(::SO, _::LieAlgebraModule, d::Int)
+function arc_diagram_lower_points(::SO, _::LieAlgebraModuleOrLazy, d::Int)
     # L ≅ Sᵈ ⋀² V
     return 2d
 end
 
-function arc_diagram_lower_points(::GL, _::LieAlgebraModule, d::Int)
+function arc_diagram_lower_points(::GL, _::LieAlgebraModuleOrLazy, d::Int)
     # L ≅ Sᵈ (V ⊗ V*)
     return reduce(vcat, ([1, 0] for _ in 1:d); init=Int[])
 end
 
-function arc_diagram_num_lower_points(T::SO, V::LieAlgebraModule, d::Int)
+function arc_diagram_num_lower_points(T::SO, V::LieAlgebraModuleOrLazy, d::Int)
     return arc_diagram_lower_points(T, V, d)
 end
 
-function arc_diagram_num_lower_points(T::GL, V::LieAlgebraModule, d::Int)
+function arc_diagram_num_lower_points(T::GL, V::LieAlgebraModuleOrLazy, d::Int)
     return length(arc_diagram_lower_points(T, V, d))
 end
 
 
-function arc_diagram_lower_iss(::SO, _::LieAlgebraModule, d::Int)
+function arc_diagram_lower_iss(::SO, _::LieAlgebraModuleOrLazy, d::Int)
     # L ≅ Sᵈ ⋀² V
     return collect([2i - 1, 2i] for i in 1:d)
 end
 
-function arc_diagram_lower_iss(::GL, _::LieAlgebraModule, _::Int)
+function arc_diagram_lower_iss(::GL, _::LieAlgebraModuleOrLazy, _::Int)
     # L ≅ Sᵈ (V ⊗ V*)
     return Vector{Int}[]
 end

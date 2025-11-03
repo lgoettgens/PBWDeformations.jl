@@ -111,7 +111,7 @@ function should_use_data(
     ::Union{SO, GL},
     ::Any,
     ::SmashProductLie,
-    ::LieAlgebraModule,
+    ::LieAlgebraModuleOrLazy,
     ::Symbol,
     cache::Union{Dict{<:Any, Bool}, Nothing},
 )
@@ -127,7 +127,7 @@ function should_use_arc_diagram(
     ::Union{SO, GL},
     ::ArcDiagram,
     ::SmashProductLie,
-    ::LieAlgebraModule,
+    ::LieAlgebraModuleOrLazy,
     ::Symbol,
 )
     return true
@@ -171,10 +171,10 @@ function arc_diag_based_basis_iteration(
             proj_to_summand_r = compose(h, canonical_projection(V_nice, i_r))
 
             if i_l == i_r
-                W = exterior_power_obj(V_nice_summand_i_l, 2)
+                W = lazy_exterior_power_obj(V_nice_summand_i_l, 2)
                 case = :exterior_power
             else
-                W = tensor_product(V_nice_summand_i_l, V_nice_summand_i_r)
+                W = lazy_tensor_product(V_nice_summand_i_l, V_nice_summand_i_r)
                 case = :tensor_product
             end
 
@@ -314,10 +314,10 @@ function deformation_map(
     end
 
     if i_l == i_r
-        W = exterior_power_obj(V_nice_summand_i_l, 2)
+        W = lazy_exterior_power_obj(V_nice_summand_i_l, 2)
         case = :exterior_power
     else
-        W = tensor_product(V_nice_summand_i_l, V_nice_summand_i_r)
+        W = lazy_tensor_product(V_nice_summand_i_l, V_nice_summand_i_r)
         case = :tensor_product
     end
 
@@ -363,7 +363,7 @@ function arc_diagram_lower_pair_to_L(::GL, dim_stdmod_V::Int)
     return iso_pair_to_L
 end
 
-function arc_diagram_label_iterator(T::Union{SO, GL}, V::LieAlgebraModule, base_labels::AbstractVector{Int})
+function arc_diagram_label_iterator(T::Union{SO, GL}, V::LieAlgebraModuleOrLazy, base_labels::AbstractVector{Int})
     if is_tensor_generator(V)
         return [[l] for l in base_labels]
     elseif ((fl, inner_mods) = _is_tensor_product(V); fl)
@@ -392,7 +392,7 @@ function arc_diagram_label_iterator(T::Union{SO, GL}, V::LieAlgebraModule, base_
 end
 
 
-function basis_index_mapping(V::LieAlgebraModule)
+function basis_index_mapping(V::LieAlgebraModuleOrLazy)
     if ((fl, inner_mods) = _is_tensor_product(V); fl)
         return ProductIterator([1:dim(inner_mod) for inner_mod in reverse(inner_mods)]) .|> reverse .|> collect
     elseif ((fl, inner_mod, power) = _is_exterior_power(V); fl)
@@ -406,7 +406,7 @@ function basis_index_mapping(V::LieAlgebraModule)
     end
 end
 
-function arc_diagram_label_permutations(T::Union{SO, GL}, V::LieAlgebraModule, label::AbstractVector{Int})
+function arc_diagram_label_permutations(T::Union{SO, GL}, V::LieAlgebraModuleOrLazy, label::AbstractVector{Int})
     G, h = acting_group_with_sgn(V)
     @req length(label) == degree(G) "Number of labels mismatch."
     return [(permuted(label, g), sign(h(g))) for g in G]
@@ -425,7 +425,7 @@ function arcdiag_to_deformationmap(
     T::GL,
     diag::ArcDiagramDirected,
     sp::SmashProductLie{C},
-    W::LieAlgebraModule=exterior_power_obj(base_module(sp), 2),
+    W::LieAlgebraModuleOrLazy=lazy_exterior_power_obj(base_module(sp), 2),
     case::Symbol=:exterior_power,
 ) where {C <: RingElem}
     return arcdiag_to_deformationmap(T, arc_diagram(Undirected, diag), sp, W, case)
@@ -435,7 +435,7 @@ function arcdiag_to_deformationmap(
     T::Union{SO, GL},
     diag::ArcDiagramUndirected,
     sp::SmashProductLie{C},
-    W::LieAlgebraModule=exterior_power_obj(base_module(sp), 2),
+    W::LieAlgebraModuleOrLazy=lazy_exterior_power_obj(base_module(sp), 2),
     case::Symbol=:exterior_power,
 ) where {C <: RingElem}
     @req !_is_direct_sum(W)[1] "Not permitted for direct sums."
@@ -479,7 +479,7 @@ end
 function arcdiag_to_deformationmap_entry(
     T::Union{SO, GL},
     diag::ArcDiagramUndirected,
-    W::LieAlgebraModule{C},
+    W::LieAlgebraModuleOrLazy{C},
     upper_labels::AbstractVector{Int},
     sp::SmashProductLie{C},
     iso_pair_to_L::Function,
