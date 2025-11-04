@@ -18,23 +18,26 @@ function pbwdeform_eqs(d::SmashProductLieDeform; disabled::Vector{Symbol}=Symbol
     kappa = [simplify(comm(v[i], v[j])) for i in 1:dimV, j in 1:dimV]
     action = [simplify(comm(x[h], v[i])) for h in 1:dimL, i in 1:dimV]
 
+    iters = []
+
     ## (a) κ is H-invariant
-    iter_a =
-        :a in disabled ? [] :
+    :a in disabled || push!(
+        iters,
         (
             comm(action[h, i], v[j])    # κ([h⋅v_i,v_j])
             + comm(v[i], action[h, j])  # κ([v_i,h⋅v_j])
             - comm(x[h], kappa[i, j])   # h⋅κ([v_i,v_j])
             for (h, (i, j)) in Iterators.product(1:dimL, combinations(dimV, 2))
-        )
+        ),
+    )
 
     ## (b) trivial
-    iter_b = :b in disabled ? [] : []
+    :b in disabled || push!(iters, elem_type(d)[])
 
     ## (c) 0 = κ ⊗ id - id ⊗ κ on (I ⊗ V) ∩ (V ⊗ I)
     # (I ⊗ V) ∩ (V ⊗ I) has basis v_iv_jv_k + v_jv_kv_i + v_kv_iv_j - v_kv_jv_i - v_jv_iv_k - v_iv_kv_j for i<j<k
-    iter_c =
-        :c in disabled ? [] :
+    :c in disabled || push!(
+        iters,
         (
             (kappa[i, j] * v[k] - v[i] * kappa[j, k]) +
             (kappa[j, k] * v[i] - v[j] * kappa[k, i]) +
@@ -43,11 +46,12 @@ function pbwdeform_eqs(d::SmashProductLieDeform; disabled::Vector{Symbol}=Symbol
             (kappa[j, i] * v[k] - v[j] * kappa[i, k]) -
             (kappa[i, k] * v[j] - v[i] * kappa[k, j]) for (i, j, k) in combinations(dimV, 3)
         )
+    )
 
     ## (d) trivial
-    iter_d = :d in disabled ? [] : []
+    :d in disabled || push!(iters, elem_type(d)[])
 
-    return Iterators.map(simplify, Iterators.flatten([iter_a, iter_b, iter_c, iter_d]))
+    return (simplify(elem::elem_type(d)) for elem in Iterators.flatten(iters))
 end
 
 function pbwdeform_neqs(d::SmashProductLieDeform)
