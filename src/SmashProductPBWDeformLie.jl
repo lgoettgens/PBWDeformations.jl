@@ -12,19 +12,20 @@ function pbwdeform_eqs(d::SmashProductLieDeform; disabled::Vector{Symbol}=Symbol
     dimL = dim(base_lie_algebra(d))
     dimV = dim(base_module(d))
 
-    x(i) = gen(d, i, :L)
-    v(i) = gen(d, i, :V)
+    x = gens(d, :L)
+    v = gens(d, :V)
 
-    scomm(a, b) = simplify(comm(a, b))
+    kappa = [simplify(comm(v[i], v[j])) for i in 1:dimV, j in 1:dimV]
+    action = [simplify(comm(x[h], v[i])) for h in 1:dimL, i in 1:dimV]
 
     ## (a) κ is H-invariant
     iter_a =
         :a in disabled ? [] :
         (
-            comm(scomm(h, v(i)), v(j))   # κ([h⋅v_i,v_j])
-            + comm(v(i), scomm(h, v(j))) # κ([v_i,h⋅v_j])
-            - comm(h, scomm(v(i), v(j))) # h⋅κ([v_i,v_j])
-            for (h, (i, j)) in Iterators.product([x(i) for i in 1:dimL], combinations(dimV, 2))
+            comm(action[h, i], v[j])    # κ([h⋅v_i,v_j])
+            + comm(v[i], action[h, j])  # κ([v_i,h⋅v_j])
+            - comm(x[h], kappa[i, j])   # h⋅κ([v_i,v_j])
+            for (h, (i, j)) in Iterators.product(1:dimL, combinations(dimV, 2))
         )
 
     ## (b) trivial
@@ -35,12 +36,12 @@ function pbwdeform_eqs(d::SmashProductLieDeform; disabled::Vector{Symbol}=Symbol
     iter_c =
         :c in disabled ? [] :
         (
-            (scomm(v(i), v(j)) * v(k) - v(i) * scomm(v(j), v(k))) +
-            (scomm(v(j), v(k)) * v(i) - v(j) * scomm(v(k), v(i))) +
-            (scomm(v(k), v(i)) * v(j) - v(k) * scomm(v(i), v(j))) -
-            (scomm(v(k), v(j)) * v(i) - v(k) * scomm(v(j), v(i))) -
-            (scomm(v(j), v(i)) * v(k) - v(j) * scomm(v(i), v(k))) -
-            (scomm(v(i), v(k)) * v(j) - v(i) * scomm(v(k), v(j))) for (i, j, k) in combinations(dimV, 3)
+            (kappa[i, j] * v[k] - v[i] * kappa[j, k]) +
+            (kappa[j, k] * v[i] - v[j] * kappa[k, i]) +
+            (kappa[k, i] * v[j] - v[k] * kappa[i, j]) -
+            (kappa[k, j] * v[i] - v[k] * kappa[j, i]) -
+            (kappa[j, i] * v[k] - v[j] * kappa[i, k]) -
+            (kappa[i, k] * v[j] - v[i] * kappa[k, j]) for (i, j, k) in combinations(dimV, 3)
         )
 
     ## (d) trivial
