@@ -407,9 +407,9 @@ function basis_index_mapping(V::LieAlgebraModuleOrLazy)
 end
 
 function arc_diagram_label_permutations(T::Union{SO, GL}, V::LieAlgebraModuleOrLazy, label::AbstractVector{Int})
-    G, h = acting_group_with_sgn(V)
+    G, it = acting_group_with_sgn_iterator(V)
     @req length(label) == degree(G) "Number of labels mismatch."
-    return [(permuted(label, g), sign(h(g))) for g in G]
+    return [(permuted(label, g), sgn) for (g, sgn) in it]
 end
 
 function arcdiag_is_lower_pair_label_bad(::SO, labeled_diag::Vector{Int}, k::Int)
