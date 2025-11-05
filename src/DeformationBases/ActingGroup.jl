@@ -1,29 +1,26 @@
 # This needs to be an IdDict, as there are `==` LieAlgebraModules that have been created in different ways,
 # and thus need different acting groups.
-const ActingGroupCache = WeakKeyIdDict{LieAlgebraModuleOrLazy, Tuple{PermGroup, GAPGroupHomomorphism{PermGroup, PermGroup}, Dict{PermGroupElem,Int}}}()
+const ActingGroupCache = WeakKeyIdDict{LieAlgebraModuleOrLazy, Tuple{PermGroup, GAPGroupHomomorphism{PermGroup, PermGroup}}}()
+const ActingGroupIterCache = WeakKeyIdDict{LieAlgebraModuleOrLazy, Tuple{PermGroup, Dict{PermGroupElem,Int}}}()
 
-function _acting_group_with_sgn(V::LieAlgebraModuleOrLazy)
-    return get!(ActingGroupCache, V) do
+function acting_group_with_sgn(V::LieAlgebraModuleOrLazy)
+    G, h = get!(ActingGroupCache, V) do
         G, gens_and_sgn = _acting_group_with_gens_and_sgn(V)
         @assert sub(G, first.(gens_and_sgn))[1] == G # TODO: remove this check
         codom = symmetric_group(2)
         h = hom(G, codom, [g for (g, sgn) in gens_and_sgn], [signbit(sgn) ? codom[1] : codom[0] for (g, sgn) in gens_and_sgn]; check=true) # TODO: set check=false
-
-        signs = Dict([g => sign(h(g)) for g in G])
-
-        return G, h, signs
+        return G, h
     end
-end
-
-function acting_group_with_sgn(V::LieAlgebraModuleOrLazy)
-    G, sgn, _ = _acting_group_with_sgn(V)
-    return G, sgn
+    return G, h
 end
 
 function acting_group_with_sgn_iterator(V::LieAlgebraModuleOrLazy)
-    G, _, signs = _acting_group_with_sgn(V)
-
-    return G, signs
+    G, iter = get!(ActingGroupIterCache, V) do
+        G, h = acting_group_with_sgn(V)
+        iter = Dict([g => sign(h(g)) for g in G])
+        return G, iter
+    end
+    return G, iter
 end
 
 function _acting_group_with_gens_and_sgn(V::LieAlgebraModuleOrLazy)
