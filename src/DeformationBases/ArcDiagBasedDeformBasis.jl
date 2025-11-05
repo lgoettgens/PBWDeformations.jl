@@ -409,7 +409,7 @@ end
 function arc_diagram_label_permutations(T::Union{SO, GL}, V::LieAlgebraModuleOrLazy, label::AbstractVector{Int})
     G, it = acting_group_with_sgn_iterator(V)
     @req length(label) == degree(G) "Number of labels mismatch."
-    return [(permuted(label, g), sgn) for (g, sgn) in it]
+    return ((g, sgn) for (g, sgn) in it)
 end
 
 function arcdiag_is_lower_pair_label_bad(::SO, labeled_diag::Vector{Int}, k::Int)
@@ -492,7 +492,7 @@ function arcdiag_to_deformationmap_entry(
     lower_labels = [0 for _ in 1:n_lower_vertices(diag)]
     frees = Int[]
 
-    for (upper_labels, sgn_upper_labels) in arc_diagram_label_permutations(T, W, upper_labels)
+    for (perm_upper_labels, sgn_upper_labels) in arc_diagram_label_permutations(T, W, upper_labels)
         zeroprod = false
         for i in eachindex(lower_labels)
             lower_labels[i] = 0
@@ -500,11 +500,11 @@ function arcdiag_to_deformationmap_entry(
         empty!(frees)
         for v in upper_verts
             nv = neighbor(diag, v)
-            if is_upper_vertex(nv) && upper_labels[vertex_index(v)] != upper_labels[vertex_index(nv)]
+            if is_upper_vertex(nv) && upper_labels[vertex_index(v)^perm_upper_labels] != upper_labels[vertex_index(nv)^perm_upper_labels]
                 zeroprod = true
                 break
             elseif is_lower_vertex(nv)
-                lower_labels[vertex_index(nv)] = upper_labels[vertex_index(v)]
+                lower_labels[vertex_index(nv)] = upper_labels[vertex_index(v)^perm_upper_labels]
             end
         end
         if zeroprod
