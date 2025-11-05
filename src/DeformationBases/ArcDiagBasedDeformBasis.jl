@@ -487,11 +487,18 @@ function arcdiag_to_deformationmap_entry(
 ) where {C <: RingElem}
     entry = zero(sp)
 
+    upper_verts = upper_vertices(diag)
+    lower_verts = lower_vertices(diag)
+    lower_labels = [0 for _ in 1:n_lower_vertices(diag)]
+    frees = Int[]
+
     for (upper_labels, sgn_upper_labels) in arc_diagram_label_permutations(T, W, upper_labels)
         zeroprod = false
-        lower_labels = [0 for _ in 1:n_lower_vertices(diag)]
-        frees = Int[]
-        for v in upper_vertices(diag)
+        for i in eachindex(lower_labels)
+            lower_labels[i] = 0
+        end
+        empty!(frees)
+        for v in upper_verts
             nv = neighbor(diag, v)
             if is_upper_vertex(nv) && upper_labels[vertex_index(v)] != upper_labels[vertex_index(nv)]
                 zeroprod = true
@@ -503,7 +510,7 @@ function arcdiag_to_deformationmap_entry(
         if zeroprod
             continue
         end
-        for v in lower_vertices(diag)
+        for v in lower_verts
             nv = neighbor(diag, v)
             if is_lower_vertex(nv) && vertex_index(v) < vertex_index(nv)
                 push!(frees, vertex_index(v))
