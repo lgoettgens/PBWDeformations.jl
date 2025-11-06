@@ -52,8 +52,14 @@ end
 
 function _isomorphic_module__is_direct_sum(V::T, Bs::Vector{T}) where {T <: LieAlgebraModule}
     Cs_with_hom = map(isomorphic_module_with_simple_structure, Bs)
-    Csum = direct_sum(first.(Cs_with_hom)::Vector{T}...)
-    V_to_Csum = hom_direct_sum(V, Csum, last.(Cs_with_hom)::Vector{LieAlgebraModuleHom{T, T}})
+    Cs = first.(Cs_with_hom)::Vector{T}
+    if length(Bs) == length(Cs) && all(splat(===), zip(Bs, Cs))
+        Csum = V
+        V_to_Csum = id_hom(V)
+    else
+        Csum = direct_sum(Cs...)
+        V_to_Csum = hom_direct_sum(V, Csum, last.(Cs_with_hom)::Vector{LieAlgebraModuleHom{T, T}})
+    end
     Ds = T[]
     for (C, _) in Cs_with_hom
         if ((fl, C_summands) = _is_direct_sum(C); fl)
@@ -66,6 +72,8 @@ function _isomorphic_module__is_direct_sum(V::T, Bs::Vector{T}) where {T <: LieA
     Ds = length(Ds_filtered) > 0 ? Ds_filtered : [Ds[1]]
     if length(Ds) == 1
         W = Ds[1]
+    elseif length(Bs) == length(Ds) && all(splat(===), zip(Bs, Ds))
+        W = V
     else
         W = direct_sum(Ds...)
     end
@@ -76,8 +84,14 @@ end
 
 function _isomorphic_module__is_tensor_product(V::T, Bs::Vector{T}) where {T <: LieAlgebraModule}
     Cs_with_hom = map(isomorphic_module_with_simple_structure, Bs)
-    Cprod = tensor_product(first.(Cs_with_hom)::Vector{T}...)
-    V_to_Cprod = hom_tensor(V, Cprod, last.(Cs_with_hom)::Vector{LieAlgebraModuleHom{T, T}})
+    Cs = first.(Cs_with_hom)::Vector{T}
+    if length(Bs) == length(Cs) && all(splat(===), zip(Bs, Cs))
+        Cprod = V
+        V_to_Cprod = id_hom(V)
+    else
+        Cprod = tensor_product(first.(Cs_with_hom)::Vector{T}...)
+        V_to_Cprod = hom_tensor(V, Cprod, last.(Cs_with_hom)::Vector{LieAlgebraModuleHom{T, T}})
+    end
     Ds = T[]
     for (C, _) in Cs_with_hom
         if ((fl, C_factors) = _is_tensor_product(C); fl)
@@ -90,6 +104,8 @@ function _isomorphic_module__is_tensor_product(V::T, Bs::Vector{T}) where {T <: 
     Ds = length(Ds_filtered) > 0 ? Ds_filtered : [Ds[1]]
     if length(Ds) == 1
         U = only(Ds)
+    elseif length(Bs) == length(Ds) && all(splat(===), zip(Bs, Ds))
+        U = V
     else
         U = tensor_product(Ds...)
     end
@@ -156,8 +172,13 @@ function _isomorphic_module__is_exterior_power(V::T, B::T, k::Int) where {T <: L
         V_to_U = compose(V_to_B, B_to_C)
         return U, V_to_U
     end
-    U = exterior_power_obj(C, k)
-    V_to_U = hom(V, U, B_to_C)
+    if B === C
+        U = V
+        V_to_U = id_hom(U)
+    else
+        U = exterior_power_obj(C, k)
+        V_to_U = hom(V, U, B_to_C)
+    end
     if ((fl, Ds) = _is_direct_sum(C); fl)
         m = length(Ds)
         let Ds = Ds
@@ -217,8 +238,13 @@ function _isomorphic_module__is_symmetric_power(V::T, B::T, k::Int) where {T <: 
         V_to_U = compose(V_to_B, B_to_C)
         return U, V_to_U
     end
-    U = symmetric_power_obj(C, k)
-    V_to_U = hom(V, U, B_to_C)
+    if B === C
+        U = V
+        V_to_U = id_hom(U)
+    else
+        U = symmetric_power_obj(C, k)
+        V_to_U = hom(V, U, B_to_C)
+    end
     if ((fl, Ds) = _is_direct_sum(C); fl)
         m = length(Ds)
         let Ds = Ds
@@ -278,8 +304,13 @@ function _isomorphic_module__is_tensor_power(V::T, B::T, k::Int) where {T <: Lie
         V_to_U = compose(V_to_B, B_to_C)
         return U, V_to_U
     end
-    U = tensor_power_obj(C, k)
-    V_to_U = hom(V, U, B_to_C)
+    if B === C
+        U = V
+        V_to_U = id_hom(U)
+    else
+        U = tensor_power_obj(C, k)
+        V_to_U = hom(V, U, B_to_C)
+    end
     if ((fl, Ds) = _is_direct_sum(C); fl)
         m = length(Ds)
         let Ds = Ds
