@@ -486,6 +486,7 @@ function arcdiag_to_deformationmap_entry(
     max_label::Int,
 ) where {C <: RingElem}
     entry = zero(sp)
+    tmp = zero(sp)
 
     upper_verts = upper_vertices(diag)
     lower_verts = lower_vertices(diag)
@@ -535,13 +536,11 @@ function arcdiag_to_deformationmap_entry(
                     append!(basiselem, gen_ind)
                 end
                 if !iszero(coeff_lower_labels)
-                    symm_basiselem = sp(
-                        underlying_algebra(sp)(
-                            fill(coefficient_ring(sp)(1 // factorial(length(basiselem))), factorial(length(basiselem))),
-                            [ind for ind in permutations(basiselem)],
-                        ),
-                    ) # TODO: benchmark use of `symmetrize` here once it is implemented with mutable arithmetics
-                    entry_summand += coeff_lower_labels * symm_basiselem
+                    symm_basiselem = symmetrize(sp(underlying_algebra(sp)([coefficient_ring(sp)(coeff_lower_labels)], [basiselem])))
+                    # 2-arg mutable arithmetic are way slower than 3-arg at the time of writing. TODO: replace once the situation has improved
+                    # entry_summand += symm_basiselem
+                    tmp = add!(tmp, entry_summand, symm_basiselem)
+                    tmp, entry_summand = entry_summand, tmp
                 end
                 # end inner
 
@@ -569,8 +568,11 @@ function arcdiag_to_deformationmap_entry(
 
             nextindex += 1
         end
-
-        entry += sgn_upper_labels * entry_summand
+        entry_summand = mul!(entry_summand, sgn_upper_labels)
+        # 2-arg mutable arithmetic are way slower than 3-arg at the time of writing. TODO: replace once the situation has improved
+        # entry += entry_summand
+        tmp = add!(tmp, entry, entry_summand)
+        tmp, entry = entry, tmp
     end
     return entry
 end
