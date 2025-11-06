@@ -88,3 +88,8 @@ else
         return Oscar.Serialization.JSONSerializer(serialize_refs=false)
     end
 end
+
+# from https://github.com/thofma/Hecke.jl/pull/1964
+@static if pkgversion(Oscar.Hecke) < v"0.37.6"
+    Oscar.id_hom(V::LieAlgebraModule) = identity_map(V)
+end
