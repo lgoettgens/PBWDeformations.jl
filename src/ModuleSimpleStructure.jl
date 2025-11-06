@@ -1,6 +1,6 @@
 function isomorphic_module_with_simple_structure(V::T) where {T <: LieAlgebraModule}
     if _is_standard_module(V)
-        return V, identity_map(V)
+        return V, id_hom(V)
     elseif ((fl, B) = _is_dual(V); fl)
         return _isomorphic_module__is_dual(V, B)
     elseif ((fl, Bs) = _is_direct_sum(V); fl)
@@ -19,7 +19,7 @@ end
 
 function _isomorphic_module__is_dual(V::T, B::T) where {T <: LieAlgebraModule}
     if _is_standard_module(B)
-        return V, identity_map(V)
+        return V, id_hom(V)
     end
     if ((fl, U) = _is_dual(B); fl)
         V_to_U = hom(V, U, identity_matrix(coefficient_ring(V), dim(V)); check=false)
@@ -117,7 +117,7 @@ function _isomorphic_module__is_tensor_product(V::T, Bs::Vector{T}) where {T <: 
     end
     if all(D -> !_is_direct_sum(D)[1], Ds)
         W = U
-        U_to_W = identity_map(U)
+        U_to_W = id_hom(U)
     else
         Es_with_summands =
             [((fl, D_summands) = _is_direct_sum(D); fl) ? (D, D_summands) : (direct_sum(D), [D]) for D in Ds]
@@ -224,7 +224,7 @@ function _isomorphic_module__is_exterior_power(V::T, B::T, k::Int) where {T <: L
         end
     else
         W = U
-        U_to_W = identity_map(U)
+        U_to_W = id_hom(U)
     end
     V_to_W = compose(V_to_U, U_to_W)
     return W, V_to_W
@@ -290,7 +290,7 @@ function _isomorphic_module__is_symmetric_power(V::T, B::T, k::Int) where {T <: 
         end
     else
         W = U
-        U_to_W = identity_map(U)
+        U_to_W = id_hom(U)
     end
     V_to_W = compose(V_to_U, U_to_W)
     return W, V_to_W
@@ -356,7 +356,7 @@ function _isomorphic_module__is_tensor_power(V::T, B::T, k::Int) where {T <: Lie
         end
     else
         W = U
-        U_to_W = identity_map(U)
+        U_to_W = id_hom(U)
     end
     V_to_W = compose(V_to_U, U_to_W)
     return W, V_to_W
