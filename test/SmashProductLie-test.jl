@@ -22,11 +22,11 @@
             @test dim(L) + dim(V) == length(gens(sp))
             @test dim(L) + dim(V) == 5
 
-            x = gen(sp, 1, :L)
-            y = gen(sp, 2, :L)
-            h = gen(sp, 3, :L)
-            v1 = gen(sp, 1, :V)
-            v2 = gen(sp, 2, :V)
+            x = gen(sp, :L, 1)
+            y = gen(sp, :L, 2)
+            h = gen(sp, :L, 3)
+            v1 = gen(sp, :V, 1)
+            v2 = gen(sp, :V, 2)
 
             # sl_2 relations
             @test comm(x, x) == 0

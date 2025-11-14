@@ -195,6 +195,8 @@ include("DeformationBases/StdDeformBasis.jl")
 include("Serialization.jl")
 include("Database.jl")
 
+@deprecate gen(Sp::SmashProductLie, i::Int, part::Symbol) gen(Sp, part, i)
+@deprecate gen(D::SmashProductLieDeform, i::Int, part::Symbol) gen(D, part, i)
 
 ###############################################################################
 #

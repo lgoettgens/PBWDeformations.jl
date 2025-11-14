@@ -21,7 +21,7 @@ struct StdDeformBasis{T <: SmashProductLieElem} <: DeformBasis{T}
         iter = (
             begin
                 kappa = zero_matrix(sp, dimV, dimV)
-                entry = prod(map(k -> gen(sp, k, :L), ind); init=one(sp))
+                entry = prod(map(k -> gen(sp, :L, k), ind); init=one(sp))
                 kappa[i, j] += entry
                 kappa[j, i] -= entry
                 kappa

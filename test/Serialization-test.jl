@@ -105,9 +105,9 @@
                         sp = smash_product(R, L, V)
 
                         kappa = zero_matrix(sp, dim(V), dim(V))
-                        kappa[1, 2] = gen(sp, 1, :L)
+                        kappa[1, 2] = gen(sp, :L, 1)
                         kappa[2, 1] = -kappa[1, 2]
-                        kappa[3, 4] = gen(sp, 2, :L)
+                        kappa[3, 4] = gen(sp, :L, 2)
                         kappa[4, 3] = -kappa[3, 4]
                         d = deform(sp, kappa)
                     end,

@@ -7,9 +7,9 @@
             sp = smash_product(L, V)
 
             kappa = zero_matrix(sp, dim(base_module(sp)), dim(base_module(sp)))
-            kappa[1, 2] = gen(sp, 1, :L)
+            kappa[1, 2] = gen(sp, :L, 1)
             kappa[2, 1] = -kappa[1, 2]
-            kappa[3, 4] = gen(sp, 2, :L)
+            kappa[3, 4] = gen(sp, :L, 2)
             kappa[4, 3] = -kappa[3, 4]
             d = deform(sp, kappa)
 
@@ -36,15 +36,15 @@
             # Test the module basis relations
             for i in 1:ngens(d, :V), j in 1:ngens(d, :V)
                 if i == 1 && j == 2
-                    @test comm(gen(d, i, :V), gen(d, j, :V)) == gen(d, 1, :L)
+                    @test comm(gen(d, :V, i), gen(d, :V, j)) == gen(d, :L, 1)
                 elseif i == 2 && j == 1
-                    @test comm(gen(d, i, :V), gen(d, j, :V)) == -gen(d, 1, :L)
+                    @test comm(gen(d, :V, i), gen(d, :V, j)) == -gen(d, :L, 1)
                 elseif i == 3 && j == 4
-                    @test comm(gen(d, i, :V), gen(d, j, :V)) == gen(d, 2, :L)
+                    @test comm(gen(d, :V, i), gen(d, :V, j)) == gen(d, :L, 2)
                 elseif i == 4 && j == 3
-                    @test comm(gen(d, i, :V), gen(d, j, :V)) == -gen(d, 2, :L)
+                    @test comm(gen(d, :V, i), gen(d, :V, j)) == -gen(d, :L, 2)
                 else
-                    @test iszero(comm(gen(d, i, :V), gen(d, j, :V)))
+                    @test iszero(comm(gen(d, :V, i), gen(d, :V, j)))
                 end
             end
 
@@ -122,27 +122,27 @@
 
             @testset "check kappa is skew symmetric" begin
                 kappa = zero_matrix(sp, dim(base_module(sp)), dim(base_module(sp)))
-                kappa[1, 1] = gen(sp, 1, :L)
+                kappa[1, 1] = gen(sp, :L, 1)
                 @test_throws ArgumentError("kappa is not skew-symmetric.") deform(sp, kappa)
 
                 kappa = zero_matrix(sp, dim(base_module(sp)), dim(base_module(sp)))
-                kappa[1, 2] = gen(sp, 1, :L)
+                kappa[1, 2] = gen(sp, :L, 1)
                 @test_throws ArgumentError("kappa is not skew-symmetric.") deform(sp, kappa)
 
                 kappa = zero_matrix(sp, dim(base_module(sp)), dim(base_module(sp)))
-                kappa[1, 2] = gen(sp, 1, :L)
-                kappa[2, 1] = -2 * gen(sp, 1, :L)
+                kappa[1, 2] = gen(sp, :L, 1)
+                kappa[2, 1] = -2 * gen(sp, :L, 1)
                 @test_throws ArgumentError("kappa is not skew-symmetric.") deform(sp, kappa)
             end
 
             @testset "check entries of kappa contained in Hopf algebra of smash product" begin
                 kappa = zero_matrix(sp, dim(base_module(sp)), dim(base_module(sp)))
-                kappa[1, 2] = gen(sp, 1, :V)
+                kappa[1, 2] = gen(sp, :V, 1)
                 kappa[2, 1] = -kappa[1, 2]
                 @test_throws ArgumentError("kappa does not only take values in the hopf algebra") deform(sp, kappa)
 
                 kappa = zero_matrix(sp, dim(base_module(sp)), dim(base_module(sp)))
-                kappa[1, 2] = gen(sp, 1, :V) * gen(sp, 1, :L)
+                kappa[1, 2] = gen(sp, :V, 1) * gen(sp, :L, 1)
                 kappa[2, 1] = -kappa[1, 2]
                 @test_throws ArgumentError("kappa does not only take values in the hopf algebra") deform(sp, kappa)
             end
@@ -154,7 +154,7 @@
                 @test_nowarn deform(sp, kappa)
 
                 kappa = zero_matrix(sp, dim(base_module(sp)), dim(base_module(sp)))
-                kappa[1, 2] = gen(sp, 1, :L) * gen(sp, 2, :L) - 3 * gen(sp, 3, :L)
+                kappa[1, 2] = gen(sp, :L, 1) * gen(sp, :L, 2) - 3 * gen(sp, :L, 3)
                 kappa[2, 1] = -kappa[1, 2]
                 @test_nowarn deform(sp, kappa)
             end
