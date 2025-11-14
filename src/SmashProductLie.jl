@@ -49,7 +49,7 @@ function gens(Sp::SmashProductLie, part::Symbol)
 end
 
 gen(Sp::SmashProductLie, i::Int) = Sp(gen(underlying_algebra(Sp), i))
-function gen(Sp::SmashProductLie, i::Int, part::Symbol)
+function gen(Sp::SmashProductLie, part::Symbol, i::Int)
     @req 1 <= i <= ngens(Sp, part) "Invalid generator index."
     part == :V && return Sp(gen(underlying_algebra(Sp), i))
     part == :L && return Sp(gen(underlying_algebra(Sp), i + dim(base_module(Sp))))

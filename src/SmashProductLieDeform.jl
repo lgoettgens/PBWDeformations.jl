@@ -51,7 +51,7 @@ function gens(D::SmashProductLieDeform, part::Symbol)
 end
 
 gen(D::SmashProductLieDeform, i::Int) = D(gen(underlying_algebra(D), i))
-function gen(D::SmashProductLieDeform, i::Int, part::Symbol)
+function gen(D::SmashProductLieDeform, part::Symbol, i::Int)
     @req 1 <= i <= ngens(D, part) "Invalid generator index."
     part == :V && return D(gen(underlying_algebra(D), i))
     part == :L && return D(gen(underlying_algebra(D), i + dim(base_module(D))))
