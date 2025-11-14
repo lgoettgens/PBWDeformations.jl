@@ -36,24 +36,23 @@ data(e::SmashProductLieElem{C, LieC, LieT}) where {C <: RingElem, LieC <: FieldE
 
 ngens(Sp::SmashProductLie) = ngens(underlying_algebra(Sp))
 function ngens(Sp::SmashProductLie, part::Symbol)
-    part == :L && return dim(base_lie_algebra(Sp))
     part == :V && return dim(base_module(Sp))
+    part == :L && return dim(base_lie_algebra(Sp))
     error("Invalid part.")
 end
 
 gens(Sp::SmashProductLie) = map(Sp, gens(underlying_algebra(Sp)))
 function gens(Sp::SmashProductLie, part::Symbol)
-    part == :L && return [Sp(gen(underlying_algebra(Sp), i)) for i in 1:dim(base_lie_algebra(Sp))]
-    part == :V &&
-        return [Sp(gen(underlying_algebra(Sp), i + dim(base_lie_algebra(Sp)))) for i in 1:dim(base_module(Sp))]
+    part == :V && return [Sp(gen(underlying_algebra(Sp), i)) for i in 1:dim(base_module(Sp))]
+    part == :L && return [Sp(gen(underlying_algebra(Sp), i + dim(base_module(Sp)))) for i in 1:dim(base_lie_algebra(Sp))]
     error("Invalid part.")
 end
 
 gen(Sp::SmashProductLie, i::Int) = Sp(gen(underlying_algebra(Sp), i))
 function gen(Sp::SmashProductLie, i::Int, part::Symbol)
     @req 1 <= i <= ngens(Sp, part) "Invalid generator index."
-    part == :L && return Sp(gen(underlying_algebra(Sp), i))
-    part == :V && return Sp(gen(underlying_algebra(Sp), i + dim(base_lie_algebra(Sp))))
+    part == :V && return Sp(gen(underlying_algebra(Sp), i))
+    part == :L && return Sp(gen(underlying_algebra(Sp), i + dim(base_module(Sp))))
     error("Invalid part.")
 end
 
@@ -334,26 +333,26 @@ function smash_product(R::Ring, L::LieAlgebra{C}, V::LieAlgebraModule{C}) where 
 
     f_alg, _ = free_associative_algebra(
         R,
-        [symbols(L); _is_standard_module(V) ? symbols(V) : (x -> Symbol("($x)")).(symbols(V))];
+        [_is_standard_module(V) ? symbols(V) : (x -> Symbol("($x)")).(symbols(V)); symbols(L)];
         cached=false,
     )
-    f_basisL = [gen(f_alg, i) for i in 1:dimL]
-    f_basisV = [gen(f_alg, dimL + i) for i in 1:dimV]
+    f_basisV = [gen(f_alg, i) for i in 1:dimV]
+    f_basisL = [gen(f_alg, dimV + i) for i in 1:dimL]
 
     rels = Matrix{Union{Nothing, elem_type(free_associative_algebra_type(R))}}(nothing, dimL + dimV, dimL + dimV)
 
     for (i, xi) in enumerate(basis(L)), (j, xj) in enumerate(basis(L))
         commutator =
             sum(R(c) * f_basisL[k] for (k, c) in enumerate(coefficients(xi * xj)) if !iszero(c); init=zero(f_alg))
-        rels[i, j] = f_basisL[j] * f_basisL[i] + commutator
+        rels[dimV + i, dimV + j] = f_basisL[j] * f_basisL[i] + commutator
 
     end
 
     for (i, xi) in enumerate(basis(L)), (j, vj) in enumerate(basis(V))
         commutator =
             sum(R(c) * f_basisV[k] for (k, c) in enumerate(coefficients(xi * vj)) if !iszero(c); init=zero(f_alg))
-        rels[i, dimL+j] = f_basisV[j] * f_basisL[i] + commutator
-        rels[dimL+j, i] = f_basisL[i] * f_basisV[j] - commutator
+        rels[dimV + i, j] = f_basisV[j] * f_basisL[i] + commutator
+        rels[j, dimV + i] = f_basisL[i] * f_basisV[j] - commutator
     end
 
     Sp = SmashProductLie{elem_type(R), C, elem_type(L)}(R, L, V, f_alg, rels)

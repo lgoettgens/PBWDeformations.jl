@@ -38,23 +38,23 @@ data(e::SmashProductLieDeformElem{C, LieC, LieT}) where {C <: RingElem, LieC <: 
 
 ngens(D::SmashProductLieDeform) = ngens(underlying_algebra(D))
 function ngens(D::SmashProductLieDeform, part::Symbol)
-    part == :L && return dim(base_lie_algebra(D))
     part == :V && return dim(base_module(D))
+    part == :L && return dim(base_lie_algebra(D))
     error("Invalid part.")
 end
 
 gens(D::SmashProductLieDeform) = map(D, gens(underlying_algebra(D)))
 function gens(D::SmashProductLieDeform, part::Symbol)
-    part == :L && return [D(gen(underlying_algebra(D), i)) for i in 1:dim(base_lie_algebra(D))]
-    part == :V && return [D(gen(underlying_algebra(D), i + dim(base_lie_algebra(D)))) for i in 1:dim(base_module(D))]
+    part == :V && return [D(gen(underlying_algebra(D), i)) for i in 1:dim(base_module(D))]
+    part == :L && return [D(gen(underlying_algebra(D), i + dim(base_module(D)))) for i in 1:dim(base_lie_algebra(D))]
     error("Invalid part.")
 end
 
 gen(D::SmashProductLieDeform, i::Int) = D(gen(underlying_algebra(D), i))
 function gen(D::SmashProductLieDeform, i::Int, part::Symbol)
     @req 1 <= i <= ngens(D, part) "Invalid generator index."
-    part == :L && return D(gen(underlying_algebra(D), i))
-    part == :V && return D(gen(underlying_algebra(D), i + dim(base_lie_algebra(D))))
+    part == :V && return D(gen(underlying_algebra(D), i))
+    part == :L && return D(gen(underlying_algebra(D), i + dim(base_module(D))))
     error("Invalid part.")
 end
 
@@ -286,11 +286,11 @@ function deform(
     @req size(kappa) == (dimV, dimV) "kappa has wrong dimensions."
     @req all(e -> parent(e) == sp, kappa) "Incompatible smash products."
 
-    basisV = [gen(underlying_algebra(sp), dimL + i) for i in 1:dimV]
+    basisV = [gen(underlying_algebra(sp), i) for i in 1:dimV]
 
     for i in 1:dimV, j in 1:i
         @req kappa[i, j] == -kappa[j, i] "kappa is not skew-symmetric."
-        @req all(<=(dimL), Iterators.flatten(exponent_words(data(kappa[i, j])))) "kappa does not only take values in the hopf algebra"
+        @req all(>(dimV), Iterators.flatten(exponent_words(data(kappa[i, j])))) "kappa does not only take values in the hopf algebra"
     end
 
     symmetric = true
@@ -298,7 +298,7 @@ function deform(
     for i in 1:dimV, j in 1:dimV
         # We have the commutator relation [v_i, v_j] = kappa[i,j]
         # which is equivalent to v_i*v_j = v_j*v_i + kappa[i,j]
-        rels[dimL+i, dimL+j] = basisV[j] * basisV[i] + data(simplify(kappa[i, j]))
+        rels[i, j] = basisV[j] * basisV[i] + data(simplify(kappa[i, j]))
         symmetric &= iszero(kappa[i, j])
     end
 
