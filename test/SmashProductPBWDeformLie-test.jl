@@ -16,8 +16,8 @@
 
             kappa = zero_matrix(sp, 6, 6)
             # some made-up skew-symmetric entries
-            kappa[1, 2] = gen(sp, 2, :L)
-            kappa[2, 1] = -gen(sp, 2, :L)
+            kappa[1, 2] = gen(sp, :L, 2)
+            kappa[2, 1] = -gen(sp, :L, 2)
             d = deform(sp, kappa)
             @test !is_pbwdeformation(d)
         end
