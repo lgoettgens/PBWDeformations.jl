@@ -421,6 +421,10 @@ function arcdiag_is_lower_pair_label_bad(::GL, labeled_diag::Vector{Int}, k::Int
     return false
 end
 
+function is_compatible(T::GL, diag::ArcDiagramDirected, W::LieAlgebraModuleOrLazy)
+    return diag.parity_upper_verts == arc_diagram_upper_points(T, W)
+end
+
 function arcdiag_to_deformationmap(
     T::GL,
     diag::ArcDiagramDirected,
@@ -428,6 +432,7 @@ function arcdiag_to_deformationmap(
     W::LieAlgebraModuleOrLazy=lazy_exterior_power_obj(base_module(sp), 2),
     case::Symbol=:exterior_power,
 ) where {C <: RingElem}
+    @req is_compatible(T, diag, W) "Arc diagram is not compatible with module."
     return arcdiag_to_deformationmap(T, arc_diagram(Undirected, diag), sp, W, case)
 end
 
