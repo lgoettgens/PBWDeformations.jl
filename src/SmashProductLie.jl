@@ -14,11 +14,11 @@ elem_type(
 
 parent(e::SmashProductLieElem) = e.p
 
-coefficient_ring(
-    Sp::SmashProductLie{C, LieC, LieT},
-) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}} = Sp.coeff_ring::parent_type(C)
+coefficient_ring(Sp::SmashProductLie) = Sp.coeff_ring::coefficient_ring_type(Sp)
 
 coefficient_ring(e::SmashProductLieElem) = coefficient_ring(parent(e))
+
+coefficient_ring_type(::Type{SmashProductLie{C, LieC, LieT}}) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}} = parent_type(C)
 
 base_lie_algebra(
     Sp::SmashProductLie{C, LieC, LieT},

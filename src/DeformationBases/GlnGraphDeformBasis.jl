@@ -7,21 +7,21 @@ which gets transformed to an arc diagram and then handled as
 in [`ArcDiagDeformBasis`](@ref).
 This process is a generalization of [FM22](@cite).
 """
-const GlnGraphDeformBasis{T} = ArcDiagBasedDeformBasis{GlnGraphDeformBasisParamT, T} where {T <: SmashProductLieElem}
+const GlnGraphDeformBasis{C, T} = ArcDiagBasedDeformBasis{GlnGraphDeformBasisParamT, C, T} where {C <: RingElem, T <: SmashProductLieElem{C}}
 
 function Base.show(io::IO, basis::GlnGraphDeformBasis)
     print(terse(pretty(io)), "GlnGraphDeformBasis of ", Lowercase(), basis.sp, " with degrees ", basis.degs)
 end
 
 function check_input(
-    ::Type{GlnGraphDeformBasis},
+    ::Type{<:GlnGraphDeformBasis},
     LieType,
     sp::SmashProductLie{C, LieC, LieT},
 ) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}}
     @req LieType isa GL "Only works for gl_n."
 end
 
-function data_iter_and_len(::Type{GlnGraphDeformBasis}, LieType::GL, W::LieAlgebraModuleOrLazy, case::Symbol, d::Int)
+function data_iter_and_len(::Type{<:GlnGraphDeformBasis}, LieType::GL, W::LieAlgebraModuleOrLazy, case::Symbol, d::Int)
     parity_verts = arc_diagram_upper_points(LieType, W)
     if case == :exterior_power
         fl, Wbase, k = _is_exterior_power(W)
@@ -49,12 +49,12 @@ function data_iter_and_len(::Type{GlnGraphDeformBasis}, LieType::GL, W::LieAlgeb
     return data_iter, len::Int
 end
 
-function should_use_data_cache_type(::Type{GlnGraphDeformBasis})
+function should_use_data_cache_type(::Type{<:GlnGraphDeformBasis})
     return Dict{Tuple{GlnGraph, Vector{Int}}, Bool}
 end
 
 function should_use_data(
-    ::Type{GlnGraphDeformBasis},
+    ::Type{<:GlnGraphDeformBasis},
     LieType::GL,
     data::GlnGraphDeformBasisParamT,
     ::SmashProductLie,

@@ -274,7 +274,7 @@ function load_object(s::DeserializerState, ::Type{<:ArcDiagBasedDeformBasis{Para
     len = load_object(s, Int, :len)
     mat_space = matrix_space(sp, dim(base_module(sp)), dim(base_module(sp)))
     iter = load_object(s, Vector{DeformationMap{elem_type(sp)}}, mat_space, :iter)
-    param_reverse_map = load_object(s, Dict{DeformationMap{elem_type(sp)}, Set{Tuple{Tuple{Int, Int}, ParamT}}}, Dict(:key_params => mat_space, :value_params => nothing), :param_reverse_map)
+    param_reverse_map = load_object(s, Dict{DeformationMap{elem_type(sp)}, Set{Tuple{elem_type(coefficient_ring_type(sp)), Tuple{Tuple{Int, Int}, ParamT}}}}, Dict(:key_params => mat_space, :value_params => (coefficient_ring(sp), nothing)), :param_reverse_map)
     strict = load_object(s, Bool, :strict)
-    return ArcDiagBasedDeformBasis{ParamT, elem_type(sp)}(sp, degs, len, iter, param_reverse_map; strict)
+    return ArcDiagBasedDeformBasis{ParamT, elem_type(coefficient_ring_type(sp)), elem_type(sp)}(sp, degs, len, iter, param_reverse_map; strict)
 end

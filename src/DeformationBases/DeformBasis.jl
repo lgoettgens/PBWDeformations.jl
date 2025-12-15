@@ -2,15 +2,15 @@ Base.eltype(::Type{<:DeformBasis{T}}) where {T <: SmashProductLieElem} = Deforma
 
 Base.length(basis::DeformBasis) = error("length not implemented for $(typeof(basis))")
 
-function normalize(m::DeformationMap{T}) where {T <: SmashProductLieElem}
+function normalize_scaling(m::DeformationMap{T}) where {T <: SmashProductLieElem}
     nz_index = findfirst(x -> !iszero(x), m) # the index is in the lower triangular part
-    if nz_index === nothing
-        return m
+    if isnothing(nz_index)
+        return m, zero(coefficient_ring(base_ring(m)))
     end
     coeff = -leading_coefficient(data(m[nz_index])) # negative to change to the upper triangular part
     coeff_inv = inv(coeff)
     m = map_entries(e -> coeff_inv * e, m)
-    return m
+    return m, coeff
 end
 
 function filter_independent(R, input)

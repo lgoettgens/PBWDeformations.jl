@@ -124,7 +124,7 @@ function load_glngraph_deform_basis(base_path::String, sp::DBSmashProductKeyUnio
     filepath = joinpath(path, string_for_filename(GlnGraphDeformBasis, spk, degs)) * file_ext
     @req isfile(filepath) "The requested degree does not exist in the database"
     @vprint :PBWDeformationsDatabase "Found GlnGraphDeformBasis for degree $(degs). Loading..."
-    b = load(filepath)::GlnGraphDeformBasis{elem_type(smash_product_type(spk))}
+    b = load(filepath)::GlnGraphDeformBasis{elem_type(coefficient_ring_type(smash_product_type(spk))), elem_type(smash_product_type(spk))}
     @vprintln :PBWDeformationsDatabase " Done"
     return b
 end
@@ -133,12 +133,12 @@ function load_glngraph_deform_bases(base_path::String, sp::DBSmashProductKeyUnio
     spk = DBSmashProductKey(sp)
     path = prepare_loading(base_path, spk)
 
-    bs = GlnGraphDeformBasis{elem_type(smash_product_type(spk))}[]
+    bs = GlnGraphDeformBasis{elem_type(coefficient_ring_type(smash_product_type(spk))), elem_type(smash_product_type(spk))}[]
     for degs in degss
         filepath = joinpath(path, string_for_filename(GlnGraphDeformBasis, spk, degs)) * file_ext
         @req isfile(filepath) "The requested degree does not exist in the database"
         @vprint :PBWDeformationsDatabase "Found GlnGraphDeformBasis for degree $(degs). Loading..."
-        push!(bs, load(filepath)::GlnGraphDeformBasis{elem_type(smash_product_type(spk))})
+        push!(bs, load(filepath)::GlnGraphDeformBasis{elem_type(coefficient_ring_type(smash_product_type(spk))), elem_type(smash_product_type(spk))})
         @vprintln :PBWDeformationsDatabase " Done"
     end
     return bs
@@ -150,10 +150,10 @@ function load_glngraph_deform_bases(base_path::String, sp::DBSmashProductKeyUnio
     path = prepare_loading(base_path, spk)
 
     deg = 0
-    bs = GlnGraphDeformBasis{elem_type(smash_product_type(spk))}[]
+    bs = GlnGraphDeformBasis{elem_type(coefficient_ring_type(smash_product_type(spk))), elem_type(smash_product_type(spk))}[]
     while (degs = (deg:deg); filepath = joinpath(path, string_for_filename(GlnGraphDeformBasis, spk, degs)) * file_ext; isfile(filepath))
         @vprint :PBWDeformationsDatabase "Found GlnGraphDeformBasis for degree $(degs). Loading..."
-        push!(bs, load(filepath)::GlnGraphDeformBasis{elem_type(smash_product_type(spk))})
+        push!(bs, load(filepath)::GlnGraphDeformBasis{elem_type(coefficient_ring_type(smash_product_type(spk))), elem_type(smash_product_type(spk))})
         @vprintln :PBWDeformationsDatabase " Done"
         deg += 1
     end

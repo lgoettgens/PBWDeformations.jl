@@ -41,6 +41,7 @@ import Oscar.AbstractAlgebra: ngens
 import Oscar.AbstractAlgebra: parent_type
 
 import Oscar: base_lie_algebra
+import Oscar: coefficient_ring_type
 import Oscar: comm
 import Oscar: data
 import Oscar: edges

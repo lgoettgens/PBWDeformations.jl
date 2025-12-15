@@ -1,9 +1,9 @@
-struct ArcDiagBasedDeformBasis{ParamT, T <: SmashProductLieElem} <: DeformBasis{T}
+struct ArcDiagBasedDeformBasis{ParamT, C <: RingElem, T <: SmashProductLieElem{C}} <: DeformBasis{T}
     sp::SmashProductLie # parent_type(T)
     degs::Vector{Int}
     len::Int
     iter
-    param_reverse_map::Dict{DeformationMap{T}, Set{Tuple{Tuple{Int, Int}, ParamT}}}
+    param_reverse_map::Dict{DeformationMap{T}, Set{Tuple{C, Tuple{Tuple{Int, Int}, ParamT}}}}
     strict::Bool
 
     function ArcDiagBasedDeformBasis{ParamT}(
@@ -30,7 +30,7 @@ struct ArcDiagBasedDeformBasis{ParamT, T <: SmashProductLieElem} <: DeformBasis{
         check_input(ArcDiagBasedDeformBasis{ParamT}, LieType, sp)
         @req coefficient_ring(sp) === coefficient_ring(base_lie_algebra(sp)) "Deformation bases don't support extension of the coefficient ring of the smash product."
 
-        param_reverse_map = Dict{DeformationMap{elem_type(sp)}, Set{Tuple{Tuple{Int, Int}, ParamT}}}()
+        param_reverse_map = Dict{DeformationMap{elem_type(sp)}, Set{Tuple{elem_type(coefficient_ring_type(sp)), Tuple{Tuple{Int, Int}, ParamT}}}}()
 
         iter1, len1 =
             arc_diag_based_basis_iteration(ArcDiagBasedDeformBasis{ParamT}, LieType, sp, degs, param_reverse_map)
@@ -38,20 +38,20 @@ struct ArcDiagBasedDeformBasis{ParamT, T <: SmashProductLieElem} <: DeformBasis{
 
         iter2, len2 = filter_independent(coefficient_ring(sp), iter1)
         @assert iter2 isa Vector{<:DeformationMap{elem_type(sp)}}
-        return ArcDiagBasedDeformBasis{ParamT, elem_type(sp)}(sp, degs, len2, iter2, param_reverse_map; strict=true)
+        return ArcDiagBasedDeformBasis{ParamT, elem_type(coefficient_ring_type(sp)), elem_type(sp)}(sp, degs, len2, iter2, param_reverse_map; strict=true)
     end
 
-    function ArcDiagBasedDeformBasis{ParamT, T}(
+    function ArcDiagBasedDeformBasis{ParamT, C, T}(
         sp::SmashProductLie,
         degs::Vector{Int},
         len::Int,
         iter,
-        param_reverse_map::Dict{DeformationMap{T}, Set{Tuple{Tuple{Int, Int}, ParamT}}};
+        param_reverse_map::Dict{DeformationMap{T}, Set{Tuple{C, Tuple{Tuple{Int, Int}, ParamT}}}};
         strict::Bool,
-    ) where {ParamT, T <: SmashProductLieElem}
+    ) where {ParamT, C <: RingElem, T <: SmashProductLieElem{C}}
         @assert sp isa parent_type(T)
         # This inner constructor just sets the fields directly, without any checks.
-        return new{ParamT, T}(sp, degs, len, iter, param_reverse_map, strict)
+        return new{ParamT, C, T}(sp, degs, len, iter, param_reverse_map, strict)
     end
 end
 
@@ -67,20 +67,20 @@ Base.length(basis::ArcDiagBasedDeformBasis) = basis.len
 
 
 """
-    lookup_params(m::DeformationMap{T}, basis::ArcDiagBasedDeformBasis{ParamT, T}) where {T <: SmashProductLieElem}
+    lookup_params(m::DeformationMap{T}, basis::ArcDiagBasedDeformBasis{ParamT, C, T}) where {T <: SmashProductLieElem{C}}
 
 Look up additional data that was used to generate the deformation map `m` in the basis `basis`.
 This can e.g. be an arc diagram or a pseudograph.
 """
-function lookup_params(m::DeformationMap{T}, basis::ArcDiagBasedDeformBasis{ParamT, T}) where {ParamT, T <: SmashProductLieElem}
+function lookup_params(m::DeformationMap{T}, basis::ArcDiagBasedDeformBasis{ParamT, C, T}) where {ParamT, C <: RingElem, T <: SmashProductLieElem{C}}
     @assert basis.strict
     return lookup_params(write_in_basis(coefficient_ring(basis.sp), m, basis.iter), basis)
 end
 
 function lookup_params(
     m::LinearCombination{C, DeformationMap{T}},
-    basis::ArcDiagBasedDeformBasis{ParamT, T},
-) where {ParamT, T <: SmashProductLieElem, C}
+    basis::ArcDiagBasedDeformBasis{ParamT, C, T},
+) where {ParamT, C <: RingElem, T <: SmashProductLieElem{C}}
     return linear_combination([
         begin
             params = lookup_params_direct(e, basis)
@@ -90,7 +90,7 @@ function lookup_params(
     ])
 end
 
-function lookup_params_direct(m::DeformationMap{T}, basis::ArcDiagBasedDeformBasis{ParamT, T}) where {ParamT, T <: SmashProductLieElem}
+function lookup_params_direct(m::DeformationMap{T}, basis::ArcDiagBasedDeformBasis{ParamT, C, T}) where {ParamT, C <: RingElem, T <: SmashProductLieElem{C}}
     # if !basis.no_normalize
     #     m = normalize(m)
     # end
@@ -131,7 +131,7 @@ function arc_diag_based_basis_iteration(
     LieType::Union{SO, GL},
     sp::SmashProductLie{C, LieC, LieT},
     degs::AbstractVector{Int},
-    param_reverse_map::Dict{DeformationMap{SmashProductLieElem{C, LieC, LieT}}, Set{Tuple{Tuple{Int, Int}, ParamT}}},
+    param_reverse_map::Dict{DeformationMap{SmashProductLieElem{C, LieC, LieT}}, Set{Tuple{C, Tuple{Tuple{Int, Int}, ParamT}}}},
 ) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}, ParamT}
     V = base_module(sp)
 
@@ -208,13 +208,13 @@ function arc_diag_based_basis_iteration(
                         end
                         @assert is_skew_symmetric(basis_elem)
 
-                        basis_elem = normalize(basis_elem)
+                        basis_elem, coeff = normalize_scaling(basis_elem)
 
                         if !iszero(basis_elem)
                             if haskey(param_reverse_map, basis_elem)
-                                push!(param_reverse_map[basis_elem], ((i_l, i_r), data))
+                                push!(param_reverse_map[basis_elem], (coeff, ((i_l, i_r), data)))
                             else
-                                param_reverse_map[basis_elem] = Set([((i_l, i_r), data)])
+                                param_reverse_map[basis_elem] = Set([(coeff, ((i_l, i_r), data))])
                             end
                         end
                         ProgressMeter.update!(prog_meter, counter; showvalues=generate_showvalues(counter, data))

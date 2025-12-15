@@ -14,11 +14,11 @@ elem_type(
 
 parent(e::SmashProductLieDeformElem) = e.p
 
-coefficient_ring(
-    D::SmashProductLieDeform{C, LieC, LieT},
-) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}} = coefficient_ring(D.sp)::parent_type(C)
+coefficient_ring(D::SmashProductLieDeform) = coefficient_ring(D.sp)::coefficient_ring_type(D)
 
 coefficient_ring(e::SmashProductLieDeformElem) = coefficient_ring(parent(e))
+
+coefficient_ring_type(::Type{SmashProductLieDeform{C, LieC, LieT}}) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}} = parent_type(C)
 
 base_lie_algebra(
     D::SmashProductLieDeform{C, LieC, LieT},
