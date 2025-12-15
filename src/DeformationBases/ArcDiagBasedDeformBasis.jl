@@ -4,32 +4,28 @@ struct ArcDiagBasedDeformBasis{ParamT, T <: SmashProductLieElem} <: DeformBasis{
     len::Int
     iter
     param_reverse_map::Dict{DeformationMap{T}, Set{Tuple{Tuple{Int, Int}, ParamT}}}
-    no_normalize::Bool
     strict::Bool
 
     function ArcDiagBasedDeformBasis{ParamT}(
         sp::SmashProductLie,
         degs::AbstractVector{Int};
-        no_normalize::Bool=false,
     ) where {ParamT}
-        return ArcDiagBasedDeformBasis{ParamT}(sp, collect(degs); no_normalize)
+        return ArcDiagBasedDeformBasis{ParamT}(sp, collect(degs))
     end
 
     function ArcDiagBasedDeformBasis{ParamT}(
         sp::SmashProductLie,
         degs::Vector{Int};
-        no_normalize::Bool=false,
     ) where {ParamT}
         LieType = Val(get_attribute(base_lie_algebra(sp), :type, nothing)::Union{Nothing, Symbol})
         @req !isnothing(LieType) "The type of Lie algebra cannot be deduced."
-        return ArcDiagBasedDeformBasis{ParamT}(LieType, sp, degs; no_normalize)
+        return ArcDiagBasedDeformBasis{ParamT}(LieType, sp, degs)
     end
 
     function ArcDiagBasedDeformBasis{ParamT}(
         LieType::Union{SO, GL},
         sp::SmashProductLie,
         degs::Vector{Int};
-        no_normalize::Bool=false,
     ) where {ParamT}
         check_input(ArcDiagBasedDeformBasis{ParamT}, LieType, sp)
         @req coefficient_ring(sp) === coefficient_ring(base_lie_algebra(sp)) "Deformation bases don't support extension of the coefficient ring of the smash product."
@@ -37,15 +33,12 @@ struct ArcDiagBasedDeformBasis{ParamT, T <: SmashProductLieElem} <: DeformBasis{
         param_reverse_map = Dict{DeformationMap{elem_type(sp)}, Set{Tuple{Tuple{Int, Int}, ParamT}}}()
 
         iter1, len1 =
-            arc_diag_based_basis_iteration(ArcDiagBasedDeformBasis{ParamT}, LieType, sp, degs, param_reverse_map; no_normalize)
+            arc_diag_based_basis_iteration(ArcDiagBasedDeformBasis{ParamT}, LieType, sp, degs, param_reverse_map)
 
-        if no_normalize
-            return ArcDiagBasedDeformBasis{ParamT, elem_type(sp)}(sp, degs, len1, iter1, param_reverse_map; no_normalize, strict=false)
-        else
-            iter2, len2 = filter_independent(coefficient_ring(sp), iter1)
-            @assert iter2 isa Vector{<:DeformationMap{elem_type(sp)}}
-            return ArcDiagBasedDeformBasis{ParamT, elem_type(sp)}(sp, degs, len2, iter2, param_reverse_map; no_normalize, strict=true)
-        end
+
+        iter2, len2 = filter_independent(coefficient_ring(sp), iter1)
+        @assert iter2 isa Vector{<:DeformationMap{elem_type(sp)}}
+        return ArcDiagBasedDeformBasis{ParamT, elem_type(sp)}(sp, degs, len2, iter2, param_reverse_map; strict=true)
     end
 
     function ArcDiagBasedDeformBasis{ParamT, T}(
@@ -54,12 +47,11 @@ struct ArcDiagBasedDeformBasis{ParamT, T <: SmashProductLieElem} <: DeformBasis{
         len::Int,
         iter,
         param_reverse_map::Dict{DeformationMap{T}, Set{Tuple{Tuple{Int, Int}, ParamT}}};
-        no_normalize::Bool=false,
         strict::Bool,
     ) where {ParamT, T <: SmashProductLieElem}
         @assert sp isa parent_type(T)
         # This inner constructor just sets the fields directly, without any checks.
-        return new{ParamT, T}(sp, degs, len, iter, param_reverse_map, no_normalize, strict)
+        return new{ParamT, T}(sp, degs, len, iter, param_reverse_map, strict)
     end
 end
 
@@ -139,8 +131,7 @@ function arc_diag_based_basis_iteration(
     LieType::Union{SO, GL},
     sp::SmashProductLie{C, LieC, LieT},
     degs::AbstractVector{Int},
-    param_reverse_map::Dict{DeformationMap{SmashProductLieElem{C, LieC, LieT}}, Set{Tuple{Tuple{Int, Int}, ParamT}}};
-    no_normalize::Bool,
+    param_reverse_map::Dict{DeformationMap{SmashProductLieElem{C, LieC, LieT}}, Set{Tuple{Tuple{Int, Int}, ParamT}}},
 ) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}, ParamT}
     V = base_module(sp)
 
@@ -217,9 +208,8 @@ function arc_diag_based_basis_iteration(
                         end
                         @assert is_skew_symmetric(basis_elem)
 
-                        if !no_normalize
-                            basis_elem = normalize(basis_elem)
-                        end
+                        basis_elem = normalize(basis_elem)
+
                         if !iszero(basis_elem)
                             if haskey(param_reverse_map, basis_elem)
                                 push!(param_reverse_map[basis_elem], ((i_l, i_r), data))
