@@ -3,12 +3,14 @@ Base.eltype(::Type{<:DeformBasis{T}}) where {T <: SmashProductLieElem} = Deforma
 Base.length(basis::DeformBasis) = error("length not implemented for $(typeof(basis))")
 
 function normalize(m::DeformationMap{T}) where {T <: SmashProductLieElem}
-    nz_index = findfirst(x -> !iszero(x), m)
+    nz_index = findfirst(x -> !iszero(x), m) # the index is in the lower triangular part
     if nz_index === nothing
         return m
     end
-    lc = leading_coefficient(data(m[CartesianIndex(nz_index[2], nz_index[1])]))
-    m = map(e -> 1 // lc * e, m)
+    coeff = -leading_coefficient(data(m[nz_index])) # negative to change to the upper triangular part
+    coeff_inv = inv(coeff)
+    m = map_entries(e -> coeff_inv * e, m)
+    return m
 end
 
 function filter_independent(R, input)
