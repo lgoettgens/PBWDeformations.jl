@@ -6,14 +6,14 @@ Each element of the basis is induced by an arc diagram of a suitable size,
 which gets symmetrized and specialised to the given smash product.
 This process is due to [FM22](@cite).
 """
-const ArcDiagDeformBasis{T} = ArcDiagBasedDeformBasis{ArcDiagDeformBasisParamT, T} where {T <: SmashProductLieElem}
+const ArcDiagDeformBasis{C, T} = ArcDiagBasedDeformBasis{ArcDiagDeformBasisParamT, C, T} where {C <: RingElem, T <: SmashProductLieElem{C}}
 
 function Base.show(io::IO, basis::ArcDiagDeformBasis)
     print(terse(pretty(io)), "ArcDiagDeformBasis of ", Lowercase(), basis.sp, " with degrees ", basis.degs)
 end
 
 function check_input(
-    ::Type{ArcDiagDeformBasis},
+    ::Type{<:ArcDiagDeformBasis},
     LieType,
     sp::SmashProductLie{C, LieC, LieT},
 ) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}}
@@ -24,7 +24,7 @@ function check_input(
 end
 
 function data_iter_and_len(
-    ::Type{ArcDiagDeformBasis},
+    ::Type{<:ArcDiagDeformBasis},
     LieType::Union{SO, GL},
     W::LieAlgebraModuleOrLazy,
     case::Symbol,
@@ -36,7 +36,7 @@ function data_iter_and_len(
 end
 
 function should_use_data(
-    ::Type{ArcDiagDeformBasis},
+    ::Type{<:ArcDiagDeformBasis},
     LieType::Union{SO, GL},
     data::ArcDiagDeformBasisParamT,
     ::SmashProductLie,

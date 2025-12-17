@@ -7,15 +7,14 @@ certain properties, which gets transformed to an arc diagram and then handled as
 in [`ArcDiagDeformBasis`](@ref).
 This process is due to [FM22](@cite).
 """
-const PseudographDeformBasis{T} =
-    ArcDiagBasedDeformBasis{PseudographDeformBasisParamT, T} where {T <: SmashProductLieElem}
+const PseudographDeformBasis{C, T} = ArcDiagBasedDeformBasis{PseudographDeformBasisParamT, C, T} where {C <: RingElem, T <: SmashProductLieElem{C}}
 
 function Base.show(io::IO, basis::PseudographDeformBasis)
     print(terse(pretty(io)), "PseudographDeformBasis of ", Lowercase(), basis.sp, " with degrees ", basis.degs)
 end
 
 function check_input(
-    ::Type{PseudographDeformBasis},
+    ::Type{<:PseudographDeformBasis},
     LieType,
     sp::SmashProductLie{C, LieC, LieT},
 ) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}}
@@ -23,7 +22,7 @@ function check_input(
     @req has_attribute(base_lie_algebra(sp), :form) && isone(get_attribute(base_lie_algebra(sp), :form)::dense_matrix_type(LieC)) "Only works for so_n represented as skew-symmetric matrices."
 end
 
-function data_iter_and_len(::Type{PseudographDeformBasis}, LieType::SO, W::LieAlgebraModuleOrLazy, case::Symbol, d::Int)
+function data_iter_and_len(::Type{<:PseudographDeformBasis}, LieType::SO, W::LieAlgebraModuleOrLazy, case::Symbol, d::Int)
     @req case == :exterior_power "Not implemented for direct sums"
     fl, V, e = _is_exterior_power(W)
     @assert fl
@@ -42,7 +41,7 @@ function data_iter_and_len(::Type{PseudographDeformBasis}, LieType::SO, W::LieAl
 end
 
 function should_use_data(
-    ::Type{PseudographDeformBasis},
+    ::Type{<:PseudographDeformBasis},
     LieType::SO,
     data::PseudographDeformBasisParamT,
     ::SmashProductLie,
