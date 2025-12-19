@@ -93,3 +93,21 @@ end
 @static if pkgversion(Oscar.Hecke) < v"0.37.6"
     Oscar.id_hom(V::LieAlgebraModule) = identity_map(V)
 end
+
+function save_compressed(filename::String, obj::Any; kwargs...)
+  dir_name = dirname(filename)
+  # julia dirname does not return "." for plain filenames without any slashes
+  temp_file = tempname(isempty(dir_name) ? pwd() : dir_name)
+
+  open(CodecZlib.GzipCompressorStream, temp_file, "w") do file
+    save(file, obj; kwargs...)
+  end
+  Base.Filesystem.rename(temp_file, filename) # atomic "multi process safe"
+  return nothing
+end
+
+function load_compressed(filename::String; kwargs...)
+  open(CodecZlib.GzipDecompressorStream, filename) do file
+    return load(file; kwargs...)
+  end
+end

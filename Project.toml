@@ -1,9 +1,10 @@
 name = "PBWDeformations"
 uuid = "5e7992ee-18b2-4301-9ba0-4f17696dc75a"
-authors = ["Lars Göttgens <lars.goettgens@rwth-aachen.de>", "Johannes Flake <flake@art.rwth-aachen.de>"]
 version = "0.4.0-DEV"
+authors = ["Lars Göttgens <lars.goettgens@rwth-aachen.de>", "Johannes Flake <flake@art.rwth-aachen.de>"]
 
 [deps]
+CodecZlib = "944b1d66-785c-5afd-91f1-9de20f533193"
 Oscar = "f1435218-dba5-11e9-1e4d-f1a5fab5fc13"
 Preferences = "21216c6a-2e73-6563-6e65-726566657250"
 ProgressMeter = "92933f4c-e287-5a05-a399-4b506db050ca"
@@ -15,6 +16,7 @@ Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 TestExt = "Test"
 
 [compat]
+CodecZlib = "0.7.8"
 Oscar = "1.4"
 Preferences = "1.4"
 ProgressMeter = "1.10.2"

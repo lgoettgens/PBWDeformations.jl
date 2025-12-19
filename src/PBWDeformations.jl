@@ -1,5 +1,7 @@
 module PBWDeformations
 
+import CodecZlib
+
 using Preferences: Preferences, @load_preference, @set_preferences!
 
 import ProgressMeter
@@ -150,6 +152,9 @@ export upper_vertex, is_upper_vertex
 export upper_vertices
 export vertex_index
 export vertices
+
+export load_compressed
+export save_compressed
 
 const VERSION_NUMBER = Base.pkgversion(@__MODULE__)
 
