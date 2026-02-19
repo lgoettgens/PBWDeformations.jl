@@ -5,12 +5,6 @@ function column_rref!(mat::MatElem{T}) where {T <: FieldElem}
     return view(mat, :, 1:rk)
 end
 
-function column_rref!(mat::Nemo._MatTypes) # change to Nemo._FieldMatTypes
-    trmat = transpose!(mat)
-    rk = rref!(trmat)
-    return view(transpose!(trmat), :, 1:rk)
-end
-
 function is_linearly_independent(V::Vector{T}) where {T}
     return is_linearly_independent_with_relations(V)[1]
 end
