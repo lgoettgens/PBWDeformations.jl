@@ -13,6 +13,8 @@ DocMeta.setdocmeta!(
 
 bib = CitationBibliography(joinpath(@__DIR__, "references.bib"); style=:alpha)
 
+warnonly = false
+
 makedocs(;
     modules = [PBWDeformations],
     sitename = "PBWDeformations.jl",
@@ -29,6 +31,10 @@ makedocs(;
         "Util functions" => "util.md",
         "References" => "references.md",
     ],
+    clean=true,
+    warnonly=warnonly,
+    treat_markdown_warnings_as_error=!warnonly,
+    checkdocs=:none,
     plugins = [bib],
 )
 
