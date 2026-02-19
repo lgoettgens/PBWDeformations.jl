@@ -17,9 +17,9 @@ function PBWDeformations.test_save_load_roundtrip(func, path, original::T;
 
     # save and load from a file without saving references
     filename = joinpath(path, "original.json")
-    save(filename, original; serializer=PBWDeformations.JSONSerializerNoRefs(), kw...)
+    save(filename, original; serializer=Oscar.Serialization.JSONSerializer(serialize_refs=false), kw...)
     @test !any(line -> contains(line, "_refs"), eachline(filename))
-    loaded = load(filename; params=params, serializer=PBWDeformations.JSONSerializerNoRefs(), kw...)
+    loaded = load(filename; params=params, serializer=Oscar.Serialization.JSONSerializer(serialize_refs=false), kw...)
 
     @test loaded isa T
     func(loaded)
