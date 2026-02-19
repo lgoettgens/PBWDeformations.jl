@@ -38,7 +38,7 @@ jobs:
           - '1.13-nightly'
           - 'nightly'
         oscar-version:
-          - '1.4' # minimum compat bound
+          - '1.7' # minimum compat bound
           - 'stable'
           - 'devel'
         os:

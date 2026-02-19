@@ -17,7 +17,7 @@ TestExt = "Test"
 
 [compat]
 CodecZlib = "0.7.8"
-Oscar = "1.4"
+Oscar = "1.7"
 Preferences = "1.4"
 ProgressMeter = "1.10.2"
 Test = "1.10"
