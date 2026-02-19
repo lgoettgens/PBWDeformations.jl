@@ -13,16 +13,11 @@ DocMeta.setdocmeta!(
 
 bib = CitationBibliography(joinpath(@__DIR__, "references.bib"); style=:alpha)
 
-makedocs(
-    bib,
+makedocs(;
     modules = [PBWDeformations],
-    repo = "https://github.com/lgoettgens/PBWDeformations.jl/blob/{commit}{path}#{line}",
     sitename = "PBWDeformations.jl",
-    checkdocs = :none, #:all, :exports
-    strict = true,
     format = Documenter.HTML(;
         prettyurls = get(ENV, "CI", nothing) == "true",
-        canonical = "https://lgoettgens.github.io/PBWDeformations.jl/",
     ),
     pages = [
         "PBWDeformations.jl" => "index.md",
@@ -34,7 +29,7 @@ makedocs(
         "Util functions" => "util.md",
         "References" => "references.md",
     ],
-    # doctestfilters = [r"(Nemo\.)?QQFieldElem"],
+    plugins = [bib],
 )
 
 deploydocs(
