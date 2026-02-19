@@ -177,7 +177,7 @@ function _isomorphic_module__is_exterior_power(V::T, B::T, k::Int) where {T <: L
         V_to_U = id_hom(U)
     else
         U = exterior_power_obj(C, k)
-        V_to_U = hom(V, U, B_to_C)
+        V_to_U = exterior_power(B_to_C, k; domain=V, codomain=U)
     end
     if ((fl, Ds) = _is_direct_sum(C); fl)
         m = length(Ds)
@@ -243,7 +243,7 @@ function _isomorphic_module__is_symmetric_power(V::T, B::T, k::Int) where {T <: 
         V_to_U = id_hom(U)
     else
         U = symmetric_power_obj(C, k)
-        V_to_U = hom(V, U, B_to_C)
+        V_to_U = symmetric_power(B_to_C, k; domain=V, codomain=U)
     end
     if ((fl, Ds) = _is_direct_sum(C); fl)
         m = length(Ds)
@@ -309,7 +309,7 @@ function _isomorphic_module__is_tensor_power(V::T, B::T, k::Int) where {T <: Lie
         V_to_U = id_hom(U)
     else
         U = tensor_power_obj(C, k)
-        V_to_U = hom(V, U, B_to_C)
+        V_to_U = tensor_power(B_to_C, k; domain=V, codomain=U)
     end
     if ((fl, Ds) = _is_direct_sum(C); fl)
         m = length(Ds)
