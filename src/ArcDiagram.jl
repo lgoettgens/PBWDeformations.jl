@@ -217,7 +217,7 @@ function neighbor(a::ArcDiagramUndirected, v::ArcDiagramVertex)
         @req 1 <= vertex_index(v) <= n_lower_vertices(a) "Out of bounds access."
         return a.lower_neighbors[vertex_index(v)]
     else
-        @error "Invalid vertex."
+        throw(ArgumentError("Invalid vertex."))
     end
 end
 
@@ -325,7 +325,7 @@ function inneighbor(a::ArcDiagramDirected, v::ArcDiagramVertex)
             return nothing
         end
     else
-        @error "Invalid vertex."
+        throw(ArgumentError("Invalid vertex."))
     end
 end
 
@@ -354,7 +354,7 @@ function outneighbor(a::ArcDiagramDirected, v::ArcDiagramVertex)
             return a.lower_neighbors[vertex_index(v)]
         end
     else
-        @error "Invalid vertex."
+        throw(ArgumentError("Invalid vertex."))
     end
 end
 
