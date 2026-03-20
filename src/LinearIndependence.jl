@@ -43,7 +43,7 @@ end
 Checks whether `x` is in the `F`-span of `V`.
 """
 function is_in_span(F::Field, x::T, V::Vector{T}) where {T}
-    cm = _linear_independence_coeff_matrix(F, [x; V])
+    cm = _linear_independence_coeff_matrix(F, vcat([x], V))
     return rank(cm[2:end, :]) == rank(cm)
 end
 
@@ -55,7 +55,7 @@ is a boolean indicating whether `x` is in the `F`-span of `V` and `relations`
 is a vector with (one possibility of) coefficients of `V` that result in `x`.
 """
 function is_in_span_with_relation(F::Field, x::T, V::Vector{T}) where {T}
-    cm = _linear_independence_coeff_matrix(F, [x; V])
+    cm = _linear_independence_coeff_matrix(F, vcat([x], V))
     ker = kernel(cm; side=:left)
     rref!(ker)
     is_in_span = nrows(ker) > 0 && isone(ker[1, 1])
@@ -72,7 +72,7 @@ end
 Checks whether the `F`-span of `V` is a subset of the `F`-span of `W`.
 """
 function is_span_subset(F::Field, V::Vector{T}, W::Vector{T}) where {T}
-    cm = _linear_independence_coeff_matrix(F, [V; W])
+    cm = _linear_independence_coeff_matrix(F, vcat(V, W))
     return rank(cm[length(V)+1:end, :]) == rank(cm)
 end
 
@@ -82,7 +82,7 @@ end
 Checks whether the `F`-span of `V` is equal to the `F`-span of `W`.
 """
 function is_span_equal(F::Field, V::Vector{T}, W::Vector{T}) where {T}
-    cm = _linear_independence_coeff_matrix(F, [V; W])
+    cm = _linear_independence_coeff_matrix(F, vcat(V, W))
     return rank(cm[1:length(V), :]) == rank(cm[length(V)+1:end, :]) == rank(cm)
 end
 

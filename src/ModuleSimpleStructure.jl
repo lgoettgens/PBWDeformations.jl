@@ -13,8 +13,9 @@ function isomorphic_module_with_simple_structure(V::T) where {T <: LieAlgebraMod
         return _isomorphic_module__is_symmetric_power(V, B, k)
     elseif ((fl, B, k) = _is_tensor_power(V); fl)
         return _isomorphic_module__is_tensor_power(V, B, k)
+    else
+        error("not implemented for this type of module")
     end
-    error("not implemented for this type of module")
 end
 
 function _isomorphic_module__is_dual(V::T, B::T) where {T <: LieAlgebraModule}
@@ -44,6 +45,8 @@ function _isomorphic_module__is_dual(V::T, B::T) where {T <: LieAlgebraModule}
     elseif ((fl, C, k) = _is_tensor_power(B); fl)
         U = tensor_power_obj(dual(C), k)
         V_to_U = hom(V, U, identity_matrix(coefficient_ring(V), dim(V)); check=false)
+    else
+        error("not implemented for this type of module")
     end
     W, U_to_W = isomorphic_module_with_simple_structure(U)
     V_to_W = compose(V_to_U, U_to_W)
