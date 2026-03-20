@@ -36,6 +36,7 @@ function lazy_tensor_product(V::LieAlgebraModuleOrLazy{C, LieT}, Vs::LieAlgebraM
 end
 
 Oscar._is_tensor_product(L::LazyTensorProductLieAlgebraModule) = (true, L.Ls)
+Oscar.dim(L::LazyTensorProductLieAlgebraModule) = prod(dim, L.Ls; init=1)
 
 
 ################################################################################
@@ -64,3 +65,4 @@ function lazy_exterior_power_obj(L::LieAlgebraModuleOrLazy{C, LieT}, k::Int) whe
 end
 
 Oscar._is_exterior_power(L::LazyExteriorPowerLieAlgebraModule) = (true, L.L, L.k)
+Oscar.dim(L::LazyExteriorPowerLieAlgebraModule) = binomial(dim(L.L), L.k)
