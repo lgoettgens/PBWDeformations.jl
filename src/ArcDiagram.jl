@@ -372,7 +372,7 @@ function neighbor(a::ArcDiagramDirected, v::ArcDiagramVertex)
     if isnothing(n)
         n = outneighbor(a, v)
     end
-    return n
+    return n::ArcDiagramVertex
 end
 
 function neighbors(a::ArcDiagramDirected, v::ArcDiagramVertex)
