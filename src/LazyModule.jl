@@ -3,12 +3,12 @@ abstract type LazyLieAlgebraModule{C <: FieldElem, LieT <: LieAlgebraElem{C}} <:
 const LieAlgebraModuleOrLazy{C <: FieldElem, LieT <: LieAlgebraElem{C}} = Union{LieAlgebraModule{C, LieT}, LazyLieAlgebraModule{C, LieT}}
 
 Oscar._is_standard_module(::LazyLieAlgebraModule) = false
-Oscar._is_dual(::LazyLieAlgebraModule) = (false, nothing)
-Oscar._is_direct_sum(::LazyLieAlgebraModule) = (false, nothing)
-Oscar._is_tensor_product(::LazyLieAlgebraModule) = (false, nothing)
-Oscar._is_exterior_power(::LazyLieAlgebraModule) = (false, nothing, nothing)
-Oscar._is_symmetric_power(::LazyLieAlgebraModule) = (false, nothing, nothing)
-Oscar._is_tensor_power(::LazyLieAlgebraModule) = (false, nothing, nothing)
+Oscar._is_dual(V::LazyLieAlgebraModule) = (false, V)
+Oscar._is_direct_sum(V::LazyLieAlgebraModule) = (false, typeof(V)[])
+Oscar._is_tensor_product(V::LazyLieAlgebraModule) = (false, typeof(V)[])
+Oscar._is_exterior_power(V::LazyLieAlgebraModule) = (false, V, -1)
+Oscar._is_symmetric_power(V::LazyLieAlgebraModule) = (false, V, -1)
+Oscar._is_tensor_power(V::LazyLieAlgebraModule) = (false, V, -1)
 
 
 ################################################################################
