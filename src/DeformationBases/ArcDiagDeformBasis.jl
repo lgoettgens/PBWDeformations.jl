@@ -77,7 +77,7 @@ function arc_diagram_upper_points(T::SO, V::LieAlgebraModuleOrLazy)
     if _is_standard_module(V)
         return 1
     elseif ((fl, Ws) = _is_tensor_product(V); fl)
-        return sum(arc_diagram_upper_points(T, W) for W in Ws)
+        return sum(arc_diagram_upper_points(T, W)::Int for W in Ws; init=0)::Int
     elseif ((fl, W, k) = is_power_with_data(V); fl)
         return arc_diagram_upper_points(T, W) * k
     else
@@ -91,10 +91,10 @@ function arc_diagram_upper_points(T::GL, V::LieAlgebraModuleOrLazy)
     elseif ((fl, W) = _is_dual(V); fl) && _is_standard_module(W)
         return [false]
     elseif ((fl, Ws) = _is_tensor_product(V); fl)
-        return reduce(vcat, [arc_diagram_upper_points(T, W) for W in Ws])
+        return reduce(vcat, Vector{Bool}[arc_diagram_upper_points(T, W) for W in Ws]; init=Bool[])::Vector{Bool}
     elseif ((fl, W, k) = is_power_with_data(V); fl)
         upper_points_W = arc_diagram_upper_points(T, W)
-        return reduce(vcat, [upper_points_W for _ in 1:k])
+        return reduce(vcat, [upper_points_W for _ in 1:k]; init=Bool[])
     else
         error("Not implemented.")
     end
@@ -116,10 +116,12 @@ function arc_diagram_upper_iss(T::Union{SO, GL}, V::LieAlgebraModuleOrLazy)
         offset = 0
         iss = Vector{Int}[]
         for mod in inner_mods
-            append!(iss, [is .+ offset for is in arc_diagram_upper_iss(T, mod)])
+            let offset=offset # avoid boxing
+                append!(iss, Vector{Int}[is .+ offset for is in arc_diagram_upper_iss(T, mod)])
+            end
             offset += arc_diagram_num_upper_points(T, mod)
         end
-        return iss
+        return iss::Vector{Vector{Int}} # help inference
     elseif ((fl, inner_mod, power) = is_power_with_data(V); fl)
         if is_tensor_generator(inner_mod)
             if _is_exterior_power(V)[1]
@@ -129,7 +131,10 @@ function arc_diagram_upper_iss(T::Union{SO, GL}, V::LieAlgebraModuleOrLazy)
             end
         else
             iss = arc_diagram_upper_iss(T, inner_mod)
-            return [is .+ k * arc_diagram_num_upper_points(T, inner_mod) for k in 0:power-1 for is in iss]
+            offset = arc_diagram_num_upper_points(T, inner_mod)
+            return let offset=offset # avoid boxing
+                Vector{Int}[is .+ k * offset for k in 0:power-1 for is in iss]
+            end
         end
     else
         error("Not implemented.")
