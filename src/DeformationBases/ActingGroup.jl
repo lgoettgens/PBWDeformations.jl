@@ -35,7 +35,12 @@ function _acting_group_with_gens_and_sgn(V::LieAlgebraModuleOrLazy)
         G, injs, _ = inner_direct_product(inner_groups; morphisms=true)::Tuple{eltype(inner_groups), Vector{Oscar.GAPGroupHomomorphism{eltype(inner_groups), eltype(inner_groups)}}, Any}
         @assert degree(G) == sum(degree, inner_groups)
         @assert order(G) == prod(order, inner_groups)
-        gens_and_sgn = reduce(vcat, [(inj(g), sgn_g) for (inner_gens_and_sgn, inj) in zip(inner_gens_and_sgns, injs) for (g, sgn_g) in inner_gens_and_sgn]; init=Tuple{PermGroupElem, Int}[])::Vector{Tuple{PermGroupElem, Int}}
+        gens_and_sgn = Tuple{PermGroupElem, Int}[]
+        for (inner_gens_and_sgn, inj) in zip(inner_gens_and_sgns, injs)
+            for (g, sgn_g) in inner_gens_and_sgn
+                push!(gens_and_sgn, (inj(g), sgn_g))
+            end
+        end
         return G, gens_and_sgn
     elseif ((fl_ext, inner_mod, power) = _is_exterior_power(V); fl_ext) || ((fl_sym, inner_mod, power) = _is_symmetric_power(V); fl_sym)
         inner_group, inner_gens_and_sgn = _acting_group_with_gens_and_sgn(inner_mod)
@@ -66,8 +71,11 @@ function _acting_group_with_gens_and_sgn(V::LieAlgebraModuleOrLazy)
         G, injs, _ = inner_direct_product(fill(inner_group, power); morphisms=true)::Tuple{typeof(inner_group), Vector{Oscar.GAPGroupHomomorphism{typeof(inner_group), typeof(inner_group)}}, Any}
         @assert degree(G) == degree(inner_group)*power
         @assert order(G) == order(inner_group)^power
-        gens_and_sgn = let inner_gens_and_sgn = inner_gens_and_sgn
-            reduce(vcat, [(inj(g), sgn_g) for inj in injs for (g, sgn_g) in inner_gens_and_sgn]; init=Tuple{PermGroupElem, Int}[])#
+        gens_and_sgn = Tuple{PermGroupElem, Int}[]
+        for inj in injs
+            for (g, sgn_g) in inner_gens_and_sgn
+                push!(gens_and_sgn, (inj(g), sgn_g))
+            end
         end
         return G, gens_and_sgn
     else

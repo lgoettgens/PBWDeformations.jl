@@ -43,7 +43,7 @@ end
 Checks whether `x` is in the `F`-span of `V`.
 """
 function is_in_span(F::Field, x::T, V::Vector{T}) where {T}
-    cm = _linear_independence_coeff_matrix(F, vcat([x], V))
+    cm = _linear_independence_coeff_matrix(F, vcat(T[x], V))
     return rank(cm[2:end, :]) == rank(cm)
 end
 
@@ -55,7 +55,7 @@ is a boolean indicating whether `x` is in the `F`-span of `V` and `relations`
 is a vector with (one possibility of) coefficients of `V` that result in `x`.
 """
 function is_in_span_with_relation(F::Field, x::T, V::Vector{T}) where {T}
-    cm = _linear_independence_coeff_matrix(F, vcat([x], V))
+    cm = _linear_independence_coeff_matrix(F, vcat(T[x], V))
     ker = kernel(cm; side=:left)
     rref!(ker)
     is_in_span = nrows(ker) > 0 && isone(ker[1, 1])
@@ -144,7 +144,13 @@ function _linear_independence_coeff_matrix(F::Field, V::Vector{<:FreeAssociative
     R = parent(V[1])
     C = base_ring(R)
     @req all(v -> parent(v) === R, V) "Incompatible algebras"
-    coeff_maps = [Dict{Vector{Int}, elem_type(F)}(zip(exponent_words(v), coefficients(v))) for v in V]
+    coeff_maps = map(V) do v
+        d = Dict{Vector{Int}, elem_type(F)}()
+        for (word, coeff) in zip(exponent_words(v), coefficients(v))
+            d[word] = coeff
+        end
+        d
+    end
     support_words = reduce(union, keys.(coeff_maps))
     return reduce(
         hcat,
