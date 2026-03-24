@@ -137,19 +137,21 @@ function _isomorphic_module__is_tensor_product(V::T, Bs::Vector{T}) where {T <: 
                 pure_factors = inv_pure(bi)::Tuple{Vararg{elem_type(T)}}
                 dsmap = [
                     begin
-                        local j, pr_f
+                        found::Union{Nothing, Tuple{Int, elem_type(T)}} = nothing
                         Ei = Es_with_summands[i][1]
                         projs = canonical_projections(Ei)
                         if parent(f) !== Ei
                             f = Ei([f])
                         end
-                        for outer j in 1:length(projs)
+                        for j in eachindex(projs)
                             pr_f = projs[j](f)::elem_type(T)
                             if !iszero(pr_f)
+                                found = (j, pr_f)::Tuple{Int, elem_type(T)}
                                 break
                             end
                         end
-                        (j, pr_f)::Tuple{Int, elem_type(T)}
+                        @assert !isnothing(found)
+                        found::Tuple{Int, elem_type(T)}
                     end for (i, f::elem_type(T)) in enumerate(pure_factors)
                 ]::Vector{Tuple{Int, elem_type(T)}}
                 if [dsmap[l][1] for l in 1:length(Es_with_summands)] == summ_comb
@@ -199,14 +201,16 @@ function _isomorphic_module__is_exterior_power(V::T, B::T, k::Int) where {T <: L
                     pure_factors = inv_pure(bi)
                     dsmap = [
                         begin
-                            local j, pr_f
-                            for outer j in 1:length(projs)
+                            found::Union{Nothing, Tuple{Int, elem_type(T)}} = nothing
+                            for j in eachindex(projs)
                                 pr_f = projs[j](f)
                                 if !iszero(pr_f)
+                                    found = (j, pr_f)::Tuple{Int, elem_type(T)}
                                     break
                                 end
                             end
-                            (j, pr_f)::Tuple{Int, elem_type(T)}
+                            @assert !isnothing(found)
+                            found::Tuple{Int, elem_type(T)}
                         end for f in pure_factors
                     ]::Vector{Tuple{Int, elem_type(T)}}
                     if [dsmap[l][1] for l in 1:k] == summ_comb
@@ -265,14 +269,16 @@ function _isomorphic_module__is_symmetric_power(V::T, B::T, k::Int) where {T <: 
                     pure_factors = inv_pure(bi)
                     dsmap = [
                         begin
-                            local j, pr_f
-                            for outer j in 1:length(projs)
+                            found::Union{Nothing, Tuple{Int, elem_type(T)}} = nothing
+                            for j in eachindex(projs)
                                 pr_f = projs[j](f)
                                 if !iszero(pr_f)
+                                    found = (j, pr_f)::Tuple{Int, elem_type(T)}
                                     break
                                 end
                             end
-                            (j, pr_f)::Tuple{Int, elem_type(T)}
+                            @assert !isnothing(found)
+                            found::Tuple{Int, elem_type(T)}
                         end for f in pure_factors
                     ]::Vector{Tuple{Int, elem_type(T)}}
                     if [dsmap[l][1] for l in 1:k] == summ_comb
@@ -331,14 +337,16 @@ function _isomorphic_module__is_tensor_power(V::T, B::T, k::Int) where {T <: Lie
                     pure_factors = inv_pure(bi)
                     dsmap = [
                         begin
-                            local j, pr_f
-                            for outer j in 1:length(projs)
+                            found::Union{Nothing, Tuple{Int, elem_type(T)}} = nothing
+                            for j in eachindex(projs)
                                 pr_f = projs[j](f)
                                 if !iszero(pr_f)
+                                    found = (j, pr_f)::Tuple{Int, elem_type(T)}
                                     break
                                 end
                             end
-                            (j, pr_f)::Tuple{Int, elem_type(T)}
+                            @assert !isnothing(found)
+                            found::Tuple{Int, elem_type(T)}
                         end for f in pure_factors
                     ]::Vector{Tuple{Int, elem_type(T)}}
                     if [dsmap[l][1] for l in 1:k] == summ_comb
