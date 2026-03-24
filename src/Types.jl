@@ -221,7 +221,7 @@ struct PseudographLabelled{T}
         check::Bool=true,
         regular_degree::Union{Nothing, Int}=nothing,
     ) where {T}
-        return PseudographLabelled(nv, MSet(edges); check, regular_degree)
+        return PseudographLabelled(nv, multiset(edges)::MSet{Pair{MSet{Int}, T}}; check, regular_degree) # help inference
     end
 end
 

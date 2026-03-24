@@ -49,7 +49,7 @@ function _isomorphic_module__is_dual(V::T, B::T) where {T <: LieAlgebraModule}
         error("not implemented for this type of module")
     end
     W, U_to_W = isomorphic_module_with_simple_structure(U)
-    V_to_W = compose(V_to_U, U_to_W)
+    V_to_W = compose(V_to_U, U_to_W)::LieAlgebraModuleHom
     return W, V_to_W
 end
 
@@ -81,7 +81,7 @@ function _isomorphic_module__is_direct_sum(V::T, Bs::Vector{T}) where {T <: LieA
         W = direct_sum(Ds...)
     end
     Csum_to_W = hom(Csum, W, identity_matrix(coefficient_ring(V), dim(Csum)); check=false)
-    V_to_W = compose(V_to_Csum, Csum_to_W)
+    V_to_W = compose(V_to_Csum, Csum_to_W)::LieAlgebraModuleHom
     return W, V_to_W
 end
 
@@ -113,7 +113,7 @@ function _isomorphic_module__is_tensor_product(V::T, Bs::Vector{T}) where {T <: 
         U = tensor_product(Ds...)
     end
     Cprod_to_U = hom(Cprod, U, identity_matrix(coefficient_ring(V), dim(Cprod)); check=false)
-    V_to_U = compose(V_to_Cprod, Cprod_to_U)
+    V_to_U = compose(V_to_Cprod, Cprod_to_U)::LieAlgebraModuleHom
 
     if length(Ds) == 1
         return U, V_to_U
@@ -165,7 +165,7 @@ function _isomorphic_module__is_tensor_product(V::T, Bs::Vector{T}) where {T <: 
         W = direct_sum(Fs...)
         U_to_W = hom(U, W, mat; check=false)
     end
-    V_to_W = compose(V_to_U, U_to_W)
+    V_to_W = compose(V_to_U, U_to_W)::LieAlgebraModuleHom
     return W, V_to_W
 end
 
@@ -174,7 +174,7 @@ function _isomorphic_module__is_exterior_power(V::T, B::T, k::Int) where {T <: L
     if k == 1
         U = C
         V_to_B = hom(V, B, identity_matrix(coefficient_ring(V), dim(V)); check=false)
-        V_to_U = compose(V_to_B, B_to_C)
+        V_to_U = compose(V_to_B, B_to_C)::LieAlgebraModuleHom
         return U, V_to_U
     end
     if B === C
@@ -233,7 +233,7 @@ function _isomorphic_module__is_exterior_power(V::T, B::T, k::Int) where {T <: L
         W = U
         U_to_W = id_hom(U)
     end
-    V_to_W = compose(V_to_U, U_to_W)
+    V_to_W = compose(V_to_U, U_to_W)::LieAlgebraModuleHom
     return W, V_to_W
 end
 
@@ -242,7 +242,7 @@ function _isomorphic_module__is_symmetric_power(V::T, B::T, k::Int) where {T <: 
     if k == 1
         U = C
         V_to_B = hom(V, B, identity_matrix(coefficient_ring(V), dim(V)); check=false)
-        V_to_U = compose(V_to_B, B_to_C)
+        V_to_U = compose(V_to_B, B_to_C)::LieAlgebraModuleHom
         return U, V_to_U
     end
     if B === C
@@ -301,7 +301,7 @@ function _isomorphic_module__is_symmetric_power(V::T, B::T, k::Int) where {T <: 
         W = U
         U_to_W = id_hom(U)
     end
-    V_to_W = compose(V_to_U, U_to_W)
+    V_to_W = compose(V_to_U, U_to_W)::LieAlgebraModuleHom
     return W, V_to_W
 end
 
@@ -310,7 +310,7 @@ function _isomorphic_module__is_tensor_power(V::T, B::T, k::Int) where {T <: Lie
     if k == 1
         U = C
         V_to_B = hom(V, B, identity_matrix(coefficient_ring(V), dim(V)); check=false)
-        V_to_U = compose(V_to_B, B_to_C)
+        V_to_U = compose(V_to_B, B_to_C)::LieAlgebraModuleHom
         return U, V_to_U
     end
     if B === C
@@ -369,6 +369,6 @@ function _isomorphic_module__is_tensor_power(V::T, B::T, k::Int) where {T <: Lie
         W = U
         U_to_W = id_hom(U)
     end
-    V_to_W = compose(V_to_U, U_to_W)
+    V_to_W = compose(V_to_U, U_to_W)::LieAlgebraModuleHom
     return W, V_to_W
 end

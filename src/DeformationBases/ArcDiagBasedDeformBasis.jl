@@ -158,8 +158,10 @@ function arc_diag_based_basis_iteration(
 
             sum_case += 1
 
-            proj_to_summand_l = compose(h, canonical_projection(V_nice, i_l))
-            proj_to_summand_r = compose(h, canonical_projection(V_nice, i_r))
+            proj_to_summand_l = compose(h, canonical_projection(V_nice, i_l))::LieAlgebraModuleHom
+            proj_to_summand_r = compose(h, canonical_projection(V_nice, i_r))::LieAlgebraModuleHom
+            proj_to_summand_l_mat = matrix(proj_to_summand_l)
+            proj_to_summand_r_mat_tr = transpose(matrix(proj_to_summand_r))
 
             if i_l == i_r
                 W = lazy_exterior_power_obj(V_nice_summand_i_l, 2)
@@ -202,7 +204,7 @@ function arc_diag_based_basis_iteration(
 
                         # @vprintln :PBWDeformations 2 "Basis generation deg $(lpad(d, maximum(ndigits, degs))), case $(lpad(sum_case, ndigits(n_sum_cases)))/$(n_sum_cases), $(lpad(floor(Int, 100*counter / len), 3))%, $(lpad(counter, ndigits(len)))/$(len)"
                         _basis_elem = arcdiag_to_deformationmap(LieType, diag, sp, W, case)
-                        basis_elem = matrix(proj_to_summand_l) * _basis_elem * transpose(matrix(proj_to_summand_r))
+                        basis_elem = proj_to_summand_l_mat * _basis_elem * proj_to_summand_r_mat_tr
                         if i_l != i_r
                             basis_elem -= transpose(basis_elem)
                         end
@@ -302,6 +304,8 @@ function deformation_map(
         proj_to_summand_l = compose(h, canonical_projection(V_nice, i_l))
         proj_to_summand_r = compose(h, canonical_projection(V_nice, i_r))
     end
+    proj_to_summand_l_mat = matrix(proj_to_summand_l)
+    proj_to_summand_r_mat_tr = transpose(matrix(proj_to_summand_r))
 
     if i_l == i_r
         W = lazy_exterior_power_obj(V_nice_summand_i_l, 2)
@@ -314,7 +318,7 @@ function deformation_map(
     diag = to_arc_diagram(data)
 
     _basis_elem = arcdiag_to_deformationmap(LieType, diag, sp, W, case)
-    basis_elem = matrix(proj_to_summand_l) * _basis_elem * transpose(matrix(proj_to_summand_r))
+    basis_elem = proj_to_summand_l_mat * _basis_elem * proj_to_summand_r_mat_tr
     if i_l != i_r
         basis_elem -= transpose(basis_elem)
     end
