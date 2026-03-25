@@ -45,11 +45,11 @@ function svg_string_defs(::ArcDiagramDirected)
 end
 
 function svg_string_edge_iterator(A::ArcDiagramUndirected)
-    return ((v, neighbor(A, v)) for v in vertices(A) if _vertex_lt(v, neighbor(A, v)))
+    return ((v, w) for v in vertices(A) for w in (neighbor(A, v),) if _vertex_lt(v, w))
 end
 
 function svg_string_edge_iterator(A::ArcDiagramDirected)
-    return ((v, outneighbor(A, v)) for v in vertices(A) if !isnothing(outneighbor(A, v)))
+    return ((v, w::ArcDiagramVertex) for v in vertices(A) for w in (outneighbor(A, v),) if !isnothing(w))
 end
 
 function svg_string_path(v::ArcDiagramVertex, nv::ArcDiagramVertex, dims)

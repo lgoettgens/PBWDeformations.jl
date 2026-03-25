@@ -366,9 +366,9 @@ function module_as_string(V::LieAlgebraModule)
         end
         return "D_" * module_as_string(B) * "_"
     elseif ((fl, Bs) = _is_direct_sum(V); fl)
-        return "_" * join(module_as_string.(Bs), "_+_") * "_"
+        return "_" * join(module_as_string.(Bs), "_+_")::String * "_"
     elseif ((fl, Bs) = _is_tensor_product(V); fl)
-        return "_" * join(module_as_string.(Bs), "_x_") * "_"
+        return "_" * join(module_as_string.(Bs), "_x_")::String * "_"
     elseif ((fl, B, k) = _is_exterior_power(V); fl)
         return "E$(k)_" * module_as_string(B) * "_"
     elseif ((fl, B, k) = _is_symmetric_power(V); fl)

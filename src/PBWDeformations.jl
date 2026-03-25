@@ -44,6 +44,7 @@ import Oscar: base_lie_algebra
 import Oscar: coefficient_ring_type
 import Oscar: comm
 import Oscar: data
+import Oscar: dim
 import Oscar: edges
 import Oscar: gset_by_type
 import Oscar: n_edges

@@ -13,8 +13,9 @@ function isomorphic_module_with_simple_structure(V::T) where {T <: LieAlgebraMod
         return _isomorphic_module__is_symmetric_power(V, B, k)
     elseif ((fl, B, k) = _is_tensor_power(V); fl)
         return _isomorphic_module__is_tensor_power(V, B, k)
+    else
+        error("not implemented for this type of module")
     end
-    error("not implemented for this type of module")
 end
 
 function _isomorphic_module__is_dual(V::T, B::T) where {T <: LieAlgebraModule}
@@ -44,9 +45,11 @@ function _isomorphic_module__is_dual(V::T, B::T) where {T <: LieAlgebraModule}
     elseif ((fl, C, k) = _is_tensor_power(B); fl)
         U = tensor_power_obj(dual(C), k)
         V_to_U = hom(V, U, identity_matrix(coefficient_ring(V), dim(V)); check=false)
+    else
+        error("not implemented for this type of module")
     end
     W, U_to_W = isomorphic_module_with_simple_structure(U)
-    V_to_W = compose(V_to_U, U_to_W)
+    V_to_W = compose(V_to_U, U_to_W)::LieAlgebraModuleHom
     return W, V_to_W
 end
 
@@ -78,7 +81,7 @@ function _isomorphic_module__is_direct_sum(V::T, Bs::Vector{T}) where {T <: LieA
         W = direct_sum(Ds...)
     end
     Csum_to_W = hom(Csum, W, identity_matrix(coefficient_ring(V), dim(Csum)); check=false)
-    V_to_W = compose(V_to_Csum, Csum_to_W)
+    V_to_W = compose(V_to_Csum, Csum_to_W)::LieAlgebraModuleHom
     return W, V_to_W
 end
 
@@ -110,7 +113,7 @@ function _isomorphic_module__is_tensor_product(V::T, Bs::Vector{T}) where {T <: 
         U = tensor_product(Ds...)
     end
     Cprod_to_U = hom(Cprod, U, identity_matrix(coefficient_ring(V), dim(Cprod)); check=false)
-    V_to_U = compose(V_to_Cprod, Cprod_to_U)
+    V_to_U = compose(V_to_Cprod, Cprod_to_U)::LieAlgebraModuleHom
 
     if length(Ds) == 1
         return U, V_to_U
@@ -134,19 +137,21 @@ function _isomorphic_module__is_tensor_product(V::T, Bs::Vector{T}) where {T <: 
                 pure_factors = inv_pure(bi)::Tuple{Vararg{elem_type(T)}}
                 dsmap = [
                     begin
-                        local j, pr_f
+                        found::Union{Nothing, Tuple{Int, elem_type(T)}} = nothing
                         Ei = Es_with_summands[i][1]
                         projs = canonical_projections(Ei)
                         if parent(f) !== Ei
                             f = Ei([f])
                         end
-                        for outer j in 1:length(projs)
+                        for j in eachindex(projs)
                             pr_f = projs[j](f)::elem_type(T)
                             if !iszero(pr_f)
+                                found = (j, pr_f)::Tuple{Int, elem_type(T)}
                                 break
                             end
                         end
-                        (j, pr_f)::Tuple{Int, elem_type(T)}
+                        @assert !isnothing(found)
+                        found::Tuple{Int, elem_type(T)}
                     end for (i, f::elem_type(T)) in enumerate(pure_factors)
                 ]::Vector{Tuple{Int, elem_type(T)}}
                 if [dsmap[l][1] for l in 1:length(Es_with_summands)] == summ_comb
@@ -160,7 +165,7 @@ function _isomorphic_module__is_tensor_product(V::T, Bs::Vector{T}) where {T <: 
         W = direct_sum(Fs...)
         U_to_W = hom(U, W, mat; check=false)
     end
-    V_to_W = compose(V_to_U, U_to_W)
+    V_to_W = compose(V_to_U, U_to_W)::LieAlgebraModuleHom
     return W, V_to_W
 end
 
@@ -169,7 +174,7 @@ function _isomorphic_module__is_exterior_power(V::T, B::T, k::Int) where {T <: L
     if k == 1
         U = C
         V_to_B = hom(V, B, identity_matrix(coefficient_ring(V), dim(V)); check=false)
-        V_to_U = compose(V_to_B, B_to_C)
+        V_to_U = compose(V_to_B, B_to_C)::LieAlgebraModuleHom
         return U, V_to_U
     end
     if B === C
@@ -196,14 +201,16 @@ function _isomorphic_module__is_exterior_power(V::T, B::T, k::Int) where {T <: L
                     pure_factors = inv_pure(bi)
                     dsmap = [
                         begin
-                            local j, pr_f
-                            for outer j in 1:length(projs)
+                            found::Union{Nothing, Tuple{Int, elem_type(T)}} = nothing
+                            for j in eachindex(projs)
                                 pr_f = projs[j](f)
                                 if !iszero(pr_f)
+                                    found = (j, pr_f)::Tuple{Int, elem_type(T)}
                                     break
                                 end
                             end
-                            (j, pr_f)::Tuple{Int, elem_type(T)}
+                            @assert !isnothing(found)
+                            found::Tuple{Int, elem_type(T)}
                         end for f in pure_factors
                     ]::Vector{Tuple{Int, elem_type(T)}}
                     if [dsmap[l][1] for l in 1:k] == summ_comb
@@ -226,7 +233,7 @@ function _isomorphic_module__is_exterior_power(V::T, B::T, k::Int) where {T <: L
         W = U
         U_to_W = id_hom(U)
     end
-    V_to_W = compose(V_to_U, U_to_W)
+    V_to_W = compose(V_to_U, U_to_W)::LieAlgebraModuleHom
     return W, V_to_W
 end
 
@@ -235,7 +242,7 @@ function _isomorphic_module__is_symmetric_power(V::T, B::T, k::Int) where {T <: 
     if k == 1
         U = C
         V_to_B = hom(V, B, identity_matrix(coefficient_ring(V), dim(V)); check=false)
-        V_to_U = compose(V_to_B, B_to_C)
+        V_to_U = compose(V_to_B, B_to_C)::LieAlgebraModuleHom
         return U, V_to_U
     end
     if B === C
@@ -262,14 +269,16 @@ function _isomorphic_module__is_symmetric_power(V::T, B::T, k::Int) where {T <: 
                     pure_factors = inv_pure(bi)
                     dsmap = [
                         begin
-                            local j, pr_f
-                            for outer j in 1:length(projs)
+                            found::Union{Nothing, Tuple{Int, elem_type(T)}} = nothing
+                            for j in eachindex(projs)
                                 pr_f = projs[j](f)
                                 if !iszero(pr_f)
+                                    found = (j, pr_f)::Tuple{Int, elem_type(T)}
                                     break
                                 end
                             end
-                            (j, pr_f)::Tuple{Int, elem_type(T)}
+                            @assert !isnothing(found)
+                            found::Tuple{Int, elem_type(T)}
                         end for f in pure_factors
                     ]::Vector{Tuple{Int, elem_type(T)}}
                     if [dsmap[l][1] for l in 1:k] == summ_comb
@@ -292,7 +301,7 @@ function _isomorphic_module__is_symmetric_power(V::T, B::T, k::Int) where {T <: 
         W = U
         U_to_W = id_hom(U)
     end
-    V_to_W = compose(V_to_U, U_to_W)
+    V_to_W = compose(V_to_U, U_to_W)::LieAlgebraModuleHom
     return W, V_to_W
 end
 
@@ -301,7 +310,7 @@ function _isomorphic_module__is_tensor_power(V::T, B::T, k::Int) where {T <: Lie
     if k == 1
         U = C
         V_to_B = hom(V, B, identity_matrix(coefficient_ring(V), dim(V)); check=false)
-        V_to_U = compose(V_to_B, B_to_C)
+        V_to_U = compose(V_to_B, B_to_C)::LieAlgebraModuleHom
         return U, V_to_U
     end
     if B === C
@@ -328,14 +337,16 @@ function _isomorphic_module__is_tensor_power(V::T, B::T, k::Int) where {T <: Lie
                     pure_factors = inv_pure(bi)
                     dsmap = [
                         begin
-                            local j, pr_f
-                            for outer j in 1:length(projs)
+                            found::Union{Nothing, Tuple{Int, elem_type(T)}} = nothing
+                            for j in eachindex(projs)
                                 pr_f = projs[j](f)
                                 if !iszero(pr_f)
+                                    found = (j, pr_f)::Tuple{Int, elem_type(T)}
                                     break
                                 end
                             end
-                            (j, pr_f)::Tuple{Int, elem_type(T)}
+                            @assert !isnothing(found)
+                            found::Tuple{Int, elem_type(T)}
                         end for f in pure_factors
                     ]::Vector{Tuple{Int, elem_type(T)}}
                     if [dsmap[l][1] for l in 1:k] == summ_comb
@@ -358,6 +369,6 @@ function _isomorphic_module__is_tensor_power(V::T, B::T, k::Int) where {T <: Lie
         W = U
         U_to_W = id_hom(U)
     end
-    V_to_W = compose(V_to_U, U_to_W)
+    V_to_W = compose(V_to_U, U_to_W)::LieAlgebraModuleHom
     return W, V_to_W
 end
