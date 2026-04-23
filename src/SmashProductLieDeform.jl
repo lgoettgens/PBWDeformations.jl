@@ -36,6 +36,8 @@ underlying_algebra(
 data(e::SmashProductLieDeformElem{C, LieC, LieT}) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}} =
     e.alg_elem::elem_type(free_associative_algebra_type(C))
 
+deformation_map(D::SmashProductLieDeform) = D.kappa
+
 ngens(D::SmashProductLieDeform) = ngens(underlying_algebra(D))
 function ngens(D::SmashProductLieDeform, part::Symbol)
     part == :V && return dim(base_module(D))

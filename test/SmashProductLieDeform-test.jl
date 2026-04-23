@@ -30,8 +30,8 @@
             @test dim(L) + dim(V) == 12
 
             @test get_attribute(d, :is_symmetric, false) == false
-            @test d.kappa == kappa
-            @test !iszero(d.kappa)
+            @test deformation_map(d) == kappa
+            @test !iszero(deformation_map(d))
 
             # Test the module basis relations
             for i in 1:ngens(d, :V), j in 1:ngens(d, :V)
@@ -84,7 +84,7 @@
                 @test dim(L) + dim(V) == length(gens(d))
 
                 @test get_attribute(d, :is_symmetric) == true
-                @test iszero(d.kappa)
+                @test iszero(deformation_map(d))
 
                 # Test that the module basis commutes
                 for vi in gens(d, :V), vj in gens(d, :V)
