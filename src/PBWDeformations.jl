@@ -119,6 +119,7 @@ export is_linearly_independent_with_relations
 export is_pbwdeformation
 export is_span_equal
 export is_span_subset
+export is_symmetric_deformation
 export isomorphic_module_with_simple_structure
 export linear_combination
 export lookup_params
