@@ -38,7 +38,7 @@ data(e::SmashProductLieDeformElem{C, LieC, LieT}) where {C <: RingElem, LieC <: 
 
 deformation_map(D::SmashProductLieDeform) = D.kappa
 
-is_symmetric_deformation(D::SmashProductLieDeform) = get_attribute(D, :is_symmetric, false)
+is_symmetric_deformation(D::SmashProductLieDeform) = get_attribute(D, :is_symmetric, false)::Bool
 
 ngens(D::SmashProductLieDeform) = ngens(underlying_algebra(D))
 function ngens(D::SmashProductLieDeform, part::Symbol)
