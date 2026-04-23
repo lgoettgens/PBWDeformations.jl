@@ -268,7 +268,7 @@ function _normal_form(a::F, rels::Matrix{Union{Nothing, F}}) where {C <: RingEle
     CR = coefficient_ring(a)
     A = parent(a)
     tmp = zero(A)
-    while a.length > 0
+    while !iszero(a)
         c = leading_coefficient(a)
         exp = leading_exponent_word(a)
         t = leading_term(a)
