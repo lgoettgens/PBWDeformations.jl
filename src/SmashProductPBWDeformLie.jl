@@ -15,7 +15,7 @@ function pbwdeform_eqs(d::SmashProductLieDeform; disabled::Vector{Symbol}=Symbol
     x = gens(d, :L)
     v = gens(d, :V)
 
-    kappa = [simplify(comm(v[i], v[j])) for i in 1:dimV, j in 1:dimV]
+    kappa = [i < j ? simplify(comm(v[i], v[j])) : zero(d) for i in 1:dimV, j in 1:dimV]
     action = [simplify(comm(x[h], v[i])) for h in 1:dimL, i in 1:dimV]
 
     iters = []
@@ -39,12 +39,8 @@ function pbwdeform_eqs(d::SmashProductLieDeform; disabled::Vector{Symbol}=Symbol
     :c in disabled || push!(
         iters,
         (
-            (kappa[i, j] * v[k] - v[i] * kappa[j, k]) +
-            (kappa[j, k] * v[i] - v[j] * kappa[k, i]) +
-            (kappa[k, i] * v[j] - v[k] * kappa[i, j]) -
-            (kappa[k, j] * v[i] - v[k] * kappa[j, i]) -
-            (kappa[j, i] * v[k] - v[j] * kappa[i, k]) -
-            (kappa[i, k] * v[j] - v[i] * kappa[k, j]) for (i, j, k) in combinations(dimV, 3)
+            comm(kappa[i, j], v[k]) + comm(kappa[j, k], v[i]) + comm(v[j], kappa[i, k])
+            for (i, j, k) in combinations(dimV, 3)
         )
     )
 
