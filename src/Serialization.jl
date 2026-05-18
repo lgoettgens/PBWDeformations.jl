@@ -169,19 +169,28 @@ end
 type_params(e::SmashProductLieElem) = TypeParams(SmashProductLieElem, parent(e))
 
 function save_object(s::SerializerState, e::SmashProductLieElem)
-    save_data_dict(s) do
-        save_object(s, data(e), :data)
-        if !is_zero(data(e))
-            save_object(s, e.simplified, :is_simplified)
+    if !e.simplified
+        save_object(s, data(e))
+    else
+        save_data_dict(s) do
+            save_object(s, data(e), :data)
+            if !is_zero(data(e))
+                save_object(s, e.simplified, :is_simplified)
+            end
         end
     end
 end
 
 function load_object(s::DeserializerState, ::Type{<:SmashProductLieElem}, sp::SmashProductLie)
-    e = sp(load_object(s, elem_type(underlying_algebra(sp)), underlying_algebra(sp), :data))
-    if haskey(s, :is_simplified)
-        e.simplified = load_object(s, Bool, :is_simplified)
+    if s.obj isa AbstractDict && haskey(s.obj, :data)
+        e = sp(load_object(s, elem_type(underlying_algebra(sp)), underlying_algebra(sp), :data))
+        if haskey(s, :is_simplified)
+            e.simplified = load_object(s, Bool, :is_simplified)
+        end
+    else
+        return sp(load_object(s, elem_type(underlying_algebra(sp)), underlying_algebra(sp)))
     end
+
     return e
 end
 
