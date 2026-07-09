@@ -57,7 +57,7 @@ import Oscar: vertices
     Oscar.@import_all_serialization_functions
 else
     using Oscar.Serialization
-    import Oscar.Serialization: load_object, save_object, type_params
+    import Oscar.Serialization: load_object, save_object
 end
 
 import Base: deepcopy_internal

@@ -7,6 +7,9 @@
             :PBWDeformations => ["https://github.com/lgoettgens/PBWDeformations.jl", VERSION_NUMBER],
         )
     end
+
+    const TypeAndParams = Oscar.TypeParams
+    const type_and_params = Oscar.type_params
 else
     function patch_oscar_serialization_namespace()
         Oscar.Serialization.get_oscar_serialization_version() # call once to ensure the Oscar version is set
@@ -16,7 +19,15 @@ else
             :PBWDeformations => ["https://github.com/lgoettgens/PBWDeformations.jl", VERSION_NUMBER],
         )
     end
+
+    @static if !isdefined(Oscar.Serialization, :TypeAndParams) # introduced in https://github.com/oscar-system/Oscar.jl/pull/6050 in Oscar v1.8
+        const TypeAndParams = Oscar.Serialization.TypeParams
+        const type_and_params = Oscar.Serialization.type_params
+    else
+        import Oscar.Serialization: type_and_params
+    end
 end
+
 
 function register_serialization_types()
     @eval @register_serialization_type Partition
