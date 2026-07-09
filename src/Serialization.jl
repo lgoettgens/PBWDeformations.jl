@@ -7,6 +7,9 @@
             :PBWDeformations => ["https://github.com/lgoettgens/PBWDeformations.jl", VERSION_NUMBER],
         )
     end
+
+    const TypeAndParams = Oscar.TypeParams
+    const type_and_params = Oscar.type_params
 else
     function patch_oscar_serialization_namespace()
         Oscar.Serialization.get_oscar_serialization_version() # call once to ensure the Oscar version is set
@@ -16,7 +19,15 @@ else
             :PBWDeformations => ["https://github.com/lgoettgens/PBWDeformations.jl", VERSION_NUMBER],
         )
     end
+
+    @static if !isdefined(Oscar.Serialization, :TypeAndParams) # introduced in https://github.com/oscar-system/Oscar.jl/pull/6050 in Oscar v1.8
+        const TypeAndParams = Oscar.Serialization.TypeParams
+        const type_and_params = Oscar.Serialization.type_params
+    else
+        import Oscar.Serialization: type_and_params
+    end
 end
+
 
 function register_serialization_types()
     @eval @register_serialization_type Partition
@@ -44,7 +55,7 @@ end
 #
 ###############################################################################
 
-type_params(_::Partition{T}) where {T} = TypeParams(Partition, TypeParams(T, nothing))
+type_and_params(_::Partition{T}) where {T} = TypeAndParams(Partition, TypeAndParams(T, nothing))
 
 function save_object(s::SerializerState, p::Partition)
     save_object(s, data(p))
@@ -60,7 +71,7 @@ end
 #
 ###############################################################################
 
-type_params(_::ArcDiagramUndirected) = TypeParams(ArcDiagramUndirected, nothing)
+type_and_params(_::ArcDiagramUndirected) = TypeAndParams(ArcDiagramUndirected, nothing)
 
 function save_object(s::SerializerState, a::ArcDiagramUndirected)
     save_data_dict(s) do
@@ -79,7 +90,7 @@ function load_object(s::DeserializerState, ::Type{<:ArcDiagramUndirected})
     return arc_diagram(Undirected, n_upper_verts, n_lower_verts, upper_neighbors, lower_neighbors; check=false)
 end
 
-type_params(_::ArcDiagramDirected) = TypeParams(ArcDiagramDirected, nothing)
+type_and_params(_::ArcDiagramDirected) = TypeAndParams(ArcDiagramDirected, nothing)
 
 function save_object(s::SerializerState, a::ArcDiagramDirected)
     save_data_dict(s) do
@@ -117,7 +128,7 @@ end
 #
 ###############################################################################
 
-type_params(_::GlnGraph) = TypeParams(GlnGraph, nothing)
+type_and_params(_::GlnGraph) = TypeAndParams(GlnGraph, nothing)
 
 function save_object(s::SerializerState, g::GlnGraph)
     save_data_dict(s) do
@@ -143,8 +154,8 @@ end
 #
 ###############################################################################
 
-function type_params(sp::SmashProductLie)
-    return TypeParams(
+function type_and_params(sp::SmashProductLie)
+    return TypeAndParams(
         SmashProductLie,
         :coefficient_ring => coefficient_ring(sp),
         :base_lie_algebra => base_lie_algebra(sp),
@@ -166,7 +177,7 @@ function load_object(s::DeserializerState, ::Type{<:SmashProductLie}, d::Dict)
     return smash_product(R, L, V)
 end
 
-type_params(e::SmashProductLieElem) = TypeParams(SmashProductLieElem, parent(e))
+type_and_params(e::SmashProductLieElem) = TypeAndParams(SmashProductLieElem, parent(e))
 
 function save_object(s::SerializerState, e::SmashProductLieElem)
     save_data_dict(s) do
@@ -192,8 +203,8 @@ end
 #
 ###############################################################################
 
-function type_params(d::SmashProductLieDeform)
-    return TypeParams(SmashProductLieDeform, d.sp)
+function type_and_params(d::SmashProductLieDeform)
+    return TypeAndParams(SmashProductLieDeform, d.sp)
 end
 
 function save_object(s::SerializerState, d::SmashProductLieDeform)
@@ -208,7 +219,7 @@ function load_object(s::DeserializerState, ::Type{<:SmashProductLieDeform}, sp::
     return deform(sp, kappa)
 end
 
-type_params(e::SmashProductLieDeformElem) = TypeParams(SmashProductLieDeformElem, parent(e))
+type_and_params(e::SmashProductLieDeformElem) = TypeAndParams(SmashProductLieDeformElem, parent(e))
 
 function save_object(s::SerializerState, e::SmashProductLieDeformElem)
     save_data_dict(s) do
@@ -233,8 +244,8 @@ end
 #
 ###############################################################################
 
-function type_params(b::StdDeformBasis)
-    return TypeParams(StdDeformBasis, b.sp)
+function type_and_params(b::StdDeformBasis)
+    return TypeAndParams(StdDeformBasis, b.sp)
 end
 
 function save_object(s::SerializerState, b::StdDeformBasis)
@@ -254,8 +265,8 @@ end
 #
 ###############################################################################
 
-function type_params(b::ArcDiagBasedDeformBasis{ParamT}) where {ParamT}
-    return TypeParams(ArcDiagBasedDeformBasis{ParamT}, b.sp)
+function type_and_params(b::ArcDiagBasedDeformBasis{ParamT}) where {ParamT}
+    return TypeAndParams(ArcDiagBasedDeformBasis{ParamT}, b.sp)
 end
 
 function save_object(s::SerializerState, b::ArcDiagBasedDeformBasis)
