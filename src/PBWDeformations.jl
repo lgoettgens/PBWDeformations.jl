@@ -53,11 +53,14 @@ import Oscar: n_vertices
 import Oscar: simplify
 import Oscar: vertices
 
-@static if !isdefined(Oscar, :Serialization) # introduced in https://github.com/oscar-system/Oscar.jl/pull/5024 in Oscar v1.5
-    Oscar.@import_all_serialization_functions
+using Oscar.Serialization
+import Oscar.Serialization: load_object, save_object
+
+@static if !isdefined(Oscar.Serialization, :TypeAndParams) # introduced in https://github.com/oscar-system/Oscar.jl/pull/6050 in Oscar v1.8
+    const TypeAndParams = Oscar.Serialization.TypeParams
+    const type_and_params = Oscar.Serialization.type_params
 else
-    using Oscar.Serialization
-    import Oscar.Serialization: load_object, save_object
+    import Oscar.Serialization: type_and_params
 end
 
 import Base: deepcopy_internal
