@@ -1,7 +1,7 @@
 # PBWDeformations
 
 ## Introduction
-The package [PBWDeformations](https://github.com/PBWDeformations/PBWDeformations.jl) will provide both a general framework and specialized functions in order to
+The package [PBWDeformations](https://github.com/lgoettgens/PBWDeformations.jl) will provide both a general framework and specialized functions in order to
 - classify PBW deformations of certain smash products and
 - study their representations.
 

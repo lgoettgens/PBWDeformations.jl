@@ -97,7 +97,7 @@
         end
     end
 
-    @testset "SmashProductLieDeform sanitize checks" begin
+    @testset "SmashProductLieDeform sanity checks" begin
         @testset "R = $R" for R in [QQ, cyclotomic_field(4)[1]]
 
             L = special_orthogonal_lie_algebra(R, 4, identity_matrix(R, 4))
