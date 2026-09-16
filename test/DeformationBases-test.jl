@@ -6,7 +6,7 @@
             V = exterior_power_obj(standard_module(L), 2)
             sp = smash_product(L, V)
 
-            @testset "not all specialisations are zero" begin
+            @testset "not all specializations are zero" begin
                 diag = arc_diagram(Undirected, "ABBD,AD")
                 dm = deformation_map(sp, diag)
                 @test !iszero(dm)

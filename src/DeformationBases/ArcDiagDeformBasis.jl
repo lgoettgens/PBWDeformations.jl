@@ -3,7 +3,7 @@ const ArcDiagDeformBasisParamT = ArcDiagram
 """
 Concrete subtype of [`DeformBasis`](@ref).
 Each element of the basis is induced by an arc diagram of a suitable size,
-which gets symmetrized and specialised to the given smash product.
+which gets symmetrized and specialized to the given smash product.
 This process is due to [FM22](@cite).
 """
 const ArcDiagDeformBasis{C, T} = ArcDiagBasedDeformBasis{ArcDiagDeformBasisParamT, C, T} where {C <: RingElem, T <: SmashProductLieElem{C}}
