@@ -30,4 +30,4 @@ The [`SmashProductLie`](@ref) struct can be used as an argument for the followin
 - `gens`
 - `ngens`
 
-For `gen`, `gens`, and `ngens`, on can supply a symbol to choose the part of the smash product to use: `:L` for the Lie algebra, and `:V` for the module.
+For `gen`, `gens`, and `ngens`, one can supply a symbol to choose the part of the smash product to use: `:L` for the Lie algebra, and `:V` for the module.

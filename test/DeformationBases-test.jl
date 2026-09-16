@@ -6,7 +6,7 @@
             V = exterior_power_obj(standard_module(L), 2)
             sp = smash_product(L, V)
 
-            @testset "not all specialisations are zero" begin
+            @testset "not all specializations are zero" begin
                 diag = arc_diagram(Undirected, "ABBD,AD")
                 dm = deformation_map(sp, diag)
                 @test !iszero(dm)
@@ -136,7 +136,7 @@
                     deformmap(sp, "AACCEE,"), # same as "ABBDDA,"
                     deformmap(sp, "AACDCD,"), # same as "ABADDB,"
                     deformmap(sp, "ABABEE,"), # same as "ABBDAD,"
-                    # deformmap(sp, "ABCCAB,"), # same as "ABCBCA,"; already linear depedent on the others
+                    # deformmap(sp, "ABCCAB,"), # same as "ABCBCA,"; already linearly dependent on the others
                 ])
             end
 

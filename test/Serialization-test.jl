@@ -62,7 +62,7 @@
 
                 @testset "instance $i" for (i, sp) in enumerate(instances)
                     test_save_load_roundtrip(path, sp) do loaded
-                        # nothing, cause `sp === loaded` anyway
+                        # nothing, because `sp === loaded` anyway
                     end
 
                     a = sum(i * gen(sp, i) for i in 1:ngens(sp)) + prod(gens(sp)) + 5*prod(gen(sp, i) for i in ngens(sp):-2:1)
@@ -135,7 +135,7 @@
 
                 @testset "instance $i" for (i, d) in enumerate(instances)
                     test_save_load_roundtrip(path, d) do loaded
-                        # nothing, cause `d === loaded` anyway
+                        # nothing, because `d === loaded` anyway
                     end
 
                     a = sum(i * gen(d, i) for i in 1:ngens(d)) + prod(gens(d)) + 5*prod(gen(d, i) for i in ngens(d):-2:1)

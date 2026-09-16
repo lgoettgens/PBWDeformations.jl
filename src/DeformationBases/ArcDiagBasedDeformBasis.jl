@@ -354,7 +354,6 @@ function arc_diagram_lower_pair_to_L(::GL, dim_stdmod_V::Int)
     return function (k1::Int, k2::Int)
         return iso_pair_to_L[(k1, k2)], 1
     end
-    return iso_pair_to_L
 end
 
 function arc_diagram_label_iterator(T::Union{SO, GL}, V::LieAlgebraModuleOrLazy, base_labels::AbstractVector{Int})

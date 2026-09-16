@@ -30,7 +30,7 @@ end
 
 ###############################################################################
 #
-#   ArcDiagram
+#   Partition
 #
 ###############################################################################
 
@@ -249,7 +249,7 @@ function type_and_params(b::ArcDiagBasedDeformBasis{ParamT}) where {ParamT}
 end
 
 function save_object(s::SerializerState, b::ArcDiagBasedDeformBasis)
-    @req b.strict "Serialization is only supported for ArcDiagBasedDeformBasis that are constructor non-lazy"
+    @req b.strict "Serialization is only supported for ArcDiagBasedDeformBasis that were constructed non-lazily"
     save_data_dict(s) do
         save_object(s, b.degs, :degs)
         save_object(s, length(b), :len)

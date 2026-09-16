@@ -97,7 +97,7 @@
         end
     end
 
-    @testset "SmashProductLieDeform sanitize checks" begin
+    @testset "SmashProductLieDeform sanity checks" begin
         @testset "R = $R" for R in [QQ, cyclotomic_field(4)[1]]
 
             L = special_orthogonal_lie_algebra(R, 4, identity_matrix(R, 4))
@@ -139,12 +139,12 @@
                 kappa = zero_matrix(sp, dim(base_module(sp)), dim(base_module(sp)))
                 kappa[1, 2] = gen(sp, :V, 1)
                 kappa[2, 1] = -kappa[1, 2]
-                @test_throws ArgumentError("kappa does not only take values in the hopf algebra") deform(sp, kappa)
+                @test_throws ArgumentError("kappa does not only take values in the Hopf algebra") deform(sp, kappa)
 
                 kappa = zero_matrix(sp, dim(base_module(sp)), dim(base_module(sp)))
                 kappa[1, 2] = gen(sp, :V, 1) * gen(sp, :L, 1)
                 kappa[2, 1] = -kappa[1, 2]
-                @test_throws ArgumentError("kappa does not only take values in the hopf algebra") deform(sp, kappa)
+                @test_throws ArgumentError("kappa does not only take values in the Hopf algebra") deform(sp, kappa)
             end
 
             @testset "correct input" begin

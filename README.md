@@ -2,7 +2,7 @@
 
 | **Documentation** | **Build Status** | **Zenodo** |
 |:-----------------:|:----------------:|:----------:|
-| [![](https://img.shields.io/badge/docs-stable-blue.svg)](https://lgoettgens.github.io/PBWDeformations.jl/stable/) [![](https://img.shields.io/badge/docs-dev-blue.svg)](https://lgoettgens.github.io/PBWDeformations.jl/dev/) | [![](https://github.com/lgoettgens/PBWDeformations.jl/actions/workflows/OscarTests.yml/badge.svg?branch=master)](https://github.com/lgoettgens/PBWDeformations.jl/actions/workflows/OscarTests.yml) [![](https://codecov.io/gh/lgoettgens/PBWDeformations.jl/branch/master/graph/badge.svg?token=J9XN35I1WU)](https://app.codecov.io/gh/lgoettgens/PBWDeformations.jl) | [![DOI](https://zenodo.org/badge/567263215.svg)](https://doi.org/10.5281/zenodo.15639841) |
+| [![](https://img.shields.io/badge/docs-stable-blue.svg)](https://lgoettgens.github.io/PBWDeformations.jl/stable/) [![](https://img.shields.io/badge/docs-dev-blue.svg)](https://lgoettgens.github.io/PBWDeformations.jl/dev/) | [![](https://github.com/lgoettgens/PBWDeformations.jl/actions/workflows/Tests.yml/badge.svg?branch=master)](https://github.com/lgoettgens/PBWDeformations.jl/actions/workflows/Tests.yml) [![](https://codecov.io/gh/lgoettgens/PBWDeformations.jl/branch/master/graph/badge.svg?token=J9XN35I1WU)](https://app.codecov.io/gh/lgoettgens/PBWDeformations.jl) | [![DOI](https://zenodo.org/badge/567263215.svg)](https://doi.org/10.5281/zenodo.15639841) |
 
 # PBWDeformations.jl Julia package
 
@@ -25,7 +25,7 @@ To solve classification problems efficiently, we use representation theoretic id
 ## Basic usage
 
 Please consult the [example jupyter notebook](https://nbviewer.org/urls/raw.githubusercontent.com/lgoettgens/PBWDeformations.jl/master/examples/PBWDeformationsNotebook.ipynb) for v0.3.
-We expect some more in-depth documentation to be found at some point in future at [https://lgoettgens.github.io/PBWDeformations.jl/](https://lgoettgens.github.io/PBWDeformations.jl/).
+We expect some more in-depth documentation to be found at some point in the future at [https://lgoettgens.github.io/PBWDeformations.jl/](https://lgoettgens.github.io/PBWDeformations.jl/).
 
 ## General Disclaimer
 
