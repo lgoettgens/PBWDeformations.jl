@@ -114,7 +114,7 @@ function all_pbwdeformations(
     @vprintln :PBWDeformations 1 "Constructing MPolyRing..."
     R, vars = polynomial_ring(coefficient_ring(sp), max(nvars, 1))
 
-    @vprintln :PBWDeformations 1 "Changing SmashProductLie coeffcient type..."
+    @vprintln :PBWDeformations 1 "Changing SmashProductLie coefficient type..."
     new_sp = smash_product(R, base_lie_algebra(sp), base_module(sp))
 
     @vprintln :PBWDeformations 1 "Constructing kappa..."

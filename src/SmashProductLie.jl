@@ -272,7 +272,7 @@ function _normal_form(a::F, rels::Matrix{Union{Nothing, F}}) where {C <: RingEle
         c = leading_coefficient(a)
         exp = leading_exponent_word(a)
         t = leading_term(a)
-        # 2-arg mutable arithmetic are way slower than 3-arg at the time of writing. TODO: replace once the situation has improved
+        # 2-arg mutable arithmetic is way slower than 3-arg at the time of writing. TODO: replace once the situation has improved
         tmp = sub!(tmp, a, t)
         a, tmp = tmp, a
 

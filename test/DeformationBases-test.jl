@@ -136,7 +136,7 @@
                     deformmap(sp, "AACCEE,"), # same as "ABBDDA,"
                     deformmap(sp, "AACDCD,"), # same as "ABADDB,"
                     deformmap(sp, "ABABEE,"), # same as "ABBDAD,"
-                    # deformmap(sp, "ABCCAB,"), # same as "ABCBCA,"; already linear depedent on the others
+                    # deformmap(sp, "ABCCAB,"), # same as "ABCBCA,"; already linearly dependent on the others
                 ])
             end
 

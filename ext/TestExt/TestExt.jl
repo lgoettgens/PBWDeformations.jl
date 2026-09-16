@@ -42,7 +42,7 @@ function PBWDeformations.test_save_load_roundtrip(func, path, original::T;
     @test loaded isa T
     func(loaded)
 
-    # test loading on a empty state
+    # test loading on an empty state
     save(filename, original; kw...)
     Oscar.reset_global_serializer_state()
     loaded = load(filename; params=params, kw...)

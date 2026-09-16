@@ -51,7 +51,7 @@ end
     is_in_span_with_relation(F::Field, x::T, V::Vector{T}) where {T}
 
 This function returns a tuple `(is_in_span, relation)` where `is_in_span`
-is a boolean indicating whether `x` is in the `F`-span of `V` and `relations`
+is a boolean indicating whether `x` is in the `F`-span of `V` and `relation`
 is a vector with (one possibility of) coefficients of `V` that result in `x`.
 """
 function is_in_span_with_relation(F::Field, x::T, V::Vector{T}) where {T}

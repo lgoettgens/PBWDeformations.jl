@@ -32,7 +32,7 @@
         end
 
         @testset "is_crossing_free" begin
-            @testset "is_crossing_free(part=:everywhere)" begin
+            @testset "is_crossing_free(part=:everything)" begin
                 @test is_crossing_free(arc_diagram(Undirected, "AA,CCEE")) == true
                 @test is_crossing_free(arc_diagram(Undirected, "AA,CDCD")) == false
                 @test is_crossing_free(arc_diagram(Undirected, "AA,CDDC")) == true

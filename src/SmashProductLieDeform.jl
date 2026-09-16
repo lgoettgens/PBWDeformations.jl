@@ -4,7 +4,7 @@
 #
 ###############################################################################
 
-arent_type(
+parent_type(
     ::Type{SmashProductLieDeformElem{C, LieC, LieT}},
 ) where {C <: RingElem, LieC <: FieldElem, LieT <: LieAlgebraElem{LieC}} = SmashProductLieDeform{C, LieC, LieT}
 
@@ -294,7 +294,7 @@ function deform(
 
     for i in 1:dimV, j in 1:i
         @req kappa[i, j] == -kappa[j, i] "kappa is not skew-symmetric."
-        @req all(>(dimV), Iterators.flatten(exponent_words(data(kappa[i, j])))) "kappa does not only take values in the hopf algebra"
+        @req all(>(dimV), Iterators.flatten(exponent_words(data(kappa[i, j])))) "kappa does not only take values in the Hopf algebra"
     end
 
     symmetric = true

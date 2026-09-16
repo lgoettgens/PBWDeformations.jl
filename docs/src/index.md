@@ -9,11 +9,11 @@ To solve classification problems efficiently, we use representation theoretic id
 
 ## Features
 - Construct Lie algebras and their modules.
-- Construct smash products of the form ``TV \rtimes U(L)`` for a Lie algbra ``L`` and a module ``V``.
+- Construct smash products of the form ``TV \rtimes U(L)`` for a Lie algebra ``L`` and a module ``V``.
 - Construct deformations of such smash products.
 - Compute a normal form for elements of smash products and their deformations.
-- Check, if a given deformation is a PBW-deformation (using [WW14](@cite)).
-- For some smash product, compute a basis of all PBW-deformations up to a given degree (using [WW14](@cite)). It is possible to give a basis of the relevant part of the deformation space, which is then used in the computation.
+- Check if a given deformation is a PBW-deformation (using [WW14](@cite)).
+- For some smash products, compute a basis of all PBW-deformations up to a given degree (using [WW14](@cite)). It is possible to give a basis of the relevant part of the deformation space, which is then used in the computation.
 - For some modules of ``\mathfrak{so}_n``, give an explicit basis using arc diagrams or pseudographs (cf. [FM22](@cite)).
 
 ## Installation

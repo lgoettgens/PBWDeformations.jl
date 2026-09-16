@@ -25,7 +25,7 @@ To solve classification problems efficiently, we use representation theoretic id
 ## Basic usage
 
 Please consult the [example jupyter notebook](https://nbviewer.org/urls/raw.githubusercontent.com/lgoettgens/PBWDeformations.jl/master/examples/PBWDeformationsNotebook.ipynb) for v0.3.
-We expect some more in-depth documentation to be found at some point in future at [https://lgoettgens.github.io/PBWDeformations.jl/](https://lgoettgens.github.io/PBWDeformations.jl/).
+We expect some more in-depth documentation to be found at some point in the future at [https://lgoettgens.github.io/PBWDeformations.jl/](https://lgoettgens.github.io/PBWDeformations.jl/).
 
 ## General Disclaimer
 

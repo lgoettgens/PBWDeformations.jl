@@ -50,7 +50,7 @@ function _vertex_lt(v1::ArcDiagramVertex, v2::ArcDiagramVertex)
     end
 end
 
-function is_crossing_free(a::ArcDiagram; part=:everything::Symbol)
+function is_crossing_free(a::ArcDiagram; part::Symbol=:everything)
     if part == :everything
         for v1 in vertices(a), v2 in vertices(a)
             if v1 == v2
