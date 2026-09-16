@@ -35,7 +35,7 @@ jobs:
           - '1.10'
           - '1.11'
           - '1.12'
-          - '1.13-nightly'
+          - '1.13'
           - 'nightly'
         oscar-version:
           - '1.7' # minimum compat bound
@@ -43,11 +43,6 @@ jobs:
           - 'devel'
         os:
           - ubuntu-latest
-        exclude:
-          - julia-version: '1.13-nightly'
-            oscar-version: '1.4'
-          - julia-version: 'nightly'
-            oscar-version: '1.4'
 
     steps:
       - uses: actions/checkout@v7
