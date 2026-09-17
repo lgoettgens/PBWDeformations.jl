@@ -428,20 +428,12 @@ function arc_diagram(::Type{Undirected}, upper::AbstractString, lower::AbstractS
     symbols = unique(str)
     for s in symbols
         @req isletter(s) && isuppercase(s) "Invalid symbol $s."
-        @static if VERSION >= v"1.7"
-            @req count(s, str) == 2 "Symbol $s does not appear exactly twice."
-        else
-            @req count(string(s), str) == 2 "Symbol $s does not appear exactly twice."
-        end
+        @req count(s, str) == 2 "Symbol $s does not appear exactly twice."
     end
     upper_neighbors = [(:none, 0) for _ in 1:n_upper_verts]
     lower_neighbors = [(:none, 0) for _ in 1:n_lower_verts]
     for s in symbols
-        @static if VERSION >= v"1.7"
-            i, j = findall(s, str)
-        else
-            i, j = findall(==(s), str)
-        end
+        i, j = findall(s, str)
         if i <= n_upper_verts
             upper_neighbors[i] =
                 j <= n_upper_verts ? upper_vertex(ArcDiagramVertex, j) :
@@ -541,24 +533,14 @@ function arc_diagram(::Type{Directed}, upper::AbstractString, lower::AbstractStr
     str = uppercase(str_cased)
     symbols = unique(str)
     for s in symbols
-        @static if VERSION >= v"1.7"
-            @req count(s, str) == 2 "Symbol $s does not appear exactly twice."
-            @req count(s, str_cased) == 1 "Symbol $s does not appear exactly once uppercase."
-            @req count(lowercase(s), str_cased) == 1 "Symbol $s does not appear exactly once lowercase."
-        else
-            @req count(string(s), str) == 2 "Symbol $s does not appear exactly twice."
-            @req count(string(s), str_cased) == 1 "Symbol $s does not appear exactly once uppercase."
-            @req count(string(lowercase(s)), str_cased) == 1 "Symbol $s does not appear exactly once lowercase."
-        end
+        @req count(s, str) == 2 "Symbol $s does not appear exactly twice."
+        @req count(s, str_cased) == 1 "Symbol $s does not appear exactly once uppercase."
+        @req count(lowercase(s), str_cased) == 1 "Symbol $s does not appear exactly once lowercase."
     end
     upper_neighbors = [(:none, 0) for _ in 1:n_upper_verts]
     lower_neighbors = [(:none, 0) for _ in 1:n_lower_verts]
     for s in symbols
-        @static if VERSION >= v"1.7"
-            i, j = findall(s, str)
-        else
-            i, j = findall(==(s), str)
-        end
+        i, j = findall(s, str)
         if i <= n_upper_verts
             upper_neighbors[i] =
                 j <= n_upper_verts ? upper_vertex(ArcDiagramVertex, j) :
