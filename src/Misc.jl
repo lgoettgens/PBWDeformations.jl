@@ -11,7 +11,7 @@ function symmetrize(f::FreeAssociativeAlgebraElem)
     g = zero(R)
     for (c, exp) in zip(AbstractAlgebra.coefficients(f), AbstractAlgebra.exponent_words(f))
         g += R(
-            fill(c * QQ(1, factorial(length(exp))), factorial(length(exp))),
+            fill(divexact(c, factorial(length(exp))), factorial(length(exp))),
             [ind for ind in permutations(exp)],
         )
 
