@@ -535,7 +535,7 @@ function arcdiag_to_deformationmap_entry(
                 if !iszero(coeff_lower_labels)
                     symm_basiselem = sp(
                         underlying_algebra(sp)(
-                            fill(coefficient_ring(sp)(1 // factorial(length(basiselem))), factorial(length(basiselem))),
+                            fill(divexact(one(coefficient_ring(sp)), factorial(length(basiselem))), factorial(length(basiselem))),
                             [ind .+ dim(base_module(sp)) for ind in permutations(basiselem)],
                         ),
                     ) # TODO: benchmark use of `symmetrize` here once it is implemented with mutable arithmetics
