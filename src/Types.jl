@@ -258,7 +258,7 @@ struct GlnGraph
             @req all(!, parity_verts[in_verts]) "in vertex with wrong parity"
         end
         if sort
-            edges = sort(edges)
+            edges = Base.sort(edges)
         end
         return new(n_left_verts, n_right_verts, parity_verts, edges)
     end
