@@ -18,13 +18,11 @@ Oscar.with_unicode(true) do
     include("Aqua.jl")
     include("ModuleSimpleStructure-test.jl")
 
-    if VERSION >= v"1.7-"
-        DocMeta.setdocmeta!(
-            PBWDeformations,
-            :DocTestSetup,
-            :(using PBWDeformations; using PBWDeformations.Oscar);
-            recursive=true,
-        )
-        doctest(PBWDeformations)
-    end
+    DocMeta.setdocmeta!(
+        PBWDeformations,
+        :DocTestSetup,
+        :(using PBWDeformations; using PBWDeformations.Oscar);
+        recursive=true,
+    )
+    doctest(PBWDeformations)
 end
