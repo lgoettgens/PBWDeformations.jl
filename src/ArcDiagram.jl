@@ -591,6 +591,10 @@ Base.length(i::ArcDiagramIterator) = i.len
 Base.eltype(::Type{ArcDiagramIterator{Undirected}}) = ArcDiagramUndirected
 Base.eltype(::Type{ArcDiagramIterator{Directed}}) = ArcDiagramDirected
 
+# concatenation of iterators over the parity assignments in the Directed case
+Base.IteratorSize(::Type{<:Iterators.Flatten{<:AbstractVector{<:ArcDiagramIterator}}}) = Base.HasLength()
+Base.length(f::Iterators.Flatten{<:AbstractVector{<:ArcDiagramIterator}}) = sum(length, f.it; init=0)
+
 function _forbidden_neighbors(
     indep_sets::AbstractVector{<:AbstractVector{Int}},
     n_upper_verts::Int,
@@ -765,6 +769,8 @@ function _arc_diagram(i::ArcDiagramIterator{Directed}, partial_upper::Vector{Int
     return arc_diagram(Directed, i.parity_upper_verts, i.parity_lower_verts, partial_upper, partial_lower; check=false)
 end
 
+_parity_assignments(n::Int) = n == 0 ? [Bool[]] : ProductIterator([false, true], n)
+
 function all_arc_diagrams(
     ::Type{Undirected},
     n_upper_verts::Int,
@@ -797,19 +803,14 @@ function all_arc_diagrams(
         end
     end
     if isodd(n_upper_verts + n_lower_verts)
-        return ArcDiagramIterator{Directed}(ArcDiagramDirected[], 0)
+        return Iterators.flatten(ArcDiagramIterator{Directed}[])
     end
-    rets = if n_upper_verts == 0
-        [all_arc_diagrams(Directed, Bool[], n_lower_verts; indep_sets, check=false)]
-    else
-        [
-            all_arc_diagrams(Directed, parity_upper_verts, n_lower_verts; indep_sets, check=false) for
-            parity_upper_verts in ProductIterator([false, true], n_upper_verts)
-        ]
-    end
-    iter = Iterators.flatten(rets)
-    len = sum(Iterators.map(length, rets))
-    return ArcDiagramIterator{Directed}(iter, len)
+    return Iterators.flatten([
+        all_arc_diagrams(Directed, parity_upper_verts, parity_lower_verts; indep_sets, check=false) for
+        parity_upper_verts in _parity_assignments(n_upper_verts) for
+        parity_lower_verts in _parity_assignments(n_lower_verts) if
+        parity_diff(parity_upper_verts) == parity_diff(parity_lower_verts)
+    ])
 end
 
 function all_arc_diagrams(
@@ -827,23 +828,16 @@ function all_arc_diagrams(
         end
     end
     if isodd(n_upper_verts + n_lower_verts)
-        return ArcDiagramIterator{Directed}(ArcDiagramDirected[], 0)
+        return Iterators.flatten(ArcDiagramIterator{Directed}[])
     end
     if abs(parity_diff(parity_upper_verts)) > n_lower_verts
-        return ArcDiagramIterator{Directed}(ArcDiagramDirected[], 0)
+        return Iterators.flatten(ArcDiagramIterator{Directed}[])
     end
-    rets = if n_lower_verts == 0
-        [all_arc_diagrams(Directed, parity_upper_verts, Bool[]; indep_sets, check=false)]
-    else
-        [
-            all_arc_diagrams(Directed, parity_upper_verts, parity_lower_verts; indep_sets, check=false) for
-            parity_lower_verts in ProductIterator([false, true], n_lower_verts) if
-            parity_diff(parity_upper_verts) == parity_diff(parity_lower_verts)
-        ]
-    end
-    iter = Iterators.flatten(rets)
-    len = sum(Iterators.map(length, rets))
-    return ArcDiagramIterator{Directed}(iter, len)
+    return Iterators.flatten([
+        all_arc_diagrams(Directed, parity_upper_verts, parity_lower_verts; indep_sets, check=false) for
+        parity_lower_verts in _parity_assignments(n_lower_verts) if
+        parity_diff(parity_upper_verts) == parity_diff(parity_lower_verts)
+    ])
 end
 
 function all_arc_diagrams(
