@@ -600,6 +600,26 @@ Base.eltype(::Type{ArcDiagramIterator{Undirected}}) = ArcDiagramUndirected
 Base.eltype(::Type{ArcDiagramIterator{Directed}}) = ArcDiagramDirected
 
 
+function _forbidden_neighbors(
+    indep_sets::AbstractVector{<:AbstractVector{Int}},
+    n_upper_verts::Int,
+    n_lower_verts::Int,
+)
+    forbidden_neighbors = Dict{Int, Vector{Int}}()
+    for i in 1:n_upper_verts
+        forbidden_neighbors[-i] = Vector{Int}()
+    end
+    for i in 1:n_lower_verts
+        forbidden_neighbors[i] = Vector{Int}()
+    end
+    for is in indep_sets
+        for i in is
+            union!(forbidden_neighbors[i], is)
+        end
+    end
+    return forbidden_neighbors
+end
+
 function all_arc_diagrams(
     ::Type{Undirected},
     n_upper_verts::Int,
@@ -615,19 +635,7 @@ function all_arc_diagrams(
     if isodd(n_upper_verts + n_lower_verts)
         return ArcDiagramIterator{Undirected}(ArcDiagramUndirected[], 0)
     end
-    forbidden_neighbors = Dict{Int, Vector{Int}}()
-    for i in 1:n_upper_verts
-        i = -i
-        forbidden_neighbors[i] = Vector{Int}()
-    end
-    for i in 1:n_lower_verts
-        forbidden_neighbors[i] = Vector{Int}()
-    end
-    for is in indep_sets
-        for i in is
-            union!(forbidden_neighbors[i], is)
-        end
-    end
+    forbidden_neighbors = _forbidden_neighbors(indep_sets, n_upper_verts, n_lower_verts)
     iter, len = iter_possible_adjacencies_undir(
         n_upper_verts,
         n_lower_verts,
@@ -775,19 +783,7 @@ function all_arc_diagrams(
     if parity_diff(parity_upper_verts) != parity_diff(parity_lower_verts)
         return ArcDiagramIterator{Directed}(ArcDiagramDirected[], 0)
     end
-    forbidden_neighbors = Dict{Int, Vector{Int}}()
-    for i in 1:n_upper_verts
-        i = -i
-        forbidden_neighbors[i] = Vector{Int}()
-    end
-    for i in 1:n_lower_verts
-        forbidden_neighbors[i] = Vector{Int}()
-    end
-    for is in indep_sets
-        for i in is
-            union!(forbidden_neighbors[i], is)
-        end
-    end
+    forbidden_neighbors = _forbidden_neighbors(indep_sets, n_upper_verts, n_lower_verts)
     iter, len = iter_possible_adjacencies_dir(
         n_upper_verts,
         n_lower_verts,
