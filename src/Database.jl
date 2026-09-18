@@ -70,16 +70,15 @@ const DBSmashProductKeyUnion = Union{DBSmashProductKey, SmashProductLie, Tuple{D
 ################################################################################
 
 function compute_and_save_instance(base_path::String, sp::SmashProductLie, maxdeg::Int)
-    path = joinpath(base_path, string_for_path(sp))
+    path, setup_filepath = instance_paths(base_path, sp)
     mkpath(path)
-    setup_filepath = joinpath(path, string_for_filename_setup(sp)) * file_ext
     if isfile(setup_filepath)
         @vprint :PBWDeformationsDatabase "Setup file already exists, loading it..."
         sp, _ = load(setup_filepath)::Tuple{typeof(sp), MatSpace{elem_type(sp)}}
         @vprintln :PBWDeformationsDatabase " Done"
     else
         @vprint :PBWDeformationsDatabase "Saving setup file..."
-        save(joinpath(path, string_for_filename_setup(sp)) * file_ext, (sp, parent(zero_matrix(sp, dim(base_module(sp)), dim(base_module(sp))))); compression=:gzip)
+        save(setup_filepath, (sp, parent(zero_matrix(sp, dim(base_module(sp)), dim(base_module(sp))))); compression=:gzip)
         @vprintln :PBWDeformationsDatabase " Done"
     end
     for deg in 0:maxdeg
@@ -89,7 +88,7 @@ function compute_and_save_instance(base_path::String, sp::SmashProductLie, maxde
             @vprintln :PBWDeformationsDatabase " Done"
             if save_basis
                 @vprint :PBWDeformationsDatabase "Saving GlnGraphDeformBasis..."
-                save(joinpath(path, string_for_filename(b)) * file_ext, b; serializer=Oscar.Serialization.JSONSerializer(serialize_refs=false), compression=:gzip)
+                save(deform_basis_filepath(path, b), b; serializer=Oscar.Serialization.JSONSerializer(serialize_refs=false), compression=:gzip)
                 @vprintln :PBWDeformationsDatabase " Done"
             end
             @vprint :PBWDeformationsDatabase "Computing PBW deformations for degrees $(degs)..."
@@ -97,7 +96,7 @@ function compute_and_save_instance(base_path::String, sp::SmashProductLie, maxde
             @vprintln :PBWDeformationsDatabase " Done"
             if save_pbw
                 @vprint :PBWDeformationsDatabase "Saving PBW deformations..."
-                save(joinpath(path, string_for_filename_pbwdeforms(b)) * file_ext, ms; serializer=Oscar.Serialization.JSONSerializer(serialize_refs=false), compression=:gzip)
+                save(pbwdeforms_filepath(path, b), ms; serializer=Oscar.Serialization.JSONSerializer(serialize_refs=false), compression=:gzip)
                 @vprintln :PBWDeformationsDatabase " Done"
             end
         end
@@ -107,9 +106,8 @@ end
 function prepare_loading(base_path::String, sp::DBSmashProductKeyUnion)
     spk = DBSmashProductKey(sp)
     @req isdir(base_path) "Base path must be an existing directory"
-    path = joinpath(base_path, string_for_path(spk))
+    path, setup_filepath = instance_paths(base_path, spk)
     @req isdir(path) "This instance does not exist in the database"
-    setup_filepath = joinpath(path, string_for_filename_setup(spk)) * file_ext
     @req isfile(setup_filepath) "This instance does not exist in the database"
     @vprint :PBWDeformationsDatabase "Setup file exists, loading it..."
     _ = load(setup_filepath)::Tuple{smash_product_type(spk), MatSpace{elem_type(smash_product_type(spk))}}
@@ -121,7 +119,7 @@ function load_glngraph_deform_basis(base_path::String, sp::DBSmashProductKeyUnio
     spk = DBSmashProductKey(sp)
     path = prepare_loading(base_path, spk)
 
-    filepath = joinpath(path, string_for_filename(GlnGraphDeformBasis, spk, degs)) * file_ext
+    filepath = deform_basis_filepath(path, GlnGraphDeformBasis, spk, degs)
     @req isfile(filepath) "The requested degree does not exist in the database"
     @vprint :PBWDeformationsDatabase "Found GlnGraphDeformBasis for degree $(degs). Loading..."
     b = load(filepath)::GlnGraphDeformBasis{elem_type(coefficient_ring_type(smash_product_type(spk))), elem_type(smash_product_type(spk))}
@@ -135,7 +133,7 @@ function load_glngraph_deform_bases(base_path::String, sp::DBSmashProductKeyUnio
 
     bs = GlnGraphDeformBasis{elem_type(coefficient_ring_type(smash_product_type(spk))), elem_type(smash_product_type(spk))}[]
     for degs in degss
-        filepath = joinpath(path, string_for_filename(GlnGraphDeformBasis, spk, degs)) * file_ext
+        filepath = deform_basis_filepath(path, GlnGraphDeformBasis, spk, degs)
         @req isfile(filepath) "The requested degree does not exist in the database"
         @vprint :PBWDeformationsDatabase "Found GlnGraphDeformBasis for degree $(degs). Loading..."
         push!(bs, load(filepath)::GlnGraphDeformBasis{elem_type(coefficient_ring_type(smash_product_type(spk))), elem_type(smash_product_type(spk))})
@@ -151,7 +149,7 @@ function load_glngraph_deform_bases(base_path::String, sp::DBSmashProductKeyUnio
 
     deg = 0
     bs = GlnGraphDeformBasis{elem_type(coefficient_ring_type(smash_product_type(spk))), elem_type(smash_product_type(spk))}[]
-    while (degs = (deg:deg); filepath = joinpath(path, string_for_filename(GlnGraphDeformBasis, spk, degs)) * file_ext; isfile(filepath))
+    while (degs = (deg:deg); filepath = deform_basis_filepath(path, GlnGraphDeformBasis, spk, degs); isfile(filepath))
         @vprint :PBWDeformationsDatabase "Found GlnGraphDeformBasis for degree $(degs). Loading..."
         push!(bs, load(filepath)::GlnGraphDeformBasis{elem_type(coefficient_ring_type(smash_product_type(spk))), elem_type(smash_product_type(spk))})
         @vprintln :PBWDeformationsDatabase " Done"
@@ -164,7 +162,7 @@ function load_pbwdeformations(base_path::String, sp::DBSmashProductKeyUnion, deg
     spk = DBSmashProductKey(sp)
     path = prepare_loading(base_path, spk)
 
-    filepath = joinpath(path, string_for_filename_pbwdeforms(spk, degs)) * file_ext
+    filepath = pbwdeforms_filepath(path, spk, degs)
     @req isfile(filepath) "The requested degree does not exist in the database"
     @vprint :PBWDeformationsDatabase "Found PBW deformations for degree $(degs). Loading..."
     ms = Vector{DeformationMap{elem_type(smash_product_type(spk))}}(load(filepath))::Vector{DeformationMap{elem_type(smash_product_type(spk))}} # see https://github.com/oscar-system/Oscar.jl/issues/3983
@@ -178,7 +176,7 @@ function load_pbwdeformations(base_path::String, sp::DBSmashProductKeyUnion, deg
 
     mss = Vector{DeformationMap{elem_type(smash_product_type(spk))}}[]
     for degs in degss
-        filepath = joinpath(path, string_for_filename_pbwdeforms(spk, degs)) * file_ext
+        filepath = pbwdeforms_filepath(path, spk, degs)
         @req isfile(filepath) "The requested degree does not exist in the database"
         @vprint :PBWDeformationsDatabase "Found PBW deformations for degree $(degs). Loading..."
         push!(mss, Vector{DeformationMap{elem_type(smash_product_type(spk))}}(load(filepath))::Vector{DeformationMap{elem_type(smash_product_type(spk))}}) # see https://github.com/oscar-system/Oscar.jl/issues/3983
@@ -194,7 +192,7 @@ function load_pbwdeformations(base_path::String, sp::DBSmashProductKeyUnion; deg
 
     deg = 0
     mss = Vector{DeformationMap{elem_type(smash_product_type(spk))}}[]
-    while (degs = degree_type == :pure ? (deg:deg) : (0:deg); filepath = joinpath(path, string_for_filename_pbwdeforms(spk, degs)) * file_ext; isfile(filepath))
+    while (degs = degree_type == :pure ? (deg:deg) : (0:deg); filepath = pbwdeforms_filepath(path, spk, degs); isfile(filepath))
         @vprint :PBWDeformationsDatabase "Found PBW deformations for degree $(degs). Loading..."
         push!(mss, Vector{DeformationMap{elem_type(smash_product_type(spk))}}(load(filepath))::Vector{DeformationMap{elem_type(smash_product_type(spk))}}) # see https://github.com/oscar-system/Oscar.jl/issues/3983
         @vprintln :PBWDeformationsDatabase " Done"
@@ -252,7 +250,7 @@ function are_all_pbwdeformations_puredimensional(base_path::String, sp::DBSmashP
 end
 
 function generate_pbwdeformation_summary(base_path::String, spks::Tuple{Tuple{Symbol, AbstractVector{Int}, Field}, String})
-    filename = joinpath(base_path, string_for_path(spks), string_for_filename_pbwdeforms_summary(spks)) * ".txt"
+    filename = pbwdeforms_summary_filepath(base_path, spks)
 
     @vprintln :PBWDeformationsDatabase "Starting summary generation..."
     data = generate_pbwdeformation_summary_data(base_path, spks)
@@ -264,28 +262,27 @@ end
 
 function generate_pbwdeformation_summary_data(base_path::String, spks::Tuple{Tuple{Symbol, AbstractVector{Int}, Field}, String})
     (type, ns, F), modstring = spks
-    summary = Vector{Pair{Int, Tuple{Bool, Vector{Int}}}}()
+    summary = Vector{Pair{DBLieAlgebraKey{elem_type(F)}, Tuple{Bool, Vector{Int}}}}()
     for n in ns
         spk = DBSmashProductKey((type, n, F), modstring)
-        try
-            @vprintln :PBWDeformationsDatabase "Collecting data for $(type)_$(n)..."
-            pure_dims = length.(load_pbwdeformations(base_path, spk; degree_type=:pure))
-            upto_dims = length.(load_pbwdeformations(base_path, spk; degree_type=:upto))
-            push!(summary, n => (is_prefix_equal(cumsum(pure_dims), upto_dims), pure_dims))
-        catch
-            @vprintln :PBWDeformationsDatabase "No data found for $(type)_$(n). Skipping..."
+        if !has_instance(base_path, spk)
+            @vprintln :PBWDeformationsDatabase "No data found for $(string_for_filename(spk.L)). Skipping..."
             continue
         end
+        @vprintln :PBWDeformationsDatabase "Collecting data for $(string_for_filename(spk.L))..."
+        pure_dims = length.(load_pbwdeformations(base_path, spk; degree_type=:pure))
+        upto_dims = length.(load_pbwdeformations(base_path, spk; degree_type=:upto))
+        push!(summary, spk.L => (is_prefix_equal(cumsum(pure_dims), upto_dims), pure_dims))
     end
     return summary
 end
 
-function print_pbwdeformation_summary(io::IO, summ::Vector{Pair{Int, Tuple{Bool, Vector{Int}}}})
+function print_pbwdeformation_summary(io::IO, summ::Vector{<:Pair{<:DBLieAlgebraKey, Tuple{Bool, Vector{Int}}}})
     print(io, "       ", "\t\t", "puredim", "\t\t")
-    join(io, 0:maximum(length ∘ last ∘ last, values(summ))-1, "\t")
+    join(io, 0:maximum(length ∘ last ∘ last, summ; init=0)-1, "\t")
     println(io)
-    for (k,v) in summ
-        print(io, "gl_", k, "_QQ", "\t\t", first(v), "\t\t")
+    for (Lk, v) in summ
+        print(io, string_for_filename(Lk), "\t\t", first(v), "\t\t")
         join(io, last(v), "\t")
         println(io)
     end
@@ -477,6 +474,39 @@ end
 
 function string_for_path(spk::DBSmashProductKey)
     return joinpath(string(spk.L.type), string_for_filename(spk.V))
+end
+
+
+function instance_paths(base_path::String, sp::DBSmashProductKeyUnion)
+    spk = DBSmashProductKey(sp)
+    path = joinpath(base_path, string_for_path(spk))
+    setup_filepath = joinpath(path, string_for_filename_setup(spk)) * file_ext
+    return path, setup_filepath
+end
+
+function has_instance(base_path::String, sp::DBSmashProductKeyUnion)
+    _, setup_filepath = instance_paths(base_path, sp)
+    return isfile(setup_filepath)
+end
+
+function deform_basis_filepath(path::String, b::ArcDiagBasedDeformBasis)
+    return joinpath(path, string_for_filename(b)) * file_ext
+end
+
+function deform_basis_filepath(path::String, T::Type{<:ArcDiagBasedDeformBasis}, spk::DBSmashProductKey, degs::AbstractVector{Int})
+    return joinpath(path, string_for_filename(T, spk, degs)) * file_ext
+end
+
+function pbwdeforms_filepath(path::String, b::ArcDiagBasedDeformBasis)
+    return joinpath(path, string_for_filename_pbwdeforms(b)) * file_ext
+end
+
+function pbwdeforms_filepath(path::String, spk::DBSmashProductKey, degs::AbstractVector{Int})
+    return joinpath(path, string_for_filename_pbwdeforms(spk, degs)) * file_ext
+end
+
+function pbwdeforms_summary_filepath(base_path::String, spks::Tuple{Tuple{Symbol, AbstractVector{Int}, Field}, String})
+    return joinpath(base_path, string_for_path(spks), string_for_filename_pbwdeforms_summary(spks)) * ".txt"
 end
 
 end # module
