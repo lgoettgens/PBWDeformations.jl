@@ -88,7 +88,7 @@ function compute_and_save_instance(base_path::String, sp::SmashProductLie, maxde
             @vprintln :PBWDeformationsDatabase " Done"
             if save_basis
                 @vprint :PBWDeformationsDatabase "Saving GlnGraphDeformBasis..."
-                save(joinpath(path, string_for_filename(b)) * file_ext, b; serializer=Oscar.Serialization.JSONSerializer(serialize_refs=false), compression=:gzip)
+                save(deform_basis_filepath(path, b), b; serializer=Oscar.Serialization.JSONSerializer(serialize_refs=false), compression=:gzip)
                 @vprintln :PBWDeformationsDatabase " Done"
             end
             @vprint :PBWDeformationsDatabase "Computing PBW deformations for degrees $(degs)..."
@@ -119,7 +119,7 @@ function load_glngraph_deform_basis(base_path::String, sp::DBSmashProductKeyUnio
     spk = DBSmashProductKey(sp)
     path = prepare_loading(base_path, spk)
 
-    filepath = joinpath(path, string_for_filename(GlnGraphDeformBasis, spk, degs)) * file_ext
+    filepath = deform_basis_filepath(path, GlnGraphDeformBasis, spk, degs)
     @req isfile(filepath) "The requested degree does not exist in the database"
     @vprint :PBWDeformationsDatabase "Found GlnGraphDeformBasis for degree $(degs). Loading..."
     b = load(filepath)::GlnGraphDeformBasis{elem_type(coefficient_ring_type(smash_product_type(spk))), elem_type(smash_product_type(spk))}
@@ -133,7 +133,7 @@ function load_glngraph_deform_bases(base_path::String, sp::DBSmashProductKeyUnio
 
     bs = GlnGraphDeformBasis{elem_type(coefficient_ring_type(smash_product_type(spk))), elem_type(smash_product_type(spk))}[]
     for degs in degss
-        filepath = joinpath(path, string_for_filename(GlnGraphDeformBasis, spk, degs)) * file_ext
+        filepath = deform_basis_filepath(path, GlnGraphDeformBasis, spk, degs)
         @req isfile(filepath) "The requested degree does not exist in the database"
         @vprint :PBWDeformationsDatabase "Found GlnGraphDeformBasis for degree $(degs). Loading..."
         push!(bs, load(filepath)::GlnGraphDeformBasis{elem_type(coefficient_ring_type(smash_product_type(spk))), elem_type(smash_product_type(spk))})
@@ -149,7 +149,7 @@ function load_glngraph_deform_bases(base_path::String, sp::DBSmashProductKeyUnio
 
     deg = 0
     bs = GlnGraphDeformBasis{elem_type(coefficient_ring_type(smash_product_type(spk))), elem_type(smash_product_type(spk))}[]
-    while (degs = (deg:deg); filepath = joinpath(path, string_for_filename(GlnGraphDeformBasis, spk, degs)) * file_ext; isfile(filepath))
+    while (degs = (deg:deg); filepath = deform_basis_filepath(path, GlnGraphDeformBasis, spk, degs); isfile(filepath))
         @vprint :PBWDeformationsDatabase "Found GlnGraphDeformBasis for degree $(degs). Loading..."
         push!(bs, load(filepath)::GlnGraphDeformBasis{elem_type(coefficient_ring_type(smash_product_type(spk))), elem_type(smash_product_type(spk))})
         @vprintln :PBWDeformationsDatabase " Done"
@@ -487,6 +487,14 @@ end
 function has_instance(base_path::String, sp::DBSmashProductKeyUnion)
     _, setup_filepath = instance_paths(base_path, sp)
     return isfile(setup_filepath)
+end
+
+function deform_basis_filepath(path::String, b::ArcDiagBasedDeformBasis)
+    return joinpath(path, string_for_filename(b)) * file_ext
+end
+
+function deform_basis_filepath(path::String, T::Type{<:ArcDiagBasedDeformBasis}, spk::DBSmashProductKey, degs::AbstractVector{Int})
+    return joinpath(path, string_for_filename(T, spk, degs)) * file_ext
 end
 
 end # module
