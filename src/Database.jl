@@ -277,12 +277,12 @@ function generate_pbwdeformation_summary_data(base_path::String, spks::Tuple{Tup
     return summary
 end
 
-function print_pbwdeformation_summary(io::IO, summ::Vector{Pair{Int, Tuple{Bool, Vector{Int}}}})
+function print_pbwdeformation_summary(io::IO, summ::Vector{<:Pair{<:DBLieAlgebraKey, Tuple{Bool, Vector{Int}}}})
     print(io, "       ", "\t\t", "puredim", "\t\t")
-    join(io, 0:maximum(length ∘ last ∘ last, values(summ))-1, "\t")
+    join(io, 0:maximum(length ∘ last ∘ last, summ; init=0)-1, "\t")
     println(io)
-    for (k,v) in summ
-        print(io, "gl_", k, "_QQ", "\t\t", first(v), "\t\t")
+    for (Lk, v) in summ
+        print(io, string_for_filename(Lk), "\t\t", first(v), "\t\t")
         join(io, last(v), "\t")
         println(io)
     end
