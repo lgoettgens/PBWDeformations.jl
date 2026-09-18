@@ -250,7 +250,7 @@ function are_all_pbwdeformations_puredimensional(base_path::String, sp::DBSmashP
 end
 
 function generate_pbwdeformation_summary(base_path::String, spks::Tuple{Tuple{Symbol, AbstractVector{Int}, Field}, String})
-    filename = joinpath(base_path, string_for_path(spks), string_for_filename_pbwdeforms_summary(spks)) * ".txt"
+    filename = pbwdeforms_summary_filepath(base_path, spks)
 
     @vprintln :PBWDeformationsDatabase "Starting summary generation..."
     data = generate_pbwdeformation_summary_data(base_path, spks)
@@ -503,6 +503,10 @@ end
 
 function pbwdeforms_filepath(path::String, spk::DBSmashProductKey, degs::AbstractVector{Int})
     return joinpath(path, string_for_filename_pbwdeforms(spk, degs)) * file_ext
+end
+
+function pbwdeforms_summary_filepath(base_path::String, spks::Tuple{Tuple{Symbol, AbstractVector{Int}, Field}, String})
+    return joinpath(base_path, string_for_path(spks), string_for_filename_pbwdeforms_summary(spks)) * ".txt"
 end
 
 end # module
