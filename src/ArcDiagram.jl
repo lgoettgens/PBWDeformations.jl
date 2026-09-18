@@ -636,7 +636,39 @@ function ArcDiagramPossibleAdjacencies{Undirected}(
 )
     upper_partners, lower_partners =
         _pairing_partners(n_upper_verts, n_lower_verts, (v, w) -> !(w in forbidden_neighbors[v]))
-    return ArcDiagramPossibleAdjacencies{Undirected}(n_upper_verts, n_lower_verts, upper_partners, lower_partners)
+    return ArcDiagramPossibleAdjacencies{Undirected}(
+        n_upper_verts,
+        n_lower_verts,
+        nothing,
+        nothing,
+        upper_partners,
+        lower_partners,
+    )
+end
+
+function ArcDiagramPossibleAdjacencies{Directed}(
+    parity_upper_verts::Vector{Bool},
+    parity_lower_verts::Vector{Bool},
+    forbidden_neighbors::Dict{Int, Vector{Int}},
+)
+    n_upper_verts = length(parity_upper_verts)
+    n_lower_verts = length(parity_lower_verts)
+    # allowed arcs: upper-upper and lower-lower with different parity,
+    # upper-lower with equal parity; i.e. exactly the pairs of different class
+    class(v) = v < 0 ? parity_upper_verts[-v] : !parity_lower_verts[v]
+    upper_partners, lower_partners = _pairing_partners(
+        n_upper_verts,
+        n_lower_verts,
+        (v, w) -> class(v) != class(w) && !(w in forbidden_neighbors[v]),
+    )
+    return ArcDiagramPossibleAdjacencies{Directed}(
+        n_upper_verts,
+        n_lower_verts,
+        parity_upper_verts,
+        parity_lower_verts,
+        upper_partners,
+        lower_partners,
+    )
 end
 
 function _first_free_vertex(partial_upper::Vector{Int}, partial_lower::Vector{Int})
@@ -711,6 +743,7 @@ end
 Base.IteratorSize(::Type{<:ArcDiagramPossibleAdjacencies}) = Base.SizeUnknown()
 
 Base.eltype(::Type{ArcDiagramPossibleAdjacencies{Undirected}}) = ArcDiagramUndirected
+Base.eltype(::Type{ArcDiagramPossibleAdjacencies{Directed}}) = ArcDiagramDirected
 
 function Base.iterate(p::ArcDiagramPossibleAdjacencies, state=_pairing_state(p))
     state = _next_pairing!(p, state)
@@ -719,7 +752,11 @@ function Base.iterate(p::ArcDiagramPossibleAdjacencies, state=_pairing_state(p))
 end
 
 function _arc_diagram(p::ArcDiagramPossibleAdjacencies{Undirected}, partial_upper::Vector{Int}, partial_lower::Vector{Int})
-    return ArcDiagramUndirected(p.n_upper_verts, p.n_lower_verts, partial_upper, partial_lower; check=false)
+    return arc_diagram(Undirected, partial_upper, partial_lower; check=false)
+end
+
+function _arc_diagram(p::ArcDiagramPossibleAdjacencies{Directed}, partial_upper::Vector{Int}, partial_lower::Vector{Int})
+    return arc_diagram(Directed, p.parity_upper_verts, p.parity_lower_verts, partial_upper, partial_lower; check=false)
 end
 
 function all_arc_diagrams(
@@ -827,93 +864,6 @@ function all_arc_diagrams(
         return ArcDiagramIterator{Directed}(ArcDiagramDirected[], 0)
     end
     forbidden_neighbors = _forbidden_neighbors(indep_sets, n_upper_verts, n_lower_verts)
-    iter, len = iter_possible_adjacencies_dir(
-        n_upper_verts,
-        n_lower_verts,
-        parity_upper_verts,
-        parity_lower_verts,
-        [0 for _ in 1:n_upper_verts],
-        [0 for _ in 1:n_lower_verts],
-        forbidden_neighbors,
-    )
-    return ArcDiagramIterator{Directed}(iter, len)
-end
-
-function iter_possible_adjacencies_dir(
-    n_upper_verts::Int,
-    n_lower_verts::Int,
-    parity_upper_verts::Vector{Bool},
-    parity_lower_verts::Vector{Bool},
-    partial_upper::Vector{Int},
-    partial_lower::Vector{Int},
-    forbidden_neighbors::Dict{Int, Vector{Int}},
-)
-    i = findfirst(iszero, partial_upper)
-    if !isnothing(i)
-        i = -i
-        poss_upper_adjs = (
-            -j for j in findall(iszero, partial_upper) if
-            i != -j && !(-j in forbidden_neighbors[i]) && parity_upper_verts[-i] != parity_upper_verts[j]
-        )
-        poss_lower_adjs = (
-            j for j in findall(iszero, partial_lower) if
-            !(j in forbidden_neighbors[i]) && parity_upper_verts[-i] == parity_lower_verts[j]
-        )
-        choices = Iterators.map(Iterators.flatten([poss_upper_adjs, poss_lower_adjs])) do j
-            partial_upper2 = copy(partial_upper)
-            partial_lower2 = copy(partial_lower)
-            partial_upper2[-i] = j
-            if j < 0
-                partial_upper2[-j] = i
-            else
-                partial_lower2[j] = i
-            end
-            iter_possible_adjacencies_dir(
-                n_upper_verts,
-                n_lower_verts,
-                parity_upper_verts,
-                parity_lower_verts,
-                partial_upper2,
-                partial_lower2,
-                forbidden_neighbors,
-            )
-        end
-        return Iterators.flatten(Iterators.map(first, choices)), sum(last, choices; init=0)
-    else
-        i = findfirst(iszero, partial_lower)
-        if !isnothing(i)
-            poss_lower_adjs = (
-                j for j in findall(iszero, partial_lower) if
-                i != j && !(j in forbidden_neighbors[i]) && parity_lower_verts[i] != parity_lower_verts[j]
-            )
-            choices = Iterators.map(poss_lower_adjs) do j
-                partial_lower2 = copy(partial_lower)
-                partial_lower2[i] = j
-                partial_lower2[j] = i
-                iter_possible_adjacencies_dir(
-                    n_upper_verts,
-                    n_lower_verts,
-                    parity_upper_verts,
-                    parity_lower_verts,
-                    partial_upper,
-                    partial_lower2,
-                    forbidden_neighbors,
-                )
-            end
-            return Iterators.flatten(Iterators.map(first, choices)), sum(last, choices; init=0)
-        else
-            return [
-                ArcDiagramDirected(
-                    n_upper_verts,
-                    n_lower_verts,
-                    parity_upper_verts,
-                    parity_lower_verts,
-                    partial_upper,
-                    partial_lower;
-                    check=true,# TODO check=false
-                ),
-            ],
-            1
-        end
-    end
+    poss_adjs = ArcDiagramPossibleAdjacencies{Directed}(parity_upper_verts, parity_lower_verts, forbidden_neighbors)
+    return ArcDiagramIterator{Directed}(poss_adjs, count_pairings(poss_adjs))
 end

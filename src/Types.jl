@@ -191,6 +191,8 @@ end
 struct ArcDiagramPossibleAdjacencies{T <: Union{Directed, Undirected}}
     n_upper_verts::Int
     n_lower_verts::Int
+    parity_upper_verts::Union{Nothing, Vector{Bool}} # nothing for Undirected
+    parity_lower_verts::Union{Nothing, Vector{Bool}} # nothing for Undirected
     upper_partners::Vector{Vector{Int}}
     lower_partners::Vector{Vector{Int}}
 end
