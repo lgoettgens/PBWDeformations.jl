@@ -262,18 +262,17 @@ end
 
 function generate_pbwdeformation_summary_data(base_path::String, spks::Tuple{Tuple{Symbol, AbstractVector{Int}, Field}, String})
     (type, ns, F), modstring = spks
-    summary = Vector{Pair{Int, Tuple{Bool, Vector{Int}}}}()
+    summary = Vector{Pair{DBLieAlgebraKey{elem_type(F)}, Tuple{Bool, Vector{Int}}}}()
     for n in ns
         spk = DBSmashProductKey((type, n, F), modstring)
-        try
-            @vprintln :PBWDeformationsDatabase "Collecting data for $(type)_$(n)..."
-            pure_dims = length.(load_pbwdeformations(base_path, spk; degree_type=:pure))
-            upto_dims = length.(load_pbwdeformations(base_path, spk; degree_type=:upto))
-            push!(summary, n => (is_prefix_equal(cumsum(pure_dims), upto_dims), pure_dims))
-        catch
-            @vprintln :PBWDeformationsDatabase "No data found for $(type)_$(n). Skipping..."
+        if !has_instance(base_path, spk)
+            @vprintln :PBWDeformationsDatabase "No data found for $(string_for_filename(spk.L)). Skipping..."
             continue
         end
+        @vprintln :PBWDeformationsDatabase "Collecting data for $(string_for_filename(spk.L))..."
+        pure_dims = length.(load_pbwdeformations(base_path, spk; degree_type=:pure))
+        upto_dims = length.(load_pbwdeformations(base_path, spk; degree_type=:upto))
+        push!(summary, spk.L => (is_prefix_equal(cumsum(pure_dims), upto_dims), pure_dims))
     end
     return summary
 end
@@ -483,6 +482,11 @@ function instance_paths(base_path::String, sp::DBSmashProductKeyUnion)
     path = joinpath(base_path, string_for_path(spk))
     setup_filepath = joinpath(path, string_for_filename_setup(spk)) * file_ext
     return path, setup_filepath
+end
+
+function has_instance(base_path::String, sp::DBSmashProductKeyUnion)
+    _, setup_filepath = instance_paths(base_path, sp)
+    return isfile(setup_filepath)
 end
 
 end # module
