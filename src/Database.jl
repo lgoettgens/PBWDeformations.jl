@@ -70,16 +70,15 @@ const DBSmashProductKeyUnion = Union{DBSmashProductKey, SmashProductLie, Tuple{D
 ################################################################################
 
 function compute_and_save_instance(base_path::String, sp::SmashProductLie, maxdeg::Int)
-    path = joinpath(base_path, string_for_path(sp))
+    path, setup_filepath = instance_paths(base_path, sp)
     mkpath(path)
-    setup_filepath = joinpath(path, string_for_filename_setup(sp)) * file_ext
     if isfile(setup_filepath)
         @vprint :PBWDeformationsDatabase "Setup file already exists, loading it..."
         sp, _ = load(setup_filepath)::Tuple{typeof(sp), MatSpace{elem_type(sp)}}
         @vprintln :PBWDeformationsDatabase " Done"
     else
         @vprint :PBWDeformationsDatabase "Saving setup file..."
-        save(joinpath(path, string_for_filename_setup(sp)) * file_ext, (sp, parent(zero_matrix(sp, dim(base_module(sp)), dim(base_module(sp))))); compression=:gzip)
+        save(setup_filepath, (sp, parent(zero_matrix(sp, dim(base_module(sp)), dim(base_module(sp))))); compression=:gzip)
         @vprintln :PBWDeformationsDatabase " Done"
     end
     for deg in 0:maxdeg
@@ -107,9 +106,8 @@ end
 function prepare_loading(base_path::String, sp::DBSmashProductKeyUnion)
     spk = DBSmashProductKey(sp)
     @req isdir(base_path) "Base path must be an existing directory"
-    path = joinpath(base_path, string_for_path(spk))
+    path, setup_filepath = instance_paths(base_path, spk)
     @req isdir(path) "This instance does not exist in the database"
-    setup_filepath = joinpath(path, string_for_filename_setup(spk)) * file_ext
     @req isfile(setup_filepath) "This instance does not exist in the database"
     @vprint :PBWDeformationsDatabase "Setup file exists, loading it..."
     _ = load(setup_filepath)::Tuple{smash_product_type(spk), MatSpace{elem_type(smash_product_type(spk))}}
@@ -477,6 +475,14 @@ end
 
 function string_for_path(spk::DBSmashProductKey)
     return joinpath(string(spk.L.type), string_for_filename(spk.V))
+end
+
+
+function instance_paths(base_path::String, sp::DBSmashProductKeyUnion)
+    spk = DBSmashProductKey(sp)
+    path = joinpath(base_path, string_for_path(spk))
+    setup_filepath = joinpath(path, string_for_filename_setup(spk)) * file_ext
+    return path, setup_filepath
 end
 
 end # module
