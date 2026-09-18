@@ -96,7 +96,7 @@ function compute_and_save_instance(base_path::String, sp::SmashProductLie, maxde
             @vprintln :PBWDeformationsDatabase " Done"
             if save_pbw
                 @vprint :PBWDeformationsDatabase "Saving PBW deformations..."
-                save(joinpath(path, string_for_filename_pbwdeforms(b)) * file_ext, ms; serializer=Oscar.Serialization.JSONSerializer(serialize_refs=false), compression=:gzip)
+                save(pbwdeforms_filepath(path, b), ms; serializer=Oscar.Serialization.JSONSerializer(serialize_refs=false), compression=:gzip)
                 @vprintln :PBWDeformationsDatabase " Done"
             end
         end
@@ -162,7 +162,7 @@ function load_pbwdeformations(base_path::String, sp::DBSmashProductKeyUnion, deg
     spk = DBSmashProductKey(sp)
     path = prepare_loading(base_path, spk)
 
-    filepath = joinpath(path, string_for_filename_pbwdeforms(spk, degs)) * file_ext
+    filepath = pbwdeforms_filepath(path, spk, degs)
     @req isfile(filepath) "The requested degree does not exist in the database"
     @vprint :PBWDeformationsDatabase "Found PBW deformations for degree $(degs). Loading..."
     ms = Vector{DeformationMap{elem_type(smash_product_type(spk))}}(load(filepath))::Vector{DeformationMap{elem_type(smash_product_type(spk))}} # see https://github.com/oscar-system/Oscar.jl/issues/3983
@@ -176,7 +176,7 @@ function load_pbwdeformations(base_path::String, sp::DBSmashProductKeyUnion, deg
 
     mss = Vector{DeformationMap{elem_type(smash_product_type(spk))}}[]
     for degs in degss
-        filepath = joinpath(path, string_for_filename_pbwdeforms(spk, degs)) * file_ext
+        filepath = pbwdeforms_filepath(path, spk, degs)
         @req isfile(filepath) "The requested degree does not exist in the database"
         @vprint :PBWDeformationsDatabase "Found PBW deformations for degree $(degs). Loading..."
         push!(mss, Vector{DeformationMap{elem_type(smash_product_type(spk))}}(load(filepath))::Vector{DeformationMap{elem_type(smash_product_type(spk))}}) # see https://github.com/oscar-system/Oscar.jl/issues/3983
@@ -192,7 +192,7 @@ function load_pbwdeformations(base_path::String, sp::DBSmashProductKeyUnion; deg
 
     deg = 0
     mss = Vector{DeformationMap{elem_type(smash_product_type(spk))}}[]
-    while (degs = degree_type == :pure ? (deg:deg) : (0:deg); filepath = joinpath(path, string_for_filename_pbwdeforms(spk, degs)) * file_ext; isfile(filepath))
+    while (degs = degree_type == :pure ? (deg:deg) : (0:deg); filepath = pbwdeforms_filepath(path, spk, degs); isfile(filepath))
         @vprint :PBWDeformationsDatabase "Found PBW deformations for degree $(degs). Loading..."
         push!(mss, Vector{DeformationMap{elem_type(smash_product_type(spk))}}(load(filepath))::Vector{DeformationMap{elem_type(smash_product_type(spk))}}) # see https://github.com/oscar-system/Oscar.jl/issues/3983
         @vprintln :PBWDeformationsDatabase " Done"
@@ -495,6 +495,14 @@ end
 
 function deform_basis_filepath(path::String, T::Type{<:ArcDiagBasedDeformBasis}, spk::DBSmashProductKey, degs::AbstractVector{Int})
     return joinpath(path, string_for_filename(T, spk, degs)) * file_ext
+end
+
+function pbwdeforms_filepath(path::String, b::ArcDiagBasedDeformBasis)
+    return joinpath(path, string_for_filename_pbwdeforms(b)) * file_ext
+end
+
+function pbwdeforms_filepath(path::String, spk::DBSmashProductKey, degs::AbstractVector{Int})
+    return joinpath(path, string_for_filename_pbwdeforms(spk, degs)) * file_ext
 end
 
 end # module
