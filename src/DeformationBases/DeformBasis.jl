@@ -16,7 +16,12 @@ end
 function filter_independent(R, input)
     deduplicated = unique(Iterators.filter(!iszero, input))::Vector{eltype(input)}
     _, rels = is_linearly_independent_with_relations(R, deduplicated)
-    inds = [findlast(!iszero, vec(rels[i, :]))::Int for i in 1:nrows(rels)]
+    # rref with columns read right to left, so that deleting the pivots keeps
+    # the earliest elements
+    reverse_cols!(rels)
+    rref!(rels)
+    inds = [ncols(rels) + 1 - findfirst(!iszero, vec(rels[i, :]))::Int for i in 1:nrows(rels)]
+    sort!(inds)
     deleteat!(deduplicated, inds)
     return deduplicated, length(deduplicated)
 end
