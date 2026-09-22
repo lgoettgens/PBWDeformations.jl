@@ -183,8 +183,18 @@ struct ArcDiagramDirected <: ArcDiagram
     end
 end
 
+# All arc diagrams of the given shape, found by depth-first search over the
+# admissible partners of each vertex. Vertices are labelled as in
+# `indep_sets`: -i for upper vertex i, i for lower vertex i, ordered upper
+# first. `upper_partners[i]` and `lower_partners[i]` list the admissible
+# partners of -i resp. i among the vertices after it.
 struct ArcDiagramIterator{T <: Union{Directed, Undirected}}
-    iter
+    n_upper_verts::Int
+    n_lower_verts::Int
+    parity_upper_verts::Union{Nothing, Vector{Bool}} # nothing for Undirected
+    parity_lower_verts::Union{Nothing, Vector{Bool}} # nothing for Undirected
+    upper_partners::Vector{Vector{Int}}
+    lower_partners::Vector{Vector{Int}}
     len::Int
 end
 
