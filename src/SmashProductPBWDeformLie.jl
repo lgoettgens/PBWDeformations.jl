@@ -162,6 +162,7 @@ function all_pbwdeformations(
     for l in 1:ker_dim
         kappa = zero_matrix(sp, dimV, dimV)
         for (i, b) in enumerate(deform_basis)
+            iszero(ker[i, l]) && continue
             kappa += ker[i, l] * b
         end
         kappas[l] = kappa
