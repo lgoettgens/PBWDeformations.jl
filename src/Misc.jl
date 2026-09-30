@@ -7,16 +7,14 @@ function is_prefix_equal(a::AbstractVector{T}, b::AbstractVector{T}) where T
 end
 
 function symmetrize(f::FreeAssociativeAlgebraElem)
-    R = parent(f)
-    g = zero(R)
+    M = MPolyBuildCtx(parent(f))
     for (c, exp) in zip(AbstractAlgebra.coefficients(f), AbstractAlgebra.exponent_words(f))
-        g += R(
-            fill(divexact(c, factorial(length(exp))), factorial(length(exp))),
-            [ind for ind in permutations(exp)],
-        )
-
+        c = divexact(c, factorial(length(exp)))
+        for w in permutations(exp)
+            push_term!(M, c, w)
+        end
     end
-    return g
+    return finish(M)
 end
 
 function set_show_colorful_html(value::Bool)
