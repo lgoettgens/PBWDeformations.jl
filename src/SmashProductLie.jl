@@ -271,7 +271,6 @@ function _normal_form(a::F, rels::Matrix{Union{Nothing, F}}) where {C <: RingEle
 end
 
 function _normal_form!(a::F, rels::Matrix{Union{Nothing, F}}) where {C <: RingElem, F <: FreeAssociativeAlgebraElem{C}}
-    CR = coefficient_ring(a)
     A = parent(a)
     result = MPolyBuildCtx(A)
     while !iszero(a)
@@ -286,7 +285,10 @@ function _normal_form!(a::F, rels::Matrix{Union{Nothing, F}}) where {C <: RingEl
             rel = rels[exp[i], exp[i+1]]
             if !isnothing(rel)
                 changed = true
-                new_term = A([c], [exp[1:i-1]]) * rel * A([one(CR)], [exp[i+2:end]])
+                new_term = A(
+                    [c * coeff(rel, k) for k in 1:length(rel)],
+                    [vcat(view(exp, 1:i-1), exponent_word(rel, k), view(exp, i+2:length(exp))) for k in 1:length(rel)],
+                )
                 a = add!(a, new_term)
                 break
             end
