@@ -263,18 +263,22 @@ function simplify(
     return e
 end
 
+# `a` may be shared with the caller, as `sp(f)` stores `f` itself and `simplify` runs
+# inside `iszero`, `==`, `hash`. A copy of the term vectors suffices, since mutable
+# arithmetic of `FreeAssociativeAlgebraElem` never mutates coefficients or words.
 function _normal_form(a::F, rels::Matrix{Union{Nothing, F}}) where {C <: RingElem, F <: FreeAssociativeAlgebraElem{C}}
-    result = zero(parent(a))
+    return _normal_form!(add!(zero(parent(a)), a), rels)
+end
+
+function _normal_form!(a::F, rels::Matrix{Union{Nothing, F}}) where {C <: RingElem, F <: FreeAssociativeAlgebraElem{C}}
     CR = coefficient_ring(a)
     A = parent(a)
-    tmp = zero(A)
+    result = zero(A)
     while !iszero(a)
         c = leading_coefficient(a)
         exp = leading_exponent_word(a)
         t = leading_term(a)
-        # 2-arg mutable arithmetic is way slower than 3-arg at the time of writing. TODO: replace once the situation has improved
-        tmp = sub!(tmp, a, t)
-        a, tmp = tmp, a
+        a = sub!(a, t)
 
         changed = false
         for i in 1:length(exp)-1
@@ -283,14 +287,12 @@ function _normal_form(a::F, rels::Matrix{Union{Nothing, F}}) where {C <: RingEle
             if !isnothing(rel)
                 changed = true
                 new_term = A([c], [exp[1:i-1]]) * rel * A([one(CR)], [exp[i+2:end]])
-                tmp = add!(tmp, a, new_term)
-                a, tmp = tmp, a
+                a = add!(a, new_term)
                 break
             end
         end
         if !changed
-            tmp = add!(tmp, result, t)
-            result, tmp = tmp, result
+            result = add!(result, t)
         end
     end
     return result
