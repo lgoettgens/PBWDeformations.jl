@@ -9,12 +9,18 @@ end
 function symmetrize(f::FreeAssociativeAlgebraElem)
     M = MPolyBuildCtx(parent(f))
     for (c, exp) in zip(AbstractAlgebra.coefficients(f), AbstractAlgebra.exponent_words(f))
-        c = divexact(c, factorial(length(exp)))
-        for w in permutations(exp)
-            push_term!(M, c, w)
-        end
+        _push_symmetrized!(M, c, exp)
     end
     return finish(M)
+end
+
+# push `c` times the average over all permutations of `word`
+function _push_symmetrized!(M::MPolyBuildCtx, c::RingElement, word::Vector{Int})
+    c = divexact(c, factorial(length(word)))
+    for w in permutations(word)
+        push_term!(M, c, w)
+    end
+    return M
 end
 
 function set_show_colorful_html(value::Bool)
