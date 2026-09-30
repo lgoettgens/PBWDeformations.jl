@@ -263,18 +263,21 @@ function simplify(
     return e
 end
 
+# `a` may be shared with the caller, as `sp(f)` stores `f` itself and `simplify` runs
+# inside `iszero`, `==`, `hash`. A copy of the term vectors suffices, since mutable
+# arithmetic of `FreeAssociativeAlgebraElem` never mutates coefficients or words.
 function _normal_form(a::F, rels::Matrix{Union{Nothing, F}}) where {C <: RingElem, F <: FreeAssociativeAlgebraElem{C}}
-    result = zero(parent(a))
-    CR = coefficient_ring(a)
+    return _normal_form!(add!(zero(parent(a)), a), rels)
+end
+
+function _normal_form!(a::F, rels::Matrix{Union{Nothing, F}}) where {C <: RingElem, F <: FreeAssociativeAlgebraElem{C}}
     A = parent(a)
-    tmp = zero(A)
+    result = MPolyBuildCtx(A)
     while !iszero(a)
         c = leading_coefficient(a)
         exp = leading_exponent_word(a)
         t = leading_term(a)
-        # 2-arg mutable arithmetic is way slower than 3-arg at the time of writing. TODO: replace once the situation has improved
-        tmp = sub!(tmp, a, t)
-        a, tmp = tmp, a
+        a = sub!(a, t)
 
         changed = false
         for i in 1:length(exp)-1
@@ -282,18 +285,19 @@ function _normal_form(a::F, rels::Matrix{Union{Nothing, F}}) where {C <: RingEle
             rel = rels[exp[i], exp[i+1]]
             if !isnothing(rel)
                 changed = true
-                new_term = A([c], [exp[1:i-1]]) * rel * A([one(CR)], [exp[i+2:end]])
-                tmp = add!(tmp, a, new_term)
-                a, tmp = tmp, a
+                new_term = A(
+                    [c * coeff(rel, k) for k in 1:length(rel)],
+                    [vcat(view(exp, 1:i-1), exponent_word(rel, k), view(exp, i+2:length(exp))) for k in 1:length(rel)],
+                )
+                a = add!(a, new_term)
                 break
             end
         end
         if !changed
-            tmp = add!(tmp, result, t)
-            result, tmp = tmp, result
+            push_term!(result, c, exp)
         end
     end
-    return result
+    return finish(result)
 end
 
 ###############################################################################

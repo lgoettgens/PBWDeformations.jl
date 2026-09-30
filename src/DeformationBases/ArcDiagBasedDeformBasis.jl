@@ -483,7 +483,7 @@ function arcdiag_to_deformationmap_entry(
     iso_pair_to_L::Function,
     max_label::Int,
 ) where {C <: RingElem}
-    entry = zero(sp)
+    M = MPolyBuildCtx(underlying_algebra(sp))
 
     upper_verts = upper_vertices(diag)
     lower_verts = lower_vertices(diag)
@@ -515,8 +515,6 @@ function arcdiag_to_deformationmap_entry(
             end
         end
 
-        entry_summand = zero(sp)
-
         # iterate over lower point labelings
         nextindex = 1
         while true
@@ -533,13 +531,8 @@ function arcdiag_to_deformationmap_entry(
                     append!(basiselem, gen_ind)
                 end
                 if !iszero(coeff_lower_labels)
-                    symm_basiselem = sp(
-                        underlying_algebra(sp)(
-                            fill(divexact(one(coefficient_ring(sp)), factorial(length(basiselem))), factorial(length(basiselem))),
-                            [ind .+ dim(base_module(sp)) for ind in permutations(basiselem)],
-                        ),
-                    ) # TODO: benchmark use of `symmetrize` here once it is implemented with mutable arithmetics
-                    entry_summand += coeff_lower_labels * symm_basiselem
+                    basiselem .+= dim(base_module(sp))
+                    _push_symmetrized!(M, coefficient_ring(sp)(sgn_upper_labels * coeff_lower_labels), basiselem)
                 end
                 # end inner
 
@@ -567,8 +560,6 @@ function arcdiag_to_deformationmap_entry(
 
             nextindex += 1
         end
-
-        entry += sgn_upper_labels * entry_summand
     end
-    return entry
+    return sp(finish(M))
 end

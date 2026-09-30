@@ -7,16 +7,20 @@ function is_prefix_equal(a::AbstractVector{T}, b::AbstractVector{T}) where T
 end
 
 function symmetrize(f::FreeAssociativeAlgebraElem)
-    R = parent(f)
-    g = zero(R)
+    M = MPolyBuildCtx(parent(f))
     for (c, exp) in zip(AbstractAlgebra.coefficients(f), AbstractAlgebra.exponent_words(f))
-        g += R(
-            fill(divexact(c, factorial(length(exp))), factorial(length(exp))),
-            [ind for ind in permutations(exp)],
-        )
-
+        _push_symmetrized!(M, c, exp)
     end
-    return g
+    return finish(M)
+end
+
+# push `c` times the average over all permutations of `word`
+function _push_symmetrized!(M::MPolyBuildCtx, c::RingElement, word::Vector{Int})
+    c = divexact(c, factorial(length(word)))
+    for w in permutations(word)
+        push_term!(M, c, w)
+    end
+    return M
 end
 
 function set_show_colorful_html(value::Bool)
