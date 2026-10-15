@@ -6,6 +6,11 @@ function is_prefix_equal(a::AbstractVector{T}, b::AbstractVector{T}) where T
     return all(splat(==), zip(a, b))
 end
 
+# removed from `Oscar.LieAlgebras` in https://github.com/oscar-system/Oscar.jl/pull/6375
+function permutations(v::AbstractVector)
+    return ([v[p[i]] for i in 1:length(v)] for p in AbstractAlgebra.SymmetricGroup(length(v)))
+end
+
 function symmetrize(f::FreeAssociativeAlgebraElem)
     M = MPolyBuildCtx(parent(f))
     for (c, exp) in zip(AbstractAlgebra.coefficients(f), AbstractAlgebra.exponent_words(f))

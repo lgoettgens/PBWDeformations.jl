@@ -25,8 +25,6 @@ using Oscar: _is_standard_module
 
 using Oscar.LieAlgebras: combinations
 using Oscar.LieAlgebras: multicombinations
-using Oscar.LieAlgebras: permutations
-using Oscar.LieAlgebras: permutations_with_sign
 
 using Base: Fix1
 using Base: Fix2
