@@ -61,7 +61,7 @@ function _isomorphic_module__is_direct_sum(V::T, Bs::Vector{T}) where {T <: LieA
         V_to_Csum = id_hom(V)
     else
         Csum = direct_sum(Cs...)
-        V_to_Csum = hom_direct_sum(V, Csum, last.(Cs_with_hom)::Vector{LieAlgebraModuleHom{T, T}})
+        V_to_Csum = hom_direct_sum(V, Csum, last.(Cs_with_hom)::Vector{<:LieAlgebraModuleHom{T, T}})
     end
     Ds = T[]
     for (C, _) in Cs_with_hom
@@ -93,7 +93,7 @@ function _isomorphic_module__is_tensor_product(V::T, Bs::Vector{T}) where {T <: 
         V_to_Cprod = id_hom(V)
     else
         Cprod = tensor_product(first.(Cs_with_hom)::Vector{T}...)
-        V_to_Cprod = hom_tensor(V, Cprod, last.(Cs_with_hom)::Vector{LieAlgebraModuleHom{T, T}})
+        V_to_Cprod = hom_tensor(V, Cprod, last.(Cs_with_hom)::Vector{<:LieAlgebraModuleHom{T, T}})
     end
     Ds = T[]
     for (C, _) in Cs_with_hom
