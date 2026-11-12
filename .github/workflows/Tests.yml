@@ -43,6 +43,13 @@ jobs:
           - 'devel'
         os:
           - ubuntu-latest
+        exclude:
+          # Oscar 1.7 does not support julia 1.14
+          - julia-version: '1.14-nightly'
+            oscar-version: '1.7'
+          # Oscar 1.7 does not support julia 1.15 (current nightly)
+          - julia-version: 'nightly'
+            oscar-version: '1.7'
 
     steps:
       - uses: actions/checkout@v7
